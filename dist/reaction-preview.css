@@ -1,0 +1,10 @@
+.player-row{position:relative}
+.reaction-card-chip{position:absolute;z-index:2;left:34px;top:-5px;display:grid;place-items:center;width:34px;height:32px;font-size:23px;background:linear-gradient(#fff,#edf7ff);border:1px solid #bedbff;border-radius:13px 13px 13px 3px;box-shadow:0 3px 8px #123c7425;pointer-events:none}
+.room-reaction-preview{position:absolute;left:18px;bottom:44px;z-index:7;pointer-events:none;max-width:calc(100% - 36px)}
+.room-reaction-bubble{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 9px;border:1px solid #fff;border-radius:18px;background:linear-gradient(130deg,#fffffff5,#dfeefff5);color:#133b89;box-shadow:0 5px 0 #9bbfe4a0,0 8px 24px #123b7325;max-width:100%}
+.reaction-avatar{display:block;width:40px;height:40px;flex:none;border-radius:50%;border:2px solid white;background-image:url('assets/avatars-v5.png');background-size:200% 200%;box-shadow:0 2px 4px #123b7320}
+.reaction-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.reaction-copy b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145px}.reaction-copy small{font-size:8px;letter-spacing:.3px;color:#57789f}.reaction-emoji{font-size:36px;line-height:1.2}
+@media(max-width:700px){.reaction-card-chip{width:27px;height:26px;font-size:18px;left:20px;top:-4px}.room-reaction-preview{left:10px;bottom:32px}.room-reaction-bubble{padding:7px 9px;gap:7px;border-radius:13px}.reaction-avatar{width:31px;height:31px}.reaction-emoji{font-size:27px}.reaction-copy b{font-size:12px}.reaction-copy small{font-size:7px}}
+
+.name-line .type-badge.autopilot-preview{color:#9b5a0c;border-color:#edc788;background:#fff3d8}
+.takeover-preview-note{position:absolute;top:56px;left:20px;z-index:2;max-width:calc(100% - 40px);padding:7px 11px;border:1px solid #ffe2a2;border-radius:12px;background:#fff7e7ed;color:#815310;font-size:11px;pointer-events:none;box-shadow:0 3px 10px #714b1020}

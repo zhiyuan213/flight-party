@@ -1,0 +1,144 @@
+/* v0.3: a restrained shell around the toy board. No game-state styling hooks change. */
+:root{--ink:#103b8d;--blue:#167cff}
+header{background:linear-gradient(180deg,#ffffff 0%,#f3faff 70%,#e5f3ff 100%);box-shadow:0 2px 8px #347bb71a}
+.brand{color:#073894;text-shadow:0 2px 0 #fff,0 4px 2px #123c852b;letter-spacing:-1.2px}
+#mode-label{color:#24549d;font-size:clamp(14px,1.4vw,21px);line-height:1;padding:12px 34px;box-shadow:inset 0 1px 2px #fff,0 3px 5px #2d61981c}
+.play{padding:0;grid-template-columns:minmax(0,1fr) clamp(330px,30.5vw,485px)}
+aside{display:flex;flex-direction:column;gap:12px;padding:17px 17px 12px;background:linear-gradient(110deg,#f8fcff,#edf7ff 70%,#e7f2ff);border-left:2px solid #fff;box-shadow:-3px 0 8px #326eaa12;overflow-y:auto}
+.crew-panel{flex:none;border:1px solid #d8e8fb;border-radius:22px;padding:13px 11px 11px;background:linear-gradient(135deg,#ffffffc9,#f2f8ff9c);box-shadow:inset 0 1px 0 #fff,0 3px 6px #3472ae0b}
+.crew-head{padding:0 7px 9px}
+.crew-head h2{font-size:26px;line-height:1.15;letter-spacing:-.7px;color:#103887}
+.crew-head>span{font-size:10px;color:#4e79b0}
+#players{gap:7px}
+.player-row,.player-row.active{min-height:72px;padding:10px 11px;border-radius:17px;gap:10px;border-width:1px;box-shadow:inset 0 1px 0 #fff}
+.player-row{background:linear-gradient(125deg,#f7fcff,#eaf2ff);border-color:#cfe0fb}
+.player-row.active{border-color:#5b9cff;background:linear-gradient(130deg,#edfaff,#deedff);box-shadow:inset 0 0 0 1px #a2ceff,0 2px 4px #3571ae0f}
+.player-avatar{width:54px;height:54px;border:2px solid #fff;box-shadow:0 2px 4px #4774a52e}
+.player-info{gap:5px;align-self:center}
+.name-line{gap:6px;flex-wrap:nowrap;min-width:0}
+.name-line b{font-size:20px;line-height:1.15;max-width:130px;flex-shrink:1;letter-spacing:-.4px}
+.name-line .seat-dot{width:13px;height:13px;background:linear-gradient(#ffffff38,#0000000d),var(--seat);box-shadow:inset 0 1px 2px #ffffffa6,0 1px 2px #224e7f1a}
+.name-line .type-badge{font-size:8px;padding:2px 6px;line-height:1.1;flex-shrink:0;color:#2a58a3;border-color:#bbd3f6;background:#eaf4ff}
+.player-info small{font-size:10px;line-height:1.3;color:#315a94;letter-spacing:0}
+.player-row.active .player-info small{padding-right:80px}
+.current-badge{top:auto;bottom:10px;right:10px;padding:4px 7px;font-size:7px;line-height:1.1;border-radius:10px;background:linear-gradient(#419cff,#126ff6);box-shadow:inset 0 1px 0 #9acdff,0 2px 3px #316caf1c}
+.turn-panel{flex:1 0 auto;min-height:265px;max-height:355px;border-radius:21px;padding:16px 14px 15px;grid-template-rows:auto minmax(95px,1fr) auto auto auto;background:radial-gradient(ellipse at 42% 45%,#fff 0%,#e4f5ff 53%,#c9e5ff 100%);border:1px solid #9fcaf4;box-shadow:inset 0 1px 1px #fff,0 3px 5px #3f86c41c;overflow:hidden}
+.turn-title{gap:8px;align-items:center;min-width:0}
+.turn-title b{font-size:24px;letter-spacing:-.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.turn-title b:before{width:15px;height:15px;margin-right:7px;box-shadow:inset 0 2px 2px #ffffff7f,0 1px 2px #126be333}
+.turn-title span{flex-shrink:0;font-size:12px;color:#e04b58;border:1px solid #d5e7fb;padding:6px 9px;background:linear-gradient(#fff,#f8fcff);border-radius:12px;box-shadow:0 3px 4px #357db31c}
+.dice-stage{min-height:115px;margin:1px -5px 0;mask-image:none;background:radial-gradient(ellipse at 50% 57%,#fff9 0%,#fff0 57%),repeating-conic-gradient(from 7deg at 50% 51%,transparent 0 16deg,#ffffff6b 16deg 20deg,transparent 20deg 44deg)}
+.dice{width:98px;height:98px;border-radius:23px;transform:rotate(-12deg);border:2px solid #fff;background:radial-gradient(ellipse at 20% 15%,#fff 0%,#fff 30%,#edf2ff 75%,#d5def2 100%);box-shadow:5px 6px 0 #d0daf0,9px 11px 0 #a9bcdd,10px 14px 0 #8eacd2,0 22px 17px #457bb432,inset -3px -3px 7px #a8bfe23d}
+.dice .pip{width:18px;height:18px;background:radial-gradient(circle at 48% 75%,#378bff,#1462ef 58%,#0649b2);box-shadow:inset 1px 3px 3px #06318099,0 1px 0 #ffffffde}
+.dice-shadow{bottom:5px;width:115px;height:16px;background:#5079a32b;filter:blur(4px)}
+#action-hint{font-size:13px;line-height:1.3;margin:10px 0 11px;color:#153d8c;min-height:18px}
+.roll-button{min-height:53px;padding:11px;border-radius:15px;font-size:22px;line-height:1.2;color:#fff;letter-spacing:.2px;background:linear-gradient(#43a2ff 0%,#2188ff 38%,#0870f4 100%);border:2px solid #8bc6ff;box-shadow:inset 0 2px 1px #b0deff,0 4px 0 #145ab7,0 6px 8px #3476b52e;text-shadow:0 1px 1px #0e5dcc4d}
+.roll-button:disabled{background:linear-gradient(#adc4e1,#8aa9d2);border-color:#c1d4ed;box-shadow:inset 0 2px 1px #e0ecf7,0 4px 0 #7798c4;color:#f5f9ff;text-shadow:none}
+#piece-buttons{margin-bottom:10px}
+#piece-buttons button{padding:9px 6px;font-size:12px;border-radius:11px;background:linear-gradient(#fff,#deefff);border-color:#90bff7;box-shadow:inset 0 1px 0 #fff,0 3px 0 #a6c8e9}
+.reactions{gap:9px;flex:none}
+.reactions button{padding:8px 0;min-height:48px;border-radius:16px;background:linear-gradient(#fff,#ecf6ff);border-color:#c9def7;box-shadow:inset 0 1px #fff,0 3px 0 #c5ddf3,0 4px 4px #5793c510;font-size:26px;line-height:1}
+.aside-foot{flex:none;min-height:17px;align-items:center;font-size:8px;letter-spacing:.2px;color:#4f7ca8}
+.aside-foot button{font-size:10px;padding:4px}
+.board-top{top:10px}
+.board-top .pill,.board-tip{backdrop-filter:blur(5px);box-shadow:0 2px 5px #144e8020}
+.board-bottom{bottom:13px}
+.demo-button{box-shadow:inset 0 1px 0 #fff,0 3px 0 #a6cce8,0 4px 5px #275c8e24;font-size:10px}
+#toast{font-size:16px;border-radius:17px;background:linear-gradient(#fff,#e7f2ff);box-shadow:inset 0 1px #fff,0 5px 12px #2357842e}
+
+@media(min-width:1600px){
+ aside{padding:18px;gap:12px}
+ .crew-panel{padding:14px 12px 12px}
+ .crew-head h2{font-size:29px}
+ .player-row,.player-row.active{min-height:82px;padding:11px 13px;gap:12px}
+ .player-avatar{width:60px;height:60px}
+ .name-line b{font-size:23px;max-width:160px}
+ .name-line .type-badge{font-size:10px;padding:3px 7px}
+ .player-info small{font-size:12px}
+ .current-badge{font-size:8px;bottom:11px;right:12px}
+ .turn-panel{min-height:290px;max-height:365px;padding:17px 15px}
+ .turn-title b{font-size:28px}
+ .dice{width:107px;height:107px;border-radius:25px}
+ .dice .pip{width:20px;height:20px}
+ .reactions button{min-height:52px;font-size:29px}
+}
+@media(min-width:701px) and (max-height:820px){
+ aside{gap:9px;padding:11px}
+ .crew-panel{padding:11px 9px 9px;border-radius:19px}
+ .crew-head{padding-bottom:7px}
+ .crew-head h2{font-size:23px}
+ #players{gap:6px}
+ .player-row,.player-row.active{min-height:61px;padding:7px 9px;gap:9px;border-radius:14px}
+ .player-avatar{width:46px;height:46px}
+ .name-line b{font-size:18px}
+ .name-line .type-badge{font-size:7px;padding:2px 5px}
+ .current-badge{bottom:8px;font-size:6px}
+ .player-info{gap:4px}
+ .player-info small{font-size:9px}
+ .turn-panel{min-height:244px;max-height:290px;padding:12px}
+ .turn-title b{font-size:22px}
+ .dice-stage{min-height:100px}
+ .dice{width:84px;height:84px;border-radius:20px}
+ .dice .pip{width:15px;height:15px}
+ .roll-button{min-height:48px;font-size:20px;padding:10px}
+ #action-hint{font-size:12px;margin:7px 0 8px}
+ .reactions button{min-height:43px;padding:7px 0;font-size:24px}
+}
+@media(min-width:701px) and (max-width:1100px){
+ .play{grid-template-columns:minmax(0,1fr) 305px}
+ aside{padding:10px;gap:10px}
+ .crew-panel{padding:10px 8px}
+ .crew-head h2{font-size:23px}
+ .crew-head>span{font-size:9px}
+ .player-row,.player-row.active{padding:9px 8px;gap:8px}
+ .player-avatar{width:46px;height:46px}
+ .name-line b{font-size:18px;max-width:92px}
+ .name-line .type-badge{font-size:7px;padding:2px 4px}
+ .name-line .seat-dot{width:10px;height:10px}
+ .player-info small{font-size:9px}
+ .current-badge{font-size:6px;padding:4px 6px;bottom:10px;right:8px}
+ .player-row.active .player-info small{padding-right:61px}
+ .turn-panel{padding:13px 11px}
+ .turn-title b{font-size:22px}
+ .turn-title span{font-size:10px;padding:6px 7px}
+ .roll-button{font-size:20px}
+ .reactions{gap:7px}
+}
+@media(max-width:700px){
+ .play{padding:0;gap:0;height:auto;min-height:0}
+ aside{display:flex;gap:10px;padding:12px;border-left:0;border-top:2px solid #fff;overflow:visible}
+ .crew-panel{padding:11px 9px 9px;border-radius:18px}
+ .crew-head{padding:0 3px 8px}
+ .crew-head h2{font-size:20px}
+ .crew-head>span{font-size:10px}
+ #players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .player-row,.player-row.active{min-height:74px;padding:8px 7px;gap:7px;border-radius:13px}
+ .player-avatar{width:39px;height:39px;border-width:2px}
+ .player-info{gap:5px;min-width:0}
+ .name-line{gap:4px}
+ .name-line b{font-size:16px;max-width:90px;letter-spacing:-.3px}
+ .name-line .seat-dot{width:8px;height:8px}
+ .name-line .type-badge{display:none}
+ .player-info small{font-size:8px;line-height:1.2}
+ .player-row.active .player-info small{padding-right:0}
+ .current-badge{font-size:5px;padding:3px 4px;bottom:4px;right:5px}
+ .turn-panel{flex:none;min-height:180px;max-height:none;grid-template-columns:100px minmax(0,1fr);grid-template-rows:auto auto auto auto;padding:14px 12px;column-gap:12px;border-radius:18px}
+ .turn-title{grid-column:2;grid-row:1;gap:4px}
+ .turn-title b{font-size:19px;letter-spacing:-.6px}
+ .turn-title b:before{width:11px;height:11px;margin-right:5px}
+ .turn-title span{font-size:9px;padding:5px 6px;box-shadow:0 2px 3px #357db31c}
+ .dice-stage{grid-column:1;grid-row:1/5;min-height:135px;margin:0;background:radial-gradient(ellipse,#ffffffbd,transparent 68%)}
+ .dice{width:74px;height:74px;border-radius:18px;box-shadow:4px 5px 0 #d0daf0,7px 9px 0 #a9bcdd,8px 11px 0 #8eacd2,0 17px 13px #457bb432,inset -3px -3px 7px #a8bfe23d}
+ .dice .pip{width:13px;height:13px}
+ .dice-shadow{width:85px;bottom:10px}
+ #action-hint{font-size:11px;line-height:1.35;text-align:left;grid-column:2;margin:8px 0}
+ #piece-buttons{grid-column:2;margin-bottom:8px;gap:6px}
+ #piece-buttons button{font-size:10px;padding:8px 4px}
+ .roll-button{grid-column:2;min-height:46px;font-size:18px;padding:9px;border-radius:12px}
+ .reactions{width:100%;max-width:none;gap:9px}
+ .reactions button{min-height:44px;padding:8px 0;font-size:25px;border-radius:13px}
+ .aside-foot{font-size:7px}
+ .board-bottom{bottom:10px;left:10px;right:10px}
+ .demo-button{padding:7px 9px;font-size:9px}
+ #toast{font-size:12px;bottom:47px}
+}
