@@ -36,7 +36,8 @@ public class GuestSessionController {
         return Map.of("kind","guest");
     }
     public record Statistics(long points,long completedGames) {}
-    public record Recording(boolean member,int freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership) {}
+    public record Subscription(String id,String status,String validUntil,boolean testMode,boolean cancelScheduled) {}
+    public record Recording(boolean member,int freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions) {}
     public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording) {}
     @GetMapping("/me")
     public Me me(HttpServletRequest request) {
@@ -53,7 +54,8 @@ public class GuestSessionController {
             var today=java.time.LocalDate.now(java.time.ZoneOffset.UTC);
             boolean used=db.sql("select count(*) from score_daily_usage where account_id=:id and usage_day=:day").param("id",profile.id()).param("day",today).query(Long.class).single()>0;
             boolean testMember=db.sql("select count(*) from membership_entitlements where account_id=:id and status='TEST_ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
-            recording=new Recording(member,used?0:1,today.plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC).toString(),9,59,billing.allowed(profile.id()),billing.testMode(),testMember);
+            var subscriptions=db.sql("select subscription_id,status,valid_until,test_mode,cancel_scheduled from membership_entitlements where account_id=:id order by valid_until desc").param("id",profile.id()).query((rs,row)->new Subscription(rs.getString(1),rs.getString(2),rs.getTimestamp(3).toInstant().toString(),rs.getBoolean(4),rs.getBoolean(5))).list();
+            recording=new Recording(member,used?0:1,today.plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC).toString(),9,59,billing.allowed(profile.id()),billing.testMode(),testMember,subscriptions);
         }
         return new Me(principal==null?"none":profile==null?"guest":"account",principal==null?null:rooms.active(UUID.fromString(principal.toString())).orElse(null),profile,statistics,recording);
     }

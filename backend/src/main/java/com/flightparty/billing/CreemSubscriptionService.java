@@ -62,7 +62,9 @@ public class CreemSubscriptionService {
                 on conflict(subscription_id) do update set status=excluded.status,valid_until=excluded.valid_until,last_event_ms=excluded.last_event_ms,last_transaction_id=excluded.last_transaction_id
                 where membership_entitlements.last_event_ms<excluded.last_event_ms and membership_entitlements.status<>'REVOKED'
                 """).param("account",account).param("id",id).param("status",test?"TEST_ACTIVE":"ACTIVE").param("until",java.sql.Timestamp.from(until)).param("stamp",stamp).param("tx",sub.path("last_transaction").path("id").asText()).param("test",test).update();
-        }else if(existing.isPresent()&&!type.equals("subscription.active")&&!type.equals("subscription.scheduled_cancel")){
+        }else if(existing.isPresent()&&type.equals("subscription.scheduled_cancel")){
+            db.sql("update membership_entitlements set cancel_scheduled=true where subscription_id=:id").param("id",id).update();
+        }else if(existing.isPresent()&&!type.equals("subscription.active")){
             // scheduled cancellation retains the already-paid period. Unpaid/paused/canceled remove access.
             if(java.util.Set.of("subscription.canceled","subscription.unpaid","subscription.expired","subscription.paused").contains(type))
                 db.sql("update membership_entitlements set status='INACTIVE',last_event_ms=:stamp where subscription_id=:id and last_event_ms<:stamp and status<>'REVOKED'").param("stamp",stamp).param("id",id).update();

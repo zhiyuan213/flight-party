@@ -21,7 +21,7 @@ public class SecurityConfiguration {
     }
     @Bean
     SecurityFilterChain security(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/billing/checkout", "/api/billing/creem/webhook", "/api/auth/**", "/ws", "/api/csrf", "/api/session/guest", "/api/me", "/api/leaderboards", "/api/rooms", "/api/rooms/**", "/error").permitAll().anyRequest().denyAll())
+        return http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/billing/subscriptions/*/cancel", "/api/billing/checkout", "/api/billing/creem/webhook", "/api/auth/**", "/ws", "/api/csrf", "/api/session/guest", "/api/me", "/api/leaderboards", "/api/rooms", "/api/rooms/**", "/error").permitAll().anyRequest().denyAll())
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/billing/creem/webhook"))
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable())
