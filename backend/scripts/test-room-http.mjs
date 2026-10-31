@@ -3,7 +3,7 @@ import {randomUUID} from 'node:crypto';
 async function client() {
  let cookie='',csrf;
  async function request(path,body) {
-  const response=await fetch('http://127.0.0.1:8080/api'+path,{method:body===undefined?'GET':'POST',headers:{...(cookie?{cookie}:{}),...(csrf?{[csrf.headerName]:csrf.token}:{}),'content-type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
+  const response=await fetch((process.env.FLIGHTPARTY_TEST_URL || 'http://127.0.0.1:8080')+'/api'+path,{method:body===undefined?'GET':'POST',headers:{...(cookie?{cookie}:{}),...(csrf?{[csrf.headerName]:csrf.token}:{}),'content-type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
   const set=response.headers.get('set-cookie');if(set)cookie=set.split(';')[0];return response;
  }
  csrf=await (await request('/csrf')).json();assert.equal((await request('/session/guest',{})).status,200);return request;

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GuestSessionController {
     private static final String PRINCIPAL = "flightparty.principal";
     private final JdbcClient db;
+    @org.springframework.beans.factory.annotation.Autowired private com.flightparty.billing.BillingAccess billing;
     private final TransactionTemplate transaction;
     private final com.flightparty.room.RedisRoomStore rooms;
     public GuestSessionController(JdbcClient db, TransactionTemplate transaction,com.flightparty.room.RedisRoomStore rooms) { this.db = db; this.transaction = transaction;this.rooms=rooms; }
@@ -35,7 +36,7 @@ public class GuestSessionController {
         return Map.of("kind","guest");
     }
     public record Statistics(long points,long completedGames) {}
-    public record Recording(boolean member,int freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured) {}
+    public record Recording(boolean member,int freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership) {}
     public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording) {}
     @GetMapping("/me")
     public Me me(HttpServletRequest request) {
@@ -51,7 +52,8 @@ public class GuestSessionController {
             boolean member=db.sql("select count(*) from membership_entitlements where account_id=:id and status='ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
             var today=java.time.LocalDate.now(java.time.ZoneOffset.UTC);
             boolean used=db.sql("select count(*) from score_daily_usage where account_id=:id and usage_day=:day").param("id",profile.id()).param("day",today).query(Long.class).single()>0;
-            recording=new Recording(member,used?0:1,today.plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC).toString(),9,59,false);
+            boolean testMember=db.sql("select count(*) from membership_entitlements where account_id=:id and status='TEST_ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
+            recording=new Recording(member,used?0:1,today.plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC).toString(),9,59,billing.allowed(profile.id()),billing.testMode(),testMember);
         }
         return new Me(principal==null?"none":profile==null?"guest":"account",principal==null?null:rooms.active(UUID.fromString(principal.toString())).orElse(null),profile,statistics,recording);
     }

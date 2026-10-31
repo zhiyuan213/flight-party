@@ -27,7 +27,8 @@ export function bindLiveAccount(social,session){
   if(identity?.account){
    const section=document.createElement('section');section.className='account-quota';
    const status=document.createElement('p');status.textContent=identity.recording?.member?t('Membership active · Unlimited score records','会员有效 · 不限成绩记录次数'):t(`Free score records remaining today: ${identity.recording?.freeRemaining??1} (UTC reset)`,`今日剩余免费记录：${identity.recording?.freeRemaining??1} 次（UTC 日重置）`);section.append(status);
-   for(const label of [t('$9 USD / month','$9 美元 / 月'),t('$59 USD / year','$59 美元 / 年')]){const button=document.createElement('button');button.type='button';button.className='secondary';button.disabled=true;button.textContent=label+' · '+t('Creem setup pending','Creem 待配置');section.append(button);}
+   if(identity.recording?.testMembership){const badge=document.createElement('p');badge.textContent=t('Sandbox membership confirmed. This does not grant paid membership or change real statistics.','沙箱会员已确认，不授予正式会员，也不改变真实统计。');section.append(badge);}
+   for(const [plan,label] of [['MONTHLY',t('$9 USD / month','$9 美元 / 月')],['ANNUAL',t('$59 USD / year','$59 美元 / 年')]]){const button=document.createElement('button');button.type='button';button.className='secondary';button.disabled=busy||!identity.recording?.paymentConfigured;button.dataset.billingPlan=plan;button.textContent=label+' · '+(identity.recording?.paymentConfigured?(identity.recording.testMode?t('TEST payment','测试支付'):t('Subscribe','订阅')):t('Creem setup pending','Creem 待配置'));section.append(button);}
    dialog.append(section);
   }
  };
@@ -41,6 +42,8 @@ export function bindLiveAccount(social,session){
   finally{busy=false;social.renderDialog();}
  },true);
  dialog.addEventListener('click',async event=>{
+  const purchase=event.target.closest('[data-billing-plan]');
+  if(purchase){event.stopImmediatePropagation();if(busy||!identity?.recording?.paymentConfigured)return;busy=true;social.renderDialog();try{const result=await session.request('/api/billing/checkout',{requestId:crypto.randomUUID(),plan:purchase.dataset.billingPlan});location.assign(result.checkoutUrl);}catch(error){notice=t('Checkout could not be created. No membership was granted. Please try again later.','暂时无法创建支付订单，尚未授予会员，请稍后重试。');}finally{busy=false;social.renderDialog();}return;}
   if(!event.target.closest('[data-live-signout]'))return;event.stopImmediatePropagation();
   try{await session.request('/api/auth/logout',{});update(await session.request('/api/me'));if(session.room)session.connect();}
   catch(error){notice=t('Sign-out failed. Please retry.','退出失败，请重试。');social.renderDialog();}

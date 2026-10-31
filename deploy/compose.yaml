@@ -22,6 +22,8 @@ services:
       CREEM_ANNUAL_PRODUCT_ID: ${CREEM_ANNUAL_PRODUCT_ID:-}
       CREEM_SUCCESS_URL: ${CREEM_SUCCESS_URL:-}
       CREEM_LIVE: ${CREEM_LIVE:-false}
+      CREEM_CHECKOUT_ENABLED: ${CREEM_CHECKOUT_ENABLED:-false}
+      CREEM_TEST_ACCOUNTS: ${CREEM_TEST_ACCOUNTS:-}
     depends_on:
       postgres:
         condition: service_healthy

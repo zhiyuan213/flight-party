@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-const origin='http://127.0.0.1:8081';
+const origin=process.env.FLIGHTPARTY_TEST_URL || 'http://127.0.0.1:8081';
 const signed=process.argv.includes('--signed');
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function client(){

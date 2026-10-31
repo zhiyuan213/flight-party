@@ -15,9 +15,9 @@ import tools.jackson.databind.json.JsonMapper;
 /** Verified inbox only. Receiving an event does not grant membership. */
 @RestController
 public class CreemWebhookController {
-    private final JdbcClient db;private final String secret;
+    private final JdbcClient db;private final String secret;private final CreemSubscriptionService subscriptions;
     private final JsonMapper json=JsonMapper.builder().build();
-    public CreemWebhookController(JdbcClient db,@Value("${CREEM_WEBHOOK_SECRET:}")String secret){this.db=db;this.secret=secret;}
+    public CreemWebhookController(JdbcClient db,@Value("${CREEM_WEBHOOK_SECRET:}")String secret,CreemSubscriptionService subscriptions){this.db=db;this.secret=secret;this.subscriptions=subscriptions;}
     @PostMapping("/api/billing/creem/webhook")
     public Map<String,String> receive(HttpServletRequest request)throws Exception{
         if(secret.isBlank())throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"billing not configured");
@@ -34,6 +34,7 @@ public class CreemWebhookController {
                 .param("id",id).param("type",type).param("hash",hash).param("payload",new String(raw,StandardCharsets.UTF_8)).update();
         String stored=db.sql("select payload_hash from creem_webhook_inbox where event_id=:id").param("id",id).query(String.class).single();
         if(!hash.equals(stored))throw new ResponseStatusException(HttpStatus.CONFLICT,"event content conflict");
+        subscriptions.apply(node);
         return Map.of("status","received");
     }
 }

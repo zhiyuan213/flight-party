@@ -15,10 +15,11 @@ import tools.jackson.databind.json.JsonMapper;
 
 @RestController
 public class CreemCheckoutController {
+    private final BillingAccess access;
     private final JdbcClient db;private final String key,monthly,annual,success;private final boolean live;
     private final HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private final JsonMapper json=JsonMapper.builder().build();
-    public CreemCheckoutController(JdbcClient db,@Value("${CREEM_API_KEY:}")String key,@Value("${CREEM_MONTHLY_PRODUCT_ID:}")String monthly,@Value("${CREEM_ANNUAL_PRODUCT_ID:}")String annual,@Value("${CREEM_SUCCESS_URL:}")String success,@Value("${CREEM_LIVE:false}")boolean live){this.db=db;this.key=key;this.monthly=monthly;this.annual=annual;this.success=success;this.live=live;}
+    public CreemCheckoutController(JdbcClient db,@Value("${CREEM_API_KEY:}")String key,@Value("${CREEM_MONTHLY_PRODUCT_ID:}")String monthly,@Value("${CREEM_ANNUAL_PRODUCT_ID:}")String annual,@Value("${CREEM_SUCCESS_URL:}")String success,@Value("${CREEM_LIVE:false}")boolean live,BillingAccess access){this.db=db;this.key=key;this.monthly=monthly;this.annual=annual;this.success=success;this.live=live;this.access=access;}
     public record Input(UUID requestId,String plan) {}
     public record Checkout(String checkoutUrl) {}
     @PostMapping("/api/billing/checkout")
@@ -29,6 +30,7 @@ public class CreemCheckoutController {
         String product=switch(input.plan()==null?"":input.plan()){case "MONTHLY"->monthly;case "ANNUAL"->annual;default->throw new ResponseStatusException(HttpStatus.BAD_REQUEST);};
         if(key.isBlank()||product.isBlank()||!success.startsWith("https://"))throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"billing not configured");
         var owner=UUID.fromString(account.toString());
+        if(!access.allowed(owner))throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"billing not enabled for this account");
         var existing=db.sql("select account_id,plan,checkout_url from billing_checkout_requests where id=:id").param("id",input.requestId()).query((rs,row)->new Existing(rs.getObject(1,UUID.class),rs.getString(2),rs.getString(3))).optional();
         if(existing.isPresent()){
             var old=existing.get();if(!old.account().equals(owner)||!old.plan().equals(input.plan()))throw new ResponseStatusException(HttpStatus.CONFLICT);
@@ -36,7 +38,7 @@ public class CreemCheckoutController {
             return new Checkout(old.url());
         }
         db.sql("insert into billing_checkout_requests(id,account_id,plan,product_id) values (:id,:account,:plan,:product)").param("id",input.requestId()).param("account",owner).param("plan",input.plan()).param("product",product).update();
-        String body=json.writeValueAsString(Map.of("product_id",product,"request_id",input.requestId().toString(),"success_url",success));
+        String body=json.writeValueAsString(Map.of("product_id",product,"request_id",input.requestId().toString(),"success_url",success,"metadata",Map.of("joyflock_request_id",input.requestId().toString())));
         var response=http.send(HttpRequest.newBuilder(URI.create(live?"https://api.creem.io/v1/checkouts":"https://test-api.creem.io/v1/checkouts")).timeout(Duration.ofSeconds(20)).header("x-api-key",key).header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(body)).build(),HttpResponse.BodyHandlers.ofString());
         if(response.statusCode()<200||response.statusCode()>=300)throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"checkout provider unavailable");
         var result=json.readTree(response.body());String url=result.path("checkout_url").asText(),id=result.path("id").asText();
