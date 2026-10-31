@@ -1,25 +1,13 @@
 // v0.7.2 presentation prototype. No network, account storage, password storage, or real quotas.
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const SAMPLE_PILOTS=Object.freeze([
- {name:'SkyRiley',points:439,games:302,avatar:0},
- {name:'LunaPilot',points:397,games:285,avatar:1},
- {name:'OrangeOtto',points:383,games:411,avatar:1},
- {name:'JetJules',points:355,games:260,avatar:0},
- {name:'CocoCloud',points:332,games:379,avatar:3},
- {name:'AeroMilo',points:318,games:239,avatar:2},
- {name:'NovaWings',points:286,games:388,avatar:1},
- {name:'SunnySkye',points:274,games:224,avatar:3},
- {name:'CaptainFinn',points:263,games:310,avatar:0},
- {name:'BlueBean',points:246,games:241,avatar:2}
-]);
-const MODES=['guest','free','member','exhausted'];
+const MODES=['guest','free'];
 export class SocialUI{
  constructor({getLanguage=()=> 'en',onChange=()=>{}}={}){
   this.getLanguage=getLanguage;this.onChange=onChange;this.mode='guest';this.displayName='You';this.boardTab='points';this.authTab='login';this._takeoverPreview=false;this.initialized=false;this.result=null;this.showResultPreview=false;this.authNotice='';this.roomTab='quick';this.roomState='waiting';this.roomNotice='';this.roomDeadline=0;this.roomTimer=null;this.friendSample=false;this.friendReady=false;this.youReady=false;this.fullSample=false;
  }
  t(en,zh){return this.getLanguage()==='zh'?zh:en;}
  get profile(){return this.viewer;}
- get viewer(){const isGuest=this.mode==='guest',isMember=this.mode==='member';return Object.freeze({mode:this.mode,name:this.displayName,displayName:this.displayName,isGuest,isMember,authenticated:!isGuest,preview:true,points:isGuest?null:246,games:isGuest?null:240,dailyLimit:isMember?null:20,dailyRemaining:isMember?null:this.mode==='exhausted'?0:14});}
+ get viewer(){const isGuest=this.mode==='guest',isMember=this.mode==='member';return Object.freeze({mode:this.mode,name:this.displayName,displayName:this.displayName,isGuest,isMember,authenticated:!isGuest,preview:true,points:isGuest?null:246,games:isGuest?null:240,dailyLimit:null,dailyRemaining:null});}
  get takeoverPreview(){return this._takeoverPreview;}
  init(){
   if(this.initialized)return this;this.initialized=true;
@@ -66,26 +54,41 @@ export class SocialUI{
  renderAccountButton(){const guest=this.viewer.isGuest;this.accountButton.innerHTML=`<span class="account-button-avatar avatar-0" aria-hidden="true">${guest?'':this.mode==='member'?'★':''}</span><span class="account-button-label">${guest?this.t('Sign in','登录'):esc(this.displayName)}</span><span class="account-button-mode">${this.t('PREVIEW','预览')}</span>`;this.accountButton.setAttribute('aria-label',this.t('Account interface preview','账号界面预览'));}
  renderHomeAccess(){
   const el=document.getElementById('home-access'),v=this.viewer;
-  const title=v.isGuest?this.t('Play as a guest','匿名也能畅玩'):v.isMember?this.t('Member preview','会员预览'):this.mode==='exhausted'?this.t('Daily limit reached','今日额度已用完'):this.t('Your next flight awaits','下一班，即刻启程');
-  const detail=v.isGuest?this.t('Play without signing in. Signed-in results save automatically. · 20/day sample allowance','匿名可直接玩，登录后成绩自动保存 · 每日 20 局权益示例'):v.isMember?this.t('Unlimited games · Sample membership status','不限局数 · 会员状态示例'):this.mode==='exhausted'?this.t('0 / 20 games left today · Sample quota state','今日剩余 0 / 20 局 · 额度状态示例'):this.t('14 / 20 games left today · Sample account status','今日剩余 14 / 20 局 · 账号状态示例');
+  const title=this.t('Unlimited flights for everyone','所有玩家不限次数');
+  const detail=this.t('Play without limits. Only signed-in games add account statistics.','不限次数游玩，只有登录后参与的对局累计账号成绩。');
   el.innerHTML=`<span class="access-symbol" aria-hidden="true">${v.isGuest?'✈':v.isMember?'★':this.mode==='exhausted'?'◷':'✓'}</span><div><b>${title}</b><span>${detail}</span></div><button type="button" id="home-account-open">${this.t('Account','查看账号')} <span aria-hidden="true">↗</span></button>`;
   el.querySelector('button').addEventListener('click',()=>this.open());
-  document.getElementById('social-preview-note').textContent=this.t('LOCAL UI PREVIEW · Accounts, score saving, matchmaking and invitations are not connected. Ranking and quota data are examples.','本地界面预览 · 账号、成绩保存、匹配与邀请尚未接入，排行榜和额度均为示例。');
+  document.getElementById('social-preview-note').textContent=this.t('Unlimited guest play. Email accounts and server results are connected. Google/GitHub sign-in is not configured.','匿名不限次数游玩，邮箱账号和服务器成绩已接入；Google/GitHub 登录暂未配置。');
   document.getElementById('quick-match-preview').innerHTML=this.t('Quick match <span>↗</span>','快速匹配 <span>↗</span>');
   const join=document.getElementById('join-preview');if(join)join.textContent=this.t('Join with a room code','输入房码加入');
   const invite=document.getElementById('invite-preview');if(invite)invite.textContent=this.t('Create a friend room · Preview','创建好友房 · 预览');
  }
 
  renderLeaderboard(){
-  const tab=this.boardTab==='games'?'games':'points',rows=[...SAMPLE_PILOTS].sort((a,b)=>b[tab]-a[tab]);
+  const tab=this.boardTab==='games'?'games':'points';
+  this.liveBoards??={};this.liveBoardStatus??={};
+  if(!this.liveBoardStatus[tab])this.loadLeaderboard(tab);
+  const rows=this.liveBoards[tab]||[];
   this.leaderboard.innerHTML=`<div class="leaderboard-heading"><div><span class="eyebrow">${this.t('A LITTLE FRIENDLY COMPETITION','和飞行伙伴一起，争取好成绩')}</span><h2>${this.t('Pilot leaderboard','飞行员排行榜')}</h2></div><span class="leaderboard-trophy" aria-hidden="true">🏆</span></div><div class="leaderboard-meta"><span class="sample-pill">${this.t('SAMPLE DATA','示例数据')}</span><span>${this.t('TOP 10 · All time','TOP 10 · 总榜')}</span></div><div class="leaderboard-tabs" role="tablist" aria-label="${this.t('Ranking type','排行榜类型')}"><button type="button" id="lb-tab-points" role="tab" aria-controls="lb-panel" aria-selected="${tab==='points'}" data-leaderboard-tab="points">${this.t('Points','积分榜')}</button><button type="button" id="lb-tab-games" role="tab" aria-controls="lb-panel" aria-selected="${tab==='games'}" data-leaderboard-tab="games">${this.t('Games played','对局数榜')}</button></div><div id="lb-panel" role="tabpanel" aria-labelledby="lb-tab-${tab}"><div class="leaderboard-columns"><span>${this.t('PILOT','飞行员')}</span><span>${this.t('POINTS','积分')}</span><span>${this.t('GAMES','已完成局数')}</span></div><ol class="leaderboard-list">${rows.map((p,i)=>`<li class="leaderboard-row ${i<3?'podium podium-'+i:''}"><span class="leaderboard-rank">${String(i+1).padStart(2,'0')}</span><span class="leaderboard-avatar avatar-${p.avatar}" aria-hidden="true"></span><b>${esc(p.name)}</b><strong class="${tab==='points'?'ranking-value-active':''}">${p.points}</strong><strong class="${tab==='games'?'ranking-value-active':''}">${p.games}</strong></li>`).join('')}</ol></div><p class="leaderboard-foot">${this.t('Signed-in results save automatically. Guest games are not recorded.','登录后自动保存成绩；匿名对局不记入排行榜。')}</p>`;
+  this.leaderboard.querySelector('.sample-pill').textContent=this.t('SERVER RESULTS','服务器成绩');
+  if(!rows.length){const note=document.createElement('p');note.className='leaderboard-foot';note.setAttribute('role','status');note.textContent=this.liveBoardStatus[tab]==='error'?this.t('Leaderboard unavailable. Try again later.','排行榜暂不可用，请稍后重试。'):this.liveBoardStatus[tab]==='loaded'?this.t('No completed signed-in games yet.','暂无已完成的登录账号对局。'):this.t('Loading leaderboard…','正在读取排行榜…');this.leaderboard.querySelector('#lb-panel').append(note);}
   const tabs=[...this.leaderboard.querySelectorAll('[role=tab]')];tabs.forEach(button=>button.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'points':e.key==='End'?'games':this.boardTab==='points'?'games':'points';this.boardTab=next;this.renderLeaderboard();this.leaderboard.querySelector(`[data-leaderboard-tab="${next}"]`).focus();}));
+ }
+ async loadLeaderboard(tab){
+  this.liveBoardStatus[tab]='loading';
+  try{
+   const response=await fetch(`/api/leaderboards?type=${tab}`,{credentials:'same-origin',signal:AbortSignal.timeout(10000)});
+   if(!response.ok)throw new Error('leaderboard unavailable');
+   const values=await response.json();if(!Array.isArray(values))throw new Error('invalid leaderboard');
+   this.liveBoards[tab]=values.slice(0,10).map((p,i)=>({name:p.displayName,points:p.points,games:p.completedGames,avatar:i%4}));this.liveBoardStatus[tab]='loaded';
+  }catch(error){this.liveBoards[tab]=[];this.liveBoardStatus[tab]='error';}
+  if(this.boardTab===tab)this.renderLeaderboard();
  }
  renderDialog(){
   const openDetails=this.dialog.querySelector('#account-preview-states')?.open??false,v=this.viewer,register=this.authTab==='register';
   const modeLabel={guest:this.t('Guest','匿名'),free:this.t('Free account','普通账号'),member:this.t('Member','会员'),exhausted:this.t('Limit reached','额度用尽')};
-  const quota=v.isGuest?this.t('Play without signing in','无需登录，也能开始游戏'):v.isMember?this.t('Unlimited flights','无限畅玩'):this.t(`${v.dailyRemaining} / 20 games left today`,`今日剩余 ${v.dailyRemaining} / 20 局`);
-  const quotaDetail=v.isGuest?this.t('Guest and free players: 20 games/day as an entitlement example. Signed-in results will save automatically.','匿名和普通玩家每日 20 局的权益示例；登录后将自动保存成绩。'):v.isMember?this.t('Membership interface only. No subscription or payment is connected.','仅预览会员界面，尚未接入订阅或支付。'):this.mode==='exhausted'?this.t('Example: today’s 20 starts have been used. This preview does not enforce a quota.','示例：今日 20 次开局额度已用完。本预览不会实际限制开局。'):this.t('Example daily allowance: 20 starts, 14 remaining. No quota is enforced in this preview.','每日 20 次开局、剩余 14 次的示例。本预览不实际扣减额度。');
+  const quota=this.t('Unlimited flights for everyone','所有玩家不限次数');
+  const quotaDetail=this.t('Only signed-in games add account statistics. Guest results are not claimed later.','仅登录后参与的对局累计账号成绩，匿名成绩不能事后认领。');
   this.dialog.innerHTML=`<button type="button" class="close" data-account-close aria-label="${this.t('Close account preview','关闭账号预览')}">×</button><div class="account-dialog-heading"><span class="account-dialog-avatar avatar-0" aria-hidden="true"></span><div><span class="sample-pill">${this.t('UI PREVIEW','界面预览')}</span><h2>${v.isGuest?this.t('Keep your good flights','保存精彩战绩'):esc(this.displayName)}</h2><p>${v.isGuest?this.t('Signed-in flights count automatically.','登录后，对局成绩自动记录。'):modeLabel[this.mode]}</p></div></div><div class="account-quota ${this.mode==='exhausted'?'quota-empty':''}"><span class="quota-icon" aria-hidden="true">${v.isMember?'★':v.isGuest?'✈':'◷'}</span><div><b>${quota}</b><p>${quotaDetail}</p></div></div>${this.authNotice?`<p class="social-action-notice" role="status">${esc(this.authNotice)}</p>`:''}${v.isGuest?`<div class="auth-tabs" role="tablist" aria-label="${this.t('Account form','账号表单')}"><button type="button" role="tab" aria-selected="${!register}" data-auth-tab="login">${this.t('Sign in','登录')}</button><button type="button" role="tab" aria-selected="${register}" data-auth-tab="register">${this.t('Create account','注册')}</button></div><div class="oauth-preview-buttons"><button type="button" data-oauth-preview="Google"><b aria-hidden="true">G</b>${this.t('Continue with Google','使用 Google 登录')}</button><button type="button" data-oauth-preview="GitHub"><b aria-hidden="true">GH</b>${this.t('Continue with GitHub','使用 GitHub 登录')}</button></div><div class="auth-divider"><span>${this.t('or use email + password','或使用邮箱 + 密码')}</span></div><form id="account-preview-form" autocomplete="off">${register?`<label for="preview-name">${this.t('Pilot name','飞行员昵称')}</label><input id="preview-name" maxlength="18" placeholder="${this.t('Your call sign','你的昵称')}" autocomplete="off">`:''}<label for="preview-email">${this.t('Email address','邮箱地址')}</label><input id="preview-email" type="email" placeholder="pilot@example.com" autocomplete="off"><label for="preview-password">${this.t('Password','密码')}</label><input id="preview-password" type="password" minlength="8" placeholder="${this.t('At least 8 characters, or leave blank for preview','至少 8 位，或留空预览')}" autocomplete="off">${register?`<label for="preview-password-confirm">${this.t('Confirm password','确认密码')}</label><input id="preview-password-confirm" type="password" minlength="8" placeholder="${this.t('Repeat password, or leave blank','再次输入密码，或留空预览')}" autocomplete="off">`:''}<p class="auth-preview-disclosure">${this.t('Email + password, with no verification-code step. All sign-in methods are UI previews: no data is sent or account created; passwords are cleared and never stored. Leave fields blank to inspect the next screen.','邮箱 + 密码，无验证码步骤。所有登录方式仅为界面预览，不发送数据或创建账号，密码会清空且不保存。可留空查看后续界面。')}</p><button class="primary auth-submit" type="submit">${register?this.t('Preview account','预览注册后界面'):this.t('Preview sign-in','预览登录后界面')} <span aria-hidden="true">→</span></button></form>`:`<div class="account-sample-stats"><div><strong>246</strong><span>${this.t('Sample points','示例积分')}</span></div><div><strong>240</strong><span>${this.t('Sample completed games','示例已完成局数')}</span></div></div><p class="auth-preview-disclosure">${this.t('Sample profile only. These values are not earned from your games and disappear on reload.','仅为示例账号，数值不来自实际对局，刷新后恢复匿名预览。')}</p><div class="account-profile-actions"><button type="button" class="primary" data-account-close>${this.t('Back to the skies','返回游戏')} <span aria-hidden="true">→</span></button><button type="button" class="text-button" data-preview-signout>${this.t('Preview sign-out','预览退出账号')}</button></div>`}<details id="account-preview-states" ${openDetails?'open':''}><summary>${this.t('Preview design states','预览不同设计状态')}</summary><div class="preview-state-buttons">${MODES.map(mode=>`<button type="button" data-preview-mode="${mode}" aria-pressed="${this.mode===mode}">${modeLabel[mode]}</button>`).join('')}</div><label class="takeover-preview-option"><input id="takeover-preview" type="checkbox" ${this.takeoverPreview?'checked':''}><span>${this.t('Disconnected · computer takeover','断线 · 电脑托管')}<small>${this.t('Visual state only; seat control stays unchanged.','仅预览状态，不改变席位控制方式。')}</small></span></label><button type="button" class="result-design-preview-button" data-preview-result>${this.t('Preview result status','预览结算状态')}</button>${this.showResultPreview?`<div class="result-save-preview">${this.resultCard({rank:2,name:'You'},true)}</div>`:''}</details>`;
  }
  setResult(result){

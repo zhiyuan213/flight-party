@@ -5,6 +5,9 @@ import {CanvasBoard} from './fallback.js';
 import {Die3D} from './die3d.js';
 import {SocialUI} from './social-ui.js';
 import {ReactionPreview} from './reaction-preview.js';
+import {OnlineSession} from './online-session.js';
+import {bindLiveRooms} from './live-room-ui.js';
+import {bindLiveAccount} from './live-account-ui.js';
 const $=id=>document.getElementById(id),fx=new AudioFX();
 let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
 let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,visual:'illustrated',...prefs};
@@ -14,6 +17,40 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const t=(en,zh)=>prefs.lang==='zh'?zh:en;
 const social=new SocialUI({getLanguage:()=>prefs.lang,onChange:()=>{if(game&&screen==='play')render();}});
 const reactions=new ReactionPreview({getLanguage:()=>prefs.lang,reduced:()=>prefs.reduced});
+const onlineSession=new OnlineSession();
+let onlineMode=false,onlineRoomId=null,onlineVersion=-1,onlinePending=null,onlineApplying=false,onlineTimer=null;
+function authoritativeView(state,room){
+ const view=Object.create(Game.prototype);
+ view.players=state.players.map(p=>({color:p.seat,pieces:[...p.planes],rank:p.rank,name:p.seat===room.yourSeat?'You':`Pilot ${p.seat+1}`,type:p.seat===room.yourSeat?'human':room.seats.find(s=>s.index===p.seat)?.bot?'bot':'remote',bumps:0,rolls:0}));
+ view.active=view.players;view.turn=state.turn;view.phase=state.phase.toLowerCase();view.die=state.die;view.ranking=[...state.ranking];view.round=1;view.party=false;view.event=null;return view;
+}
+async function applyOnlineSnapshot(message){
+ if(!message.game?.players||!['PLAYING','SETTLED'].includes(message.room.phase))return;
+ if(onlineRoomId===message.room.roomId&&Number(message.gameVersion)<=onlineVersion)return;
+ const initial=!onlineMode||onlineRoomId!==message.room.roomId;
+ const previous=initial?null:game,next=authoritativeView(message.game,message.room);
+ onlineVersion=Number(message.gameVersion);onlineRoomId=message.room.roomId;
+ if(initial){cancel();onlineMode=true;party=false;social.roomDialog.close();show('play');if(!ensureScene())return;game=next;scene.setGame(game);drawDie(next.die||1,!!next.die);}
+ game=next;
+ const generation=epoch;
+ if(previous&&next.phase==='choose'&&(previous.phase!=='choose'||previous.turn!==next.turn)&&Date.now()<Number(message.busyUntil)){
+  diceBusy=true;render();fx.roll();await die.rollTo(next.die);if(generation!==epoch)return;diceBusy=false;drawDie(next.die);
+ } else if(previous&&next.phase==='animating'&&previous.phase!=='animating'&&Date.now()<Number(message.busyUntil)){
+  const color=previous.turn,piece=previous.players[color].pieces.findIndex((p,i)=>p!==next.players[color].pieces[i]);
+  if(piece>=0){const captured=[];for(const enemy of previous.active)if(enemy.color!==color)enemy.pieces.forEach((p,i)=>{if(p>=0&&next.players[enemy.color].pieces[i]===-1)captured.push({color:enemy.color,piece:i,from:p});});
+   diceBusy=true;render();fx.move();await scene.move({color,piece,from:previous.players[color].pieces[piece],to:next.players[color].pieces[piece],captured},()=>fx.bump());if(generation!==epoch)return;diceBusy=false;fx.land();}
+ }else drawDie(next.die||1,!!next.die);
+ scene.sync(game);render();$('demo').disabled=true;$('record-demo').disabled=true;
+ clearInterval(onlineTimer);const offset=Date.parse(message.room.serverNow)-Date.now();
+ onlineTimer=setInterval(()=>{seconds=Math.max(0,Math.ceil((Number(message.actionDeadline)-Date.now()-offset)/1000));updateClock(Number(message.busyUntil)>Date.now()+offset);},250);
+ if(game.phase==='over'){clearInterval(onlineTimer);finish();}
+}
+onlineSession.addEventListener('snapshot',async event=>{
+ onlinePending=event.detail;if(onlineApplying)return;onlineApplying=true;
+ try{while(onlinePending){const message=onlinePending;onlinePending=null;await applyOnlineSnapshot(message);}}
+ catch(error){toast(t('Unable to sync the flight. Reconnecting…','同步失败，正在重连…'));onlineSession.connect();}
+ finally{onlineApplying=false;}
+});
 const later=(fn,ms)=>{const id=setTimeout(()=>{jobs.delete(id);fn();},ms);jobs.add(id);return id;};
 function cancel(){reactions.clear();epoch++;die.cancel();diceBusy=false;syncDieLabel();$('demo-status').classList.add('hidden');clearInterval(clock);jobs.forEach(clearTimeout);jobs.clear();}
 function show(id){screen=id;if(id!=='play')reactions.clear();for(const node of document.querySelectorAll('.screen'))node.classList.toggle('hidden',node.id!==id);$('mode-label').textContent=id==='play'?(party?'PARTY MODE':'CLASSIC MODE'):'THE FRIENDLY SKIES';if(id==='play')requestAnimationFrame(()=>{scene?.resize();die.resize();});}
@@ -29,7 +66,7 @@ function lobby(){cancel();show('lobby');renderSeats();}
 $('create').onclick=()=>social.openRoom('invite');$('practice').onclick=()=>{seats=[{name:'You',type:'human'},{name:'Alex',type:'bot'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}];lobby();};$('back-home').onclick=()=>show('welcome');$('classic-mode').onclick=()=>{party=false;renderSeats();};$('party-mode').onclick=()=>{party=true;renderSeats();};
 document.addEventListener('flight-party-practice-preview',()=>{seats=[{name:social.viewer.name||'You',type:'human'},{name:'Alex',type:'bot'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}];party=false;start();});
 function ensureScene(){if(scene)return true;try{scene=prefs.visual==='three'?new BoardScene($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced}):new CanvasBoard($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced});$('loading').remove();return true;}catch(e){console.warn('WebGL unavailable; switching to compatibility rendering:',e.message);try{scene=new CanvasBoard($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced});$('loading').remove();toast(t('Compatibility mode. Enable WebGL for full 3D.','已启用兼容画面。开启 WebGL 可体验完整 3D。'));return true;}catch(error){console.error(error);$('loading').textContent=t('Unable to render the board. Please try an updated browser.','无法绘制棋盘，请尝试新版浏览器。');$('roll').disabled=true;$('demo').disabled=true;return false;}}}
-function start(){cancel();social.setResult(null);drawDie(1,false);game=new Game(seats.map((s,i)=>({...s,name:s.name.trim()||COLORS[i]})),{party});show('play');if(!ensureScene())return;scene.setGame(game);scene.resize();beginTurn();}
+function start(){onlineMode=false;onlineRoomId=null;onlineVersion=-1;clearInterval(onlineTimer);onlineSession.close();cancel();social.setResult(null);drawDie(1,false);game=new Game(seats.map((s,i)=>({...s,name:s.name.trim()||COLORS[i]})),{party});show('play');if(!ensureScene())return;scene.setGame(game);scene.resize();beginTurn();}
 $('start').onclick=start;$('rematch').onclick=start;$('edit-crew').onclick=lobby;$('camera-reset').onclick=()=>scene?.resize();
 function askLeave(){if(screen!=='play'){show('welcome');return;}$('confirm-dialog').showModal();}
 $('home-link').onclick=e=>{e.preventDefault();askLeave();};$('leave').onclick=askLeave;$('confirm-stay').onclick=()=>$('confirm-dialog').close();$('confirm-leave').onclick=()=>{$('confirm-dialog').close();cancel();show('welcome');};
@@ -55,7 +92,13 @@ function render(){const p=game.current;document.querySelector('.turn-panel').sty
 function updateClock(paused=false){$('timer').textContent=paused?t('Paused','已暂停'):`${seconds}s`;$('timer').classList.toggle('urgent',!paused&&seconds<=5);}
 function beginTurn(){render();seconds=15;updateClock();clearInterval(clock);clock=setInterval(()=>{if(screen!=='play'||diceBusy||game.phase==='animating'||game.phase==='vote'||document.querySelector('dialog[open]')||document.hidden){updateClock(true);return;}seconds--;updateClock();if(seconds<=0){clearInterval(clock);if(game.phase==='roll')roll(true);else if(game.phase==='choose')choose(bestMove());}},1000);if(game.current.type==='bot')later(()=>roll(true),850);}
 function bestMove(){const legal=game.legal();let best=legal[0],score=-Infinity;for(const i of legal){const dest=game.destination(i),tile=(dest+game.turn*13)%52;let value=dest*.2+(dest===FINISH?100:0)+(game.current.pieces[i]<0?4:0);if(dest<52&&tile%13!==0&&game.event!=='peace')for(const p of game.active)if(p!==game.current)for(const progress of p.pieces)if(progress>=0&&progress<52&&(progress+p.color*13)%52===tile)value+=30;if(value>score){best=i;score=value;}}return best;}
+async function choose(piece){
+ if(!onlineMode)return chooseLocal(piece);
+ if(!game||game.current.type!=='human'||game.phase!=='choose'||diceBusy)return;
+ try{await onlineSession.move(piece);}catch(error){toast(t('Move rejected. Waiting for server state.','移动未接受，等待服务器状态。'));}
+}
 async function roll(auto=false){
+ if(onlineMode){if(game?.current.type!=='human'||game.phase!=='roll'||diceBusy)return;try{await onlineSession.roll();}catch(error){toast(t('Roll rejected. Waiting for server state.','掷骰未接受，等待服务器状态。'));}return;}
  if(!game||screen!=='play'||diceBusy||game.phase!=='roll'||(!auto&&game.current.type!=='human'))return;
  fx.unlock();const id=epoch,result=game.roll();clearInterval(clock);diceBusy=true;syncDieLabel();render();updateClock(true);fx.roll();
  await die.rollTo(result);
@@ -64,16 +107,64 @@ async function roll(auto=false){
  clock=setInterval(()=>{if(screen!=='play'||game.phase!=='choose')return;if(document.hidden||document.querySelector('dialog[open]')){updateClock(true);return;}seconds--;updateClock();if(seconds<=0){clearInterval(clock);choose(bestMove());}},1000);
  if(game.current.type==='bot'||auto)later(()=>choose(bestMove()),650);
 }
-async function choose(piece){if(!game||screen!=='play'||diceBusy||game.phase!=='choose'||!game.legal().includes(piece))return;const id=epoch;clearInterval(clock);const result=game.move(piece);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t(`${game.players[result.color].name} bumped ${[...new Set(result.captured.map(v=>game.players[v.color].name))].join(' & ')}!`,`${game.players[result.color].name} 撞飞了 ${[...new Set(result.captured.map(v=>game.players[v.color].name))].join('、')}！`));});if(id!==epoch)return;fx.land();scene.sync(game);game.advance();if(game.phase==='over'){finish();return;}if(game.phase==='vote'){openVote();return;}beginTurn();}
+async function chooseLocal(piece){if(!game||screen!=='play'||diceBusy||game.phase!=='choose'||!game.legal().includes(piece))return;const id=epoch;clearInterval(clock);const result=game.move(piece);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t(`${game.players[result.color].name} bumped ${[...new Set(result.captured.map(v=>game.players[v.color].name))].join(' & ')}!`,`${game.players[result.color].name} 撞飞了 ${[...new Set(result.captured.map(v=>game.players[v.color].name))].join('、')}！`));});if(id!==epoch)return;fx.land();scene.sync(game);game.advance();if(game.phase==='over'){finish();return;}if(game.phase==='vote'){openVote();return;}beginTurn();}
 $('roll').onclick=()=>roll();
+function finish(){
+ social.liveResult=onlineMode?{status:'PENDING'}:null;finishLocal();if(!onlineMode)return;
+ const generation=epoch,roomId=onlineRoomId,panel=$('result-save-panel');
+ $('rematch').disabled=true;panel.classList.remove('hidden');
+ panel.textContent=t('Saving the server-verified result…','正在保存服务器确认的结果…');
+ async function check(){
+  if(generation!==epoch||!onlineMode||roomId!==onlineRoomId)return;
+  try{
+   const result=await onlineSession.result();
+   if(result.status==='COMMITTED'){
+    social.liveResult=result;
+    const identity=await onlineSession.request('/api/me');onlineSession.emit('identity',identity);
+    panel.textContent=t('Result confirmed. Only accounts signed in at match start receive cumulative statistics.','结果已确认。仅开局时登录的账号累计成绩。');
+    $('rankings').innerHTML=result.ranking.map((seat,i)=>`<div class="rank-row"><span class="rank-number">${i+1}</span><b>${esc(game.players[seat.seatIndex].name)}</b><small>${seat.pointsDelta>0?'+':''}${seat.pointsDelta} ${t('points this game','本局积分')}</small></div>`).join('');
+    if(!identity.activeRoomId){$('rematch').disabled=false;return;}
+   }
+  }catch(error){panel.textContent=t('Result confirmation pending. Retrying…','结果确认暂未完成，正在重试…');}
+  later(check,1000);
+ }
+ check();
+}
 function openVote(){clearInterval(clock);render();updateClock(true);votes={tailwind:0,peace:0};voteQueue=game.active.filter(p=>p.rank===null);voteIndex=0;$('vote-dialog').showModal();nextVote();}
 function nextVote(){if(voteIndex>=voteQueue.length){const result=votes.tailwind===votes.peace?(secureDie()>3?'tailwind':'peace'):votes.tailwind>votes.peace?'tailwind':'peace';game.applyEvent(result);$('vote-dialog').close();toast(result==='tailwind'?t('Tailwind! Every move gets +1.','顺风！本轮每次移动 +1。'):t('Peaceful skies! No bumps this round.','和平天空！本轮禁止撞机。'));beginTurn();return;}const p=voteQueue[voteIndex];$('voter-label').textContent=t(`${p.name}, your vote?`,`${p.name}，请选择你的投票`);$('votes-tailwind').textContent=t(`${votes.tailwind} votes`,`${votes.tailwind} 票`);$('votes-peace').textContent=t(`${votes.peace} votes`,`${votes.peace} 票`);document.querySelectorAll('[data-vote]').forEach(b=>b.disabled=p.type==='bot');if(p.type==='bot')later(()=>castVote(secureDie()>3?'tailwind':'peace'),450);}
 function castVote(event){votes[event]++;voteIndex++;nextVote();}document.querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>castVote(b.dataset.vote));$('vote-dialog').addEventListener('cancel',e=>e.preventDefault());
-function finish(){cancel();show('results');const localPlayer=game.active.find(p=>p.type==='human');social.setResult(localPlayer?{rank:localPlayer.rank,name:localPlayer.name}:null);fx.win();const winner=game.players[game.ranking[0]];$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);$('rankings').innerHTML=game.ranking.map((c,i)=>{const p=game.players[c];return `<div class="rank-row"><span class="rank-number">${String(i+1).padStart(2,'0')}</span><b style="color:#${PALETTE[c].toString(16).padStart(6,'0')}">${esc(p.name)}</b><small>${p.bumps} ${t('bumps','次撞机')} · ${p.rolls} ${t('rolls','次掷骰')}</small></div>`;}).join('');if(!prefs.reduced)for(let i=0;i<45;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background='#'+PALETTE[i%4].toString(16).padStart(6,'0');c.style.animationDelay=Math.random()*.7+'s';document.body.append(c);setTimeout(()=>c.remove(),4000);}}
+function finishLocal(){cancel();show('results');const localPlayer=game.active.find(p=>p.type==='human');social.setResult(localPlayer?{rank:localPlayer.rank,name:localPlayer.name}:null);fx.win();const winner=game.players[game.ranking[0]];$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);$('rankings').innerHTML=game.ranking.map((c,i)=>{const p=game.players[c];return `<div class="rank-row"><span class="rank-number">${String(i+1).padStart(2,'0')}</span><b style="color:#${PALETTE[c].toString(16).padStart(6,'0')}">${esc(p.name)}</b><small>${p.bumps} ${t('bumps','次撞机')} · ${p.rolls} ${t('rolls','次掷骰')}</small></div>`;}).join('');if(!prefs.reduced)for(let i=0;i<45;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background='#'+PALETTE[i%4].toString(16).padStart(6,'0');c.style.animationDelay=Math.random()*.7+'s';document.body.append(c);setTimeout(()=>c.remove(),4000);}}
 const pause=ms=>new Promise(r=>setTimeout(r,prefs.reduced?Math.min(ms,100):ms));
 async function demoFlight(){if(game.phase!=='roll'||game.current.type!=='human')return;cancel();const id=epoch,saved=game;const demo=new Game([{name:'You',type:'human'},{name:'Alex',type:'human'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}]);demo.players[0].pieces=[41,-1];demo.players[3].pieces=[6,-1];scene.setGame(demo);game=demo;game.phase='animating';render();updateClock(true);$('demo-status').classList.remove('hidden');await pause(650);if(epoch!==id)return;fx.unlock();await fx.ready;fx.roll();diceBusy=true;syncDieLabel();render();await die.rollTo(4);if(epoch!==id)return;diceBusy=false;demo.phase='roll';demo.roll(4);drawDie(4);const result=demo.move(0);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t('You bumped Coco!','你撞飞了 Coco！'));});if(epoch!==id)return;fx.land();await pause(1100);if(epoch!==id)return;game=saved;scene.setGame(game);$('demo-status').classList.add('hidden');beginTurn();toast(t('Back to your flight.','已恢复你的对局。'));}
 $('demo').onclick=demoFlight;
 $('record-demo').onclick=async()=>{if(game.phase!=='roll'||game.current.type!=='human')return;fx.unlock();await fx.ready;const canvas=$('canvas-wrap').querySelector('canvas');if(!canvas.captureStream||!window.MediaRecorder){toast(t('Recording is not available in this browser.','当前浏览器不支持录制。'));return;}const stream=canvas.captureStream(30);for(const track of fx.mediaDestination.stream.getAudioTracks())stream.addTrack(track);const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));if(!mime){toast(t('WebM recording is unavailable.','当前浏览器不支持 WebM。'));return;}const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6000000}),chunks=[];rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};rec.onstop=()=>{const blob=new Blob(chunks,{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='FlightParty_collision_preview.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);for(const tr of stream.getVideoTracks())tr.stop();};rec.start();try{await demoFlight();}finally{rec.stop();}};
 for(const b of document.querySelectorAll('.reactions button'))b.onclick=()=>{if(!game||screen!=='play')return;fx.click();const sender=game.current.type==='human'?game.current:game.active.find(p=>p.type==='human');reactions.show({color:sender.color,name:sender.name,emoji:b.textContent.trim()});};
 window.addEventListener('keydown',e=>{if(e.code==='Space'&&screen==='play'&&!document.querySelector('dialog[open]')&&!['INPUT','SELECT','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();if(game.phase==='roll'&&game.current.type==='human')roll();}});
-social.init();savePrefs();translate();drawDie(1,false);show('welcome');
+social.init();bindLiveRooms(social,onlineSession);bindLiveAccount(social,onlineSession);savePrefs();translate();drawDie(1,false);show('welcome');
+const restoreEpoch=epoch;
+onlineSession.initialize().then(async identity=>{
+ if(!identity.activeRoomId||epoch!==restoreEpoch||screen!=='welcome')return;
+ const room=await onlineSession.restore(identity.activeRoomId);
+ if(['WAITING_FRIENDS','MATCHING','STARTING'].includes(room.phase))await social.openRoom('invite');
+}).catch(()=>{/* Local practice remains available when the local backend is stopped. */});
+$('rematch').onclick=()=>onlineMode?social.openRoom('invite'):start();
+const seenOnlineReactions=new Set();
+onlineSession.addEventListener('snapshot',event=>{
+ if(!onlineMode||!game)return;
+ for(const reaction of event.detail.reactions||[]){
+  if(seenOnlineReactions.has(reaction.eventId)||Date.now()-reaction.createdAt>5000)continue;
+  seenOnlineReactions.add(reaction.eventId);if(seenOnlineReactions.size>500)seenOnlineReactions.delete(seenOnlineReactions.values().next().value);
+  const player=game.players[reaction.seat];if(player)reactions.show({color:reaction.seat,name:player.name,emoji:reaction.emoji});
+ }
+});
+for(const button of document.querySelectorAll('.reactions button')){
+ const local=button.onclick;button.onclick=()=>{
+  if(!onlineMode)return local();
+  onlineSession.react(button.textContent.trim()).catch(()=>toast(t('Reaction could not be sent.','表情发送失败。')));
+ };
+}
+$('confirm-leave').onclick=()=>{
+ $('confirm-dialog').close();clearInterval(onlineTimer);
+ if(onlineMode){onlineSession.close();onlineMode=false;onlineVersion=-1;onlineRoomId=null;}
+ cancel();show('welcome');
+};

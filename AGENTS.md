@@ -1,5 +1,9 @@
 # Flight Party implementation constraints
 
+Latest user override: no game-count quotas for anyone. Do not calculate or debit daily allowances. Only accounts signed in at match start accumulate server-verified scores and completed games; anonymous games remain untracked. Older quota/membership allowance instructions below are historical and superseded.
+
+Latest score-recording override: the first completed signed-in game per day is recorded automatically, including negative points; later games are playable but unrecorded unless membership is active. Members have unlimited score records. Creem is the payment provider; monthly 9 USD, annual 59 USD. Keep all gameplay unlimited. Do not accept client-provided scores or claim real payments/entitlements without verified Creem configuration and events.
+
 Read README.md, docs/RULES.md, docs/V07-CONTRACT.md, docs/HANDOFF.md, docs/QA.md, docs/VISUAL_ACCEPTANCE.md and inspect docs/design/gameplay-reference.png before changing the app.
 
 - The current v0.7.2 scope is UI preview on the v0.6.2 visual/local-game baseline, with the calibrated illustrated board and independent 3D die. Keep the experimental Three.js path, but do not claim it matches the design before asset and screenshot verification.

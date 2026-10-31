@@ -1,0 +1,57 @@
+services:
+  web:
+    image: nginx:1.28.0
+    ports:
+      - "127.0.0.1:8081:80"
+    volumes:
+      - ../dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+  backend:
+    build: ../backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/flightparty
+      SPRING_DATASOURCE_USERNAME: flightparty
+      SPRING_DATASOURCE_PASSWORD: ${FLIGHTPARTY_DB_PASSWORD:-local-development-only}
+      SPRING_DATA_REDIS_HOST: redis
+      FLIGHTPARTY_EVENTS_ENABLED: 'true'
+      CREEM_WEBHOOK_SECRET: ${CREEM_WEBHOOK_SECRET:-}
+      CREEM_API_KEY: ${CREEM_API_KEY:-}
+      CREEM_MONTHLY_PRODUCT_ID: ${CREEM_MONTHLY_PRODUCT_ID:-}
+      CREEM_ANNUAL_PRODUCT_ID: ${CREEM_ANNUAL_PRODUCT_ID:-}
+      CREEM_SUCCESS_URL: ${CREEM_SUCCESS_URL:-}
+      CREEM_LIVE: ${CREEM_LIVE:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+  postgres:
+    image: postgres:18.1
+    environment:
+      POSTGRES_DB: flightparty
+      POSTGRES_USER: flightparty
+      POSTGRES_PASSWORD: ${FLIGHTPARTY_DB_PASSWORD:-local-development-only}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flightparty -d flightparty"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  redis:
+    image: redis:8.2.3
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+volumes:
+  postgres_data:
+  redis_data:

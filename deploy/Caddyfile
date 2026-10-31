@@ -1,0 +1,7 @@
+flight.joyflock.com {
+    reverse_proxy web:80
+}
+
+joyflock.com, www.joyflock.com {
+    redir https://flight.joyflock.com{uri} 302
+}

@@ -1,0 +1,6 @@
+# name,seat0plane0,seat0plane1,seat1plane0,seat1plane1,seat2plane0,seat2plane1,seat3plane0,seat3plane1,die,plane,to,captureCount
+takeoff,-1,-1,-1,-1,-1,-1,-1,-1,4,0,3,0
+stack,4,-1,-1,-1,-1,-1,21,21,4,0,8,2
+safe,12,-1,0,-1,-1,-1,-1,-1,1,0,13,0
+home,51,-1,39,-1,-1,-1,-1,-1,1,0,52,0
+overshoot,56,-1,-1,-1,-1,-1,-1,-1,6,0,57,0
