@@ -256,6 +256,11 @@
  .hero-copy h1{font-size:44px;letter-spacing:-2.4px;max-width:none;margin-top:70px;line-height:1.06}
 }
 @media(max-width:700px){
+ aside{grid-template-rows:auto auto auto auto}
+ aside>.turn-panel{grid-row:1;order:1}
+ aside>.reactions{grid-row:2;order:2}
+ aside>.crew-panel{grid-row:3;order:3}
+ aside>.aside-foot{grid-row:4;order:4}
  .player-row,.player-row.active{min-height:112px}
  .player-social-stats>div{flex-direction:column;align-items:center;text-align:center;gap:2px}
  .player-social-stats b{font-size:12px}
