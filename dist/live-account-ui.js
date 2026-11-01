@@ -9,7 +9,7 @@ export function bindLiveAccount(social,session){
   panel.textContent=social.liveResult.status==='COMMITTED'?t('Result confirmed. Only accounts signed in at match start receive cumulative statistics.','结果已确认。仅开局时登录的账号累计成绩。'):t('Saving the server-verified result…','正在保存服务器确认的结果…');
  };
  dialog.setAttribute('aria-label',t('Account','账号'));
- Object.defineProperty(social,'viewer',{get(){const account=identity?.account;return {mode:account?'free':'guest',name:account?.displayName||'You',displayName:account?.displayName||'You',isGuest:!account,isMember:false,authenticated:!!account,preview:false,points:account?identity.statistics?.points??0:null,games:account?identity.statistics?.completedGames??0:null,dailyLimit:null,dailyRemaining:null};}});
+ Object.defineProperty(social,'viewer',{get(){const account=identity?.account;return {mode:account?'free':'guest',name:account?.displayName||'You',displayName:account?.displayName||'You',isGuest:!account,isMember:!!identity?.recording?.member,authenticated:!!account,preview:false,points:account?identity.statistics?.points??0:null,games:account?identity.statistics?.completedGames??0:null,dailyLimit:null,dailyRemaining:null};}});
  function update(value){
   const old=JSON.stringify([identity?.account?.id,identity?.statistics]);
   if(old!==JSON.stringify([value.account?.id,value.statistics])){social.liveBoards={};social.liveBoardStatus={};}

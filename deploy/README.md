@@ -16,4 +16,8 @@ Point A records `@`, `www`, and `flight` at the server. Allow TCP 80/443 for HTT
 
 Check `docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.production.yaml ps` and logs, then verify HTTPS, account cookies, room membership, WebSocket updates and a completed match. Back up PostgreSQL and Redis before upgrades. This configuration does not establish tested player capacity or replace recovery/load acceptance.
 
-Creem purchases remain disabled until merchant approval and subscription processing have been completed and tested. Do not put secrets in Git.
+Public Creem purchases remain disabled pending merchant approval and live credentials. Sandbox checkout is enabled only for the account IDs in `CREEM_TEST_ACCOUNTS`; sandbox entitlements use `TEST_ACTIVE` and never authorize real score recording. Set `CREEM_CHECKOUT_ENABLED`, `CREEM_LIVE`, product IDs, API key, signing secret and success URL in the ignored server environment. Do not put secrets in Git.
+
+The current private GitHub repository is pushed from the local machine. Releases are transferred with `git archive` over SSH; no GitHub credential has been installed on the server. A push alone does not deploy. Deploy the reviewed commit, preserve `deploy/.env`, run the Compose command above, and verify HTTPS/API/WSS after the update.
+
+`deploy/backup.sh` creates PostgreSQL and Redis backups under `/opt/joyflock/backups`. The server cron runs it daily at 03:17 server time. These copies remain on the same host; offsite copies, retention automation and a restoration drill are still required. Keep private environment configuration separately backed up with restricted access.
