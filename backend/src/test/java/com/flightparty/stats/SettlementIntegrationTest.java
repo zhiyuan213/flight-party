@@ -83,6 +83,12 @@ class SettlementIntegrationTest {
             db.sql("update membership_entitlements set valid_until=now()-interval '1 second' where subscription_id='appearance-test'").update();
             assertEquals("none",looks.get(account).frame());assertEquals("night",looks.get(account).selectedFrame());
             assertFalse(boards.top("month").getFirst().member());
+            db.sql("insert into complimentary_memberships(account_id,valid_until,reason) values (:id,now()+interval '30 days','isolated test')").param("id",account).update();
+            assertTrue(looks.get(account).member());looks.select(account,"cloud");assertEquals("cloud",looks.get(account).frame());
+            db.sql("update complimentary_memberships set revoked_at=now() where account_id=:id").param("id",account).update();
+            assertFalse(looks.get(account).member());assertEquals("cloud",looks.get(account).selectedFrame());
+            db.sql("update complimentary_memberships set revoked_at=null,valid_until=now()-interval '1 second' where account_id=:id").param("id",account).update();
+            assertFalse(looks.get(account).member());
             var starts=new MatchStartService(db);
             UUID guest=UUID.randomUUID();
             db.sql("insert into principals(id) values (:id)").param("id",guest).update();

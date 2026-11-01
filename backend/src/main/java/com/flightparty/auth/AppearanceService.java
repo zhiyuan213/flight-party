@@ -4,7 +4,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 @Service
 public class AppearanceService {
- public static final String MEMBER_SQL="exists(select 1 from membership_entitlements e where e.account_id=a.id and e.provider='creem' and e.status='ACTIVE' and not e.test_mode and e.valid_until>now())";
+ public static final String MEMBER_SQL="(exists(select 1 from membership_entitlements e where e.account_id=a.id and e.provider='creem' and e.status='ACTIVE' and not e.test_mode and e.valid_until>now()) or exists(select 1 from complimentary_memberships c where c.account_id=a.id and c.revoked_at is null and c.valid_until>now()))";
  public record Appearance(boolean member,String frame,String selectedFrame) {}
  private final JdbcClient db;
  public AppearanceService(JdbcClient db){this.db=db;}

@@ -38,7 +38,7 @@ public class GuestSessionController {
     }
     public record Statistics(long points,long completedGames) {}
     public record Subscription(String id,String status,String validUntil,boolean testMode,boolean cancelScheduled) {}
-    public record Recording(boolean member,Integer freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions) {}
+    public record Recording(boolean member,Integer freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions,String complimentaryUntil) {}
     public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording,AppearanceService.Appearance appearance) {}
     @GetMapping("/me")
     public Me me(HttpServletRequest request) {
@@ -51,10 +51,11 @@ public class GuestSessionController {
                 .query((rs,row)->new Statistics(rs.getLong(1),rs.getLong(2))).optional().orElse(new Statistics(0,0));
         Recording recording=null;
         if(profile!=null){
-            boolean member=db.sql("select count(*) from membership_entitlements where account_id=:id and provider='creem' and status='ACTIVE' and not test_mode and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
+            boolean member=appearances.get(profile.id()).member();
+            var complimentary=db.sql("select valid_until from complimentary_memberships where account_id=:id and revoked_at is null and valid_until>now()").param("id",profile.id()).query((rs,n)->rs.getTimestamp(1).toInstant().toString()).optional().orElse(null);
             boolean testMember=db.sql("select count(*) from membership_entitlements where account_id=:id and status='TEST_ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
             var subscriptions=db.sql("select subscription_id,status,valid_until,test_mode,cancel_scheduled from membership_entitlements where account_id=:id order by valid_until desc").param("id",profile.id()).query((rs,row)->new Subscription(rs.getString(1),rs.getString(2),rs.getTimestamp(3).toInstant().toString(),rs.getBoolean(4),rs.getBoolean(5))).list();
-            recording=new Recording(member,null,null,9,59,billing.allowed(profile.id()),billing.testMode(),testMember,subscriptions);
+            recording=new Recording(member,null,null,9,59,billing.allowed(profile.id()),billing.testMode(),testMember,subscriptions,complimentary);
         }
         return new Me(principal==null?"none":profile==null?"guest":"account",principal==null?null:rooms.active(UUID.fromString(principal.toString())).orElse(null),profile,statistics,recording,profile==null?null:appearances.get(profile.id()));
     }
