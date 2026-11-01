@@ -6,6 +6,17 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RoomSnapshotTest {
+    @Test void snapshotsFromBeforeOriginAndInvitationFieldsRemainReadable() {
+        UUID room=UUID.randomUUID(),principal=UUID.randomUUID();
+        String old="{\"id\":\""+room+"\",\"phase\":\"PLAYING\",\"seats\":[{\"index\":0,\"principal\":\""+principal+"\",\"ready\":true,\"bot\":false}],\"deadline\":null}";
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        var restored=json.readValue(old,RoomRules.Room.class);
+        assertFalse(restored.seats().getFirst().invited());assertEquals(RoomRules.Origin.QUICK,restored.origin());
+        assertEquals(room,RoomSnapshot.forMember(restored,principal,Instant.now()).roomId());
+        assertEquals(restored,json.readValue(json.writeValueAsString(restored),RoomRules.Room.class));
+        var waiting=json.readValue(old.replace("PLAYING","WAITING_FRIENDS"),RoomRules.Room.class);
+        assertEquals(RoomRules.Phase.MATCHING,RoomRules.ready(waiting,principal,true,Instant.now()).phase());
+    }
     @Test void publicNicknameDoesNotExposePrincipalOrAccount() {
         UUID user=UUID.randomUUID();var now=Instant.now();
         var room=RoomRules.friends(UUID.randomUUID(),user);

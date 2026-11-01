@@ -11,9 +11,9 @@ public final class RoomRules {
     private static final Duration MATCH_WAIT = Duration.ofSeconds(30);
     public enum Phase { WAITING_FRIENDS, MATCHING, STARTING, PLAYING, SETTLED, CLOSED }
     public enum Origin { QUICK, FRIENDS }
-    public record Seat(int index, UUID principal, boolean ready, boolean bot, boolean invited) {
+    public record Seat(int index, UUID principal, boolean ready, boolean bot, Boolean invited) {
         public Seat(int index,UUID principal,boolean ready,boolean bot) { this(index,principal,ready,bot,false); }
-        public Seat { if (index < 0 || index > 3 || (bot && principal != null) || (!bot && principal == null)) throw new IllegalArgumentException("invalid seat"); }
+        public Seat { if(invited==null)invited=false; if (index < 0 || index > 3 || (bot && principal != null) || (!bot && principal == null)) throw new IllegalArgumentException("invalid seat"); }
     }
     public record Room(UUID id, Phase phase, List<Seat> seats, Instant deadline, Origin origin) {
         public Room(UUID id,Phase phase,List<Seat> seats,Instant deadline) { this(id,phase,seats,deadline,phase==Phase.WAITING_FRIENDS?Origin.FRIENDS:Origin.QUICK); }

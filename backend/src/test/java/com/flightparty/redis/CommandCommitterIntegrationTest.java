@@ -13,6 +13,20 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 /** Run only against a dedicated disposable Redis instance. */
 @EnabledIfEnvironmentVariable(named = "REDIS_TEST_HOST", matches = ".+")
 class CommandCommitterIntegrationTest {
+    @Test void legacyRoomWithoutInvitationFieldCanRestoreAndAdvance() {
+        var factory=new LettuceConnectionFactory(System.getenv("REDIS_TEST_HOST"),6379);factory.afterPropertiesSet();factory.start();
+        try {
+            var redis=new StringRedisTemplate(factory);redis.afterPropertiesSet();var rooms=new RedisRoomStore(redis);
+            UUID id=UUID.randomUUID(),principal=UUID.randomUUID();
+            String legacy="{\"id\":\""+id+"\",\"phase\":\"MATCHING\",\"seats\":[{\"index\":0,\"principal\":\""+principal+"\",\"ready\":true,\"bot\":false}],\"deadline\":\"2026-10-31T00:00:00Z\"}";
+            redis.opsForHash().putAll("fp:{rooms}:room:"+id,java.util.Map.of("version","0","snapshot",legacy));
+            var stored=rooms.load(id).orElseThrow();assertFalse(stored.room().seats().getFirst().invited());
+            var starting=rooms.save(RoomRules.expire(stored.room(),Instant.now()),stored.version());assertTrue(rooms.activate(starting));
+            assertEquals(RoomRules.Phase.PLAYING,rooms.load(id).orElseThrow().room().phase());
+            var service=new com.flightparty.room.RoomRollService(redis);redis.opsForHash().put("fp:{rooms}:room:"+id,"actionDeadline","0");service.automate(id);
+            assertTrue(Long.parseLong(redis.opsForHash().get("fp:{rooms}:room:"+id,"gameVersion").toString())>0);
+        }finally{factory.destroy();}
+    }
     @Test void friendRematchIsAtomicAndRetainsOnlyInvitedHumans() throws Exception {
         var factory=new LettuceConnectionFactory(System.getenv("REDIS_TEST_HOST"),6379);factory.afterPropertiesSet();factory.start();
         try {

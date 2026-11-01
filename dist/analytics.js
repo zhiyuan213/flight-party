@@ -5,7 +5,7 @@ const live=location.hostname==='flight.joyflock.com';
 const allowedEvents=new Set(['quick_match','create_room','local_practice','game_start','game_end']);
 let consent='unknown',loaded=false;
 try{consent=localStorage.getItem(preferenceKey)||'unknown';}catch{}
-const gtag=(...args)=>{window.dataLayer=window.dataLayer||[];window.dataLayer.push(args);};
+function gtag(){window.dataLayer=window.dataLayer||[];window.dataLayer.push(arguments);}
 function safeLocation(){return location.origin+(['/', '/membership.html','/terms.html','/privacy.html'].includes(location.pathname)?location.pathname:'/');}
 function start(){
  if(!live||loaded||consent!=='granted')return;
