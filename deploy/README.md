@@ -21,3 +21,5 @@ Public Creem purchases remain disabled pending merchant approval and live creden
 The current private GitHub repository is pushed from the local machine. Releases are transferred with `git archive` over SSH; no GitHub credential has been installed on the server. A push alone does not deploy. Deploy the reviewed commit, preserve `deploy/.env`, run the Compose command above, and verify HTTPS/API/WSS after the update.
 
 `deploy/backup.sh` creates PostgreSQL and Redis backups under `/opt/joyflock/backups`. The server cron runs it daily at 03:17 server time. These copies remain on the same host; offsite copies, retention automation and a restoration drill are still required. Keep private environment configuration separately backed up with restricted access.
+
+Dedicated Redis integration checks (no production connections or published ports): `docker compose -p joyflock-qa -f deploy/compose.qa.yaml up --build --abort-on-container-exit --exit-code-from tests`. Clean up with `docker compose -p joyflock-qa -f deploy/compose.qa.yaml down`. The integration image uses the same build stage and an offline copy of the Maven dependency cache.
