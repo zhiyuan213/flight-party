@@ -11,6 +11,7 @@ import {bindLiveRooms} from './live-room-ui.js';
 import {bindLiveAccount} from './live-account-ui.js';
 import {track} from './analytics.js';
 const $=id=>document.getElementById(id),fx=new AudioFX();
+$('play').addEventListener('contextmenu',event=>event.preventDefault());
 let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
 let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,visual:'illustrated',...prefs};
 const die=new Die3D($('dice'),{reduced:prefs.reduced});

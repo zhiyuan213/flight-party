@@ -31,7 +31,7 @@ export class CanvasBoard{
    const img=new Image();img.onload=()=>{this.boardCache=null;const max=key==='cloud'?768:['world','ocean'].includes(key)?0:320;if(max){const sprite=document.createElement('canvas');sprite.width=max;sprite.height=Math.round(max*img.naturalHeight/img.naturalWidth);sprite.getContext('2d').drawImage(img,0,0,sprite.width,sprite.height);this.sprites[key]=sprite;}if(key==='world')this.islandSprite=this.featherIsland(img);};img.src='assets/'+file;this.art[key]=img;
   }
   this.ro=new ResizeObserver(()=>this.resize());this.ro.observe(wrap);
-  this.canvas.addEventListener('pointerup',e=>{const r=this.canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;for(const p of [...this.planes].sort((a,b)=>b.z-a.z)){const a=this.project(p),k=this.depth(p.z);if(this.keys.includes(`${p.color}:${p.piece}`)&&Math.hypot(a.x-x,a.y-this.scale*.28*k-y)<this.scale*.74*k){this.onSelect(p.piece);return;}}});
+  this.canvas.addEventListener('pointerup',e=>{if(e.button!==0)return;const r=this.canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;for(const p of [...this.planes].sort((a,b)=>b.z-a.z)){const a=this.project(p),k=this.depth(p.z);if(this.keys.includes(`${p.color}:${p.piece}`)&&Math.hypot(a.x-x,a.y-this.scale*.28*k-y)<this.scale*.74*k){this.onSelect(p.piece);return;}}});
   this.resize();this.frame=this.frame.bind(this);requestAnimationFrame(this.frame);
  }
  resize(){const w=this.wrap.clientWidth,h=this.wrap.clientHeight;if(!w||!h){this.w=0;this.h=0;return;}this.w=w;this.h=h;this.dpr=Math.min(devicePixelRatio,2);this.canvas.width=w*this.dpr;this.canvas.height=h*this.dpr;this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);this.boardCache=null;

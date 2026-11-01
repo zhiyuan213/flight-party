@@ -441,3 +441,37 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 @keyframes wing-unfold{from{transform:scaleX(.5) scaleY(.85);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes victory-glint{0%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(.8)}}
 @media(prefers-reduced-motion:reduce){.victory-crest *{animation:none!important}}
+/* Compact account sections keep billing and cosmetic controls out of one long column. */
+.compact-account{width:500px;max-width:calc(100vw - 28px);padding:24px;max-height:min(740px,calc(100dvh - 28px));overflow-y:auto}
+.compact-account .account-dialog-heading{gap:14px;margin-bottom:16px;padding-right:24px}
+.compact-account .account-dialog-avatar{width:50px;height:50px}
+.compact-account .account-dialog-heading h2{font-size:24px;margin:4px 0 0}
+.account-section-tabs{display:flex;gap:5px;padding:4px;background:#e3effc;border:1px solid #cbddf6;border-radius:12px;margin:0 0 16px}
+.account-section-tabs button{flex:1;min-width:0;padding:9px 5px;border-radius:9px;background:transparent;font-size:13px;font-weight:800;color:#7892b3}
+.account-section-tabs button[aria-selected="true"]{background:white;color:#3158ad;box-shadow:0 1px 4px #3a5e9930}
+.compact-account .account-appearance{margin:0;padding:14px}
+.compact-account .account-appearance h3{font-size:15px}
+.compact-account .account-appearance p{margin-bottom:10px;font-size:10px}
+.compact-account .appearance-option{padding:14px 4px 9px;gap:9px}
+.compact-account .appearance-option small{display:none}
+.compact-account .appearance-preview{width:40px;height:40px}
+.compact-account .effect-settings{margin-top:14px;padding-top:12px}
+.compact-account .effect-settings label{margin:9px 0}
+.compact-account .effect-preview-host[hidden],.compact-account .appearance-preview-row[hidden]{display:none}
+.compact-account .effect-settings>p{display:none}
+.compact-account .effect-actions{margin-top:12px}
+.compact-account .account-quota{margin:12px 0 0;padding:12px}
+.compact-account .account-sample-stats{margin:0 0 12px}
+.compact-account .account-sample-stats>div{padding:12px}
+.compact-account .account-signout{margin-top:14px;padding:10px;min-height:40px}
+.account-member-summary{font-size:12px;color:#6e89ac;margin:12px 0}
+.compact-account .account-membership{margin:0;gap:10px}
+.compact-account .account-plan-card{padding:14px 10px;gap:5px;min-height:0}
+.compact-account .account-plan-card strong{font-size:27px}
+.compact-account .account-membership>p{font-size:11px;line-height:1.5}
+header nav .account-button.signed-in-account{display:inline-flex;align-items:center;gap:10px;overflow:visible;max-width:200px;padding:0 11px 0 8px}
+.header-account-avatar{display:inline-block;position:relative;flex:none;width:28px;height:28px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%;border:1px solid white}
+.header-account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+@media(max-width:480px){.compact-account{padding:20px 16px;width:380px}.compact-account .account-dialog-heading{margin-bottom:14px}.compact-account .account-dialog-avatar{width:44px;height:44px}.compact-account .account-dialog-heading h2{font-size:22px}.account-section-tabs{margin-bottom:12px}.account-section-tabs button{font-size:12px;padding:8px 3px}header nav .account-button.signed-in-account{gap:7px;max-width:115px;padding:0 8px;height:36px}.header-account-avatar{width:23px;height:23px}.header-account-name{font-size:12px}}
+@media(max-width:380px){header nav .account-button.signed-in-account{gap:4px;max-width:60px;padding:0 5px;height:32px}.header-account-avatar{width:19px;height:19px}.header-account-name{max-width:24px;font-size:11px}}
+#play,#play img,#play canvas{-webkit-touch-callout:none}
