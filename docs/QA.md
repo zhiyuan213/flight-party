@@ -447,3 +447,5 @@ npm test 38项通过，新增实际authoritativeView函数测试自己/他人名
 npm test 38项、修改JS语法检查通过。隔离internal网络Postgres/Redis的MidgameAccountIntegrationTest与CommandCommitterIntegrationTest合计3项通过：游客首次绑定、重复/换账号不改归属、最终状态拒绝、同局同账号重复席位拒绝、同账号两局并发普通结算仅一次免费记录（负分计入）、模拟会员两局都记录、重复结算不重复累加。模拟会员仅在隔离schema，不是Creem真实付费。构建21项中16通过、5专用环境项跳过；上述3项已另实际执行。测试schema、容器及网络已清理。
 
 部署前实际执行服务器备份，迁移V10并发布成功。线上两独立会话实测：A登录开局b13d87b2-f5d5-496f-ab18-cd903d8de3d0，B游客开局c02c7f32-3324-49b0-a2da-a3aebd526bf0，中途登录A账号后，两窗口仍各自在原对局；退出B账号，昵称仍保留。直接只读PG核对：前局account_id_at_start与后局score_account_id均为合成测试账号37b7bbc1-3782-4acc-9c9e-d44e9f0f4866，原始游客开局字段仍空。未等待这两场线上真人计时局全部结束；累计结果由隔离真实PG并发结算测试验证。未开放正式会员支付，Creem待用户确认业务声明、身份核验及审核。
+
+2026-11-01：空闲房间席位头像隐藏，仅occupied席位保留头像；使用visibility保留文字对齐和席位高度。npm test 38项通过，本次仅CSS和入口缓存版本更新，无JS和规则修改，未新增浏览器房间截图验收。
