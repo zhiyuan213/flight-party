@@ -507,3 +507,5 @@ npm test46项全部通过，修改JS语法检查通过；后端构建通过，�
 本地真实浏览器模拟会员验收：默认账号面板高416.56px，scrollHeight/clientHeight均415无内部溢出；外观页高554.69px，默认画布hidden，只有style一个面板可见；会员标签显示价格与说明。320px视口页头导航右侧314px，小于视口320px；头像存在且frame=gold。窄屏外观页截图各控件可见，视口已复原。模拟会员仅本地fixture，未新增生产权益。
 
 尾迹按用户反馈增强：彩虹使用更饱和五色和浅色衬底，宽度增大，星光描边、云朵蓝色轮廓增强，消散改850ms，保留96点上限及减少动态清理。游戏play容器阻止contextmenu，两个渲染器忽略非左键pointerup防止右键选飞机；登录表单/首页不拦截。移动端play限制原生touch callout。npm test46项、所有修改JS语法检查通过；此轮未新增游戏中右键浏览器实测或实体手机验收。
+
+2026-11-01：用户确认后，三款头像框换用imagegen生成的透明材质PNG（具体路径/提示词见MEMBER-FRAME-ASSETS.md），中心alpha实测0，1254px方图，分别校准覆盖层位置；保留人物头像不变。真实本地浏览器确认金翼/云朵/星月外框新资源与现有头像叠加，金属高光和层次替代旧平面矢量；不是实时3D头像。账号弹窗隐藏滚动条，390×650展开预览DOM实测scrollbarWidth=none、webkit scrollbar display=none，overflow-y仍auto保证小屏内容可达。移除胜利效果选择项，预览/保存默认gold；真实预览成功，victory selector不存在。视口已复原。npm test46项及live-account-ui.js语法检查通过。
