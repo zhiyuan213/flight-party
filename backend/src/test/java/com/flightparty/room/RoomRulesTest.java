@@ -32,4 +32,17 @@ class RoomRulesTest {
         assertEquals(Phase.MATCHING,room.phase());
         assertEquals(Phase.CLOSED,leave(room,id,now).phase());
     }
+    @Test void matchingMemberCanStartNowWithoutReplacingHumansOrResettingDeadline() {
+        UUID a=UUID.randomUUID(),b=UUID.randomUUID();
+        var waiting=join(quick(UUID.randomUUID(),a,now),b,now.plusSeconds(1));
+        var started=startNow(waiting,b);
+        assertEquals(Phase.STARTING,started.phase());assertEquals(waiting.deadline(),started.deadline());
+        assertEquals(4,started.seats().size());assertEquals(2,started.seats().stream().filter(Seat::bot).count());
+        assertTrue(started.seats().containsAll(waiting.seats()));assertSame(started,startNow(started,a));
+        assertThrows(IllegalStateException.class,()->startNow(waiting,UUID.randomUUID()));
+        assertThrows(IllegalStateException.class,()->startNow(friends(UUID.randomUUID(),a),a));
+        assertThrows(IllegalStateException.class,()->join(started,UUID.randomUUID(),now.plusSeconds(2)));
+        var solo=startNow(quick(UUID.randomUUID(),a,now),a);
+        assertEquals(3,solo.seats().stream().filter(Seat::bot).count());
+    }
 }

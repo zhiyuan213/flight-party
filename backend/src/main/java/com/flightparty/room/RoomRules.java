@@ -54,6 +54,15 @@ public final class RoomRules {
     }
     public static Room expire(Room room, Instant now) {
         if (room.phase() != Phase.MATCHING || now.isBefore(room.deadline())) throw new IllegalStateException("not due");
+        return fillBots(room);
+    }
+    public static Room startNow(Room room, UUID principal) {
+        memberIndex(room.seats(),principal);
+        if (room.phase()==Phase.STARTING || room.phase()==Phase.PLAYING) return room;
+        if (room.phase()!=Phase.MATCHING) throw new IllegalStateException("not matching");
+        return fillBots(room);
+    }
+    private static Room fillBots(Room room) {
         if (room.seats().isEmpty()) return new Room(room.id(), Phase.CLOSED, List.of(), room.deadline());
         var seats = new ArrayList<>(room.seats());
         for (int i = 0; i < 4; i++) if (!containsIndex(seats,i)) seats.add(new Seat(i,null,true,true));

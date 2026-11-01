@@ -70,6 +70,17 @@
 .account-membership{display:grid;gap:10px;align-items:stretch}
 .account-membership p{font-size:11px;overflow-wrap:anywhere}
 .account-membership button{width:100%;min-width:0;white-space:normal;line-height:1.5}
+.account-membership{margin:0;padding:16px;gap:14px}
+.account-membership>p:first-child{margin:0;color:#456c92;font-weight:700}
+.account-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.account-plan-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:16px 8px!important;border-radius:13px!important;min-height:128px}
+.account-plan-card>span{font-size:12px}
+.account-plan-card>strong{font-size:29px;line-height:1.2;font-weight:900}
+.account-plan-card strong small{font-size:10px;font-weight:700}
+.account-plan-card>small{font-size:10px}
+.account-plan-card:disabled{opacity:1;color:#728aa1;background:#f6faff;box-shadow:none;cursor:default}
+.account-membership .account-membership-note{margin:0;font-size:10px;line-height:1.7;font-weight:400}
+.account-dialog .account-signout{display:block;width:100%;margin-top:20px;padding:12px 16px;min-height:44px;border-radius:12px;font-size:13px}
 .legal-links a,.legal-links a:visited{color:#222;text-decoration:none;font-size:11px;font-weight:500}
 .legal-links a:hover{color:#000;text-decoration:underline}
 .legal-links a:focus-visible{outline:2px solid #222;outline-offset:3px;border-radius:2px}
@@ -297,6 +308,8 @@
 .bot-seat .room-seat-marker{font-size:7px;color:#619b66;background:#e5f5e7;border:1px solid #c8e4cc;border-radius:7px;padding:4px 5px}
 .room-countdown-panel{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:15px 17px;border:1px solid #add4f4;background:linear-gradient(120deg,#e0f0ff,#f7fcff);border-radius:15px;box-shadow:inset 0 1px white;margin:0 0 14px}
 .room-countdown-panel b{font-size:14px;color:#1e66ab;display:block}
+.room-start-now{margin-top:9px;padding:8px 14px;min-height:36px;font-size:12px}
+.room-start-now:focus-visible{outline:2px solid #397bc1;outline-offset:3px}
 .room-countdown-panel div>span{display:block;font-size:9px;color:#7394b1;margin-top:5px;line-height:1.5}
 .room-countdown-panel>strong{font-size:35px;line-height:1;color:#2082df;min-width:65px;text-align:right;letter-spacing:-1px}
 .room-countdown-panel small{font-size:14px;margin-left:3px;letter-spacing:0}
@@ -309,6 +322,12 @@
 .room-invite-strip div>span{display:block;font-size:7px;letter-spacing:1px;font-weight:900;color:#84a3bd}
 .room-invite-strip b{display:block;font-size:20px;letter-spacing:2px;color:#2a78bb;margin-top:5px}
 .room-invite-strip button{padding:10px 12px;border-radius:10px;font-size:11px;flex:none}
+.live-room-invitation{display:block}
+.live-room-invitation b{font-size:13px;letter-spacing:.5px;overflow-wrap:anywhere;user-select:all}
+.room-invite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.room-invite-actions button{flex:1;min-width:120px}
+.room-flow-note{overflow-wrap:anywhere}
+#join-preview{margin-right:12px}
 .room-flow-note{font-size:9px;line-height:1.7;color:#7e99af;margin:10px 0 15px}
 .room-join-link{width:100%;display:block;text-align:center;font-size:10px;padding:14px 0 3px}
 .room-ready-note{font-size:11px;line-height:1.7;color:#4f8f77;background:#e9f6ef;border:1px solid #c9e6d7;border-radius:12px;padding:12px;margin:0 0 17px}
@@ -352,3 +371,6 @@
 .hero-copy #quick-match-preview,.hero-copy .home-secondary-actions{width:300px;max-width:100%;min-width:0}
 .hero-copy .home-secondary-actions #create{width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;padding-left:23px;padding-right:23px}
 @media(max-width:700px){.hero-copy #quick-match-preview,.hero-copy .home-secondary-actions{width:100%}}
+
+header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-width:40px;max-width:180px;padding:0 12px;border-radius:14px;background:linear-gradient(#fff,#e7f3ff);box-shadow:inset 0 1px white,0 2px 3px #396a9822;font-size:14px;font-weight:800;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:700px){header nav .account-button.icon-btn{height:33px;min-width:40px;max-width:100px;padding:0 9px;border-radius:11px;font-size:12px}}

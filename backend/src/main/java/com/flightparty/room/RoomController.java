@@ -71,6 +71,20 @@ public class RoomController {
     }
     public record Join(UUID code) {}
     public record Ready(boolean ready) {}
+    @PostMapping("/{id}/start-now")
+    public synchronized RoomSnapshot startNow(@PathVariable UUID id,HttpServletRequest request) {
+        UUID user=principal(request);
+        for(int attempt=0;attempt<4;attempt++) {
+            var old=member(id,user);
+            final RoomRules.Room next;
+            try { next=RoomRules.startNow(old.room(),user); }
+            catch(IllegalStateException invalid) { throw new ResponseStatusException(HttpStatus.CONFLICT); }
+            if(next==old.room()) return RoomSnapshot.forMember(next,user,Instant.now());
+            try { return RoomSnapshot.forMember(store.save(next,old.version()).room(),user,Instant.now()); }
+            catch(IllegalStateException conflict) { /* Re-read after a concurrent join, start or deadline. */ }
+        }
+        throw new ResponseStatusException(HttpStatus.CONFLICT,"room changed; retry");
+    }
     @PostMapping("/{id}/ready")
     public synchronized RoomSnapshot ready(@PathVariable UUID id,@RequestBody Ready input,HttpServletRequest request) {
         UUID user=principal(request);var old=member(id,user);

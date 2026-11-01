@@ -1,28 +1,43 @@
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const roomCode=value=>{try{const input=value.trim();const code=input.includes('://')?new URL(input).searchParams.get('room'):input;return /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(code||'')?code:null;}catch{return null;}};
 export function bindLiveRooms(social,session) {
- let mode='invite',notice='',snapshot=null;
+ let mode='invite',notice='',snapshot=null,starting=false,joinCode='';
  const t=(en,zh)=>social.t(en,zh),dialog=social.roomDialog;
+ function invitation(id){const url=new URL('/',location.origin);url.searchParams.set('room',id);return url.href;}
  function render() {
-  const room=session.room;
-  dialog.innerHTML=`<button class="close" data-live="close">×</button><span class="sample-pill">${t('ONLINE ROOM · GUEST','在线房间 · 匿名')}</span><h2>${t('Your flight crew','飞行伙伴')}</h2>${mode==='join'&&!room?`<label>${t('ROOM CODE','房间码')}</label><input id="live-room-code" maxlength="36" autocomplete="off"><button class="primary room-preview-action" data-live="join">${t('Join room','加入房间')}</button>`:room?`<div class="simple-room-meta"><span>CLASSIC · 4 SEATS</span><span>${esc(room.phase)}</span></div><ol class="simple-room-seats">${Array.from({length:4},(_,i)=>{const seat=room.seats.find(s=>s.index===i);return `<li class="room-seat ${seat?'occupied':'empty'}"><span class="room-seat-avatar avatar-${i}"></span><div><b>${seat?(seat.bot?'BOT':i===room.yourSeat?t('You','你'):t('Pilot','飞行员')+' '+(i+1)):t('Open seat','空闲席位')}</b><span>${seat?.ready?t('Ready','已准备'):t('Waiting','等待')}</span></div></li>`;}).join('')}</ol>${room.matchingDeadline&&room.phase==='MATCHING'?`<div class="room-countdown-panel"><b>${t('Taking off soon','即将起飞')}</b><strong>${Math.max(0,Math.ceil((Date.parse(room.matchingDeadline)-Date.now())/1000))}s</strong></div>`:''}${room.phase==='WAITING_FRIENDS'?`<div class="room-invite-strip"><div><span>${t('ROOM CODE','房间码')}</span><b>${esc(room.roomId)}</b></div></div><button class="primary room-preview-action" data-live="ready">${t('Ready for takeoff','准备起飞')}</button>`:''}${room.phase==='PLAYING'?`<p>${t('Server game active. Board connection is still being integrated.','服务端对局已开始，棋盘连接仍在开发。')}</p>`:''}`:`<p>${t('Connecting…','连接中…')}</p>`}<p class="social-action-notice" role="status">${esc(notice)}</p>`;
+  const room=session.room,matching=room?.phase==='MATCHING',waiting=room?.phase==='WAITING_FRIENDS';
+  const phase=room?({WAITING_FRIENDS:t('Waiting for friends','等待好友'),MATCHING:t('Matching','匹配中'),STARTING:t('Starting','正在开始'),PLAYING:t('In flight','对局中'),SETTLED:t('Finished','已结束')})[room.phase]||room.phase:'';
+  dialog.innerHTML=`<button type="button" class="close" data-live="close" aria-label="${t('Close room','关闭房间')}">×</button>
+   <span class="sample-pill">${t('ONLINE ROOM','在线房间')}</span><h2>${mode==='join'&&!room?t('Join your friends','加入好友房间'):t('Your flight crew','飞行伙伴')}</h2>
+   ${!room?mode==='join'?`<form id="live-room-join-form" class="account-auth-form"><label>${t('Room code or invitation link','房间码或邀请链接')}<input id="live-room-code" value="${esc(joinCode)}" required maxlength="200" autocomplete="off" spellcheck="false" placeholder="${t('Paste a code or link','粘贴房间码或邀请链接')}"></label><button type="submit" class="primary room-preview-action">${t('Join room','加入房间')}</button></form>`:`<p>${t('Connecting…','连接中…')}</p>`:`
+   <div class="simple-room-meta"><span>${t('CLASSIC · 4 SEATS','经典模式 · 4 个席位')}</span><span>${esc(phase)}</span></div>
+   <ol class="simple-room-seats">${Array.from({length:4},(_,i)=>{const seat=room.seats.find(s=>s.index===i);return `<li class="room-seat ${seat?'occupied':'empty'}"><span class="room-seat-avatar avatar-${i}"></span><div><b>${seat?(seat.bot?'BOT':i===room.yourSeat?t('You','你'):t('Pilot','飞行员')+' '+(i+1)):t('Open seat','空闲席位')}</b><span>${seat?.ready?t('Ready','已准备'):t('Waiting','等待')}</span></div></li>`;}).join('')}</ol>
+   ${matching?`<div class="room-countdown-panel"><div><b>${t('Taking off soon','即将起飞')}</b><button type="button" class="secondary room-start-now" data-live="start-now" ${starting?'disabled':''}>${starting?t('Starting…','正在开始…'):t('Start now','快速开始')}</button></div><strong>${Math.max(0,Math.ceil((Date.parse(room.matchingDeadline)-Date.now())/1000))}s</strong></div><p class="room-flow-note">${t('Start with the current players. Empty seats become computer pilots.','与当前玩家直接开局，空闲席位由电脑控制。')}</p>`:''}
+   ${waiting||matching?`<div class="room-invite-strip live-room-invitation"><div><span>${t('ROOM CODE','房间码')}</span><b>${esc(room.roomId)}</b></div><div class="room-invite-actions"><button type="button" class="secondary" data-live="copy-link">${t('Copy invitation link','复制邀请链接')}</button><button type="button" class="secondary" data-live="copy-code">${t('Copy room code','复制房间码')}</button></div></div><p class="room-flow-note">${t('Send the link to a friend. They can open it to join this room.','把邀请链接发给朋友，对方打开即可加入房间。')}</p>`:''}
+   ${waiting?`<button type="button" class="primary room-preview-action" data-live="ready">${room.seats.find(s=>s.index===room.yourSeat)?.ready?t('Ready · Waiting for friends','已准备 · 等待好友'):t('Ready for takeoff','准备起飞')}</button>`:''}`}
+   <p class="social-action-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>`;
  }
- async function action(work) { try { notice='';await work();render(); } catch(error) { notice=t('Connection failed. Please retry.','连接失败，请重试。');render(); } }
- social.openRoom=async tab=>{
-  mode=tab;notice='';social.stopMatching();
-  if(!dialog.open)dialog.showModal();render();
-  if(tab==='join')return;
-  await action(()=>tab==='quick'?session.quick():session.create());
- };
+ function errorMessage(error){return error.status===404?t('This room was not found. Check the invitation.','未找到房间，请检查邀请链接或房间码。'):error.status===409?t('The room has started, is full, or you are already in another room.','房间已开始、已满，或你已在其他房间中。'):t('Connection failed. Please retry.','连接失败，请重试。');}
+ async function action(work) {try{notice='';await work();render();}catch(error){notice=errorMessage(error);render();}}
+ async function join(value){const code=roomCode(value);if(!code){notice=t('Enter a valid room code or invitation link.','请输入有效房间码或邀请链接。');render();return;}await action(async()=>{await session.join(code);const url=new URL(location.href);url.searchParams.delete('room');history.replaceState(null,'',url);});}
+ social.openInvitation=async code=>{mode='join';joinCode=code;if(!dialog.open)dialog.showModal();render();await join(code);};
+ social.openRoom=async tab=>{mode=tab;notice='';social.stopMatching();if(!dialog.open)dialog.showModal();render();if(tab==='join')return;await action(()=>tab==='quick'?session.quick():session.create());};
  const originalRender=social.renderRoom.bind(social);
  social.renderRoom=()=>dialog.open?render():originalRender();
+ dialog.addEventListener('input',event=>{if(event.target.id==='live-room-code')joinCode=event.target.value;});
+ dialog.addEventListener('submit',event=>{if(event.target.id!=='live-room-join-form')return;event.preventDefault();event.stopImmediatePropagation();join(joinCode);},true);
  dialog.addEventListener('click',event=>{
-  if(!dialog.open)return;event.stopImmediatePropagation();
-  const button=event.target.closest('[data-live]');if(!button)return;
-  if(button.dataset.live==='join')action(()=>session.join(dialog.querySelector('#live-room-code').value.trim()));
+  if(!dialog.open)return;event.stopImmediatePropagation();const button=event.target.closest('[data-live]');if(!button)return;
   if(button.dataset.live==='ready')action(()=>session.ready());
+  if(button.dataset.live==='start-now'&&!starting){starting=true;render();action(()=>session.startNow()).finally(()=>{starting=false;if(dialog.open)render();});}
+  if(['copy-link','copy-code'].includes(button.dataset.live)){
+   const value=button.dataset.live==='copy-link'?invitation(session.room.roomId):session.room.roomId;
+   if(navigator.clipboard?.writeText)navigator.clipboard.writeText(value).then(()=>{notice=t('Copied. Send it to your friend.','已复制，发给朋友即可。');render();}).catch(()=>{notice=t('Copy this invitation: ','请复制此邀请：')+value;render();});
+   else{notice=t('Copy this invitation: ','请复制此邀请：')+value;render();}
+  }
   if(button.dataset.live==='close')action(async()=>{if(session.room&&['WAITING_FRIENDS','MATCHING'].includes(session.room.phase))await session.leave();dialog.close();});
  },true);
  session.addEventListener('snapshot',event=>{snapshot=event.detail;if(dialog.open)render();document.dispatchEvent(new CustomEvent('flight-party-online-snapshot',{detail:snapshot}));});
  session.addEventListener('connection',()=>{notice=t('Connection lost. Reconnecting…','连接中断，正在重连…');if(dialog.open)render();});
- dialog.addEventListener('cancel',event=>{event.preventDefault();});
+ dialog.addEventListener('cancel',event=>event.preventDefault());
 }
