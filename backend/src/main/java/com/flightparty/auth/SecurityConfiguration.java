@@ -17,6 +17,7 @@ public class SecurityConfiguration {
         cookie.setUseHttpOnlyCookie(true);
         cookie.setUseSecureCookie(secure);
         cookie.setSameSite("Lax");
+        cookie.setCookieMaxAge(2592000);
         return cookie;
     }
     @Bean
