@@ -617,3 +617,5 @@ UI41生产验收：8c57a35已推送并部署，V18迁移成功。按用户明确
 - 飞机上方姓名牌新增VIP/年VIP，严格从公开owner布尔资格读取，原生BOT和非会员无牌。每帧读取支持到期/降级，姓名预算独立保留。18px高金属牌，缓存SVG未就绪时同尺寸文字兜底；英文YEAR VIP最小9px文字。Canvas和实验Three共用绘制，未新增GPU画面验收。
 - npm test91项全部通过，新增普通/年/非会员/伪字符串true/原生BOT、资格变化、加载不跳位、375×398与375×180八标签边界避让测试；plane-nameplates.js、fallback.js、scene.js语法检查通过。后端不改，沿用UI41实测48项。
 - 实际CanvasBoard本地模拟资格页ui42-preview.html，检查四名玩家八架飞机中两名年VIP、一名VIP、一名普通玩家的姓名牌与实际造型；桌面原始棋盘图保留verification/vip-nameplates-ui42.png。手机390×844已观察年/普通VIP姓名牌，完整八标签避让由上述几何测试验证；没有新增真实双浏览器整局或实体手机测试。
+
+UI42生产验收：099f0c5已推送GitHub main并部署。上传时SSH在KEX前短暂断开，恢复后完成发布；API始终可用。HTTPS首页200、UI42标记存在，风线CSS/姓名牌JS/fallback.js及/api/me均200；真实浏览器读取42°风线矩阵，控制台0错误，大卫公共资格仍member=true/annualMember=true。手机榜单大卫昵称14px、年牌58px宽已实际回显。仅更新静态资源和reload NGINX，后端仍为UI41镜像296a25f6及原启动时间，未再次修改赠送记录。视口已恢复，本地两个验收服务器已停止。
