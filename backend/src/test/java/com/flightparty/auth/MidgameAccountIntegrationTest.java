@@ -46,6 +46,15 @@ class MidgameAccountIntegrationTest {
             db.sql("update match_participants set native_bot=false,principal_id=:principal,account_id_at_start=:account where match_id=:id and seat_index=1")
                 .param("principal",principal).param("account",account).param("id",duplicate).update();
             assertFalse(Boolean.TRUE.equals(tx.execute(s->service.bind(duplicate,principal,account))));
+            // Isolated synthetic entitlement: both eligible games record for a member.
+            db.sql("insert into membership_entitlements(account_id,subscription_id,provider,status,valid_until) values (:id,'isolated-test','creem','ACTIVE',now()+interval '1 day')").param("id",other).update();
+            for(int i=0;i<2;i++){
+                UUID memberGame=match(db,principal,null,true);
+                assertTrue(Boolean.TRUE.equals(tx.execute(s->service.bind(memberGame,principal,other))));
+                db.sql("update matches set status='COMPLETED_PENDING' where id=:id").param("id",memberGame).update();
+                assertTrue(Boolean.TRUE.equals(tx.execute(s->settlement.settle(memberGame))));
+            }
+            assertEquals(2L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",other).query(Long.class).single());
         }finally{flyway.clean();}
     }
     private UUID match(JdbcClient db,UUID principal,UUID account,boolean live){
