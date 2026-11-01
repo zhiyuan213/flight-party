@@ -16,14 +16,14 @@ export class FlightTrails {
   const rainbow=['#f7a8c1','#ffd689','#c5e8a4','#8edbec','#b5b1f2'];
   for(let i=0;i<this.points.length;i++){
    const p=this.points[i],age=(now-p.time)/650;if(age<.08)continue;
-   const a=project(p),size=Math.max(2,Math.min(12,scale*.065)),jitter=Math.sin(p.id*2.4)*size*.65;
-   c.save();c.globalAlpha=(1-age)*.65;
+   const a=project(p),size=Math.max(2,Math.min(12,scale*.10)),jitter=Math.sin(p.id*2.4)*size*.65;
+   c.save();c.globalAlpha=(1-age)*.82;
    if(p.style==='rainbow'){
     const q=this.points[i+1];if(q&&q.key===p.key&&q.style===p.style&&q.time-p.time<150){const b=project(q);c.lineCap='round';for(let k=0;k<5;k++){c.beginPath();c.moveTo(a.x,a.y+(k-2)*size*.36);c.lineTo(b.x,b.y+(k-2)*size*.36);c.strokeStyle=rainbow[k];c.lineWidth=Math.max(1,size*.4);c.stroke();}}
    }else if(p.style==='cloud'){
     c.fillStyle='#f8fcff';c.strokeStyle='#b9dff5';c.lineWidth=.6;for(let k=0;k<3;k++){c.beginPath();c.arc(a.x+(k-1)*size*.65,a.y+jitter*.3+(k%2?-.35:0)*size,size*(.65+age*.3),0,Math.PI*2);c.fill();c.stroke();}
    }else{
-    c.translate(a.x+jitter,a.y-jitter);c.rotate(p.id*.4);c.fillStyle=p.id%3?'#ffe599':'#b9e5ff';c.beginPath();for(let k=0;k<10;k++){const angle=k*Math.PI/5-Math.PI/2,r=size*(k%2?.38:1)*(1-age*.4);const x=Math.cos(angle)*r,y=Math.sin(angle)*r;k?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();c.fill();
+    c.translate(a.x+jitter,a.y-jitter);c.rotate(p.id*.4);c.fillStyle=p.id%3?'#ffd259':'#9ad8ff';c.beginPath();for(let k=0;k<10;k++){const angle=k*Math.PI/5-Math.PI/2,r=size*(k%2?.38:1)*(1-age*.4);const x=Math.cos(angle)*r,y=Math.sin(angle)*r;k?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();c.fill();
    }
    c.restore();
   }
