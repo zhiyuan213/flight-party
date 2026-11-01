@@ -76,12 +76,15 @@ class SettlementIntegrationTest {
             assertThrows(IllegalStateException.class,()->looks.select(account,"cloud"));
             db.sql("update membership_entitlements set status='ACTIVE',test_mode=false where subscription_id='appearance-test'").update();
             for(String frame:java.util.List.of("gold","cloud","night")){looks.select(account,frame);assertEquals(frame,looks.get(account).frame());}
+            looks.select(account,null,"rainbow","gold");assertEquals("rainbow",looks.get(account).trail());assertEquals("gold",looks.get(account).victory());
+            assertThrows(IllegalArgumentException.class,()->looks.select(account,null,"bad","gold"));
+            assertThrows(IllegalArgumentException.class,()->looks.select(account,null,"star","bad"));
             var friendRoom=RoomRules.friends(UUID.randomUUID(),principal);
             var publicSeat=new com.flightparty.room.RoomViewService(db).forMember(friendRoom,principal,Instant.now()).seats().getFirst();
-            assertTrue(publicSeat.member());assertEquals("night",publicSeat.avatarFrame());
+            assertTrue(publicSeat.member());assertEquals("night",publicSeat.avatarFrame());assertEquals("rainbow",publicSeat.flightTrail());assertEquals("gold",publicSeat.victoryEffect());
             assertTrue(boards.top("month").getFirst().member());assertEquals("night",boards.top("month").getFirst().avatarFrame());
             db.sql("update membership_entitlements set valid_until=now()-interval '1 second' where subscription_id='appearance-test'").update();
-            assertEquals("none",looks.get(account).frame());assertEquals("night",looks.get(account).selectedFrame());
+            assertEquals("none",looks.get(account).frame());assertEquals("night",looks.get(account).selectedFrame());assertEquals("none",looks.get(account).trail());assertEquals("none",looks.get(account).victory());assertEquals("rainbow",looks.get(account).selectedTrail());
             assertFalse(boards.top("month").getFirst().member());
             db.sql("insert into complimentary_memberships(account_id,valid_until,reason) values (:id,now()+interval '30 days','isolated test')").param("id",account).update();
             assertTrue(looks.get(account).member());looks.select(account,"cloud");assertEquals("cloud",looks.get(account).frame());

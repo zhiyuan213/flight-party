@@ -420,3 +420,24 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 .result-avatar{width:28px;height:28px;margin:0 8px}
 .rank-row b{min-width:0;overflow-wrap:anywhere}
 @media(max-width:380px){.appearance-options{gap:6px}.appearance-preview{width:41px;height:41px}.appearance-preview-row{gap:9px}.appearance-preview-row small{max-width:50px}.appearance-option b{font-size:10px}}
+.flight-trail-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.effect-settings{margin-top:20px;border-top:1px solid #d4e4f7;padding-top:16px}
+.effect-settings label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;font-size:12px;font-weight:800;color:#31599b}
+.effect-settings select{min-width:145px;max-width:65%;padding:9px;border:1px solid #c3d8f4;border-radius:10px;background:white;color:#31599b}
+.effect-preview-host{border-radius:14px;background:linear-gradient(#e4f2ff,#f7fcff);overflow:hidden}
+.effect-settings canvas{display:block;width:100%;height:95px;object-fit:contain;pointer-events:none}
+.effect-actions{display:flex;gap:10px}.effect-actions button{flex:1;font-size:12px;padding:10px}
+.effect-victory-preview:empty{display:none}.effect-victory-preview .trophy:empty{display:none}
+[data-victory-effect="gold"]>.trophy{font-size:inherit;display:flex;flex-direction:column;align-items:center;margin-bottom:14px}
+.victory-crest{display:block;position:relative;width:260px;height:132px;margin:0 auto}
+.victory-wings{position:absolute;inset:0;background:url('assets/member/wing-badge.svg') center/contain no-repeat;filter:drop-shadow(0 4px 4px #b5842524);animation:wing-unfold .75s ease-out both}
+.victory-portrait{position:absolute;left:calc(50% - 41px);top:22px;width:82px;height:82px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%;border:3px solid #fff0ad;box-shadow:0 0 0 3px #eab749}
+.victory-spark{position:absolute;left:5px;top:28px;color:#f0bc40;font-size:30px;animation:victory-glint 1.8s ease-out both}
+.victory-spark.right{left:auto;right:4px;top:77px;animation-delay:.15s;color:#5389ed}
+.victory-caption{font-size:14px;letter-spacing:2px;font-weight:900;color:#a97522}
+.effect-victory-preview .victory-crest{width:200px;height:105px}.effect-victory-preview .victory-portrait{width:64px;height:64px;left:calc(50% - 32px);top:19px}
+.effect-victory-preview .victory-caption{font-size:10px;margin-bottom:10px}
+.victory-static *,.reduce-motion .victory-crest *{animation:none!important}.reduce-motion .confetti{display:none!important}
+@keyframes wing-unfold{from{transform:scaleX(.5) scaleY(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes victory-glint{0%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(.8)}}
+@media(prefers-reduced-motion:reduce){.victory-crest *{animation:none!important}}

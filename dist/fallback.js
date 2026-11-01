@@ -1,3 +1,4 @@
+import {FlightTrails} from './flight-trails.js';
 // Fixed-camera 2.5D renderer. Rule coordinates are owned exclusively by engine.js.
 // All board geometry, contact shadows, movement and particles share this projection.
 import {TRACK,HOMES,coord,FINISH} from './engine.js';
@@ -40,7 +41,7 @@ export class CanvasBoard{
  worldRect(){const width=AIRPORT_SIZE.width*this.scale,height=AIRPORT_SIZE.height*this.scale;return{x:(this.w-width)/2,y:(this.h-height)/2,width,height};}
  depth(z=0){return groundScale(z);}
  project(p){const g=groundPoint(p.x,p.z),k=this.depth(p.z);return{x:this.cx+(g.u-GROUND_CENTER.u)*AIRPORT_SIZE.width*this.scale,y:this.cy+(g.v-GROUND_CENTER.v)*AIRPORT_SIZE.height*this.scale-p.y*this.scale*k};}
- setGame(game){this.generation++;for(const a of this.anims)a.resolve();this.anims=[];this.effects=[];this.trails=[];this.shake=0;this.game=game;this.planes=[];for(const p of game.active)for(let i=0;i<2;i++)this.planes.push({...position(p.color,i,p.pieces[i]),color:p.color,piece:i,heading:0,spin:0,squash:0,air:0,shock:0});this.keys=[];}
+ setGame(game){this.cosmeticTrails??=new FlightTrails();this.cosmeticTrails.clear();this.generation++;for(const a of this.anims)a.resolve();this.anims=[];this.effects=[];this.trails=[];this.shake=0;this.game=game;this.planes=[];for(const p of game.active)for(let i=0;i<2;i++)this.planes.push({...position(p.color,i,p.pieces[i]),color:p.color,piece:i,heading:0,spin:0,squash:0,air:0,shock:0});this.keys=[];}
  sync(game){this.game=game;for(const p of this.planes)Object.assign(p,position(p.color,p.piece,game.players[p.color].pieces[p.piece]),{spin:0,squash:0,air:0,shock:0});}
  setSelectable(keys){this.keys=keys;}
  featherIsland(img){
@@ -59,7 +60,7 @@ export class CanvasBoard{
   for(let step=result.from+1;step<=result.to;step++){
    const end=position(p.color,p.piece,step),start={...p};p.heading=end.x<start.x?1:0;
    if(step===result.from+1)this.puff({...p,y:p.y-.05},.48,650,step);
-   await this.tween(Math.max(100,Math.min(175,1250/count)),t=>{const e=ease(t);p.x=lerp(start.x,end.x,e);p.z=lerp(start.z,end.z,e);p.groundY=lerp(start.groundY,end.groundY,e);p.y=lerp(start.y,end.y,e)+Math.sin(t*Math.PI)*.14;p.spin=Math.sin(t*Math.PI)*.035*(p.heading?-1:1);});
+   await this.tween(Math.max(100,Math.min(175,1250/count)),t=>{const e=ease(t);p.x=lerp(start.x,end.x,e);p.z=lerp(start.z,end.z,e);p.groundY=lerp(start.groundY,end.groundY,e);p.y=lerp(start.y,end.y,e)+Math.sin(t*Math.PI)*.14;p.spin=Math.sin(t*Math.PI)*.035*(p.heading?-1:1);const owner=this.game?.players?.[p.color];if(owner?.member)this.cosmeticTrails.emit(owner.flightTrail,`${p.color}:${p.piece}`,p,performance.now(),this.reduced);});
    if(gen!==this.generation)return;
   }
   p.air=0;p.spin=0;
@@ -213,7 +214,7 @@ export class CanvasBoard{
  frame(now){
   if(this.w&&this.h){const c=this.ctx;c.clearRect(0,0,this.w,this.h);const pending=this.anims;this.anims=[];for(const a of pending){const t=Math.min(1,(now-a.start)/a.ms);a.update(t);if(t===1)a.resolve();else this.anims.push(a);}
    this.effects=this.effects.filter(e=>now-e.start<e.life);this.trails=this.trails.filter(e=>now-e.start<e.life);c.save();if(this.shake>.2){c.translate(Math.sin(now*.15)*this.shake,Math.cos(now*.12)*this.shake*.4);this.shake*=.78;}
-   this.background();this.drawTrails(now);this.drawSmoke(now);for(const p of [...this.planes].sort((a,b)=>a.z-b.z||a.y-b.y))this.drawPlane(p,now);this.drawImpact(now);this.drawClouds(now);c.restore();
+   this.background();this.cosmeticTrails?.draw(c,p=>this.project(p),this.scale,now,this.reduced);this.drawTrails(now);this.drawSmoke(now);for(const p of [...this.planes].sort((a,b)=>a.z-b.z||a.y-b.y))this.drawPlane(p,now);this.drawImpact(now);this.drawClouds(now);c.restore();
   }requestAnimationFrame(this.frame);
  }
 }
