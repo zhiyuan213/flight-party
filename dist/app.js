@@ -1,3 +1,4 @@
+import {onlineMovement} from './online-movement.js';
 import {bindHangar} from './hangar.js';
 import {avatarStyle} from './avatar.js';
 import {HeroPlane} from './hero-plane.js';
@@ -53,12 +54,11 @@ async function applyOnlineSnapshot(message){
  if(initial){cancel();onlineMode=true;party=false;social.roomDialog.close();show('play');if(!ensureScene())return;game=next;scene.setGame(game);drawDie(next.die||1,!!next.die);if(next.phase!=='over')track('game_start',message.room.origin==='FRIENDS'?'friends':'quick');}
  game=next;
  const generation=epoch;
- if(previous&&next.phase==='choose'&&(previous.phase!=='choose'||previous.turn!==next.turn)&&Date.now()<Number(message.busyUntil)){
+ const movement=onlineMovement(previous,next);
+ if(movement){
+  diceBusy=true;render();fx.move();await scene.move(movement,()=>fx.bump());if(generation!==epoch)return;diceBusy=false;fx.land();drawDie(next.die||1,!!next.die);
+ }else if(previous&&next.phase==='choose'&&(previous.phase!=='choose'||previous.turn!==next.turn)&&Date.now()<Number(message.busyUntil)){
   diceBusy=true;render();fx.roll();await die.rollTo(next.die);if(generation!==epoch)return;diceBusy=false;drawDie(next.die);
- } else if(previous&&next.phase==='animating'&&previous.phase!=='animating'&&Date.now()<Number(message.busyUntil)){
-  const color=previous.turn,piece=previous.players[color].pieces.findIndex((p,i)=>p!==next.players[color].pieces[i]);
-  if(piece>=0){const captured=[];for(const enemy of previous.active)if(enemy.color!==color)enemy.pieces.forEach((p,i)=>{if(p>=0&&next.players[enemy.color].pieces[i]===-1)captured.push({color:enemy.color,piece:i,from:p});});
-   diceBusy=true;render();fx.move();await scene.move({color,piece,from:previous.players[color].pieces[piece],to:next.players[color].pieces[piece],captured},()=>fx.bump());if(generation!==epoch)return;diceBusy=false;fx.land();}
  }else drawDie(next.die||1,!!next.die);
  scene.sync(game);render();$('demo').disabled=true;$('record-demo').disabled=true;
  clearInterval(onlineTimer);const offset=Date.parse(message.room.serverNow)-Date.now();
@@ -76,7 +76,7 @@ function cancel(){document.querySelectorAll('.confetti').forEach(node=>node.remo
 function show(id){screen=id;heroModel.setActive(id==='welcome');if(id!=='play')reactions.clear();for(const node of document.querySelectorAll('.screen'))node.classList.toggle('hidden',node.id!==id);$('mode-label').textContent=id==='play'?(party?'PARTY MODE':'CLASSIC MODE'):'THE FRIENDLY SKIES';if(id==='play')requestAnimationFrame(()=>{scene?.resize();die.resize();});}
 function toast(text){clearTimeout(toastJob);$('toast').textContent=text;$('toast').classList.add('visible');toastJob=setTimeout(()=>$('toast').classList.remove('visible'),2500);}
 function savePrefs(){localStorage.setItem('flight-party-prefs',JSON.stringify(prefs));fx.enabled=prefs.sound;fx.volume=prefs.volume/100;if(fx.master)fx.master.gain.setTargetAtTime(prefs.sound?fx.volume:0,fx.ctx.currentTime,.02);document.body.classList.toggle('reduce-motion',prefs.reduced);heroModel.setReduced(prefs.reduced);if(scene)scene.reduced=prefs.reduced;die.setReduced(prefs.reduced);$('sound').textContent=prefs.sound?'♫':'♩';$('sound').setAttribute('aria-pressed',String(prefs.sound));$('sound-enabled').checked=prefs.sound;$('music-enabled').checked=prefs.music;$('visual-mode').value=prefs.visual;$('volume').value=prefs.volume;$('reduced').checked=prefs.reduced;$('language').textContent=prefs.lang==='en'?'EN / 中':'中文 / EN';}
-document.addEventListener('pointerdown',()=>{fx.unlock();if(prefs.music)fx.setMusic(true);},{once:true});document.addEventListener('keydown',()=>fx.unlock(),{once:true});
+document.addEventListener('pointerdown',()=>{fx.unlock();if(prefs.music&&!fx.musicTimer)fx.setMusic(true);});document.addEventListener('keydown',()=>fx.unlock());
 $('music-enabled').onchange=e=>{prefs.music=e.target.checked;fx.setMusic(prefs.music);savePrefs();};$('visual-mode').onchange=e=>{prefs.visual=e.target.value;savePrefs();};$('sound').onclick=()=>{prefs.sound=!prefs.sound;savePrefs();};$('sound-enabled').onchange=e=>{prefs.sound=e.target.checked;savePrefs();};$('volume').oninput=e=>{prefs.volume=+e.target.value;savePrefs();};$('reduced').onchange=e=>{prefs.reduced=e.target.checked;savePrefs();};$('settings').onclick=()=>$('settings-dialog').showModal();
 const copy=[['join-preview','Join by room code →','房间码加入 →'],['create',"Create room <span>↗</span>",'创建房间 <span>↗</span>'],['start','Start local practice <span>→</span>','开始本地练习 <span>→</span>'],['back-home','← Back','← 返回'],['roll','ROLL DICE <span>↗</span>','掷骰子 <span>↗</span>'],['demo','▶ Try a bump','▶ 体验撞机'],['leave','Leave flight','退出对局'],['rematch','Fly again ↗','再来一局 ↗'],['edit-crew','Change crew','调整阵容']];
 function translate(){document.documentElement.lang=prefs.lang==='en'?'en':'zh-CN';copy.forEach(([id,en,zh])=>{const node=$(id);if(node)node.innerHTML=t(en,zh);});social.setLanguage();syncDieLabel();if(screen==='lobby')renderSeats();if(screen==='play')render();}

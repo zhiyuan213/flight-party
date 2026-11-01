@@ -559,3 +559,30 @@ header nav .account-button.signed-in-account{gap:13px}
 .avatar-upload input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
 .avatar-upload label:focus-within{outline:2px solid #447df6;outline-offset:2px}
 @media(max-width:480px){.podium .leaderboard-rank{width:26px;height:26px}}
+
+/* Fixed five-row viewport: ten entries scroll inside, never resize the card. */
+.leaderboard-shell{width:542px;max-width:100%;height:700px;box-sizing:border-box;justify-self:center;display:flex;flex-direction:column}
+.leaderboard-shell .leaderboard-heading,.leaderboard-shell .leaderboard-meta,.leaderboard-shell .leaderboard-tabs,.leaderboard-shell .leaderboard-foot{flex:none}
+.leaderboard-shell #lb-panel{flex:1;min-height:0;display:flex;flex-direction:column}
+.leaderboard-shell .leaderboard-columns{flex:none}
+.leaderboard-shell .leaderboard-list{height:418px;flex:none;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;padding:3px 7px 3px 0;gap:8px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#8faed1 #e5effa}
+.leaderboard-shell .leaderboard-row{flex:0 0 76px;min-height:76px;height:76px;margin:0;box-sizing:border-box}
+.leaderboard-list::-webkit-scrollbar{width:7px}
+.leaderboard-list::-webkit-scrollbar-track{background:#e5effa;border-radius:8px}
+.leaderboard-list::-webkit-scrollbar-thumb{background:#8faed1;border-radius:8px;border:1px solid #e5effa}
+.leaderboard-shell .leaderboard-foot{margin-top:auto;padding-top:12px}
+@media(max-width:700px){.leaderboard-shell{width:100%;height:675px}.leaderboard-shell .leaderboard-list{height:398px}.leaderboard-shell .leaderboard-row{flex-basis:72px;height:72px;min-height:72px}}
+
+
+.account-dialog-avatar[data-avatar-picker]{cursor:pointer;outline-offset:8px}
+.account-dialog-avatar[data-avatar-picker]:focus-visible{outline:2px solid #4e87ff}
+.avatar-picker-dialog{width:430px;max-width:calc(100vw - 28px);padding:26px;border:1px solid #bdd6f5;border-radius:24px;background:linear-gradient(#fff,#edf6ff);color:#253e97}
+.avatar-picker-dialog::backdrop{background:#27466c66;backdrop-filter:blur(6px)}
+.avatar-picker-dialog h2{font-size:23px;margin:0 0 22px}
+.system-avatar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.system-avatar-grid button{display:grid;place-items:center;padding:16px}
+.system-avatar-image{width:80px;height:80px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%;box-shadow:0 3px 8px #32619c25;border:2px solid #fff}
+.avatar-picker-dialog p{font-size:11px;color:#7893af;margin:16px 0 0;line-height:1.6}
+.avatar-upload-picker{display:block;position:relative;margin-top:20px;text-align:center;padding:12px;border:1px solid #bdd6f5;border-radius:12px;overflow:hidden;cursor:pointer;font-size:13px;font-weight:800}
+.avatar-upload-picker input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.avatar-upload-picker:focus-within{outline:2px solid #4e87ff}

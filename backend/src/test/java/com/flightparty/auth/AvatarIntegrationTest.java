@@ -28,8 +28,10 @@ class AvatarIntegrationTest {
    db.sql("insert into account_statistics(account_id,points,completed_games) values (:id,2,1)").param("id",account).update();assertEquals(path,new com.flightparty.stats.LeaderboardService(db).top("points").getFirst().avatarUrl());
    appearance.selectPlane(account,"gold");assertEquals("gold",appearance.get(account).plane());
    String newer=controller.upload(input,request).get("avatarUrl");assertNotEquals(path,newer);assertEquals(404,assertThrows(ResponseStatusException.class,()->controller.image(token)).getStatusCode().value());
-   db.sql("update complimentary_memberships set revoked_at=now() where account_id=:id").param("id",account).update();assertNull(appearance.get(account).avatarUrl());assertEquals("classic",appearance.get(account).plane());
+   db.sql("update complimentary_memberships set revoked_at=now() where account_id=:id").param("id",account).update();assertEquals("/api/avatars/system/0",appearance.get(account).avatarUrl());assertEquals("classic",appearance.get(account).plane());
+   controller.selectSystem(new AvatarController.SystemAvatar(2),request);assertEquals("/api/avatars/system/2",appearance.get(account).avatarUrl());assertEquals(200,controller.system(2).getStatusCode().value());assertEquals(400,assertThrows(ResponseStatusException.class,()->controller.selectSystem(new AvatarController.SystemAvatar(9),request)).getStatusCode().value());
    UUID newToken=UUID.fromString(newer.substring(newer.lastIndexOf('/')+1));assertEquals(404,assertThrows(ResponseStatusException.class,()->controller.image(newToken)).getStatusCode().value());
   }finally{flyway.clean();}
  }
 }
+

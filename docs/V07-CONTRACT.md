@@ -122,3 +122,5 @@
 Latest UI32 visual adjustment: default hero uses original illustrated plane with animated rotor. Experimental procedural model is opt-in only. Trails use projected tube volume and shaded particles with stronger saturation; board/rules unchanged.
 
 UI33 current overrides: top five real leaderboard accounts only, no synthetic filler rows. Members can upload their own raster avatar; server normalization/authorization is required. Active member plane selection is account-backed for the homepage showroom, with classic illustrated default and three procedural 3D variants; this does not migrate game-board pieces to 3D. Login startup translation must tolerate absent optional UI nodes so session restoration always runs.
+
+Latest UI34 leaderboard override: up to ten entries, five visible with an internal scrollbar, fixed card dimensions within the viewport. User explicitly requested synthetic filler entries; these are frontend-only and never modify authoritative points/games.

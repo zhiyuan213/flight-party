@@ -16,6 +16,20 @@ public class AvatarController {
  private final JdbcClient db;
  public AvatarController(JdbcClient db){this.db=db;}
  public record Upload(String image){}
+ public record SystemAvatar(int index){}
+ @PostMapping("/api/account/avatar/system") public Map<String,String> selectSystem(@RequestBody SystemAvatar input,HttpServletRequest request){
+  var session=request.getSession(false);var account=session==null?null:session.getAttribute("flightparty.account");
+  if(account==null)throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+  if(input.index()<0||input.index()>3)throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+  db.sql("update accounts set system_avatar=:index,avatar_token=null,avatar_image=null where id=:id").param("index",input.index()).param("id",UUID.fromString(account.toString())).update();
+  return Map.of("avatarUrl","/api/avatars/system/"+input.index());
+ }
+ @GetMapping("/api/avatars/system/{index}") public ResponseEntity<byte[]> system(@PathVariable int index)throws IOException{
+  if(index<0||index>3)throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+  try(var source=getClass().getResourceAsStream("/avatars-v5.png")){var atlas=ImageIO.read(source);int w=atlas.getWidth()/2,h=atlas.getHeight()/2;var output=new ByteArrayOutputStream();ImageIO.write(atlas.getSubimage(index%2*w,index/2*h,w,h),"png",output);
+   return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).cacheControl(CacheControl.maxAge(java.time.Duration.ofDays(30)).cachePublic()).header("X-Content-Type-Options","nosniff").body(output.toByteArray());
+  }
+ }
  @PostMapping("/api/account/avatar") public Map<String,String> upload(@RequestBody Upload input,HttpServletRequest request){
   var session=request.getSession(false);var value=session==null?null:session.getAttribute("flightparty.account");
   if(value==null)throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);

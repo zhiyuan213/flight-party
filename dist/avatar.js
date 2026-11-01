@@ -1,4 +1,4 @@
-export const safeAvatar=url=>typeof url==='string'&&/^\/api\/avatars\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(url)?url:null;
+export const safeAvatar=url=>typeof url==='string'&&/^\/api\/avatars\/(?:system\/[0-3]|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(url)?url:null;
 export const avatarStyle=url=>safeAvatar(url)?`style="background-image:url('${url}');background-size:cover;background-position:center"`:'';
 export function applyAvatar(node,url){if(!node?.style)return;const valid=safeAvatar(url);node.style.backgroundImage=valid?`url('${valid}')`:'';node.style.backgroundSize=valid?'cover':'';node.style.backgroundPosition=valid?'center':'';}
 export async function prepareAvatar(file){
