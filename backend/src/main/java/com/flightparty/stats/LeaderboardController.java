@@ -15,7 +15,7 @@ public class LeaderboardController {
     public LeaderboardController(LeaderboardService service) { this.service = service; }
     @GetMapping
     public List<LeaderboardService.Entry> get(@RequestParam String type) {
-        if (!"points".equals(type) && !"games".equals(type)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid leaderboard type");
+        if (!List.of("month","week","day","points","games").contains(type)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid leaderboard type");
         return service.top(type);
     }
 }

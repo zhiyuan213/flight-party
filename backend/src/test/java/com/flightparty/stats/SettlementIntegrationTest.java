@@ -60,6 +60,13 @@ class SettlementIntegrationTest {
             var boards = new LeaderboardService(db);
             assertEquals("Ace", boards.top("points").getFirst().displayName());
             assertEquals("Ace", boards.top("games").getFirst().displayName());
+            for(String period:java.util.List.of("month","week","day")) {
+                assertEquals(1,boards.top(period).size());
+                assertEquals(-1,boards.top(period).getFirst().points());
+            }
+            db.sql("update matches set settled_at=(date_trunc('month',now() at time zone 'UTC') at time zone 'UTC')-interval '40 days' where id=:id").param("id",match).update();
+            assertTrue(boards.top("month").isEmpty());assertTrue(boards.top("week").isEmpty());assertTrue(boards.top("day").isEmpty());
+            db.sql("update matches set settled_at=now() where id=:id").param("id",match).update();
             var starts=new MatchStartService(db);
             UUID guest=UUID.randomUUID();
             db.sql("insert into principals(id) values (:id)").param("id",guest).update();
