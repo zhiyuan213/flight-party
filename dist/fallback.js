@@ -1,3 +1,4 @@
+import {drawPropeller} from './propeller.js';
 import {FlightTrails} from './flight-trails.js';
 // Fixed-camera 2.5D renderer. Rule coordinates are owned exclusively by engine.js.
 // All board geometry, contact shadows, movement and particles share this projection.
@@ -27,7 +28,7 @@ export class CanvasBoard{
   this.wrap=wrap;this.onSelect=onSelect;this.reduced=reduced;this.mode='illustrated';wrap.dataset.renderer='illustrated';
   this.canvas=document.createElement('canvas');this.canvas.setAttribute('aria-label','Flight Party board. Raised route tiles, two planes per player. Select a highlighted plane or use the plane buttons.');wrap.append(this.canvas);this.ctx=this.canvas.getContext('2d');
   this.planes=[];this.keys=[];this.anims=[];this.effects=[];this.trails=[];this.shake=0;this.art={};this.sprites={};this.generation=0;
-  for(const [key,file] of Object.entries({plane0:'plane-blue.png',plane1:'plane-orange.png',plane2:'plane-green.png',plane3:'plane-red.png',world:'airport-island-v5.png',ocean:'ocean-water-v5.png',cloud:'cloud-bank.png',smoke:'smoke-puff.png'})){
+  for(const [key,file] of Object.entries({plane0:'plane-blue-body.png',plane1:'plane-orange-body.png',plane2:'plane-green-body.png',plane3:'plane-red-body.png',world:'airport-island-v5.png',ocean:'ocean-water-v5.png',cloud:'cloud-bank.png',smoke:'smoke-puff.png'})){
    const img=new Image();img.onload=()=>{this.boardCache=null;const max=key==='cloud'?768:['world','ocean'].includes(key)?0:320;if(max){const sprite=document.createElement('canvas');sprite.width=max;sprite.height=Math.round(max*img.naturalHeight/img.naturalWidth);sprite.getContext('2d').drawImage(img,0,0,sprite.width,sprite.height);this.sprites[key]=sprite;}if(key==='world')this.islandSprite=this.featherIsland(img);};img.src='assets/'+file;this.art[key]=img;
   }
   this.ro=new ResizeObserver(()=>this.resize());this.ro.observe(wrap);
@@ -190,7 +191,7 @@ export class CanvasBoard{
   if(sel){c.beginPath();c.ellipse(0,.02*s,.50*s*k,.35*s*k,0,0,TAU);c.strokeStyle='#fff8aa';c.lineWidth=3;c.shadowColor='#ffe566';c.shadowBlur=10;c.stroke();c.shadowBlur=0;}
   const bob=this.reduced?0:Math.sin(now*.002+p.color+p.piece)*.011*s;c.translate(0,-bob);c.rotate(p.spin);c.scale(1+p.squash*.5,1-p.squash*.38);if(p.heading)c.scale(-1,1);
   const img=this.sprites['plane'+p.color]||this.art['plane'+p.color],width=1.36*s*k,heightPx=img?.width?width*img.height/img.width:width;
-  if(img&&(img.width||img.naturalWidth))c.drawImage(img,-width*.5,-heightPx*.91,width,heightPx);
+  if(img&&(img.width||img.naturalWidth)){c.drawImage(img,-width*.5,-heightPx*.91,width,heightPx);drawPropeller(c,width,heightPx,now,COLORS[p.color],this.reduced,p.color+p.piece);}
   // Permanent aircraft identity, printed on the existing white fuselage panel.
   // Counter-mirror just the glyph when the aircraft turns; its panel anchor still follows the body.
   c.save();c.translate(-width*.099,-heightPx*.420);if(p.heading)c.scale(-1,1);c.transform(.88,.23,-.08,1,0,0);c.font=`900 ${heightPx*.090}px Flight,sans-serif`;c.textAlign='center';c.textBaseline='middle';c.lineWidth=heightPx*.009;c.strokeStyle='#ffffffb0';c.strokeText(String(p.piece+1),0,0);c.fillStyle='#17437b';c.fillText(String(p.piece+1),0,0);c.restore();

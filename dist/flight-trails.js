@@ -33,7 +33,7 @@ const previewRuns=new WeakMap();
 export function startTrailPreview(canvas,style,reduced=false,loop=false){
  const context=canvas.getContext('2d'),trail=new FlightTrails(),start=performance.now(),token={};let lastCycle=-1;previewRuns.set(canvas,token);
  const draw=now=>{
-  if(previewRuns.get(canvas)!==token||!canvas.isConnected||!canvas.closest('dialog')?.open)return;
+  if(previewRuns.get(canvas)!==token||!canvas.isConnected||!canvas.closest('dialog')?.open||canvas.closest('[role=tabpanel]')?.hidden)return;
   const elapsed=now-start;if(!loop&&elapsed>2400)return;const cycle=Math.floor(elapsed/2400);if(cycle!==lastCycle){trail.clear();lastCycle=cycle;}
   const t=Math.min(1,(elapsed%2400)/1600),x=35+t*230,y=50-Math.sin(t*Math.PI)*12;
   context.clearRect(0,0,300,95);if(!reduced&&t<1)trail.emit(style,'preview',{x,y,z:0},now);trail.draw(context,p=>p,55,now,reduced);

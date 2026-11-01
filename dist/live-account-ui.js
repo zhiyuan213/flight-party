@@ -68,7 +68,7 @@ export function bindLiveAccount(social,session){
   if(!identity?.appearance?.member){status.textContent=t('Preview only. Active membership is required to use it.','当前仅预览，使用需要有效会员。');return;}
   pendingTrail=value;if(trailSaving)return;trailSaving=true;
   try{while(pendingTrail!==null){const trail=pendingTrail;pendingTrail=null;status.textContent=t('Saving…','保存中…');
-   try{await session.request('/api/account/appearance',{trail,victory:'gold'});const me=await session.request('/api/me');if(pendingTrail===null){update(me,false);status.textContent=t('Saved automatically','已自动保存');}}
+   try{await session.request('/api/account/appearance',{trail,victory:'gold'});const me=await session.request('/api/me');if(pendingTrail===null){update(me,false);const current=dialog.querySelector('[data-effect-trail]');if(current&&current!==select){current.value=me.appearance?.selectedTrail||trail;startTrailPreview(current.closest('.effect-settings').querySelector('canvas'),current.value,document.body.classList.contains('reduce-motion'),true);}const currentStatus=dialog.querySelector('.effect-save-status')||status;currentStatus.textContent=t('Saved automatically','已自动保存');}}
    catch(error){if(pendingTrail===null){select.value=identity.appearance?.selectedTrail||'star';status.textContent=t('Save failed. Select again to retry.','保存失败，请重新选择重试。');startTrailPreview(section.querySelector('canvas'),select.value,document.body.classList.contains('reduce-motion'),true);}}
   }}finally{trailSaving=false;}
  });

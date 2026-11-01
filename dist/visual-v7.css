@@ -500,3 +500,8 @@ header nav .account-button.signed-in-account{gap:13px}
 .compact-account .effect-settings>.effect-save-status{display:block;font-size:10px;min-height:14px;margin:5px 0 0;color:#6c89b1}
 .compact-account .effect-preview-host canvas{height:76px}.compact-account .effect-victory-preview .victory-crest{height:86px;width:174px}.compact-account .effect-victory-preview .victory-portrait{width:53px;height:53px;left:calc(50% - 26.5px);top:15px}
 @media(max-width:480px){.rank-row{min-height:68px}.rank-row>small{min-width:0;max-width:115px;font-size:9px}.rank-row[data-card-frame]::before{right:10px}}
+.hero-copy.hero-model-ready::before{display:none}
+.hero-plane-model{display:block;width:130px;height:105px;margin-bottom:10px;filter:drop-shadow(0 12px 8px #3a6ea525);pointer-events:none}
+.hero-plane-model canvas{display:block;width:100%;height:100%}
+@media(min-width:701px) and (max-height:850px){.hero-plane-model{width:94px;height:76px;margin-bottom:7px}}
+@media(max-width:700px){.hero-plane-model{position:absolute;right:5px;top:16px;width:74px;height:64px;opacity:.95;margin:0}}
