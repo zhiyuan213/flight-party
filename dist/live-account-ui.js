@@ -2,7 +2,7 @@ import {startTrailPreview} from './flight-trails.js';
 import {renderVictory} from './victory-effects.js';
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function bindLiveAccount(social,session){
- let identity=null,notice='',busy=false,accountSection='overview';
+ let identity=null,notice='',busy=false,accountSection='overview',pendingTrail=null,trailSaving=false;
  const t=(en,zh)=>social.t(en,zh),dialog=social.dialog;
  const originalResult=social.renderResult.bind(social);
  social.renderResult=()=>{
@@ -12,11 +12,11 @@ export function bindLiveAccount(social,session){
  };
  dialog.setAttribute('aria-label',t('Account','账号'));
  Object.defineProperty(social,'viewer',{get(){const account=identity?.account;return {mode:account?'free':'guest',name:account?.displayName||'You',displayName:account?.displayName||'You',isGuest:!account,isMember:!!identity?.recording?.member,authenticated:!!account,appearance:identity?.appearance,preview:false,points:account?identity.statistics?.points??0:null,games:account?identity.statistics?.completedGames??0:null,dailyLimit:null,dailyRemaining:null};}});
- function update(value){
+ function update(value,redraw=true){
   const old=JSON.stringify([identity?.account?.id,identity?.statistics,identity?.appearance]);
   if(old!==JSON.stringify([value.account?.id,value.statistics,value.appearance])){social.liveBoards={};social.liveBoardStatus={};}
   if(identity?.account?.id!==value.account?.id)accountSection='overview';
-  identity=value;social.mode=value.account?'free':'guest';social.displayName=value.account?.displayName||'You';social.render();social.onChange(social.viewer);
+  identity=value;social.mode=value.account?'free':'guest';social.displayName=value.account?.displayName||'You';if(redraw)social.render();else{social.renderAccountButton();social.renderLeaderboard?.();}social.onChange(social.viewer);
  }
  social.renderAccountButton=()=>{social.accountButton.innerHTML=social.viewer.isGuest?esc(t('Sign in','登录')):`<span class="header-account-avatar avatar-0" data-frame="${esc(identity?.appearance?.frame||'none')}" aria-hidden="true"></span><span class="header-account-name">${esc(social.viewer.name)}</span>`;social.accountButton.classList.toggle('signed-in-account',!social.viewer.isGuest);social.accountButton.setAttribute('aria-label',t('Account','账号'));};
  social.renderDialog=()=>{
@@ -31,7 +31,9 @@ export function bindLiveAccount(social,session){
   dialog.querySelector('.account-quota p').textContent=t('Every signed-in game records automatically, including negative points. Play is unlimited.','所有登录账号每局自动记录，正负分都计入；所有玩家游玩不限次数。');
   if(identity?.account){
    const looks=document.createElement('section');looks.className='account-appearance';looks.innerHTML=`<h3>${t('Pilot style','飞行员外观')}</h3><p>${t('Preview any frame. Active members can wear it.','可预览全部头像框，有效会员可佩戴。')}</p><div class="appearance-options">${[['gold','Golden Wings','金翼领航'],['cloud','Cloud Voyager','云端漫游'],['night','Starry Flight','星夜飞行']].map(([key,en,zh])=>`<button type="button" class="appearance-option" data-appearance="${key}" aria-pressed="${identity.appearance?.selectedFrame===key}" ${busy?'disabled':''}><span class="appearance-preview avatar-0" data-frame="${key}"></span><b>${t(en,zh)}</b><small>${identity.appearance?.selectedFrame===key?t('Selected','已选择'):t('Preview','预览')}</small></button>`).join('')}</div><div class="appearance-preview-row" hidden><span class="appearance-preview avatar-0" data-frame="${identity.appearance?.selectedFrame||'gold'}"></span><b data-member="true">${esc(identity.account.displayName)}</b><small>${t('Style preview','外观预览')}</small></div>`;dialog.append(looks);
-   const effects=document.createElement('div');effects.className='effect-settings';effects.innerHTML=`<h3>${t('Flight effects','飞行特效')}</h3><label>${t('Flight trail','飞行尾迹')}<select data-effect-trail aria-label="${t('Flight trail','飞行尾迹')}">${[['none','Off','关闭'],['star','Starlight','星光尾迹'],['rainbow','Rainbow','彩虹尾迹'],['cloud','Cloud','云朵尾迹']].map(([key,en,zh])=>`<option value="${key}" ${(identity.appearance?.selectedTrail||'star')===key?'selected':''}>${t(en,zh)}</option>`).join('')}</select></label><div class="effect-preview-host" hidden><canvas width="300" height="95" aria-label="${t('Trail preview','尾迹预览')}"></canvas><div class="effect-victory-preview"><div class="trophy"></div></div></div><p>${t('Visual preview only. Reduced motion simplifies effects.','此处仅预览。减少动态效果时会简化展示。')}</p><div class="effect-actions"><button type="button" class="secondary" data-preview-effects>${t('Preview effects','预览特效')}</button><button type="button" class="secondary" data-save-effects ${busy||!identity.appearance?.member?'disabled':''}>${t('Save effects','保存特效')}</button></div>`;looks.append(effects);
+   const effects=document.createElement('div');effects.className='effect-settings';effects.innerHTML=`<h3>${t('Flight effects','飞行特效')}</h3><label>${t('Flight trail','飞行尾迹')}<select data-effect-trail aria-label="${t('Flight trail','飞行尾迹')}">${[['star','Starlight','星光尾迹'],['rainbow','Rainbow','彩虹尾迹'],['cloud','Cloud','云朵尾迹'],['none','Off','关闭']].map(([key,en,zh])=>`<option value="${key}" ${(identity.appearance?.selectedTrail||'star')===key?'selected':''}>${t(en,zh)}</option>`).join('')}</select></label><div class="effect-preview-host"><canvas width="300" height="95" aria-label="${t('Trail preview','尾迹预览')}"></canvas><div class="effect-victory-preview"><div class="trophy"></div></div></div><p>${t('Visual preview only. Reduced motion simplifies effects.','此处仅预览。减少动态效果时会简化展示。')}</p><p class="effect-save-status" role="status" aria-live="polite"></p>`;looks.append(effects);
+   startTrailPreview(effects.querySelector('canvas'),identity.appearance?.selectedTrail||'star',document.body.classList.contains('reduce-motion'),true);
+   renderVictory(effects.querySelector('.effect-victory-preview'),{member:true,color:0,victoryEffect:'gold'},{reduced:document.body.classList.contains('reduce-motion'),label:t('Effect preview','特效预览')});
    const section=document.createElement('section');section.className='account-quota account-membership';
    const status=document.createElement('p');status.textContent=t('Every signed-in completed game records automatically. Membership adds cosmetics, with no scoring advantage.','所有登录账号每局自动记录，正负分都计入；会员提供专属外观，不增加积分优势。');section.append(status);
    if(identity.recording?.complimentaryUntil){const gift=document.createElement("p");gift.className="account-membership-note";gift.textContent=t("Complimentary membership until: ","赠送会员有效期至：")+new Date(identity.recording.complimentaryUntil).toLocaleString()+t(" · No charge or auto-renewal"," · 不扣费、不自动续费");section.append(gift);}
@@ -59,13 +61,20 @@ export function bindLiveAccount(social,session){
   catch(error){notice=t('Unable to sign in or register. Check your details and try again.','登录或注册未成功，请检查信息后重试。');}
   finally{busy=false;social.renderDialog();}
  },true);
+ dialog.addEventListener('change',async event=>{
+  if(!event.target.matches('[data-effect-trail]'))return;const select=event.target,value=select.value,section=select.closest('.effect-settings');
+  startTrailPreview(section.querySelector('canvas'),value,document.body.classList.contains('reduce-motion'),true);
+  const status=section.querySelector('.effect-save-status');
+  if(!identity?.appearance?.member){status.textContent=t('Preview only. Active membership is required to use it.','当前仅预览，使用需要有效会员。');return;}
+  pendingTrail=value;if(trailSaving)return;trailSaving=true;
+  try{while(pendingTrail!==null){const trail=pendingTrail;pendingTrail=null;status.textContent=t('Saving…','保存中…');
+   try{await session.request('/api/account/appearance',{trail,victory:'gold'});const me=await session.request('/api/me');if(pendingTrail===null){update(me,false);status.textContent=t('Saved automatically','已自动保存');}}
+   catch(error){if(pendingTrail===null){select.value=identity.appearance?.selectedTrail||'star';status.textContent=t('Save failed. Select again to retry.','保存失败，请重新选择重试。');startTrailPreview(section.querySelector('canvas'),select.value,document.body.classList.contains('reduce-motion'),true);}}
+  }}finally{trailSaving=false;}
+ });
  dialog.addEventListener('click',async event=>{
   const sectionTab=event.target.closest('[data-account-section]');
   if(sectionTab){event.stopImmediatePropagation();accountSection=sectionTab.dataset.accountSection;social.renderDialog();dialog.scrollTop=0;dialog.querySelector('[data-account-section="'+accountSection+'"]').focus();return;}
-  const previewEffects=event.target.closest('[data-preview-effects]');
-  if(previewEffects){event.stopImmediatePropagation();dialog.querySelector('.effect-preview-host').hidden=false;const reduced=document.body.classList.contains('reduce-motion');const canvas=dialog.querySelector('.effect-settings canvas');const trail=dialog.querySelector('[data-effect-trail]').value;startTrailPreview(canvas,trail,reduced);renderVictory(dialog.querySelector('.effect-victory-preview'),{member:true,color:0,victoryEffect:'gold'},{reduced,label:t('Effect preview','特效预览')});return;}
-  const saveEffects=event.target.closest('[data-save-effects]');
-  if(saveEffects){event.stopImmediatePropagation();if(busy||!identity?.appearance?.member)return;const trail=dialog.querySelector('[data-effect-trail]').value,victory='gold';busy=true;try{await session.request('/api/account/appearance',{trail,victory});update(await session.request('/api/me'));notice=t('Flight effects saved.','飞行特效已保存。');}catch(error){notice=t('Effects could not be saved. Please retry.','特效未能保存，请重试。');}finally{busy=false;social.renderDialog();}return;}
   const appearance=event.target.closest('[data-appearance]');
   if(appearance){event.stopImmediatePropagation();if(busy)return;const frame=appearance.dataset.appearance;
    if(!identity?.appearance?.member){const row=dialog.querySelector('.appearance-preview-row [data-frame]');if(row){row.dataset.frame=frame;row.closest('.appearance-preview-row').hidden=false;}notice=t('Preview only. Active membership is required to wear this frame.','当前仅预览，佩戴需要有效会员。');const note=dialog.querySelector('.account-appearance p');if(note)note.textContent=notice;return;}

@@ -45,12 +45,14 @@ class SettlementIntegrationTest {
             assertThrows(IllegalStateException.class, () -> tx.execute(s -> projection.apply(new EventProjection.Event(match, 1, "ROLL", "{}", "{}"))));
             assertThrows(IllegalStateException.class, () -> tx.execute(s -> projection.apply(new EventProjection.Event(match, 3, "MOVE", "{}", "{}"))));
             assertEquals(1L, db.sql("select count(*) from match_events").query(Long.class).single());
-            db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank) values (:match,0,:principal,:account,3)").param("match", match).param("principal", principal).param("account", account).update();
+            db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank) values (:match,0,:principal,:account,4)").param("match", match).param("principal", principal).param("account", account).update();
             db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:match,1,true,1)").param("match", match).update();
             db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:match,2,true,2)").param("match", match).update();
+            db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:match,3,true,3)").param("match",match).update();
             var service = new SettlementService(db);
             assertTrue(Boolean.TRUE.equals(tx.execute(s -> service.settle(match))));
             assertFalse(Boolean.TRUE.equals(tx.execute(s -> service.settle(match))));
+            assertEquals(java.util.List.of(2,1,0,-1),db.sql("select points_delta from match_participants where match_id=:id order by rank").param("id",match).query(Integer.class).list());
             assertEquals(1L, db.sql("select completed_games from account_statistics where account_id=:id").param("id", account).query(Long.class).single());
             assertEquals(-1L, db.sql("select points from account_statistics where account_id=:id").param("id", account).query(Long.class).single());
             assertEquals(1L, db.sql("select count(*) from statistics_outbox").query(Long.class).single());
@@ -159,6 +161,13 @@ class SettlementIntegrationTest {
                 assertEquals(attempt==0?2L:3L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
                 assertEquals(attempt==0?0L:1L,db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
             }
+            UUID zeroMatch=UUID.randomUUID();
+            db.sql("insert into matches(id,room_id,status,rules_version,started_at) values (:id,:id,'COMPLETED_PENDING','score-2-1-0-minus1',now())").param("id",zeroMatch).update();
+            db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank) values (:id,0,:principal,:account,3)").param("id",zeroMatch).param("principal",principal).param("account",account).update();
+            for(int seat=1;seat<4;seat++)db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:id,:seat,true,:rank)").param("id",zeroMatch).param("seat",seat).param("rank",seat==3?4:seat).update();
+            assertTrue(Boolean.TRUE.equals(tx.execute(t->service.settle(zeroMatch))));assertFalse(Boolean.TRUE.equals(tx.execute(t->service.settle(zeroMatch))));
+            assertEquals(0,db.sql("select points_delta from account_match_results where match_id=:id").param("id",zeroMatch).query(Integer.class).single());
+            assertEquals(4L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
         } finally { flyway.clean(); }
     }
 }

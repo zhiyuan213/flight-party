@@ -60,10 +60,10 @@ class MidgameAccountIntegrationTest {
     private UUID match(JdbcClient db,UUID principal,UUID account,boolean live){
         UUID id=UUID.randomUUID();
         db.sql("insert into matches(id,room_id,status,rules_version,started_at) values (:id,:id,'PREPARED','test',now())").param("id",id).update();
-        db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank) values (:id,0,:principal,:account,3)")
+        db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank) values (:id,0,:principal,:account,4)")
             .param("id",id).param("principal",principal).param("account",account).update();
         for(int seat=1;seat<4;seat++)db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:id,:seat,true,:rank)")
-            .param("id",id).param("seat",seat).param("rank",seat==1?1:seat==2?2:4).update();
+            .param("id",id).param("seat",seat).param("rank",seat==1?1:seat==2?2:3).update();
         return id;
     }
 }

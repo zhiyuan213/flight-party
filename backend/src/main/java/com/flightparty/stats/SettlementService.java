@@ -24,7 +24,7 @@ public class SettlementService {
         for(var account:participants.stream().map(Participant::accountId).filter(java.util.Objects::nonNull).distinct().sorted().toList())
             db.sql("select id from accounts where id=:id for update").param("id",account).query(UUID.class).single();
         for (var p : participants) {
-            int points = switch (p.rank()) { case 1 -> 2; case 2 -> 1; default -> -1; };
+            int points = switch (p.rank()) { case 1 -> 2; case 2 -> 1; case 3 -> 0; default -> -1; };
             db.sql("update match_participants set points_delta=:points where match_id=:match and seat_index=:seat")
                     .param("points", points).param("match", matchId).param("seat", p.seat()).update();
             if (p.accountId() == null) continue;

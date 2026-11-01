@@ -488,3 +488,15 @@ header nav .account-button.signed-in-account{gap:13px}
 
 @media(max-width:480px){.compact-account .account-dialog-heading{gap:18px}.compact-account .appearance-option b{font-size:10px}header nav .account-button.signed-in-account{gap:10px}}
 @media(max-width:380px){header nav .account-button.signed-in-account{gap:6px;padding-left:7px}}
+.rank-row{min-height:70px;position:relative}
+.rank-row>small{min-width:120px;text-align:right;line-height:1.5}
+#result-save-panel{min-height:84px}
+.rank-row[data-card-frame="gold"]{border:2px solid transparent;background:linear-gradient(#fffdf7,#fff9e9) padding-box,linear-gradient(125deg,#fff2b4,#dfa92c,#fff7d4,#b97f18) border-box;box-shadow:inset 0 1px 2px #fff,0 3px 9px #ae85201a}
+.rank-row[data-card-frame="gold"]::before{content:"";position:absolute;right:14px;top:-10px;width:44px;height:19px;background:url('assets/member/wing-badge.svg') center/contain no-repeat;pointer-events:none}
+.rank-row[data-card-frame="cloud"]{border:2px solid transparent;background:linear-gradient(#fff,#edf9ff) padding-box,linear-gradient(125deg,#e9fcff,#84c9ed,#fff,#97d6f4) border-box;box-shadow:inset 0 1px 3px white,0 3px 9px #5196be1a}
+.rank-row[data-card-frame="cloud"]::before{content:"";position:absolute;right:16px;top:-10px;width:40px;height:20px;background:radial-gradient(circle at 50% 48%,#fff 0 7px,#caeaff 8px,transparent 9px),radial-gradient(circle at 25% 65%,#f7fdff 0 6px,#caeaff 7px,transparent 8px),radial-gradient(circle at 75% 65%,#fff 0 6px,#caeaff 7px,transparent 8px);pointer-events:none}
+.rank-row[data-card-frame="night"]{border:2px solid transparent;background:linear-gradient(#fcfcff,#f0f1ff) padding-box,linear-gradient(125deg,#cdd9ff,#6052bc,#dce7ff,#7a65c3) border-box;box-shadow:inset 0 1px 2px white,0 3px 9px #5e52b61a}
+.rank-row[data-card-frame="night"]::before{content:"✦ ☾";position:absolute;right:16px;top:-13px;color:#eabd4a;text-shadow:0 1px 1px #88724c88;font-size:20px;letter-spacing:5px;pointer-events:none}
+.compact-account .effect-settings>.effect-save-status{display:block;font-size:10px;min-height:14px;margin:5px 0 0;color:#6c89b1}
+.compact-account .effect-preview-host canvas{height:76px}.compact-account .effect-victory-preview .victory-crest{height:86px;width:174px}.compact-account .effect-victory-preview .victory-portrait{width:53px;height:53px;left:calc(50% - 26.5px);top:15px}
+@media(max-width:480px){.rank-row{min-height:68px}.rank-row>small{min-width:0;max-width:115px;font-size:9px}.rank-row[data-card-frame]::before{right:10px}}

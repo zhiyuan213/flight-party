@@ -29,7 +29,15 @@ export class FlightTrails {
   }
  }
 }
-export function startTrailPreview(canvas,style,reduced=false){
- const context=canvas.getContext('2d'),trail=new FlightTrails(),start=performance.now();
- const draw=now=>{if(!canvas.isConnected||!canvas.closest('dialog')?.open||now-start>2400)return;const t=Math.min(1,(now-start)/1600),x=35+t*230,y=50-Math.sin(t*Math.PI)*12;context.clearRect(0,0,300,95);if(!reduced&&t<1)trail.emit(style,'preview',{x,y,z:0},now);trail.draw(context,p=>p,55,now,reduced);context.font='35px sans-serif';context.fillStyle='#347ce9';context.fillText('✈',x,60-Math.sin(t*Math.PI)*12);if(!reduced)requestAnimationFrame(draw);};requestAnimationFrame(draw);
+const previewRuns=new WeakMap();
+export function startTrailPreview(canvas,style,reduced=false,loop=false){
+ const context=canvas.getContext('2d'),trail=new FlightTrails(),start=performance.now(),token={};let lastCycle=-1;previewRuns.set(canvas,token);
+ const draw=now=>{
+  if(previewRuns.get(canvas)!==token||!canvas.isConnected||!canvas.closest('dialog')?.open)return;
+  const elapsed=now-start;if(!loop&&elapsed>2400)return;const cycle=Math.floor(elapsed/2400);if(cycle!==lastCycle){trail.clear();lastCycle=cycle;}
+  const t=Math.min(1,(elapsed%2400)/1600),x=35+t*230,y=50-Math.sin(t*Math.PI)*12;
+  context.clearRect(0,0,300,95);if(!reduced&&t<1)trail.emit(style,'preview',{x,y,z:0},now);trail.draw(context,p=>p,55,now,reduced);
+  context.font='35px sans-serif';context.fillStyle='#347ce9';context.fillText('✈',x,60-Math.sin(t*Math.PI)*12);
+  if(!reduced)requestAnimationFrame(draw);
+ };requestAnimationFrame(draw);
 }
