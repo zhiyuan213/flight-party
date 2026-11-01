@@ -257,7 +257,7 @@
 }
 @media(max-width:700px){
  .player-row,.player-row.active{min-height:112px}
- .player-social-stats>div{flex-direction:column;align-items:flex-start;gap:2px}
+ .player-social-stats>div{flex-direction:column;align-items:center;text-align:center;gap:2px}
  .player-social-stats b{font-size:12px}
  .player-social-stats span{font-size:7px}
  .player-social-stats small{font-size:6px}
