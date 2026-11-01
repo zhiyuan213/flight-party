@@ -59,6 +59,21 @@
 .quota-empty{background:linear-gradient(125deg,#fff4dd,#fffaf0);border-color:#edcfa0}
 .quota-empty .quota-icon,.quota-empty b{color:#ad7c2e}
 .auth-tabs{margin-bottom:17px}
+.account-auth-form{display:grid;gap:14px;min-width:0}
+.account-auth-form label{display:grid;gap:7px;min-width:0;color:#456988;font-size:12px;font-weight:800;line-height:1.5}
+.account-auth-form input{display:block;box-sizing:border-box;width:100%;min-width:0;min-height:46px;padding:12px 14px;margin:0;border:1px solid #bdd9f1;border-radius:12px;background:#fff;color:#254b70;font:inherit;font-size:15px;font-weight:500;line-height:1.4;box-shadow:inset 0 1px 3px #35577808;transition:border-color .15s,box-shadow .15s}
+.account-auth-form input:focus-visible{outline:0;border-color:#5593e9;box-shadow:0 0 0 3px #4e91ed24}
+.account-auth-form input::placeholder{color:#8b9eaf;font-weight:400}
+.account-auth-form .auth-preview-disclosure{font-size:11px;line-height:1.7;margin:0;color:#657e94}
+.account-oauth-note{margin:0;color:#74879a;font-size:11px;line-height:1.6}
+.account-auth-form .auth-submit{width:100%;min-height:46px;justify-content:center;margin-top:2px}
+.account-membership{display:grid;gap:10px;align-items:stretch}
+.account-membership p{font-size:11px;overflow-wrap:anywhere}
+.account-membership button{width:100%;min-width:0;white-space:normal;line-height:1.5}
+.legal-links a,.legal-links a:visited{color:#222;text-decoration:none;font-size:11px;font-weight:500}
+.legal-links a:hover{color:#000;text-decoration:underline}
+.legal-links a:focus-visible{outline:2px solid #222;outline-offset:3px;border-radius:2px}
+@media(max-width:480px){.account-auth-form input{font-size:16px}.account-dialog{max-height:calc(100dvh - 24px)}.legal-links{line-height:1.8}}
 #account-preview-form{display:flex;flex-direction:column}
 #account-preview-form label{font-size:10px;font-weight:900;color:#5a7f9e;margin-bottom:6px}
 #account-preview-form input{width:100%;padding:11px 12px;background:#ffffffde;border:1px solid #bdd9f1;border-radius:10px;color:#235c95;font-size:13px;margin-bottom:13px;box-shadow:inset 0 1px 2px #3d688b0a}
