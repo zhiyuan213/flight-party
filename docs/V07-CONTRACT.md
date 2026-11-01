@@ -126,3 +126,5 @@ UI33 current overrides: top five real leaderboard accounts only, no synthetic fi
 Latest UI34 leaderboard override: up to ten entries, five visible with an internal scrollbar, fixed card dimensions within the viewport. User explicitly requested synthetic filler entries; these are frontend-only and never modify authoritative points/games.
 
 VIP three-shape concept (2026-11-01): docs/design/vip-aircraft-three-shapes-concept.png, generated with built-in imagegen. Golden Captain biplane, Cloud Voyager twin-engine floatplane, Starlight Racer swept-wing twin-tail sport plane. Concept art/modeling reference only; no claim that these meshes exist or are deployed. Original generation retained at C:/Users/Administrator/.codex/generated_images/01a19019-d8c5-7ee3-b7d9-73f50f5771b4/exec-aee75b74-9c79-40cb-b586-6d98ef875374.png.
+
+UI37: 三架独立三维模型取代旧版同几何换色的会员飞机：金翼双翼机、云端双发浮筒飞机、星夜双尾运动机。参考 docs/design/vip-aircraft-three-shapes-concept.png；实际资产 dist/assets/models/*.glb，构建源码 dist/member-plane.js，导出 scripts/export-member-planes.mjs。服务端样式键 gold/sapphire/night 保持兼容。主页/机库接入，旋转、独立螺旋桨和会员保存沿用；对局保留原棋子和席位颜色。实际模型是按概念结构重建的版本，比例/表情/材质细节有差异，尚非概念图1:1还原。

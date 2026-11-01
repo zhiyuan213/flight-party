@@ -552,3 +552,13 @@ UI34 final follow-up checks: 55 Node tests pass, including delayed/coalesced mov
 UI35 player HUD follow-up: reserve 8px left/18px right margin around player portrait to accommodate the external wing frame, moving name/fleet content right. Point/game numbers increased to 20px desktop/17px narrow screens; narrow avatar track increased to 48px to prevent margin overlap.
 
 UI36: HUMAN/BOT/AUTO type badge moved below pilot name into the fleet detail line. Name row now gives its remaining width to the pilot name. Modified app syntax and all 55 Node tests passed. New three-silhouette VIP aircraft concept is a design reference only, not an implemented model.
+
+## 2026-11-01 UI37 — 三款独立 VIP 飞机模型
+- 根据已选三机型概念图制作独立几何：gold=金翼双翼机、sapphire=云端双发水上飞机、night=星夜后掠翼双尾运动机。保留原服务端样式键，会员选择与到期判断接口不变。
+- 自定义截面机身、空气翼型、双翼支柱、浮筒/支撑、独立发动机、轮胎/轮罩、分件线、铆钉和内嵌面部纹理；材质为金属/清漆 PBR。GLB资产保留部件层级、材质、贴图与独立螺旋桨轴。
+- 导出：node scripts/export-member-planes.mjs。文件在 dist/assets/models/，manifest记录实际字节及网格数。金翼约1.22MB、云端约2.00MB、星夜约1.15MB；金翼47964、云端80168、星夜45724个可见三角形（含铆钉实例）。
+- Homepage/Hangar用同源可编辑几何创建真实WebGL模型；GLB是同一几何的离线导出，不是概念图贴片。摄影棚PMREM反射、主/补/轮廓灯、柔和接触阴影、当前朝向自动取景；水上飞机两副螺旋桨均独立旋转，减少动画时保持静态。
+- 本地浏览器实际检查三机型，正面、侧面、3/4和390px窄屏；观察WebGL路径，无控制台错误、页面横向溢出或飞机出框。窄屏viewport/scrollWidth均390px；停止旋转后angle连续读取为0。未进行实体手机、独立glTF查看器或硬件GPU性能认证。
+- npm test：62项全部通过；导出校验覆盖GLB块/缓冲区对齐、贴图PNG像素、PBR clearcoat、实例层级、非有限顶点拒绝；机型测试覆盖独立结构、浮筒与双发/双尾、有效法线与机身外向法线。修改JS语法检查通过。
+- 设计图是艺术参考。实际浏览器模型与图在比例、表情、材质细节上仍有差异，不声明1:1复现。当前接入范围为主页与机库；对局棋盘、棋子标定、规则与骰子没有改动。
+- 独立本地真实模型检查页：docs/verification/vip-aircraft-models.html。没有模拟账号或付费资格。
