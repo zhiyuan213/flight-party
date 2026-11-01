@@ -1,0 +1,7 @@
+<!doctype html><html lang="zh"><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=../../dist/styles.css><link rel=stylesheet href=../../dist/visual-v7.css><style>body{background:#dceeff}.review-label{position:fixed;top:10px;left:10px;font:14px sans-serif;color:#466ca0}dialog{max-height:94vh;overflow:auto}</style><div class=review-label>本地外观预览 · 模拟会员 · 不授予真实权益</div><button id=account-open hidden></button><dialog id=account-dialog class=account-dialog></dialog><script type=module>
+import {bindLiveAccount} from '../../dist/live-account-ui.js';
+const social={dialog:document.getElementById('account-dialog'),accountButton:document.getElementById('account-open'),t:(en,zh)=>zh,renderResult(){},onChange(){},render(){this.renderDialog()},authTab:'login'};
+const session=new EventTarget();const identity={account:{id:'preview',displayName:'大卫'},statistics:{points:12,completedGames:8},recording:{member:true,subscriptions:[],paymentConfigured:false},appearance:{member:true,frame:'gold',selectedFrame:'gold'}};
+session.request=async(path,input)=>{if(path==='/api/account/appearance'){identity.appearance={member:true,frame:input.frame,selectedFrame:input.frame};return identity.appearance}return identity};
+bindLiveAccount(social,session);session.dispatchEvent(new CustomEvent('identity',{detail:identity}));social.dialog.showModal();
+</script></html>
