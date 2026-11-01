@@ -591,3 +591,9 @@ header nav .account-button.signed-in-account{gap:13px}
 .player-row>.player-avatar{margin-left:8px;margin-right:18px}
 .player-social-stats b{font-size:20px;line-height:1.15}
 @media(max-width:700px){.player-row,.player-row.active{grid-template-columns:48px minmax(0,1fr)}.player-row>.player-avatar{margin-left:6px;margin-right:8px}.player-social-stats b{font-size:17px}}
+
+/* Keep the name line for the pilot name; seat type belongs with fleet details. */
+.player-info .player-detail-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.player-detail-line .type-badge{display:inline-flex;align-items:center;flex:none;font-size:6px;line-height:1;padding:3px 4px;margin:0}
+.name-line b{flex:1;min-width:0}
+@media(max-width:700px){.player-detail-line .type-badge{font-size:5px;padding:2px 3px}.player-info .player-detail-line{gap:4px}}
