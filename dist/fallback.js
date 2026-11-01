@@ -1,4 +1,5 @@
-import {usesVipPlane,VIP_PROPELLER_COLOR} from './plane-skin.js';
+import {playerPlaneSkin} from './plane-skin.js';
+import {drawPlaneNames} from './plane-nameplates.js';
 import {drawPropeller} from './propeller.js';
 import {FlightTrails} from './flight-trails.js';
 // Fixed-camera 2.5D renderer. Rule coordinates are owned exclusively by engine.js.
@@ -30,7 +31,7 @@ export class CanvasBoard{
   this.wrap=wrap;this.onSelect=onSelect;this.reduced=reduced;this.mode='illustrated';wrap.dataset.renderer='illustrated';
   this.canvas=document.createElement('canvas');this.canvas.setAttribute('aria-label','Flight Party board. Raised route tiles, two planes per player. Select a highlighted plane or use the plane buttons.');wrap.append(this.canvas);this.ctx=this.canvas.getContext('2d');
   this.planes=[];this.keys=[];this.anims=[];this.effects=[];this.trails=[];this.shake=0;this.art={};this.sprites={};this.generation=0;
-  for(const [key,file] of Object.entries({plane0:'plane-blue-body.png',plane1:'plane-orange-body.png',plane2:'plane-green-body.png',plane3:'plane-red-body.png',vipGold:'plane-vip-gold-body.png',world:'airport-island-v5.png',ocean:'ocean-water-v5.png',cloud:'cloud-bank.png',smoke:'smoke-puff.png'})){
+  for(const [key,file] of Object.entries({plane0:'plane-blue-body.png',plane1:'plane-orange-body.png',plane2:'plane-green-body.png',plane3:'plane-red-body.png',vipGold:'plane-vip-gold-body.png',vipCloud:'plane-vip-cloud-body.png',vipNight:'plane-vip-night-body.png',world:'airport-island-v5.png',ocean:'ocean-water-v5.png',cloud:'cloud-bank.png',smoke:'smoke-puff.png'})){
    const img=new Image();img.onload=()=>{this.boardCache=null;const max=key==='cloud'?768:['world','ocean'].includes(key)?0:320;if(max){const sprite=document.createElement('canvas');sprite.width=max;sprite.height=Math.round(max*img.naturalHeight/img.naturalWidth);sprite.getContext('2d').drawImage(img,0,0,sprite.width,sprite.height);this.sprites[key]=sprite;}if(key==='world')this.islandSprite=this.featherIsland(img);};img.src='assets/'+file;this.art[key]=img;
   }
   this.ro=new ResizeObserver(()=>this.resize());this.ro.observe(wrap);
@@ -192,8 +193,8 @@ export class CanvasBoard{
   c.translate(a.x,a.y);
   if(sel){c.beginPath();c.ellipse(0,.02*s,.50*s*k,.35*s*k,0,0,TAU);c.strokeStyle='#fff8aa';c.lineWidth=3;c.shadowColor='#ffe566';c.shadowBlur=10;c.stroke();c.shadowBlur=0;}
   const bob=this.reduced?0:Math.sin(now*.002+p.color+p.piece)*.011*s;c.translate(0,-bob);c.rotate(p.spin);c.scale(1+p.squash*.5,1-p.squash*.38);if(p.heading)c.scale(-1,1);
-  const owner=this.game?.players?.[p.color],vipImage=this.sprites.vipGold||this.art.vipGold,vip=usesVipPlane(owner)&&!!(vipImage?.width||vipImage?.naturalWidth),normal=this.sprites['plane'+p.color]||this.art['plane'+p.color],img=vip?vipImage:normal,width=1.36*s*k,heightPx=img?.width?width*img.height/img.width:width;
-  if(img&&(img.width||img.naturalWidth)){c.drawImage(img,-width*.5,-heightPx*.91,width,heightPx);drawPropeller(c,width,heightPx,now,vip?VIP_PROPELLER_COLOR:COLORS[p.color],this.reduced,p.color+p.piece);}
+  const owner=this.game?.players?.[p.color],skin=playerPlaneSkin(owner),vipImage=this.sprites[skin.spriteKey]||this.art[skin.spriteKey],vip=skin.style!=='classic'&&!!(vipImage?.width||vipImage?.naturalWidth),normal=this.sprites['plane'+p.color]||this.art['plane'+p.color],img=vip?vipImage:normal,width=1.36*s*k,heightPx=img?.width?width*img.height/img.width:width;
+  if(img&&(img.width||img.naturalWidth)){c.drawImage(img,-width*.5,-heightPx*.91,width,heightPx);drawPropeller(c,width,heightPx,now,vip?skin.propellerColor:COLORS[p.color],this.reduced,p.color+p.piece,vip?skin.hubStyle:'gold');}
   // Permanent aircraft identity, printed on the existing white fuselage panel.
   // Counter-mirror just the glyph when the aircraft turns; its panel anchor still follows the body.
   c.save();c.translate(-width*.099,-heightPx*.420);if(p.heading)c.scale(-1,1);c.transform(.88,.23,-.08,1,0,0);c.font=`900 ${heightPx*.090}px Flight,sans-serif`;c.textAlign='center';c.textBaseline='middle';c.lineWidth=heightPx*.009;c.strokeStyle='#ffffffb0';c.strokeText(String(p.piece+1),0,0);c.fillStyle='#17437b';c.fillText(String(p.piece+1),0,0);c.restore();
@@ -214,10 +215,17 @@ export class CanvasBoard{
  }
  drawClouds(now){const img=this.sprites.cloud||this.art.cloud;if(!img||!(img.width||img.naturalWidth))return;const c=this.ctx,s=this.scale;const clouds=[[-7.0,-2.4,4.6,.95],[7.05,1.6,4.2,.96],[-5.5,6.1,4.8,1],[5.0,6.2,4.8,1],[-6.3,-5.55,2.4,.85]];for(let i=0;i<clouds.length;i++){const [x,z,width,alpha]=clouds[i],a=this.project({x,y:0,z}),drift=this.reduced?0:Math.sin(now*.00009+i)*s*.09;const w=width*s,ratio=(img.height||img.naturalHeight)/(img.width||img.naturalWidth);c.save();c.globalAlpha=alpha;c.drawImage(img,a.x-w/2+drift,a.y-w*ratio*.45,w,w*ratio);c.restore();}}
  background(){const key=`${this.w}:${this.h}:${this.art.world.naturalWidth}:${document.fonts.status}`;if(!this.boardCache||this.cacheKey!==key){const target=document.createElement('canvas');target.width=this.canvas.width;target.height=this.canvas.height;const main=this.ctx;this.ctx=target.getContext('2d');this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);this.board();this.ctx=main;this.boardCache=target;this.cacheKey=key;}this.ctx.drawImage(this.boardCache,0,0,this.w,this.h);}
+ drawNames(now){
+  const entries=this.planes.map(p=>{
+   const owner=this.game?.players?.[p.color],skin=playerPlaneSkin(owner),image=this.sprites[skin.spriteKey]||this.art[skin.spriteKey]||this.sprites['plane'+p.color]||this.art['plane'+p.color],width=1.36*this.scale*this.depth(p.z),height=image?.width?width*image.height/image.width:width,point=this.project(p),bob=this.reduced?0:Math.sin(now*.002+p.color+p.piece)*.011*this.scale;
+   return{key:`${p.color}:${p.piece}`,seat:p.color,name:owner?.name,color:MARKERS[p.color],x:point.x,y:point.y-height*.91-bob-4};
+  });
+  drawPlaneNames(this.ctx,entries,{width:this.w,height:this.h,fontSize:Math.min(13,Math.max(10,this.scale*.2+5)),maxWidth:Math.min(122,Math.max(76,this.scale*2.2))});
+ }
  frame(now){
   if(this.w&&this.h){const c=this.ctx;c.clearRect(0,0,this.w,this.h);const pending=this.anims;this.anims=[];for(const a of pending){const t=Math.min(1,(now-a.start)/a.ms);a.update(t);if(t===1)a.resolve();else this.anims.push(a);}
    this.effects=this.effects.filter(e=>now-e.start<e.life);this.trails=this.trails.filter(e=>now-e.start<e.life);c.save();if(this.shake>.2){c.translate(Math.sin(now*.15)*this.shake,Math.cos(now*.12)*this.shake*.4);this.shake*=.78;}
-   this.background();this.cosmeticTrails?.draw(c,p=>this.project(p),this.scale,now,this.reduced);this.drawTrails(now);this.drawSmoke(now);for(const p of [...this.planes].sort((a,b)=>a.z-b.z||a.y-b.y))this.drawPlane(p,now);this.drawImpact(now);this.drawClouds(now);c.restore();
+   this.background();this.cosmeticTrails?.draw(c,p=>this.project(p),this.scale,now,this.reduced);this.drawTrails(now);this.drawSmoke(now);for(const p of [...this.planes].sort((a,b)=>a.z-b.z||a.y-b.y))this.drawPlane(p,now);this.drawImpact(now);this.drawClouds(now);this.drawNames(now);c.restore();
   }requestAnimationFrame(this.frame);
  }
 }

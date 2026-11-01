@@ -44,4 +44,18 @@ class RoomSnapshotTest {
         assertEquals("classic",RoomSnapshot.forMember(room,principal,now,java.util.Map.of(),java.util.Map.of(0,ordinary)).seats().getFirst().planeStyle());
         assertEquals("classic",RoomSnapshot.forMember(room,principal,now).seats().getFirst().planeStyle());
     }
+    @Test void mixedMemberRoomBroadcastsEverySelectedSkinWithoutConflatingSeats(){
+        var seats=new java.util.ArrayList<RoomRules.Seat>();
+        var appearances=new java.util.HashMap<Integer,com.flightparty.auth.AppearanceService.Appearance>();
+        var skins=java.util.List.of("classic","gold2d","cloud2d","night2d");
+        for(int i=0;i<skins.size();i++){
+            seats.add(new RoomRules.Seat(i,UUID.randomUUID(),true,false));
+            appearances.put(i,com.flightparty.auth.AppearanceService.profile(true,"gold","star","gold",null,skins.get(i),0));
+        }
+        var room=new RoomRules.Room(UUID.randomUUID(),RoomRules.Phase.PLAYING,seats,null);
+        var snapshot=RoomSnapshot.forMember(room,seats.getFirst().principal(),Instant.now(),java.util.Map.of(),appearances);
+        assertEquals(skins,snapshot.seats().stream().map(RoomSnapshot.Seat::planeStyle).toList());
+        appearances.put(2,com.flightparty.auth.AppearanceService.profile(false,"gold","star","gold",null,"cloud2d",0));
+        assertEquals(java.util.List.of("classic","gold2d","classic","night2d"),RoomSnapshot.forMember(room,seats.getFirst().principal(),Instant.now(),java.util.Map.of(),appearances).seats().stream().map(RoomSnapshot.Seat::planeStyle).toList());
+    }
 }

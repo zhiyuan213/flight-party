@@ -578,3 +578,14 @@ UI37 production verification: HTTPS homepage serves UI37; all three deployed GLB
 - 浏览器仅响应式手机视口；未进行实体iOS/Android/微信App的系统分享和实际发送测试。双身份浏览器已验收联机渲染与操作，未新增双设备完整结算录像；实验Three.js棋盘不是本轮VIP精灵视觉验收范围。正式收款状态不受本轮影响。
 
 UI38 生产验收：发布a851059，HTTPS主页200且UI38标记存在；新PNG与分享/主页模块200。线上真实浏览器机库仅Classic/Golden Wings 2D两项，新图及活动螺旋桨已显示，非会员保存禁用，控制台0错误。生产创建临时匿名好友等待房，公开planeStyle=classic，退出成功；未开局、未写积分。三款旧GLB均HTTP404。隔离QA应用/数据库/Redis/网络已清理，测试用隧道与本地代理停止。代码已推送GitHub main。实体微信发送边界仍如上。
+
+## 2026-11-02 UI39 — 飞机昵称与七色彩虹、云海/星夜2D飞机
+- 飞机姓名单独在最后一层绘制，不随机身镜像、挤压或旋转；使用当前玩家公开name，随服务器同版本昵称变化更新。标签有白底/阵营色点与边框，较长昵称以完整字素簇省略，控制字符换为空格。统一计算八个标签，优先向上避让，边界夹紧并加细连接线，不修改游戏状态、棋盘投影、飞机编号或点击区域。
+- 默认CanvasBoard已接入；实验Three路径复用现有透明效果画布和相机投影，跳过镜头背后的点。实验路径本轮只做源码/语法接入，未声称GPU画面验收。
+- cloud2d云海巡航和night2d星夜疾风为imagegen制作的透明2D涂装，1312×1199，保持机身/数字/桨轴锚点；金翼保留。主页、机库、实际Canvas对局通过同一目录选择。桨叶色与银色hub对应新涂装。客户端加载失败回经典。真正有效正式/赠送会员才可保存，到期/撤销回经典；旧三维选择只兼容到金翼，不恢复旧资源。
+- 彩虹从五组管面改为一条共享截面的连续七色丝带（红橙黄绿青蓝紫）；末端距离/年龄渐细渐隐，浅色光边，96点/1550ms上限不变。修复预览投影忽略z、七色堆叠为紫线的实际原因。预览及对局均由相同FlightTrails.draw绘制；测试验证水平/垂直及预览投影的七色面积/宽度、共边、渐变、消散和减少动态清理。
+- npm test：80项全部通过；所有修改JS语法检查通过。后端Docker构建成功；隔离Postgres/Redis执行PlaneAppearanceTest、PlaneAppearanceIntegrationTest、RoomSnapshotTest、AvatarIntegrationTest、SettlementIntegrationTest、MidgameAccountIntegrationTest、RoomPresenceIntegrationTest，共16项，0失败/错误/跳过，含四人不同机型独立广播、固定身份、单独到期回经典。无迁移、生产账号/会员/积分改写。
+- 本地真实浏览器实际Canvas验收页docs/verification/plane-names-preview.html明确标记模拟四会员。检查桌面同款八架金翼与三款混合、手机390×844的八个姓名、650ms跳格中段、1100ms撞机返回时姓名正向及七色光带。长中文/英文/emoji可读，标签错开、无横向溢出。姓名同款图原始Canvas保存docs/verification/plane-names-preview.png；该图是本地绘制验收，不能当作新增真实联网对局证据。
+- 彩虹预览弹窗已观察七色光带及渐细尾端，不再是紫线。生产部署与HTTP检查完成后追加记录。实体手机/微信和新增真实双浏览器整局未在本轮复测；既有成绩/登录/支付规则保持。
+
+UI39预览收尾：特效预览的通用✈符号已换成账号当前飞机的实际PNG，复用同一drawPropeller和金/银hub；缺图回经典、减少动态静止、图片加载回退均有测试。手机真实浏览器850ms截图观察到七色连续光带和实际蓝色飞机，不再用单色线或通用符号代替。最终80项前端测试通过。
