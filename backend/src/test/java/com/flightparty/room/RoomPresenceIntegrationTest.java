@@ -20,7 +20,7 @@ class RoomPresenceIntegrationTest {
             presence.disconnect(room.id(),b,"b1",now.plusSeconds(1));
             presence.heartbeat(room.id(),a,"a",now.plusSeconds(18));presence.heartbeat(room.id(),b,"b2",now.plusSeconds(18));
             presence.prune(now.plusSeconds(20));assertEquals(2,rooms.load(room.id()).orElseThrow().room().seats().size());
-            presence.disconnect(room.id(),b,"b2",now.plusSeconds(20));presence.prune(now.plusSeconds(34));assertTrue(rooms.active(b).isPresent());
+            presence.disconnect(room.id(),b,"b2",now.plusSeconds(20));presence.heartbeat(room.id(),a,"a",now.plusSeconds(32));presence.prune(now.plusSeconds(34));assertTrue(rooms.active(b).isPresent());
             var stale=rooms.load(room.id()).orElseThrow();presence.heartbeat(room.id(),b,"reconnected",now.plusSeconds(34));
             assertThrows(IllegalStateException.class,()->rooms.leaveDisconnected(stale,b,now.plusSeconds(36)),"Atomic guard sees reconnect after an expiry scan");
             presence.disconnect(room.id(),b,"reconnected",now.plusSeconds(40));presence.heartbeat(room.id(),a,"a",now.plusSeconds(50));presence.prune(now.plusSeconds(56));
