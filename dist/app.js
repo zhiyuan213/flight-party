@@ -123,6 +123,7 @@ async function chooseLocal(piece){if(!game||screen!=='play'||diceBusy||game.phas
 $('roll').onclick=()=>roll();
 function finish(){
  social.liveResult=onlineMode?{status:'PENDING'}:null;finishLocal();if(!onlineMode)return;
+ $('rematch').textContent=onlineSession.room?.origin==='FRIENDS'?t('Play with friends again ↗','好友再来一局 ↗'):t('Match again ↗','重新匹配 ↗');
  const generation=epoch,roomId=onlineRoomId,panel=$('result-save-panel');
  $('rematch').disabled=true;panel.classList.remove('hidden');
  panel.textContent=t('Saving the server-verified result…','正在保存服务器确认的结果…');
@@ -135,7 +136,7 @@ function finish(){
     const identity=await onlineSession.request('/api/me');onlineSession.emit('identity',identity);
     panel.textContent=t('Result confirmed. Eligible account games follow daily or membership recording rules.','结果已确认。已绑定账号的对局按每日免费或会员规则累计成绩。');
     $('rankings').innerHTML=result.ranking.map((seat,i)=>`<div class="rank-row"><span class="rank-number">${i+1}</span><b>${esc(game.players[seat.seatIndex].name)}</b><small>${seat.pointsDelta>0?'+':''}${seat.pointsDelta} ${t('points this game','本局积分')}</small></div>`).join('');
-    if(!identity.activeRoomId){$('rematch').disabled=false;return;}
+    if(identity.activeRoomId!==roomId||onlineSession.room?.phase==='SETTLED'){$('rematch').disabled=false;return;}
    }
   }catch(error){panel.textContent=t('Result confirmation pending. Retrying…','结果确认暂未完成，正在重试…');}
   later(check,1000);
@@ -163,7 +164,12 @@ onlineSession.initialize().then(async identity=>{
  }
  if(invitation)await social.openInvitation(invitation);
 }).catch(()=>{/* Local practice remains available when the local backend is stopped. */});
-$('rematch').onclick=()=>onlineMode?social.openRoom('invite'):start();
+$('rematch').onclick=()=>{
+ if(!onlineMode){start();return;}
+ const room=onlineSession.room;
+ if(room?.origin==='FRIENDS')social.rematchFriends(room.roomId);
+ else social.openRoom('quick');
+};
 const seenOnlineReactions=new Set();
 onlineSession.addEventListener('snapshot',event=>{
  if(!onlineMode||!game)return;

@@ -10,11 +10,15 @@ import java.util.UUID;
 public final class RoomRules {
     private static final Duration MATCH_WAIT = Duration.ofSeconds(30);
     public enum Phase { WAITING_FRIENDS, MATCHING, STARTING, PLAYING, SETTLED, CLOSED }
-    public record Seat(int index, UUID principal, boolean ready, boolean bot) {
+    public enum Origin { QUICK, FRIENDS }
+    public record Seat(int index, UUID principal, boolean ready, boolean bot, boolean invited) {
+        public Seat(int index,UUID principal,boolean ready,boolean bot) { this(index,principal,ready,bot,false); }
         public Seat { if (index < 0 || index > 3 || (bot && principal != null) || (!bot && principal == null)) throw new IllegalArgumentException("invalid seat"); }
     }
-    public record Room(UUID id, Phase phase, List<Seat> seats, Instant deadline) {
+    public record Room(UUID id, Phase phase, List<Seat> seats, Instant deadline, Origin origin) {
+        public Room(UUID id,Phase phase,List<Seat> seats,Instant deadline) { this(id,phase,seats,deadline,phase==Phase.WAITING_FRIENDS?Origin.FRIENDS:Origin.QUICK); }
         public Room {
+            if(origin==null)origin=phase==Phase.WAITING_FRIENDS?Origin.FRIENDS:Origin.QUICK;
             seats = List.copyOf(seats);
             if (id == null || phase == null || seats.size() > 4 || seats.stream().map(Seat::index).distinct().count() != seats.size()
                     || seats.stream().filter(s -> !s.bot()).map(Seat::principal).distinct().count() != seats.stream().filter(s -> !s.bot()).count()
@@ -23,34 +27,40 @@ public final class RoomRules {
     }
     private RoomRules() {}
     public static Room friends(UUID roomId, UUID principal) {
-        return new Room(roomId, Phase.WAITING_FRIENDS, List.of(new Seat(0,principal,false,false)), null);
+        return new Room(roomId, Phase.WAITING_FRIENDS, List.of(new Seat(0,principal,false,false,true)), null,Origin.FRIENDS);
     }
     public static Room quick(UUID roomId, UUID principal, Instant now) {
         return new Room(roomId, Phase.MATCHING, List.of(new Seat(0,principal,true,false)), now.plus(MATCH_WAIT));
     }
     public static Room join(Room room, UUID principal, Instant now) {
+        return join(room,principal,now,room.origin()==Origin.FRIENDS);
+    }
+    public static Room joinPublic(Room room, UUID principal, Instant now) {
+        return join(room,principal,now,false);
+    }
+    private static Room join(Room room, UUID principal, Instant now,boolean invited) {
         if (room.phase() != Phase.WAITING_FRIENDS && room.phase() != Phase.MATCHING) throw new IllegalStateException("room unavailable");
         if (room.phase() == Phase.MATCHING && !now.isBefore(room.deadline())) throw new IllegalStateException("matching expired");
         if (room.seats().size() == 4 || room.seats().stream().anyMatch(s -> principal.equals(s.principal()))) throw new IllegalStateException("room full or already joined");
         var seats = new ArrayList<>(room.seats());
         int index = 0; while (containsIndex(seats,index)) index++;
-        seats.add(new Seat(index, principal, room.phase() == Phase.MATCHING, false));
-        return new Room(room.id(), seats.size() == 4 && room.phase() == Phase.MATCHING ? Phase.STARTING : room.phase(), seats, room.deadline());
+        seats.add(new Seat(index, principal, room.phase() == Phase.MATCHING, false,invited));
+        return new Room(room.id(), seats.size() == 4 && room.phase() == Phase.MATCHING ? Phase.STARTING : room.phase(), seats, room.deadline(),room.origin());
     }
     public static Room ready(Room room, UUID principal, boolean ready, Instant now) {
         if (room.phase() != Phase.WAITING_FRIENDS) throw new IllegalStateException("not waiting for friends");
         var seats = new ArrayList<>(room.seats()); int index = memberIndex(seats,principal);
-        var seat = seats.get(index); seats.set(index,new Seat(seat.index(),principal,ready,false));
-        if (seats.stream().allMatch(Seat::ready)) return new Room(room.id(), seats.size() == 4 ? Phase.STARTING : Phase.MATCHING, seats, now.plus(MATCH_WAIT));
-        return new Room(room.id(), room.phase(), seats, null);
+        var seat = seats.get(index); seats.set(index,new Seat(seat.index(),principal,ready,false,seat.invited()));
+        if (seats.stream().allMatch(Seat::ready)) return new Room(room.id(), seats.size() == 4 ? Phase.STARTING : Phase.MATCHING, seats, now.plus(MATCH_WAIT),room.origin());
+        return new Room(room.id(), room.phase(), seats, null,room.origin());
     }
     public static Room leave(Room room, UUID principal, Instant now) {
         if (room.phase() != Phase.MATCHING && room.phase() != Phase.WAITING_FRIENDS) throw new IllegalStateException("room has started");
         var seats = new ArrayList<>(room.seats()); seats.remove(memberIndex(seats,principal));
-        if (seats.isEmpty()) return new Room(room.id(), Phase.CLOSED, seats, room.deadline());
+        if (seats.isEmpty()) return new Room(room.id(), Phase.CLOSED, seats, room.deadline(),room.origin());
         if (room.phase() == Phase.WAITING_FRIENDS && seats.stream().allMatch(Seat::ready))
-            return new Room(room.id(), Phase.MATCHING, seats, now.plus(MATCH_WAIT));
-        return new Room(room.id(), room.phase(), seats, room.deadline());
+            return new Room(room.id(), Phase.MATCHING, seats, now.plus(MATCH_WAIT),room.origin());
+        return new Room(room.id(), room.phase(), seats, room.deadline(),room.origin());
     }
     public static Room expire(Room room, Instant now) {
         if (room.phase() != Phase.MATCHING || now.isBefore(room.deadline())) throw new IllegalStateException("not due");
@@ -63,10 +73,16 @@ public final class RoomRules {
         return fillBots(room);
     }
     private static Room fillBots(Room room) {
-        if (room.seats().isEmpty()) return new Room(room.id(), Phase.CLOSED, List.of(), room.deadline());
+        if (room.seats().isEmpty()) return new Room(room.id(), Phase.CLOSED, List.of(), room.deadline(),room.origin());
         var seats = new ArrayList<>(room.seats());
         for (int i = 0; i < 4; i++) if (!containsIndex(seats,i)) seats.add(new Seat(i,null,true,true));
-        return new Room(room.id(), Phase.STARTING, seats, room.deadline());
+        return new Room(room.id(), Phase.STARTING, seats, room.deadline(),room.origin());
+    }
+    public static Room rematch(Room old,UUID id) {
+        if(old.phase()!=Phase.SETTLED || old.origin()!=Origin.FRIENDS)throw new IllegalStateException("not a finished friend room");
+        var humans=old.seats().stream().filter(s->!s.bot()&&s.invited()).map(s->new Seat(s.index(),s.principal(),false,false,true)).toList();
+        if(humans.isEmpty())throw new IllegalStateException("no friends");
+        return new Room(id,Phase.WAITING_FRIENDS,humans,null,Origin.FRIENDS);
     }
     private static boolean containsIndex(List<Seat> seats, int index) { return seats.stream().anyMatch(s -> s.index() == index); }
     private static int memberIndex(List<Seat> seats, UUID id) {

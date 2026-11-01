@@ -13,6 +13,33 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 /** Run only against a dedicated disposable Redis instance. */
 @EnabledIfEnvironmentVariable(named = "REDIS_TEST_HOST", matches = ".+")
 class CommandCommitterIntegrationTest {
+    @Test void friendRematchIsAtomicAndRetainsOnlyInvitedHumans() throws Exception {
+        var factory=new LettuceConnectionFactory(System.getenv("REDIS_TEST_HOST"),6379);factory.afterPropertiesSet();factory.start();
+        try {
+            var redis=new StringRedisTemplate(factory);redis.afterPropertiesSet();var rooms=new RedisRoomStore(redis);
+            UUID a=UUID.randomUUID(),b=UUID.randomUUID(),random=UUID.randomUUID();var now=Instant.now();
+            var friends=RoomRules.join(RoomRules.friends(UUID.randomUUID(),a),b,now);
+            var matching=RoomRules.ready(RoomRules.ready(friends,a,true,now),b,true,now);
+            var started=RoomRules.startNow(RoomRules.joinPublic(matching,random,now),a);
+            var old=new RoomRules.Room(started.id(),RoomRules.Phase.SETTLED,started.seats(),started.deadline(),started.origin());rooms.save(old,-1);
+            assertThrows(IllegalStateException.class,()->rooms.rematch(old,random));
+            UUID next;
+            try(var pool=java.util.concurrent.Executors.newFixedThreadPool(8)){
+                var calls=new java.util.ArrayList<java.util.concurrent.Future<UUID>>();
+                for(int i=0;i<16;i++){UUID caller=i%2==0?a:b;calls.add(pool.submit(()->rooms.rematch(old,caller).room().id()));}
+                next=calls.getFirst().get();for(var call:calls)assertEquals(next,call.get());
+            }
+            var room=rooms.load(next).orElseThrow().room();assertEquals(2,room.seats().size());
+            assertEquals(next,rooms.active(a).orElseThrow());assertEquals(next,rooms.active(b).orElseThrow());assertTrue(rooms.active(random).isEmpty());
+            assertEquals(RoomRules.Phase.WAITING_FRIENDS,room.phase());assertNull(room.deadline());
+            assertTrue(room.seats().stream().noneMatch(RoomRules.Seat::bot));
+            // Never steal a friend who has already entered a separate room.
+            UUID c=UUID.randomUUID();var blocked=RoomRules.friends(UUID.randomUUID(),c);
+            var settled=new RoomRules.Room(blocked.id(),RoomRules.Phase.SETTLED,blocked.seats(),null,RoomRules.Origin.FRIENDS);rooms.save(settled,-1);
+            var elsewhere=RoomRules.quick(UUID.randomUUID(),c,now);rooms.save(elsewhere,-1);
+            assertThrows(IllegalStateException.class,()->rooms.rematch(settled,c));assertEquals(elsewhere.id(),rooms.active(c).orElseThrow());
+        } finally {factory.destroy();}
+    }
     @Test void soleHumanMoveWaitsForDieThenCommitsOnceWithoutWaitingForDeadline() {
         var factory=new LettuceConnectionFactory(System.getenv("REDIS_TEST_HOST"),6379);
         factory.afterPropertiesSet();factory.start();

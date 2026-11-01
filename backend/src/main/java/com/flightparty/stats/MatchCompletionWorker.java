@@ -29,7 +29,7 @@ public class MatchCompletionWorker {
                     var state=rooms.load(id).orElseThrow();var room=state.room();
                     if(room.phase()!=RoomRules.Phase.SETTLED) {
                         if(room.phase()!=RoomRules.Phase.PLAYING) throw new IllegalStateException("unexpected room phase");
-                        rooms.save(new RoomRules.Room(room.id(),RoomRules.Phase.SETTLED,room.seats(),room.deadline()),state.version());
+                        rooms.save(new RoomRules.Room(room.id(),RoomRules.Phase.SETTLED,room.seats(),room.deadline(),room.origin()),state.version());
                     }
                     db.sql("update matches set redis_released=true where id=:id and status='SETTLED'").param("id",id).update();
                 } catch(RuntimeException failure) { LOG.warn("Settled room release awaiting recovery ({})",failure.getClass().getSimpleName()); }

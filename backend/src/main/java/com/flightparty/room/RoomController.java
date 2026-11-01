@@ -72,6 +72,12 @@ public class RoomController {
     }
     public record Join(UUID code) {}
     public record Ready(boolean ready) {}
+    @PostMapping("/{id}/rematch")
+    public RoomSnapshot rematch(@PathVariable UUID id,HttpServletRequest request) {
+        UUID user=principal(request);var old=member(id,user);
+        try { return views.forMember(store.rematch(old.room(),user).room(),user,Instant.now()); }
+        catch(IllegalStateException invalid) { throw new ResponseStatusException(HttpStatus.CONFLICT,"friend rematch unavailable"); }
+    }
     @PostMapping("/{id}/start-now")
     public synchronized RoomSnapshot startNow(@PathVariable UUID id,HttpServletRequest request) {
         UUID user=principal(request);
@@ -102,7 +108,7 @@ public class RoomController {
             if(candidate.isEmpty()) continue;
             var old=candidate.get();
             if(old.room().phase()!=RoomRules.Phase.MATCHING || !now.isBefore(old.room().deadline()) || old.room().seats().size()>=4) continue;
-            return views.forMember(store.save(RoomRules.join(old.room(),user,now),old.version()).room(),user,now);
+            return views.forMember(store.save(RoomRules.joinPublic(old.room(),user,now),old.version()).room(),user,now);
         }
         return views.forMember(store.save(RoomRules.quick(UUID.randomUUID(),user,now),-1).room(),user,now);
     }

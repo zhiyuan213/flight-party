@@ -7,6 +7,24 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RoomRulesTest {
+    @Test void originsAndFriendGroupSurviveTheLifecycle() {
+        UUID a=UUID.randomUUID(),b=UUID.randomUUID(),random=UUID.randomUUID();
+        var friends=join(friends(UUID.randomUUID(),a),b,now);
+        var matching=ready(ready(friends,a,true,now),b,true,now);
+        var mixed=joinPublic(matching,random,now);
+        assertEquals(Origin.FRIENDS,mixed.origin());
+        assertEquals(Origin.FRIENDS,RoomSnapshot.forMember(mixed,a,now).origin());
+        assertEquals(Origin.QUICK,RoomSnapshot.forMember(mixed,random,now).origin());
+        var started=startNow(mixed,a);
+        var finished=new Room(started.id(),Phase.SETTLED,started.seats(),started.deadline(),started.origin());
+        var next=rematch(finished,UUID.randomUUID());
+        assertNotEquals(finished.id(),next.id());assertEquals(Phase.WAITING_FRIENDS,next.phase());assertNull(next.deadline());
+        assertEquals(java.util.Set.of(a,b),next.seats().stream().map(Seat::principal).collect(java.util.stream.Collectors.toSet()));
+        assertTrue(next.seats().stream().noneMatch(Seat::ready));
+        var quick=quick(UUID.randomUUID(),a,now);
+        assertEquals(Origin.QUICK,RoomSnapshot.forMember(quick,a,now).origin());
+        assertThrows(IllegalStateException.class,()->rematch(quick,UUID.randomUUID()));
+    }
     private final Instant now=Instant.parse("2026-10-31T00:00:00Z");
     @Test void friendsWaitThenMatchWithoutResettingDeadline() {
         UUID a=UUID.randomUUID(), b=UUID.randomUUID(), c=UUID.randomUUID();

@@ -68,6 +68,34 @@ public class RedisRoomStore {
         Object id=redis.opsForHash().get("fp:{rooms}:active",principal.toString());
         return id==null?Optional.empty():Optional.of(UUID.fromString(id.toString()));
     }
+    private static final DefaultRedisScript<String> REMATCH=new DefaultRedisScript<>("""
+        if redis.call('TYPE',KEYS[1]).ok~='hash' then return '' end
+        local old=cjson.decode(redis.call('HGET',KEYS[1],'snapshot'))
+        if old.phase~='SETTLED' or old.origin~='FRIENDS' then return '' end
+        local member=false
+        for _,seat in ipairs(old.seats) do if seat.principal==ARGV[3] and seat.invited then member=true end end
+        if not member then return '' end
+        local existing=redis.call('HGET',KEYS[1],'rematchRoomId')
+        if existing then return existing end
+        if redis.call('TYPE',KEYS[2]).ok~='none' then return '' end
+        local at=redis.call('TYPE',KEYS[3]).ok
+        if at~='none' and at~='hash' then return '' end
+        local next=cjson.decode(ARGV[1])
+        for _,seat in ipairs(next.seats) do
+          local occupied=redis.call('HGET',KEYS[3],seat.principal)
+          if occupied and occupied~=old.id then return '' end
+        end
+        redis.call('HSET',KEYS[2],'version','0','snapshot',ARGV[1])
+        for _,seat in ipairs(next.seats) do redis.call('HSET',KEYS[3],seat.principal,ARGV[2]) end
+        redis.call('HSET',KEYS[1],'rematchRoomId',ARGV[2])
+        return ARGV[2]
+        """,String.class);
+    public Stored rematch(RoomRules.Room old,UUID principal) {
+        var next=RoomRules.rematch(old,UUID.randomUUID());
+        String id=redis.execute(REMATCH,List.of(key(old.id()),key(next.id()),"fp:{rooms}:active"),json.writeValueAsString(next),next.id().toString(),principal.toString());
+        if(id==null||id.isBlank())throw new IllegalStateException("friends are unavailable");
+        return load(UUID.fromString(id)).orElseThrow();
+    }
     public List<UUID> matching() {
         var ids=redis.opsForZSet().range("fp:{rooms}:matching",0,99);
         return ids==null?List.of():ids.stream().map(UUID::fromString).toList();
@@ -91,7 +119,7 @@ public class RedisRoomStore {
         """,Long.class);
     public boolean activate(Stored stored) {
         var room=stored.room();
-        var playing=new RoomRules.Room(room.id(),RoomRules.Phase.PLAYING,room.seats(),room.deadline());
+        var playing=new RoomRules.Room(room.id(),RoomRules.Phase.PLAYING,room.seats(),room.deadline(),room.origin());
         var game=com.flightparty.game.GameRules.start(room.seats().stream().map(RoomRules.Seat::index).toList());
         return Long.valueOf(1).equals(redis.execute(ACTIVATE,List.of(key(room.id()),"fp:{rooms}:starting","fp:{rooms}:playing"),Long.toString(stored.version()),json.writeValueAsString(playing),json.writeValueAsString(game),room.id().toString(),Long.toString(System.currentTimeMillis()+15000)));
     }

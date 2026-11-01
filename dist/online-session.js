@@ -18,6 +18,7 @@ export class OnlineSession extends EventTarget {
  }
  create() { return this.enter('/api/rooms',{}); }
  quick() { return this.enter('/api/rooms/quick',{}); }
+ rematch(roomId) { return this.enter(`/api/rooms/${roomId}/rematch`,{}); }
  join(code) { return this.enter('/api/rooms/join',{code}); }
  ready(ready=true) { return this.request(`/api/rooms/${this.room.roomId}/ready`,{ready}); }
  startNow() { return this.request(`/api/rooms/${this.room.roomId}/start-now`,{}); }
