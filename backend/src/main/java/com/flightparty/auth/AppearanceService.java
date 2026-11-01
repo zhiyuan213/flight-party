@@ -11,10 +11,15 @@ public class AppearanceService {
  public static Appearance make(boolean member,String frame,String trail,String victory){return new Appearance(member,member?frame:"none",frame,member?trail:"none",member?victory:"none",trail,victory,null,"classic");}
  private final JdbcClient db;
  public AppearanceService(JdbcClient db){this.db=db;}
- public static Appearance profile(boolean member,String frame,String trail,String victory,UUID avatar,String plane,int systemAvatar){var a=make(member,frame,trail,victory);return new Appearance(a.member(),a.frame(),a.selectedFrame(),a.trail(),a.victory(),a.selectedTrail(),a.selectedVictory(),member&&avatar!=null?"/api/avatars/"+avatar:"/api/avatars/system/"+systemAvatar,member?plane:"classic");}
+ /** Only the approved playable 2D skin crosses the public boundary. Legacy saved
+  * showroom selections resolve to it without rewriting account records. */
+ public static String displayPlane(boolean member,String selected){
+  return member&&selected!=null&&List.of("gold2d","gold","sapphire","night").contains(selected)?"gold2d":"classic";
+ }
+ public static Appearance profile(boolean member,String frame,String trail,String victory,UUID avatar,String plane,int systemAvatar){var a=make(member,frame,trail,victory);return new Appearance(a.member(),a.frame(),a.selectedFrame(),a.trail(),a.victory(),a.selectedTrail(),a.selectedVictory(),member&&avatar!=null?"/api/avatars/"+avatar:"/api/avatars/system/"+systemAvatar,displayPlane(member,plane));}
  public Appearance get(UUID account){return db.sql("select a.avatar_frame,"+MEMBER_SQL+",a.flight_trail,a.victory_effect,a.avatar_token,a.plane_style,a.system_avatar from accounts a where a.id=:id").param("id",account).query((rs,n)->profile(rs.getBoolean(2),rs.getString(1),rs.getString(3),rs.getString(4),rs.getObject(5,UUID.class),rs.getString(6),rs.getInt(7))).single();}
  public void selectPlane(UUID account,String plane){
-  if(!List.of("classic","sapphire","gold","night").contains(plane))throw new IllegalArgumentException("invalid plane");
+  if(plane==null||!List.of("classic","gold2d","sapphire","gold","night").contains(plane))throw new IllegalArgumentException("invalid plane");
   if(db.sql("update accounts a set plane_style=:plane where a.id=:id and "+MEMBER_SQL).param("plane",plane).param("id",account).update()!=1)throw new IllegalStateException("membership required");
  }
  public void select(UUID account,String frame){

@@ -564,3 +564,15 @@ UI36: HUMAN/BOT/AUTO type badge moved below pilot name into the fleet detail lin
 - 独立本地真实模型检查页：docs/verification/vip-aircraft-models.html。没有模拟账号或付费资格。
 
 UI37 production verification: HTTPS homepage serves UI37; all three deployed GLB files returned 200 with valid binary glTF magic/declared length matching actual bytes. Live homepage → hangar → Golden Captain rendered WebGL with the new biplane, no console errors. This browser session was a guest, so saving remained correctly disabled; paid/member saving reuses the unchanged server authorization and existing style keys. No production entitlement/data edits or backend restart were needed.
+
+## 2026-11-01 UI38 — 可对局2D金翼飞机、长渐变尾迹、分享与紧凑布局
+- 用户批准imagegen精确编辑的新2D金翼飞机，原图1312×1199；对齐原经典机身的轮胎、螺旋桨轴心和白色编号板。原三款3D模型、GLB、导出脚本、专用测试页及测试已删除；3D骰子及实验棋盘源码保留。
+- 服务端新增gold2d，只有有效正式会员/赠送会员可保存；旧gold/sapphire/night只在公开外观兼容映射，不修改存储或积分。公开RoomSnapshot.Seat.planeStyle覆盖等待、开局固定账号、局中绑定及结算。到期/撤销回经典，原生BOT无VIP。
+- 前端默认CanvasBoard对自己/对手同样使用服务端外观；素材尚未加载时回经典，不闪空；编号/镜像/移动/阴影锚点不变。主页与机库复用同一张PNG。机库改为两栏，删除3D旋转提示；修复保存中关闭/重开和打开状态下会员变化的生命周期。
+- 尾迹寿命850→1550ms，采样30ms、上限96；彩虹使用沿轨迹渐细/渐隐的饱和色管带，星光加连续金流光，云朵改柔和气流。停止后自动清理，减少动态即时清空，跨席位/瞬移不连接。
+- 中文手机好友房增加分享给微信好友；直接用户点击调用Web Share，无支持或失败时复制/显示可选链接，并提供微信操作指引。邀请只含同源room UUID及lang，访客打开后采用中文。快速匹配无邀请；取消分享安静结束；跨房间或退出后旧回调不复制旧链接、不覆盖新UI。未配置或声称微信JS-SDK直接发送。
+- 短屏笔记本使用固定高度的横向骰子/操作布局，选机行保留高度。1280×720实际浏览器：侧栏scrollHeight=clientHeight=652，turn-panel均176，无按钮截断；隐藏在线对局不可用的录制/撞机预览按钮。手机390×844：好友房宽362，clientWidth=scrollWidth=360，外观弹窗宽362，预览底部在视口内，无横向溢出。
+- npm test最终71项通过（移除旧模型测试后）；全部修改JS语法检查通过。后端Docker构建成功；隔离Postgres/Redis执行PlaneAppearanceTest、PlaneAppearanceIntegrationTest、RoomSnapshotTest、AvatarIntegrationTest、SettlementIntegrationTest、MidgameAccountIntegrationTest、RoomPresenceIntegrationTest，共13项，0失败0错误0跳过。
+- 真实浏览器使用隔离QA应用/数据库，创建一小时赠送测试会员，仅该隔离库授予资格。127.0.0.1与localhost两份独立Cookie身份创建并加入同一好友房，真实服务端开局/自动接管移动；双方棋盘均看见金翼机，刷新/重连后选择仍保留；新机库保存回显与主页金翼图已检查。实际棋盘截图docs/verification/vip2d-gameplay.png来自对局Canvas，不是设计图。生产账号资格/积分未修改。
+- 同一真实CanvasBoard本地效果验收页，650ms飞行中段观察到22个彩虹采样及明显长尾、尾端渐细渐隐；示例会员标识明确，仅渲染不产生账号/成绩。
+- 浏览器仅响应式手机视口；未进行实体iOS/Android/微信App的系统分享和实际发送测试。双身份浏览器已验收联机渲染与操作，未新增双设备完整结算录像；实验Three.js棋盘不是本轮VIP精灵视觉验收范围。正式收款状态不受本轮影响。

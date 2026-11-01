@@ -1,4 +1,5 @@
 import {avatarStyle} from '../dist/avatar.js';
+import {isChineseMobile} from '../dist/room-share.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -9,7 +10,7 @@ test('quick matching hides invitations; friends retain invitation controls',()=>
   const dialog={open:true,innerHTML:'',setAttribute(){},addEventListener(){}};
   const social={roomDialog:dialog,t:en=>en,renderRoom(){}};
   const session={room:{origin,phase:'MATCHING',roomId:'test',matchingDeadline:new Date(Date.now()+30000).toISOString(),yourSeat:0,seats:[{index:0,ready:true}]},addEventListener(){}};
-  const context=vm.createContext({social,session,avatarStyle});vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
+  const context=vm.createContext({social,session,avatarStyle,isChineseMobile});vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
   assert.equal(dialog.innerHTML.includes('data-live="copy-link"'),origin==='FRIENDS');
   assert.equal(dialog.innerHTML.includes('data-live="copy-code"'),origin==='FRIENDS');
   assert.ok(dialog.innerHTML.includes('data-live="start-now"'));

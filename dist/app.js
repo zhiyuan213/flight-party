@@ -19,6 +19,7 @@ const $=id=>document.getElementById(id),fx=new AudioFX();
 $('play').addEventListener('contextmenu',event=>event.preventDefault());
 let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
 let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,visual:'illustrated',...prefs};
+const inviteLanguage=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(inviteLanguage))prefs.lang=inviteLanguage;
 let heroModel=new HeroPlane(document.querySelector('.hero-copy'),{reduced:prefs.reduced});
 const die=new Die3D($('dice'),{reduced:prefs.reduced});
 let diceBusy=false,dieValue=1,dieHasResult=false;
@@ -27,19 +28,19 @@ const t=(en,zh)=>prefs.lang==='zh'?zh:en;
 const social=new SocialUI({getLanguage:()=>prefs.lang,onChange:()=>{if(game&&screen==='play')render();}});
 const reactions=new ReactionPreview({getLanguage:()=>prefs.lang,reduced:()=>prefs.reduced});
 const onlineSession=new OnlineSession();
-bindHangar(heroModel,onlineSession,t,()=>prefs.reduced,style=>{heroModel.dispose();heroModel=new HeroPlane(document.querySelector('.hero-copy'),{reduced:prefs.reduced,model:style!=='classic',style});heroModel.setActive(screen==='welcome');return heroModel;});
+bindHangar(heroModel,onlineSession,t,()=>prefs.reduced,style=>{heroModel.dispose();heroModel=new HeroPlane(document.querySelector('.hero-copy'),{reduced:prefs.reduced,style});heroModel.setActive(screen==='welcome');return heroModel;});
 document.addEventListener('flight-party-room-left',()=>toast(t('You left the waiting room. You can join again.','已退出等待房间，可以重新加入。')));
 let onlineMode=false,onlineRoomId=null,onlineVersion=-1,onlinePending=null,onlineApplying=false,onlineTimer=null;
 function authoritativeView(state,room){
  const view=Object.create(Game.prototype);
- view.players=state.players.map(p=>({color:p.seat,pieces:[...p.planes],rank:p.rank,member:!!room.seats.find(s=>s.index===p.seat)?.member,avatarUrl:room.seats.find(s=>s.index===p.seat)?.avatarUrl,avatarFrame:room.seats.find(s=>s.index===p.seat)?.avatarFrame||'none',flightTrail:room.seats.find(s=>s.index===p.seat)?.flightTrail||'none',victoryEffect:room.seats.find(s=>s.index===p.seat)?.victoryEffect||'none',name:room.seats.find(s=>s.index===p.seat)?.displayName||(p.seat===room.yourSeat?'You':`Pilot ${p.seat+1}`),type:p.seat===room.yourSeat?'human':room.seats.find(s=>s.index===p.seat)?.bot?'bot':'remote',bumps:0,rolls:0}));
+ view.players=state.players.map(p=>({color:p.seat,pieces:[...p.planes],rank:p.rank,planeStyle:room.seats.find(s=>s.index===p.seat)?.planeStyle||'classic',member:!!room.seats.find(s=>s.index===p.seat)?.member,avatarUrl:room.seats.find(s=>s.index===p.seat)?.avatarUrl,avatarFrame:room.seats.find(s=>s.index===p.seat)?.avatarFrame||'none',flightTrail:room.seats.find(s=>s.index===p.seat)?.flightTrail||'none',victoryEffect:room.seats.find(s=>s.index===p.seat)?.victoryEffect||'none',name:room.seats.find(s=>s.index===p.seat)?.displayName||(p.seat===room.yourSeat?'You':`Pilot ${p.seat+1}`),type:p.seat===room.yourSeat?'human':room.seats.find(s=>s.index===p.seat)?.bot?'bot':'remote',bumps:0,rolls:0}));
  view.active=view.players;view.turn=state.turn;view.phase=state.phase.toLowerCase();view.die=state.die;view.ranking=[...state.ranking];view.round=1;view.party=false;view.event=null;return view;
 }
 async function applyOnlineSnapshot(message){
  if(!message.game?.players||!['PLAYING','SETTLED'].includes(message.room.phase))return;
  if(onlineRoomId===message.room.roomId&&Number(message.gameVersion)<=onlineVersion){
   let changed=false;
-  for(const player of game.players){const name=message.room.seats.find(s=>s.index===player.color)?.displayName||(player.color===message.room.yourSeat?'You':`Pilot ${player.color+1}`);const appearance=message.room.seats.find(s=>s.index===player.color);if(player.avatarUrl!==appearance?.avatarUrl){player.avatarUrl=appearance?.avatarUrl;changed=true;}player.flightTrail=appearance?.flightTrail||'none';player.victoryEffect=appearance?.victoryEffect||'none';if(player.member!==!!appearance?.member||player.avatarFrame!==(appearance?.avatarFrame||'none')){player.member=!!appearance?.member;player.avatarFrame=appearance?.avatarFrame||'none';changed=true;}if(name!==player.name){player.name=name;changed=true;}}
+  for(const player of game.players){const name=message.room.seats.find(s=>s.index===player.color)?.displayName||(player.color===message.room.yourSeat?'You':`Pilot ${player.color+1}`);const appearance=message.room.seats.find(s=>s.index===player.color);if(player.avatarUrl!==appearance?.avatarUrl){player.avatarUrl=appearance?.avatarUrl;changed=true;}if(player.planeStyle!==(appearance?.planeStyle||'classic')){player.planeStyle=appearance?.planeStyle||'classic';changed=true;}player.flightTrail=appearance?.flightTrail||'none';player.victoryEffect=appearance?.victoryEffect||'none';if(player.member!==!!appearance?.member||player.avatarFrame!==(appearance?.avatarFrame||'none')){player.member=!!appearance?.member;player.avatarFrame=appearance?.avatarFrame||'none';changed=true;}if(name!==player.name){player.name=name;changed=true;}}
   if(changed&&screen==='play')render();
   if(changed&&screen==='results'){
    const winner=game.players[game.ranking[0]];$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);
@@ -73,7 +74,7 @@ onlineSession.addEventListener('snapshot',async event=>{
 });
 const later=(fn,ms)=>{const id=setTimeout(()=>{jobs.delete(id);fn();},ms);jobs.add(id);return id;};
 function cancel(){document.querySelectorAll('.confetti').forEach(node=>node.remove());reactions.clear();epoch++;die.cancel();diceBusy=false;syncDieLabel();$('demo-status').classList.add('hidden');clearInterval(clock);jobs.forEach(clearTimeout);jobs.clear();}
-function show(id){screen=id;heroModel.setActive(id==='welcome');if(id!=='play')reactions.clear();for(const node of document.querySelectorAll('.screen'))node.classList.toggle('hidden',node.id!==id);$('mode-label').textContent=id==='play'?(party?'PARTY MODE':'CLASSIC MODE'):'THE FRIENDLY SKIES';if(id==='play')requestAnimationFrame(()=>{scene?.resize();die.resize();});}
+function show(id){screen=id;if(id==='play')$('play').dataset.online=String(onlineMode);heroModel.setActive(id==='welcome');if(id!=='play')reactions.clear();for(const node of document.querySelectorAll('.screen'))node.classList.toggle('hidden',node.id!==id);$('mode-label').textContent=id==='play'?(party?'PARTY MODE':'CLASSIC MODE'):'THE FRIENDLY SKIES';if(id==='play')requestAnimationFrame(()=>{scene?.resize();die.resize();});}
 function toast(text){clearTimeout(toastJob);$('toast').textContent=text;$('toast').classList.add('visible');toastJob=setTimeout(()=>$('toast').classList.remove('visible'),2500);}
 function savePrefs(){localStorage.setItem('flight-party-prefs',JSON.stringify(prefs));fx.enabled=prefs.sound;fx.volume=prefs.volume/100;if(fx.master)fx.master.gain.setTargetAtTime(prefs.sound?fx.volume:0,fx.ctx.currentTime,.02);document.body.classList.toggle('reduce-motion',prefs.reduced);heroModel.setReduced(prefs.reduced);if(scene)scene.reduced=prefs.reduced;die.setReduced(prefs.reduced);$('sound').textContent=prefs.sound?'♫':'♩';$('sound').setAttribute('aria-pressed',String(prefs.sound));$('sound-enabled').checked=prefs.sound;$('music-enabled').checked=prefs.music;$('visual-mode').value=prefs.visual;$('volume').value=prefs.volume;$('reduced').checked=prefs.reduced;$('language').textContent=prefs.lang==='en'?'EN / 中':'中文 / EN';}
 document.addEventListener('pointerdown',()=>{fx.unlock();if(prefs.music&&!fx.musicTimer)fx.setMusic(true);});document.addEventListener('keydown',()=>fx.unlock());

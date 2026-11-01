@@ -33,4 +33,15 @@ class RoomSnapshotTest {
         assertEquals(1,RoomSnapshot.forMember(room,second,now).yourSeat());
         assertThrows(IllegalStateException.class,()->RoomSnapshot.forMember(room,UUID.randomUUID(),now));
     }
+    @Test void publicPlaneSkinIsMemberOnlyAndNeverAppliedToBots(){
+        UUID principal=UUID.randomUUID();var now=Instant.now();
+        var room=new RoomRules.Room(UUID.randomUUID(),RoomRules.Phase.PLAYING,java.util.List.of(new RoomRules.Seat(0,principal,true,false),new RoomRules.Seat(1,null,true,true)),null);
+        var member=com.flightparty.auth.AppearanceService.profile(true,"gold","star","gold",null,"gold2d",0);
+        var seat=RoomSnapshot.forMember(room,principal,now,java.util.Map.of(),java.util.Map.of(0,member,1,member));
+        assertEquals("gold2d",seat.seats().get(0).planeStyle());
+        assertEquals("classic",seat.seats().get(1).planeStyle());
+        var ordinary=com.flightparty.auth.AppearanceService.profile(false,"gold","star","gold",null,"gold2d",0);
+        assertEquals("classic",RoomSnapshot.forMember(room,principal,now,java.util.Map.of(),java.util.Map.of(0,ordinary)).seats().getFirst().planeStyle());
+        assertEquals("classic",RoomSnapshot.forMember(room,principal,now).seats().getFirst().planeStyle());
+    }
 }
