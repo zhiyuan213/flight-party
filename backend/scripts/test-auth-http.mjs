@@ -12,7 +12,7 @@ assert.match(registered.headers.get('set-cookie'),/Max-Age=2592000/i);
 assert.match(registered.headers.get('set-cookie'),/HttpOnly/i);
 const account=await registered.json();assert.equal(account.emailVerified,false);assert.notEqual(cookie,guestCookie);
 let me=await (await request('/me')).json();assert.equal(me.kind,'account');assert.equal(me.account.id,account.id);
-assert.equal(me.recording.freeRemaining,1);assert.equal(me.recording.member,false);assert.equal(me.recording.monthlyUsd,9);assert.equal(me.recording.annualUsd,59);assert.equal(me.recording.paymentConfigured,false);
+assert.equal(me.recording.freeRemaining,null);assert.equal(me.recording.resetsAt,null);assert.equal(me.appearance.member,false);assert.equal(me.appearance.frame,"none");assert.equal((await request("/account/appearance",{frame:"night"})).status,403);assert.equal((await request("/account/appearance",{frame:"invalid"})).status,400);assert.equal(me.recording.member,false);assert.equal(me.recording.monthlyUsd,9);assert.equal(me.recording.annualUsd,59);assert.equal(me.recording.paymentConfigured,false);
 assert.equal((await request('/billing/checkout',{requestId:randomUUID(),plan:'UNKNOWN'})).status,400);
 assert.equal((await request('/billing/checkout',{requestId:randomUUID(),plan:'MONTHLY'})).status,503);
 assert.equal((await request('/auth/logout',{})).status,200);assert.equal((await (await request('/me')).json()).kind,'guest');

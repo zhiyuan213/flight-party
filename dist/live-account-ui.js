@@ -11,8 +11,8 @@ export function bindLiveAccount(social,session){
  dialog.setAttribute('aria-label',t('Account','账号'));
  Object.defineProperty(social,'viewer',{get(){const account=identity?.account;return {mode:account?'free':'guest',name:account?.displayName||'You',displayName:account?.displayName||'You',isGuest:!account,isMember:!!identity?.recording?.member,authenticated:!!account,appearance:identity?.appearance,preview:false,points:account?identity.statistics?.points??0:null,games:account?identity.statistics?.completedGames??0:null,dailyLimit:null,dailyRemaining:null};}});
  function update(value){
-  const old=JSON.stringify([identity?.account?.id,identity?.statistics]);
-  if(old!==JSON.stringify([value.account?.id,value.statistics])){social.liveBoards={};social.liveBoardStatus={};}
+  const old=JSON.stringify([identity?.account?.id,identity?.statistics,identity?.appearance]);
+  if(old!==JSON.stringify([value.account?.id,value.statistics,value.appearance])){social.liveBoards={};social.liveBoardStatus={};}
   identity=value;social.mode=value.account?'free':'guest';social.displayName=value.account?.displayName||'You';social.render();social.onChange(social.viewer);
  }
  social.renderAccountButton=()=>{social.accountButton.textContent=social.viewer.isGuest?t('Sign in','登录'):social.viewer.name;social.accountButton.setAttribute('aria-label',t('Account','账号'));};

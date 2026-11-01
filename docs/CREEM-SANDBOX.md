@@ -100,3 +100,5 @@ CREEM_SUCCESS_URL=https://flight.joyflock.com/?billing=return
 参考：
 
 - [Creem 审核清单](https://docs.creem.io/merchant-of-record/account-reviews/account-reviews#approval-checklist)
+
+2026-11-01 最新产品权益覆盖：所有登录账号每局免费累计成绩，会员改为机翼徽章与三款头像框，不提供积分优势。正式购买仍未开放；启用正式收款前需将Creem正式商品及审核说明同步为此外观权益，沙箱权益不授予正式外观。

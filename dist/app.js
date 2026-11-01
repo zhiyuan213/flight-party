@@ -34,7 +34,7 @@ async function applyOnlineSnapshot(message){
   if(changed&&screen==='play')render();
   if(changed&&screen==='results'){
    const winner=game.players[game.ranking[0]];$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);
-   document.querySelectorAll('#rankings .rank-row b').forEach((node,i)=>{const player=game.players[game.ranking[i]];if(player)node.textContent=player.name;});
+   document.querySelectorAll('#rankings .rank-row b').forEach((node,i)=>{const player=game.players[game.ranking[i]];if(player){node.textContent=player.name;node.dataset.member=String(!!player.member);const avatar=node.parentElement.querySelector('.result-avatar');if(avatar)avatar.dataset.frame=player.avatarFrame||'none';}});
   }
   return;
  }
