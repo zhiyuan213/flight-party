@@ -323,11 +323,15 @@
 .room-invite-strip b{display:block;font-size:20px;letter-spacing:2px;color:#2a78bb;margin-top:5px}
 .room-invite-strip button{padding:10px 12px;border-radius:10px;font-size:11px;flex:none}
 .live-room-invitation{display:block}
-.room-invite-strip.live-room-invitation b{font-size:13px;letter-spacing:.5px;overflow-wrap:anywhere;user-select:all}
+.room-invite-strip.live-room-invitation b{font-size:13px;letter-spacing:.5px;overflow-wrap:anywhere}
 .room-invite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .room-invite-actions button{flex:1;min-width:120px}
 .room-flow-note{overflow-wrap:anywhere}
 #join-preview{margin-right:12px}
+/* Keep the reserved row height, but never paint a redundant one-plane button. */
+#piece-buttons>button:only-child{visibility:hidden;pointer-events:none}
+body,body *{-webkit-user-select:none;user-select:none}
+body input,body textarea,body [contenteditable=true]{-webkit-user-select:text;user-select:text}
 .room-flow-note{font-size:9px;line-height:1.7;color:#7e99af;margin:10px 0 15px}
 .room-join-link{width:100%;display:block;text-align:center;font-size:10px;padding:14px 0 3px}
 .room-ready-note{font-size:11px;line-height:1.7;color:#4f8f77;background:#e9f6ef;border:1px solid #c9e6d7;border-radius:12px;padding:12px;margin:0 0 17px}
