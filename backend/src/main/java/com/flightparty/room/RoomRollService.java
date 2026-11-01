@@ -106,8 +106,9 @@ public class RoomRollService {
         if(busy!=null && now<Long.parseLong(busy.toString())) return;
         var room=rooms.load(roomId).orElseThrow().room();
         boolean bot=room.seats().stream().anyMatch(s->s.index()==game.turn()&&s.bot());
+        boolean onlyMove=game.phase()==GameRules.Phase.CHOOSE && GameRules.legal(game).size()==1;
         Object deadline=redis.opsForHash().get(key,"actionDeadline");
-        if(!bot && (deadline==null || now<Long.parseLong(deadline.toString()))) return;
+        if(!bot && !onlyMove && (deadline==null || now<Long.parseLong(deadline.toString()))) return;
         GameRules.State next;long until;Object response;String type;
         if(game.phase()==GameRules.Phase.ROLL) {
             next=GameRules.roll(game,die.roll());until=now+1120;response=new Result(next,until);type="DICE_ROLLED";

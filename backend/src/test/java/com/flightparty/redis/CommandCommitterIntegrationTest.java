@@ -13,6 +13,36 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 /** Run only against a dedicated disposable Redis instance. */
 @EnabledIfEnvironmentVariable(named = "REDIS_TEST_HOST", matches = ".+")
 class CommandCommitterIntegrationTest {
+    @Test void soleHumanMoveWaitsForDieThenCommitsOnceWithoutWaitingForDeadline() {
+        var factory=new LettuceConnectionFactory(System.getenv("REDIS_TEST_HOST"),6379);
+        factory.afterPropertiesSet();factory.start();
+        try {
+            var redis=new StringRedisTemplate(factory);redis.afterPropertiesSet();
+            var rooms=new RedisRoomStore(redis);var service=new com.flightparty.room.RoomRollService(rooms,redis);
+            var person=UUID.randomUUID();
+            var room=RoomRules.startNow(RoomRules.quick(UUID.randomUUID(),person,Instant.now()),person);
+            var stored=rooms.save(room,-1);assertTrue(rooms.activate(stored));
+            String key="fp:{rooms}:room:"+room.id();var json=tools.jackson.databind.json.JsonMapper.builder().build();
+            var original=rooms.game(room.id());var players=new java.util.ArrayList<>(original.players());
+            players.set(0,new com.flightparty.game.GameRules.Player(0,java.util.List.of(57,5),null));
+            var choosing=new com.flightparty.game.GameRules.State(players,0,com.flightparty.game.GameRules.Phase.CHOOSE,4,java.util.List.of());
+            redis.opsForHash().put(key,"game",json.writeValueAsString(choosing));
+            redis.opsForHash().put(key,"actionDeadline",Long.toString(System.currentTimeMillis()+60000));
+            redis.opsForHash().put(key,"busyUntil",Long.toString(System.currentTimeMillis()+60000));
+            service.automate(room.id());assertEquals(choosing,rooms.game(room.id()),"Do not move during the die animation");
+            redis.opsForHash().put(key,"busyUntil","0");
+            service.automate(room.id());
+            var moved=rooms.game(room.id());assertEquals(com.flightparty.game.GameRules.Phase.ANIMATING,moved.phase());
+            assertEquals(java.util.List.of(57,9),moved.players().getFirst().planes());
+            Object version=redis.opsForHash().get(key,"gameVersion");
+            service.automate(room.id());assertEquals(version,redis.opsForHash().get(key,"gameVersion"));
+            players.set(0,new com.flightparty.game.GameRules.Player(0,java.util.List.of(3,5),null));
+            var twoMoves=new com.flightparty.game.GameRules.State(players,0,com.flightparty.game.GameRules.Phase.CHOOSE,4,java.util.List.of());
+            redis.opsForHash().put(key,"game",json.writeValueAsString(twoMoves));redis.opsForHash().put(key,"busyUntil","0");
+            redis.opsForHash().put(key,"actionDeadline",Long.toString(System.currentTimeMillis()+60000));
+            service.automate(room.id());assertEquals(twoMoves,rooms.game(room.id()),"Keep human choice while both planes can move");
+        }finally{factory.destroy();}
+    }
     @Test void commitsOnceAndRejectsConflict() {
         var factory = new LettuceConnectionFactory(System.getenv("REDIS_TEST_HOST"), 6379);
         factory.afterPropertiesSet(); factory.start();
