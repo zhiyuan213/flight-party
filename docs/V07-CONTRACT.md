@@ -112,3 +112,5 @@
 2026-11-01 后续用户覆盖：保留榜单展示补充数据，去除页面示例文字；不写入账号或真实成绩账本。
 
 2026-11-01：支持独立后台赠送会员权益（complimentary_memberships），不伪造Creem事件；赠送到期或撤销即隐藏外观，选择保留，不改变积分规则。公开账号返回complimentaryUntil，明确不扣费不续费。飞行尾迹/金翼胜利特效尚为设计预览，参考docs/design/trails-victory-reference.png。
+
+2026-11-01 用户确认实现飞行尾迹与胜利特效：会员/赠送会员选择star/rainbow/cloud/none，胜利gold/none，随账号保存并通过RoomSnapshot同步；减少动态效果停用尾迹、静态展示庆典，不改变游戏规则。3D可购买机型仍仅概念，尚无模型或商店实现。
