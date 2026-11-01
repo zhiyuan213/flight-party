@@ -106,6 +106,3 @@ export function makeMemberPlane(style='gold'){
   landingGear(body,paint,trim,rubber,{x:.36,z:-.42});propeller(body,'Sport nose propeller',0,cy,-1.14,.30,navy,trim,trim,propellers);
  }root.userData={body,propeller:propellers[0],propellers,style,designVersion:2};return root;
 }
-
-
-

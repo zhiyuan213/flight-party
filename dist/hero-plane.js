@@ -87,5 +87,3 @@ export class HeroPlane {
   }else if(this.image?.complete&&this.image.naturalWidth){const c=this.context;c.clearRect(0,0,this.w,this.h);const width=Math.min(this.w*.96,this.h*.96*this.image.naturalWidth/this.image.naturalHeight),height=width*this.image.naturalHeight/this.image.naturalWidth;c.save();c.translate(this.w/2,(this.h-height)/2+height*.91);c.drawImage(this.image,-width/2,-height*.91,width,height);drawPropeller(c,width,height,now,'#3487ec',this.reduced);c.restore();}
  }
 }
-
-

@@ -6,6 +6,3 @@ function show(next){style=next;hero?.dispose();hero=new HeroPlane(document.query
 document.querySelector('#styles').onclick=e=>{if(e.target.dataset.style)show(e.target.dataset.style)};
 for(const [id,angle] of [['front',-.63],['side',.94],['three',0]])document.getElementById(id).onclick=()=>{hero.model.rotation.y=angle;hero.render(performance.now())};document.getElementById('motion').onclick=()=>{moving=!moving;hero.setReduced(!moving)};show('gold');
 </script></html>
-
-
-

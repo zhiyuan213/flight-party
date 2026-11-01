@@ -12,4 +12,3 @@ export function bindHangar(hero,session,t,getReduced,onSelect){
  dialog.addEventListener('close',()=>{preview?.dispose();preview=null;});
  let drag=null;dialog.addEventListener('pointerdown',e=>{if(e.target.closest('.hangar-stage')&&preview?.model){drag={x:e.clientX,y:preview.model.rotation.y};e.target.setPointerCapture(e.pointerId);}});dialog.addEventListener('pointermove',e=>{if(drag&&preview?.model){preview.model.rotation.y=drag.y+(e.clientX-drag.x)*.012;preview.render(performance.now());}});dialog.addEventListener('pointerup',()=>drag=null);dialog.addEventListener('pointercancel',()=>drag=null);
 }
-

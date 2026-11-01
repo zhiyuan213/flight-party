@@ -562,3 +562,5 @@ UI36: HUMAN/BOT/AUTO type badge moved below pilot name into the fleet detail lin
 - npm test：62项全部通过；导出校验覆盖GLB块/缓冲区对齐、贴图PNG像素、PBR clearcoat、实例层级、非有限顶点拒绝；机型测试覆盖独立结构、浮筒与双发/双尾、有效法线与机身外向法线。修改JS语法检查通过。
 - 设计图是艺术参考。实际浏览器模型与图在比例、表情、材质细节上仍有差异，不声明1:1复现。当前接入范围为主页与机库；对局棋盘、棋子标定、规则与骰子没有改动。
 - 独立本地真实模型检查页：docs/verification/vip-aircraft-models.html。没有模拟账号或付费资格。
+
+UI37 production verification: HTTPS homepage serves UI37; all three deployed GLB files returned 200 with valid binary glTF magic/declared length matching actual bytes. Live homepage → hangar → Golden Captain rendered WebGL with the new biplane, no console errors. This browser session was a guest, so saving remained correctly disabled; paid/member saving reuses the unchanged server authorization and existing style keys. No production entitlement/data edits or backend restart were needed.
