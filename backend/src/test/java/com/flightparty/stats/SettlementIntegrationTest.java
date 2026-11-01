@@ -145,8 +145,8 @@ class SettlementIntegrationTest {
                 db.sql("insert into account_statistics(account_id,points,completed_games,stats_version) values (:id,:points,1,1)")
                         .param("id",id).param("points",i).update();
             }
-            assertEquals(10, boards.top("points").size());
-            assertEquals(10, boards.top("games").size());
+            assertEquals(5, boards.top("points").size());
+            assertEquals(5, boards.top("games").size());
             assertEquals("Pilot9", boards.top("points").getFirst().displayName());
             assertEquals("Ace", boards.top("games").getFirst().displayName());
             for(int attempt=0;attempt<2;attempt++){
@@ -171,3 +171,4 @@ class SettlementIntegrationTest {
         } finally { flyway.clean(); }
     }
 }
+

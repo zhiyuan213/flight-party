@@ -18,6 +18,7 @@ function position(color,piece,progress){
  if(progress>=FINISH)return{x:(color%2?1:-1)*(.25+piece*.28),y:.48,z:color<2?-.3:.3,groundY:.43};
  return {...point(coord(color,progress)),groundY:.32};
 }
+export function planeHeading(color,piece,progress,prior=0){if(progress<0||progress>=FINISH)return prior;const p=position(color,piece,progress),q=position(color,piece,Math.min(FINISH,progress+1)),dx=q.x-p.x;return Math.abs(dx)>.001?(dx<0?1:0):prior;}
 function shade(hex,amount){const n=parseInt(hex.slice(1),16);return `rgb(${[16,8,0].map(s=>Math.max(0,Math.min(255,((n>>s)&255)+amount))).join(',')})`;}
 function roundedPoints(x,z,w,d,r){const points=[];for(const [cx,cz,start] of [[x+w/2-r,z-d/2+r,-Math.PI/2],[x+w/2-r,z+d/2-r,0],[x-w/2+r,z+d/2-r,Math.PI/2],[x-w/2+r,z-d/2+r,Math.PI]])for(let i=0;i<=7;i++){const a=start+i*Math.PI/14;points.push({x:cx+Math.cos(a)*r,z:cz+Math.sin(a)*r});}return points;}
 
@@ -42,8 +43,8 @@ export class CanvasBoard{
  worldRect(){const width=AIRPORT_SIZE.width*this.scale,height=AIRPORT_SIZE.height*this.scale;return{x:(this.w-width)/2,y:(this.h-height)/2,width,height};}
  depth(z=0){return groundScale(z);}
  project(p){const g=groundPoint(p.x,p.z),k=this.depth(p.z);return{x:this.cx+(g.u-GROUND_CENTER.u)*AIRPORT_SIZE.width*this.scale,y:this.cy+(g.v-GROUND_CENTER.v)*AIRPORT_SIZE.height*this.scale-p.y*this.scale*k};}
- setGame(game){this.cosmeticTrails??=new FlightTrails();this.cosmeticTrails.clear();this.generation++;for(const a of this.anims)a.resolve();this.anims=[];this.effects=[];this.trails=[];this.shake=0;this.game=game;this.planes=[];for(const p of game.active)for(let i=0;i<2;i++)this.planes.push({...position(p.color,i,p.pieces[i]),color:p.color,piece:i,heading:0,spin:0,squash:0,air:0,shock:0});this.keys=[];}
- sync(game){this.game=game;for(const p of this.planes)Object.assign(p,position(p.color,p.piece,game.players[p.color].pieces[p.piece]),{spin:0,squash:0,air:0,shock:0});}
+ setGame(game){this.cosmeticTrails??=new FlightTrails();this.cosmeticTrails.clear();this.generation++;for(const a of this.anims)a.resolve();this.anims=[];this.effects=[];this.trails=[];this.shake=0;this.game=game;this.planes=[];for(const p of game.active)for(let i=0;i<2;i++)this.planes.push({...position(p.color,i,p.pieces[i]),color:p.color,piece:i,heading:planeHeading(p.color,i,p.pieces[i]),spin:0,squash:0,air:0,shock:0});this.keys=[];}
+ sync(game){this.game=game;for(const p of this.planes)Object.assign(p,position(p.color,p.piece,game.players[p.color].pieces[p.piece]),{heading:planeHeading(p.color,p.piece,game.players[p.color].pieces[p.piece],p.heading),spin:0,squash:0,air:0,shock:0});}
  setSelectable(keys){this.keys=keys;}
  featherIsland(img){
   // Blend only the outer sea pixels into the larger ocean, leaving roads and land opaque.
@@ -56,10 +57,10 @@ export class CanvasBoard{
  puff(p,size=.35,life=850,seed=0){if(this.reduced)return;this.effects.push({kind:'smoke',x:p.x,y:p.y,z:p.z,size,life,start:performance.now(),seed});}
  async move(result,onBump){
   this.keys=[];const gen=this.generation,p=this.planes.find(p=>p.color===result.color&&p.piece===result.piece);if(!p)return;
-  if(this.reduced){Object.assign(p,position(p.color,p.piece,result.to));for(const v of result.captured)Object.assign(this.planes.find(q=>q.color===v.color&&q.piece===v.piece),position(v.color,v.piece,-1));if(result.captured.length)onBump?.(this.project(p));return;}
+  if(this.reduced){Object.assign(p,position(p.color,p.piece,result.to));p.heading=planeHeading(p.color,p.piece,result.to,p.heading);for(const v of result.captured)Object.assign(this.planes.find(q=>q.color===v.color&&q.piece===v.piece),position(v.color,v.piece,-1));if(result.captured.length)onBump?.(this.project(p));return;}
   p.air=1;const count=result.to-result.from;
   for(let step=result.from+1;step<=result.to;step++){
-   const end=position(p.color,p.piece,step),start={...p};p.heading=end.x<start.x?1:0;
+   const end=position(p.color,p.piece,step),start={...p};if(Math.abs(end.x-start.x)>.001)p.heading=end.x<start.x?1:0;
    if(step===result.from+1)this.puff({...p,y:p.y-.05},.48,650,step);
    await this.tween(Math.max(100,Math.min(175,1250/count)),t=>{const e=ease(t);p.x=lerp(start.x,end.x,e);p.z=lerp(start.z,end.z,e);p.groundY=lerp(start.groundY,end.groundY,e);p.y=lerp(start.y,end.y,e)+Math.sin(t*Math.PI)*.14;p.spin=Math.sin(t*Math.PI)*.035*(p.heading?-1:1);const owner=this.game?.players?.[p.color];if(owner?.member)this.cosmeticTrails.emit(owner.flightTrail,`${p.color}:${p.piece}`,p,performance.now(),this.reduced);});
    if(gen!==this.generation)return;

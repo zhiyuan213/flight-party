@@ -120,3 +120,5 @@
 2026-11-01 用户覆盖：尾迹自动保存、预览常驻循环；会员结算卡片按头像主题装饰。主页真实3D程序化模型旋转螺旋桨，游戏默认2.5D飞机拆分螺旋桨动画；不视为可购买3D机型系统完成。
 
 Latest UI32 visual adjustment: default hero uses original illustrated plane with animated rotor. Experimental procedural model is opt-in only. Trails use projected tube volume and shaded particles with stronger saturation; board/rules unchanged.
+
+UI33 current overrides: top five real leaderboard accounts only, no synthetic filler rows. Members can upload their own raster avatar; server normalization/authorization is required. Active member plane selection is account-backed for the homepage showroom, with classic illustrated default and three procedural 3D variants; this does not migrate game-board pieces to 3D. Login startup translation must tolerate absent optional UI nodes so session restoration always runs.

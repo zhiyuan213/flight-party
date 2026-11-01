@@ -27,13 +27,14 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain) throws ServletException,IOException {
         String address=UUID.nameUUIDFromBytes(request.getRemoteAddr().getBytes(StandardCharsets.UTF_8)).toString();
         boolean guest=request.getRequestURI().equals("/api/session/guest");
+        boolean avatar=request.getRequestURI().equals("/api/account/avatar");
         boolean auth=request.getRequestURI().startsWith("/api/auth/");
         var session=request.getSession(false);
         Object principal=session==null?null:session.getAttribute("flightparty.principal");
         String identity=principal==null?"ip:"+address:"principal:"+principal;
         boolean write=!request.getMethod().equals("GET");
-        String key="fp:limit:"+(auth?"auth:ip:"+address:guest?"guest:ip:"+address:identity+":"+(write?"write":"read"));
-        long limit=auth?10:guest?60:write?120:1200;
+        String key="fp:limit:"+(avatar?"avatar:"+identity:auth?"auth:ip:"+address:guest?"guest:ip:"+address:identity+":"+(write?"write":"read"));
+        long limit=avatar?10:auth?10:guest?60:write?120:1200;
         try {
             Long count=redis.execute(COUNT,List.of(key),"60000");
             if(count==null)throw new IllegalStateException("rate limiter unavailable");

@@ -1,14 +1,26 @@
 /** Online transport only. This module never invokes the local rules engine. */
 export class OnlineSession extends EventTarget {
- constructor({origin=location.origin}={}) { super();this.origin=origin;this.room=null;this.csrf=null;this.socket=null;this.closed=false;this.retry=null;this.generation=0; }
+ constructor({origin=location.origin}={}) { super();this.origin=origin;this.room=null;this.csrf=null;this.socket=null;this.closed=false;this.retry=null;this.generation=0;this.authState='loading';this.identity=null;this.initializing=null; }
  emit(type,detail) { this.dispatchEvent(new CustomEvent(type,{detail})); }
  async initialize() {
-  this.csrf=await this.request('/api/csrf');
-  await this.request('/api/session/guest',{});
-  const identity=await this.request('/api/me');this.emit('identity',identity);return identity;
+  if(this.initializing)return this.initializing;
+  this.authState='loading';this.emit('authstate',this.authState);
+  this.initializing=(async()=>{
+   let last;for(let attempt=0;attempt<4;attempt++){
+    try{this.csrf=await this.request('/api/csrf');await this.request('/api/session/guest',{});
+     const identity=await this.request('/api/me');this.identity=identity;this.authState='ready';this.emit('identity',identity);this.emit('authstate',this.authState);return identity;
+    }catch(error){last=error;if(attempt<3)await new Promise(resolve=>setTimeout(resolve,800*Math.pow(2,attempt)));}
+   }
+   this.authState='error';this.emit('authstate',this.authState);throw last;
+  })();
+  try{return await this.initializing;}finally{this.initializing=null;}
+ }
+ async refreshIdentity(){
+  try{const identity=await this.request('/api/me');this.identity=identity;this.authState='ready';this.emit('identity',identity);this.emit('authstate',this.authState);return identity;}
+  catch(error){this.authState='error';this.emit('authstate',this.authState);throw error;}
  }
  async request(path,body) {
-  const response=await fetch(new URL(path,this.origin),{credentials:'same-origin',method:body===undefined?'GET':'POST',headers:{...(body===undefined?{}:{'content-type':'application/json'}),...(this.csrf?{[this.csrf.headerName]:this.csrf.token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
+  const response=await fetch(new URL(path,this.origin),{credentials:'same-origin',cache:'no-store',method:body===undefined?'GET':'POST',headers:{...(body===undefined?{}:{'content-type':'application/json'}),...(this.csrf?{[this.csrf.headerName]:this.csrf.token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
   if(!response.ok) { const error=new Error(`Online request failed (${response.status})`);error.status=response.status;throw error; }
   const text=await response.text();return text?JSON.parse(text):null;
  }

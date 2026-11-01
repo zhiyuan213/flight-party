@@ -20,3 +20,8 @@ Cloud: layered pearl-white enamel, polished icy-blue/silver beveled rims, sculpt
 Night: rich midnight cobalt/violet enamel, beveled polished silver rims, a few dimensional gold stars, compact gold crescent outside upper-right rim, no glow in the center, same transparent opening and general composition as gold reference.
 
 UI本轮同时隐藏账号弹窗滚动条（仍允许滚轮/触摸滚动），移除胜利效果下拉项，会员胜利效果继续默认gold，预览和保存固定使用gold；减少动态效果仍静态显示。没有更改头像身份、会员资格或分数。
+
+## 2026-11-01 celebration wings
+- Source: built-in imagegen transparent PNG, layered brushed/beveled golden feather plates, empty central portrait opening, no text/background.
+- Original: C:/Users/Administrator/.codex/generated_images/01a19019-d8c5-7ee3-b7d9-73f50f5771b4/exec-6eda44bf-88b8-4f34-8b67-302b1c1354a6.png
+- Runtime: dist/assets/member/celebration-wings-v2.png. Original SVG badge retained for small name badges. Cloud/night preview tints are rendering-only filters on the wing ornament.

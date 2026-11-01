@@ -1,14 +1,15 @@
+import {avatarStyle} from '../dist/avatar.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 test('quick matching hides invitations; friends retain invitation controls',()=>{
- const source=readFileSync(new URL('../dist/live-room-ui.js',import.meta.url),'utf8').replace('export function','function');
+ const source=readFileSync(new URL('../dist/live-room-ui.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export function','function');
  for(const origin of ['QUICK','FRIENDS']){
   const dialog={open:true,innerHTML:'',setAttribute(){},addEventListener(){}};
   const social={roomDialog:dialog,t:en=>en,renderRoom(){}};
   const session={room:{origin,phase:'MATCHING',roomId:'test',matchingDeadline:new Date(Date.now()+30000).toISOString(),yourSeat:0,seats:[{index:0,ready:true}]},addEventListener(){}};
-  const context=vm.createContext({social,session});vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
+  const context=vm.createContext({social,session,avatarStyle});vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
   assert.equal(dialog.innerHTML.includes('data-live="copy-link"'),origin==='FRIENDS');
   assert.equal(dialog.innerHTML.includes('data-live="copy-code"'),origin==='FRIENDS');
   assert.ok(dialog.innerHTML.includes('data-live="start-now"'));
