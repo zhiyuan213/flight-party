@@ -28,6 +28,14 @@ public class RedisRoomStore {
         if st~='none' and st~='zset' then return -2 end
         local pt=redis.call('TYPE',KEYS[5]).ok
         if pt~='none' and pt~='zset' then return -2 end
+        if ARGV[5]~='' then
+          local due=redis.call('HGET',KEYS[6],ARGV[5])
+          if not due or tonumber(due)>tonumber(ARGV[6]) then return -4 end
+          local prefix=ARGV[5]..':'
+          for _,connection in ipairs(redis.call('ZRANGEBYSCORE',KEYS[7],'('..ARGV[6],'+inf')) do
+            if string.sub(connection,1,string.len(prefix))==prefix then return -4 end
+          end
+        end
         local room=cjson.decode(ARGV[2])
         for _,seat in ipairs(room.seats) do
           if not seat.bot and room.phase~='CLOSED' and room.phase~='SETTLED' then
@@ -54,8 +62,15 @@ public class RedisRoomStore {
     public record Stored(long version,RoomRules.Room room) {}
     public RedisRoomStore(StringRedisTemplate redis) { this.redis=redis; }
     public Stored save(RoomRules.Room room,long expectedVersion) {
+        return save(room,expectedVersion,"",0);
+    }
+    public Stored leaveDisconnected(Stored old,UUID principal,java.time.Instant now){
+        var next=RoomRules.leave(old.room(),principal,now);
+        return save(next,old.version(),principal.toString(),now.toEpochMilli());
+    }
+    private Stored save(RoomRules.Room room,long expectedVersion,String absent,long now) {
         if(expectedVersion < -1 || expectedVersion>=9007199254740991L) throw new IllegalArgumentException("invalid version");
-        Long result=redis.execute(SAVE,List.of(key(room.id()),"fp:{rooms}:active","fp:{rooms}:matching","fp:{rooms}:starting","fp:{rooms}:playing"),Long.toString(expectedVersion),json.writeValueAsString(room),room.id().toString(),room.deadline()==null?"0":Long.toString(room.deadline().toEpochMilli()));
+        Long result=redis.execute(SAVE,List.of(key(room.id()),"fp:{rooms}:active","fp:{rooms}:matching","fp:{rooms}:starting","fp:{rooms}:playing",RoomPresence.deadlines(room.id()),RoomPresence.connections(room.id())),Long.toString(expectedVersion),json.writeValueAsString(room),room.id().toString(),room.deadline()==null?"0":Long.toString(room.deadline().toEpochMilli()),absent,Long.toString(now));
         if(result==null || result<0) throw new IllegalStateException("room write conflict");
         return new Stored(result,room);
     }

@@ -12,6 +12,7 @@ test('quick matching hides invitations; friends retain invitation controls',()=>
   assert.equal(dialog.innerHTML.includes('data-live="copy-link"'),origin==='FRIENDS');
   assert.equal(dialog.innerHTML.includes('data-live="copy-code"'),origin==='FRIENDS');
   assert.ok(dialog.innerHTML.includes('data-live="start-now"'));
+  assert.ok(dialog.innerHTML.includes('data-live="leave"'),'Waiting and matching rooms expose an explicit leave action');
  }
 });
 test('result rematch dispatches quick matching or friend continuation by source',()=>{

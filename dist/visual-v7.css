@@ -309,6 +309,7 @@
 .room-seat:first-child{background:linear-gradient(110deg,#e6f3ff,#f8fcff);border-color:#85bdf3}
 .room-seat.empty{border-style:dashed;background:#f3f9ff;color:#7a9ab5;box-shadow:none}
 .room-seat.empty .room-seat-avatar{visibility:hidden}
+.room-leave-button{display:block;width:100%;margin-top:18px;padding:12px;text-align:center}
 .room-seat-avatar{display:block;width:41px;height:41px;flex:none;border-radius:50%;border:2px solid white;background-image:url('assets/avatars-v5.png');background-size:200% 200%;box-shadow:0 2px 4px #42698d22}
 .room-seat-avatar.empty-seat-avatar{display:grid;place-items:center;background:#e4f1fc;border:1px dashed #b3d2eb;box-shadow:none;color:#8cb4d5;font-size:21px}
 .room-seat>div{flex:1;min-width:0}

@@ -19,6 +19,7 @@ const t=(en,zh)=>prefs.lang==='zh'?zh:en;
 const social=new SocialUI({getLanguage:()=>prefs.lang,onChange:()=>{if(game&&screen==='play')render();}});
 const reactions=new ReactionPreview({getLanguage:()=>prefs.lang,reduced:()=>prefs.reduced});
 const onlineSession=new OnlineSession();
+document.addEventListener('flight-party-room-left',()=>toast(t('You left the waiting room. You can join again.','已退出等待房间，可以重新加入。')));
 let onlineMode=false,onlineRoomId=null,onlineVersion=-1,onlinePending=null,onlineApplying=false,onlineTimer=null;
 function authoritativeView(state,room){
  const view=Object.create(Game.prototype);

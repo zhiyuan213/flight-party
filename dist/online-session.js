@@ -43,6 +43,16 @@ export class OnlineSession extends EventTarget {
    if(generation!==this.generation||this.closed)return;
    this.emit('connection',{connected:false,code:event.code});
    if(event.code!==1008)this.retry=setTimeout(()=>this.connect(),1500);
+   else {
+    const roomId=this.room?.roomId;if(!roomId)return;
+    this.request(`/api/rooms/${roomId}/snapshot`).then(room=>{
+     if(generation!==this.generation||this.closed)return;
+     this.room=room;this.retry=setTimeout(()=>this.connect(),250);
+    }).catch(error=>{
+     if(generation!==this.generation||this.closed)return;
+     if([403,404].includes(error.status)){this.close();this.room=null;this.emit('left',{roomId});}
+    });
+   }
   };
  }
  async leave() { if(!this.room)return;await this.request(`/api/rooms/${this.room.roomId}/leave`,{});this.close();this.room=null; }

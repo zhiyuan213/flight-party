@@ -16,7 +16,11 @@ public class RoomController {
     private final org.springframework.jdbc.core.simple.JdbcClient db;
     private final ReactionService reactions;
     private final RoomViewService views;
-    public RoomController(RedisRoomStore store,RoomRollService rolls,org.springframework.jdbc.core.simple.JdbcClient db,ReactionService reactions,RoomViewService views) { this.views=views; this.store=store;this.rolls=rolls;this.db=db;this.reactions=reactions; }
+    private final RoomPresence presence;
+    public RoomController(RedisRoomStore store,RoomRollService rolls,org.springframework.jdbc.core.simple.JdbcClient db,ReactionService reactions,RoomViewService views,RoomPresence presence) { this.presence=presence;this.views=views; this.store=store;this.rolls=rolls;this.db=db;this.reactions=reactions; }
+    private RoomSnapshot view(RoomRules.Room room,UUID user,Instant now){
+        presence.watch(room,now);return views.forMember(room,user,now);
+    }
     public record ReactionInput(UUID commandId,String emoji) {}
     @PostMapping("/{id}/reaction")
     public ReactionService.Reaction react(@PathVariable UUID id,@RequestBody ReactionInput input,HttpServletRequest request){
@@ -68,14 +72,14 @@ public class RoomController {
     public synchronized RoomSnapshot create(HttpServletRequest request) {
         UUID user=principal(request);var active=store.active(user);
         var room=active.isPresent()?member(active.get(),user).room():store.save(RoomRules.friends(UUID.randomUUID(),user),-1).room();
-        return views.forMember(room,user,Instant.now());
+        return view(room,user,Instant.now());
     }
     public record Join(UUID code) {}
     public record Ready(boolean ready) {}
     @PostMapping("/{id}/rematch")
     public RoomSnapshot rematch(@PathVariable UUID id,HttpServletRequest request) {
         UUID user=principal(request);var old=member(id,user);
-        try { return views.forMember(store.rematch(old.room(),user).room(),user,Instant.now()); }
+        try { return view(store.rematch(old.room(),user).room(),user,Instant.now()); }
         catch(IllegalStateException invalid) { throw new ResponseStatusException(HttpStatus.CONFLICT,"friend rematch unavailable"); }
     }
     @PostMapping("/{id}/start-now")
@@ -86,8 +90,8 @@ public class RoomController {
             final RoomRules.Room next;
             try { next=RoomRules.startNow(old.room(),user); }
             catch(IllegalStateException invalid) { throw new ResponseStatusException(HttpStatus.CONFLICT); }
-            if(next==old.room()) return views.forMember(next,user,Instant.now());
-            try { return views.forMember(store.save(next,old.version()).room(),user,Instant.now()); }
+            if(next==old.room()) return view(next,user,Instant.now());
+            try { return view(store.save(next,old.version()).room(),user,Instant.now()); }
             catch(IllegalStateException conflict) { /* Re-read after a concurrent join, start or deadline. */ }
         }
         throw new ResponseStatusException(HttpStatus.CONFLICT,"room changed; retry");
@@ -95,22 +99,22 @@ public class RoomController {
     @PostMapping("/{id}/ready")
     public synchronized RoomSnapshot ready(@PathVariable UUID id,@RequestBody Ready input,HttpServletRequest request) {
         UUID user=principal(request);var old=member(id,user);
-        try { return views.forMember(store.save(RoomRules.ready(old.room(),user,input.ready(),Instant.now()),old.version()).room(),user,Instant.now()); }
+        try { return view(store.save(RoomRules.ready(old.room(),user,input.ready(),Instant.now()),old.version()).room(),user,Instant.now()); }
         catch(IllegalStateException error) { throw new ResponseStatusException(HttpStatus.CONFLICT); }
     }
     @PostMapping("/quick")
     public synchronized RoomSnapshot quick(HttpServletRequest request) {
         UUID user=principal(request);var active=store.active(user);
-        if(active.isPresent()) return views.forMember(member(active.get(),user).room(),user,Instant.now());
+        if(active.isPresent()) return view(member(active.get(),user).room(),user,Instant.now());
         Instant now=Instant.now();
         for(UUID id:store.matching()) {
             var candidate=store.load(id);
             if(candidate.isEmpty()) continue;
             var old=candidate.get();
             if(old.room().phase()!=RoomRules.Phase.MATCHING || !now.isBefore(old.room().deadline()) || old.room().seats().size()>=4) continue;
-            return views.forMember(store.save(RoomRules.joinPublic(old.room(),user,now),old.version()).room(),user,now);
+            return view(store.save(RoomRules.joinPublic(old.room(),user,now),old.version()).room(),user,now);
         }
-        return views.forMember(store.save(RoomRules.quick(UUID.randomUUID(),user,now),-1).room(),user,now);
+        return view(store.save(RoomRules.quick(UUID.randomUUID(),user,now),-1).room(),user,now);
     }
     @PostMapping("/join")
     public synchronized RoomSnapshot join(@RequestBody Join input,HttpServletRequest request) {
@@ -119,15 +123,15 @@ public class RoomController {
         var active=store.active(user);
         if(active.isPresent()) {
             if(!active.get().equals(input.code())) throw new ResponseStatusException(HttpStatus.CONFLICT);
-            return views.forMember(member(active.get(),user).room(),user,Instant.now());
+            return view(member(active.get(),user).room(),user,Instant.now());
         }
         var old=store.load(input.code()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
-        try { return views.forMember(store.save(RoomRules.join(old.room(),user,Instant.now()),old.version()).room(),user,Instant.now()); }
+        try { return view(store.save(RoomRules.join(old.room(),user,Instant.now()),old.version()).room(),user,Instant.now()); }
         catch(IllegalStateException error) { throw new ResponseStatusException(HttpStatus.CONFLICT); }
     }
     @GetMapping("/{id}/snapshot")
     public RoomSnapshot snapshot(@PathVariable UUID id,HttpServletRequest request) {
-        UUID user=principal(request);return views.forMember(member(id,user).room(),user,Instant.now());
+        UUID user=principal(request);return view(member(id,user).room(),user,Instant.now());
     }
     @GetMapping("/{id}/game")
     public com.flightparty.game.GameRules.State game(@PathVariable UUID id,HttpServletRequest request) {

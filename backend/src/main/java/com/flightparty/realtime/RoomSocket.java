@@ -23,12 +23,14 @@ public class RoomSocket extends TextWebSocketHandler {
     private final StringRedisTemplate redis;
     private final ReactionService reactions;
     private final RoomViewService views;
+    private final RoomPresence presence;
     private final JsonMapper json=JsonMapper.builder().build();
     private final Map<String,Subscription> subscriptions=new ConcurrentHashMap<>();
+    private final Map<String,Long> lastPing=new ConcurrentHashMap<>();
     private record Subscription(WebSocketSession socket,String sessionId,UUID principal,UUID room) {}
     private static class AccessDenied extends RuntimeException {}
     public record Subscribe(String type,UUID roomId) {}
-    public RoomSocket(RedisRoomStore rooms,SessionRepository<? extends Session> sessions,StringRedisTemplate redis,ReactionService reactions,RoomViewService views) { this.views=views; this.rooms=rooms;this.sessions=sessions;this.redis=redis;this.reactions=reactions; }
+    public RoomSocket(RedisRoomStore rooms,SessionRepository<? extends Session> sessions,StringRedisTemplate redis,ReactionService reactions,RoomViewService views,RoomPresence presence) { this.presence=presence;this.views=views; this.rooms=rooms;this.sessions=sessions;this.redis=redis;this.reactions=reactions; }
     @Override public void afterConnectionEstablished(WebSocketSession socket) { socket.setTextMessageSizeLimit(4096); }
     @Override protected void handleTextMessage(WebSocketSession socket,TextMessage message) throws Exception {
         String sessionId=(String)socket.getAttributes().get("sessionId");
@@ -41,7 +43,14 @@ public class RoomSocket extends TextWebSocketHandler {
         if(!"SUBSCRIBE".equals(input.type()) || input.roomId()==null) { socket.close(CloseStatus.BAD_DATA);return; }
         var room=rooms.load(input.roomId());
         if(room.isEmpty() || room.get().room().seats().stream().noneMatch(s->principal.equals(s.principal()))) { socket.close(CloseStatus.POLICY_VIOLATION);return; }
+        remove(socket.getId());
         subscriptions.put(socket.getId(),new Subscription(new ConcurrentWebSocketSessionDecorator(socket,5000,65536),sessionId,principal,input.roomId()));
+        presence.watch(room.get().room(),Instant.now());
+        presence.heartbeat(input.roomId(),principal,socket.getId(),Instant.now());
+    }
+    @Override protected void handlePongMessage(WebSocketSession socket,PongMessage message){
+        var sub=subscriptions.get(socket.getId());
+        if(sub!=null)presence.heartbeat(sub.room(),sub.principal(),socket.getId(),Instant.now());
     }
     @Scheduled(fixedDelay=250)
     public void publish() {
@@ -56,11 +65,17 @@ public class RoomSocket extends TextWebSocketHandler {
                 var fields=redis.opsForHash().entries("fp:{rooms}:room:"+sub.room());
                 String game=(String)fields.get("game");
                 sub.socket().sendMessage(new TextMessage(json.writeValueAsString(Map.of("reactions",reactions.recent(sub.room()),"type","SNAPSHOT","room",view,"version",stored.version(),"gameVersion",fields.getOrDefault("gameVersion","0"),"busyUntil",fields.getOrDefault("busyUntil","0"),"actionDeadline",fields.getOrDefault("actionDeadline","0"),"game",game==null?Map.of():json.readTree(game)))));
+                long now=System.currentTimeMillis();
+                if(now-lastPing.getOrDefault(entry.getKey(),0L)>=5000){lastPing.put(entry.getKey(),now);sub.socket().sendMessage(new PingMessage());}
             } catch(Exception failure) {
-                subscriptions.remove(entry.getKey());
+                remove(entry.getKey());
                 try { sub.socket().close(failure instanceof AccessDenied?CloseStatus.POLICY_VIOLATION:CloseStatus.SERVER_ERROR); } catch(Exception ignored) {}
             }
         }
     }
-    @Override public void afterConnectionClosed(WebSocketSession socket,CloseStatus status) { subscriptions.remove(socket.getId()); }
+    private void remove(String id){
+        var sub=subscriptions.remove(id);lastPing.remove(id);
+        if(sub!=null)try{presence.disconnect(sub.room(),sub.principal(),id,Instant.now());}catch(RuntimeException ignored){/* The previous lease will expire. */}
+    }
+    @Override public void afterConnectionClosed(WebSocketSession socket,CloseStatus status) { remove(socket.getId()); }
 }

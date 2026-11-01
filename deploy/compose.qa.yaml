@@ -23,7 +23,7 @@ services:
     build:
       context: ../backend
       target: integration
-    command: ["-Dtest=CommandCommitterIntegrationTest,MidgameAccountIntegrationTest", "test"]
+    command: ["-Dtest=CommandCommitterIntegrationTest,MidgameAccountIntegrationTest,RoomPresenceIntegrationTest", "test"]
     environment:
       REDIS_TEST_HOST: redis
       SETTLEMENT_TEST_URL: jdbc:postgresql://postgres:5432/qa
