@@ -8,6 +8,7 @@ import {ReactionPreview} from './reaction-preview.js';
 import {OnlineSession} from './online-session.js';
 import {bindLiveRooms} from './live-room-ui.js';
 import {bindLiveAccount} from './live-account-ui.js';
+import {track} from './analytics.js';
 const $=id=>document.getElementById(id),fx=new AudioFX();
 let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
 let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,visual:'illustrated',...prefs};
@@ -40,7 +41,7 @@ async function applyOnlineSnapshot(message){
  const previous=initial?null:game,next=authoritativeView(message.game,message.room);
  if(next.phase!=='choose'||next.legal().length<2){$('piece-buttons').replaceChildren();scene?.setSelectable([]);}
  onlineVersion=Number(message.gameVersion);onlineRoomId=message.room.roomId;
- if(initial){cancel();onlineMode=true;party=false;social.roomDialog.close();show('play');if(!ensureScene())return;game=next;scene.setGame(game);drawDie(next.die||1,!!next.die);}
+ if(initial){cancel();onlineMode=true;party=false;social.roomDialog.close();show('play');if(!ensureScene())return;game=next;scene.setGame(game);drawDie(next.die||1,!!next.die);if(next.phase!=='over')track('game_start',message.room.origin==='FRIENDS'?'friends':'quick');}
  game=next;
  const generation=epoch;
  if(previous&&next.phase==='choose'&&(previous.phase!=='choose'||previous.turn!==next.turn)&&Date.now()<Number(message.busyUntil)){
@@ -121,7 +122,9 @@ async function roll(auto=false){
 }
 async function chooseLocal(piece){if(!game||screen!=='play'||diceBusy||game.phase!=='choose'||!game.legal().includes(piece))return;const id=epoch;clearInterval(clock);const result=game.move(piece);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t(`${game.players[result.color].name} bumped ${[...new Set(result.captured.map(v=>game.players[v.color].name))].join(' & ')}!`,`${game.players[result.color].name} 撞飞了 ${[...new Set(result.captured.map(v=>game.players[v.color].name))].join('、')}！`));});if(id!==epoch)return;fx.land();scene.sync(game);game.advance();if(game.phase==='over'){finish();return;}if(game.phase==='vote'){openVote();return;}beginTurn();}
 $('roll').onclick=()=>roll();
+const measuredGames=new Set();
 function finish(){
+ if(onlineMode&&!measuredGames.has(onlineRoomId)){measuredGames.add(onlineRoomId);track('game_end',onlineSession.room?.origin==='FRIENDS'?'friends':'quick');}
  social.liveResult=onlineMode?{status:'PENDING'}:null;finishLocal();if(!onlineMode)return;
  $('rematch').textContent=onlineSession.room?.origin==='FRIENDS'?t('Play with friends again ↗','好友再来一局 ↗'):t('Match again ↗','重新匹配 ↗');
  const generation=epoch,roomId=onlineRoomId,panel=$('result-save-panel');

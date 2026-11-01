@@ -1,4 +1,9 @@
 /* v0.7 account/ranking interface preview. Existing board and 3D die geometry remain untouched. */
+.analytics-choice{margin-top:12px;max-width:510px;font-size:10px;color:#607991;line-height:1.5}
+.analytics-choice[hidden]{display:none}
+.analytics-choice p{font-size:10px;line-height:1.5;margin:0 0 6px}
+.analytics-choice>div{display:flex;gap:8px}
+.analytics-choice button{font-size:10px;padding:7px 10px;border:1px solid #b9cfe6;background:#f6fbff;border-radius:8px;color:#365b85}
 .account-button{display:flex;align-items:center;gap:7px;height:40px;padding:4px 10px 4px 5px;border:1px solid #a5cef5;border-radius:20px;background:linear-gradient(#fff,#e9f5ff);color:#16468f;box-shadow:inset 0 1px white,0 2px 3px #245c9220;max-width:180px}
 .account-button-avatar,.account-dialog-avatar,.leaderboard-avatar{background-image:url('assets/avatars-v5.png');background-size:200% 200%;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px #35629426;flex:none}
 .account-button-avatar{display:flex;align-items:flex-end;justify-content:flex-end;width:29px;height:29px;color:#ffb32b;font-size:16px;text-shadow:0 1px white}
