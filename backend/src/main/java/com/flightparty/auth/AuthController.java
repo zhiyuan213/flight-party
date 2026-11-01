@@ -14,7 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AccountService accounts;private final JdbcClient db;private final TransactionTemplate tx;
-    public AuthController(AccountService accounts,JdbcClient db,TransactionTemplate tx) { this.accounts=accounts;this.db=db;this.tx=tx; }
+    private final com.flightparty.room.RedisRoomStore rooms;
+    private final MidgameAccountService midgame;
+    public AuthController(AccountService accounts,JdbcClient db,TransactionTemplate tx,com.flightparty.room.RedisRoomStore rooms,MidgameAccountService midgame) { this.accounts=accounts;this.db=db;this.tx=tx;this.rooms=rooms;this.midgame=midgame; }
     public record Credentials(String email,String password,String displayName) {}
     private UUID principal(HttpServletRequest request) {
         var session=request.getSession(false);Object id=session==null?null:session.getAttribute("flightparty.principal");
@@ -25,6 +27,12 @@ public class AuthController {
         tx.executeWithoutResult(status->{
             db.sql("select id from principals where id=:id for update").param("id",principal).query(UUID.class).single();
             db.sql("update principals set account_id=:account where id=:id").param("account",account.id()).param("id",principal).update();
+            rooms.active(principal).ifPresent(room->{
+                var stored=rooms.load(room);
+                if(stored.isPresent() && stored.get().room().phase()==com.flightparty.room.RoomRules.Phase.PLAYING
+                        && rooms.game(room).phase()!=com.flightparty.game.GameRules.Phase.OVER)
+                    midgame.bind(room,principal,account.id());
+            });
         });
         request.changeSessionId();request.getSession().setAttribute("flightparty.account",account.id().toString());return account;
     }

@@ -1,4 +1,16 @@
 services:
+  postgres:
+    image: postgres:18.1
+    environment:
+      POSTGRES_DB: qa
+      POSTGRES_USER: qa
+      POSTGRES_PASSWORD: isolated-test-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qa -d qa"]
+      interval: 1s
+      timeout: 2s
+      retries: 20
+    networks: [qa]
   redis:
     image: redis:8.2.3
     healthcheck:
@@ -11,10 +23,15 @@ services:
     build:
       context: ../backend
       target: integration
-    command: ["-Dtest=CommandCommitterIntegrationTest", "test"]
+    command: ["-Dtest=CommandCommitterIntegrationTest,MidgameAccountIntegrationTest", "test"]
     environment:
       REDIS_TEST_HOST: redis
+      SETTLEMENT_TEST_URL: jdbc:postgresql://postgres:5432/qa
+      SETTLEMENT_TEST_USER: qa
+      SETTLEMENT_TEST_PASSWORD: isolated-test-only
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
     networks: [qa]

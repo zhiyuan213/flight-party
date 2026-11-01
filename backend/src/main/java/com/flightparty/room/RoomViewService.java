@@ -28,7 +28,7 @@ public class RoomViewService {
             // Preserve the original signed-in player's name after logout during a match.
             // Signing in mid-game can supply a nickname without changing score ownership.
             if(room.phase()==RoomRules.Phase.PLAYING || room.phase()==RoomRules.Phase.SETTLED) {
-                db.sql("select p.seat_index,a.display_name from match_participants p join accounts a on a.id=p.account_id_at_start where p.match_id=:id")
+                db.sql("select p.seat_index,a.display_name from match_participants p join accounts a on a.id=coalesce(p.account_id_at_start,p.score_account_id) where p.match_id=:id")
                     .param("id",room.id()).query((rs,n)->{names.put(rs.getInt(1),rs.getString(2));return 0;}).list();
             }
             found=new Cached(room,now.plusSeconds(1),Map.copyOf(names));

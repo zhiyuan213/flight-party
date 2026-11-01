@@ -133,7 +133,7 @@ function finish(){
    if(result.status==='COMMITTED'){
     social.liveResult=result;
     const identity=await onlineSession.request('/api/me');onlineSession.emit('identity',identity);
-    panel.textContent=t('Result confirmed. Only accounts signed in at match start receive cumulative statistics.','结果已确认。仅开局时登录的账号累计成绩。');
+    panel.textContent=t('Result confirmed. Eligible account games follow daily or membership recording rules.','结果已确认。已绑定账号的对局按每日免费或会员规则累计成绩。');
     $('rankings').innerHTML=result.ranking.map((seat,i)=>`<div class="rank-row"><span class="rank-number">${i+1}</span><b>${esc(game.players[seat.seatIndex].name)}</b><small>${seat.pointsDelta>0?'+':''}${seat.pointsDelta} ${t('points this game','本局积分')}</small></div>`).join('');
     if(!identity.activeRoomId){$('rematch').disabled=false;return;}
    }

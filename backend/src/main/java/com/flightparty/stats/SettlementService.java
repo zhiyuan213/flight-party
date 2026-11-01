@@ -18,7 +18,7 @@ public class SettlementService {
                 .param("id", matchId).query(String.class).optional().orElseThrow();
         if (status.equals("SETTLED")) return false;
         if (!status.equals("COMPLETED_PENDING")) throw new IllegalStateException("match is not ready for settlement");
-        var participants = db.sql("select seat_index, account_id_at_start, rank from match_participants where match_id = :id order by seat_index")
+        var participants = db.sql("select seat_index, coalesce(account_id_at_start,score_account_id), rank from match_participants where match_id = :id order by seat_index")
                 .param("id", matchId).query((rs, row) -> new Participant(rs.getInt(1), rs.getObject(2, UUID.class), (Integer) rs.getObject(3, Integer.class))).list();
         validateRanks(participants);
         for(var account:participants.stream().map(Participant::accountId).filter(java.util.Objects::nonNull).distinct().sorted().toList())
