@@ -23,7 +23,7 @@ class CommandCommitterIntegrationTest {
             var stored=rooms.load(id).orElseThrow();assertFalse(stored.room().seats().getFirst().invited());
             var starting=rooms.save(RoomRules.expire(stored.room(),Instant.now()),stored.version());assertTrue(rooms.activate(starting));
             assertEquals(RoomRules.Phase.PLAYING,rooms.load(id).orElseThrow().room().phase());
-            var service=new com.flightparty.room.RoomRollService(redis);redis.opsForHash().put("fp:{rooms}:room:"+id,"actionDeadline","0");service.automate(id);
+            var service=new com.flightparty.room.RoomRollService(rooms,redis);redis.opsForHash().put("fp:{rooms}:room:"+id,"actionDeadline","0");service.automate(id);
             assertTrue(Long.parseLong(redis.opsForHash().get("fp:{rooms}:room:"+id,"gameVersion").toString())>0);
         }finally{factory.destroy();}
     }

@@ -53,6 +53,8 @@ HTML 验证文件：`dist/googlecc6b6e16e288c986.html`。正式地址：`https:/
 
 ## 验证与维护
 
+GA4 与 Search Console 已实际关联成功：`joyflock.com`（网域）→ `Flight Party Web`（16247075660），Google 界面显示已成功建立关联。网址前缀资源仍保留独立 HTML 文件验证。
+
 - `npm test` 包含统计同意前不加载、本地不发送、query/来源清理、事件/参数白名单、撤回后停止与仅清理GA Cookie的检查。
 - 实际浏览器确认：同意前没有 Google script；同意后加载指定衡量ID脚本。GA4 实时报告已显示1名测试活跃用户以及 `page_view`、`first_visit`、`session_start`、`quick_match`。
 - 网址及域名所有权均在 Search Console 显示成功；权威 DNS 查询能读到 TXT。公开 robots、sitemap、验证文件均返回200。
