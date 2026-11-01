@@ -451,3 +451,13 @@ npm test 38项、修改JS语法检查通过。隔离internal网络Postgres/Redis
 2026-11-01：空闲房间席位头像隐藏，仅occupied席位保留头像；使用visibility保留文字对齐和席位高度。npm test 38项通过，本次仅CSS和入口缓存版本更新，无JS和规则修改，未新增浏览器房间截图验收。
 
 2026-11-01：区分快速匹配与好友来源。快速入口隐藏邀请链接和房码，结算再来一局进入quick；好友房主/受邀者通过原子Redis rematch创建唯一新房，保留受邀真人，排除公开补位者和电脑，回到等待准备。16次并发好友续局返回同一个新房和占位，已进入其他房的成员不会被抢回。新Room/Seat记录保存origin和invited，旧数据默认QUICK；仅新房可完整区分来源。npm test 40项通过、修改JS语法检查通过；后端构建23项17通过6跳过，隔离PG/Redis实际4项通过（含新增rematch并发与原中途登录测试）。线上test-room-origin.mjs通过好友/quick视图来源及局外人403、未结算409，测试席位已退出。未另跑真实浏览器整局结束到好友续局；未改游戏引擎规则。隔离容器和卷已清理。
+
+# 2026-11-01 Google 统计、搜索配置及旧房间兼容修复
+
+在用户已登录账号创建JoyFlock独立GA4资源561778143、Flight Party Web流16247075660、衡量ID G-9TB87S782E。中国报表时区、USD、游戏行业；增强型衡量关闭，未启用广告个性化/Google Signals。新增可选访问统计模块，同意前不加载Google脚本，设置内可撤回；不发送账号/昵称/房码/表单/分数/付款信息，去除URL query/hash和来源路径。当前事件只用于使用情况分析，不用于服务器成绩或会员结算。真实浏览器同意前Google脚本数0、同意后加载指定ID；撤回并刷新后脚本数0。GA4实时界面实际收到1名测试访问、page_view/first_visit/session_start/quick_match。首页/游戏渲染与引擎规则未改；统计说明更新隐私页。npm test 43项通过，修改JS语法检查通过。
+
+Search Console已实际验证网址前缀https://flight.joyflock.com/（Google官方HTML文件）及整个joyflock.com（腾讯DNSPod @ TXT，TTL600），未改A或NS。权威DNS能查询到记录；Google均显示验证成功。站点地图已成功读取，发现4个公开页面，域名和网址资源均可见该结果。GA4与joyflock.com网域资源实际关联成功。新增robots、sitemap、canonical、首页description/OpenGraph；公开验证文件200并保留。已记录完整非敏感配置到docs/GOOGLE-ANALYTICS-SEARCH-CONSOLE.md。不宣称Google已编入索引或排名，不发送虚构购买数据。
+
+用户随后发现快速匹配500：新增Seat.invited使用primitive boolean，Jackson3严格模式无法读取不含该字段的发布前Redis快照，导致部分旧会话请求和回合任务解析失败。此前来源测试只覆盖新房，漏掉历史缓存；本次改为可空Boolean并在record构造器规范化为false，仅兼容该元数据字段，未全局放松JSON校验、未删除缓存或成绩。新增缺origin/invited的旧JSON反序列化、重存，以及专用Redis内旧房恢复、补机器人、激活和自动推进测试。后端verify25项18通过7需专用环境跳过；隔离PG/Redis另执行5项全部通过，包含旧房/并发好友续局/中途登录。最初回归测试fixture构造参数编译错误已修正，最终构建通过。
+
+修复发布后线上test-room-origin.mjs、test-start-now.mjs均通过；实际读取发布前保存的测试房37284a94-ec0a-4942-a42a-49261377aca1返回200 SETTLED QUICK，未清理旧数据。后台最近日志不再出现MismatchedInputException。新并发开局测试房8ca691e5-0157-4578-9425-f8fbf51f840e。仍未宣称双浏览器整局、实体手机、完整恢复演练或正式支付验收全部完成。
