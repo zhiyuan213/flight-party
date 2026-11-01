@@ -11,7 +11,7 @@ test('homepage preview loads each authored sprite and falls back once when a VIP
  globalThis.Image=class{constructor(){this.complete=false;this.assignments=[];}set src(value){this.assignments.push(value);this._src=value;}get src(){return this._src;}};
  globalThis.ResizeObserver=class{observe(){}disconnect(){}};
  try{
-  for(const style of ['classic','gold2d','cloud2d','night2d']){
+  for(const style of ['classic','gold2d','cloud2d','night2d','obsidian2d','aurora2d']){
    const parent={prepend(){},classList:{add(){}}},hero=new HeroPlane(parent,{style,reduced:true});
    assert.equal(hero.image.src,planeSkin(style).asset);
    assert.equal(hero.style,style);

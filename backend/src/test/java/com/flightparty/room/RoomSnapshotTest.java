@@ -58,4 +58,17 @@ class RoomSnapshotTest {
         appearances.put(2,com.flightparty.auth.AppearanceService.profile(false,"gold","star","gold",null,"cloud2d",0));
         assertEquals(java.util.List.of("classic","gold2d","classic","night2d"),RoomSnapshot.forMember(room,seats.getFirst().principal(),Instant.now(),java.util.Map.of(),appearances).seats().stream().map(RoomSnapshot.Seat::planeStyle).toList());
     }
+    @Test void annualPlaneAndBadgeRemainServerControlledAndBotsCannotWearEither(){
+        UUID principal=UUID.randomUUID();var now=Instant.now();
+        var room=new RoomRules.Room(UUID.randomUUID(),RoomRules.Phase.PLAYING,java.util.List.of(new RoomRules.Seat(0,principal,true,false),new RoomRules.Seat(1,null,true,true)),null);
+        for(String skin:java.util.List.of("obsidian2d","aurora2d")){
+            var annual=com.flightparty.auth.AppearanceService.profile(true,true,"gold","star","gold",null,skin,0);
+            var snapshot=RoomSnapshot.forMember(room,principal,now,java.util.Map.of(),java.util.Map.of(0,annual,1,annual));
+            assertTrue(snapshot.seats().getFirst().annualMember());assertEquals(skin,snapshot.seats().getFirst().planeStyle());
+            assertFalse(snapshot.seats().get(1).annualMember());assertEquals("classic",snapshot.seats().get(1).planeStyle());
+            var monthly=com.flightparty.auth.AppearanceService.profile(true,false,"gold","star","gold",null,skin,0);
+            var downgraded=RoomSnapshot.forMember(room,principal,now,java.util.Map.of(),java.util.Map.of(0,monthly)).seats().getFirst();
+            assertTrue(downgraded.member());assertFalse(downgraded.annualMember());assertEquals("classic",downgraded.planeStyle());
+        }
+    }
 }

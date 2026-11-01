@@ -404,8 +404,11 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 [data-frame="gold"]::after{background-image:url('assets/member/frame-gold.svg')}
 [data-frame="cloud"]::after{background-image:url('assets/member/frame-cloud.svg')}
 [data-frame="night"]::after{background-image:url('assets/member/frame-night.svg')}
-[data-member="true"]::after{content:"";display:inline-block;width:30px;height:15px;margin-left:5px;vertical-align:middle;background:url('assets/member/wing-badge.svg') center/contain no-repeat}
-.account-dialog-heading [data-member="true"]::after{width:42px;height:22px}
+[data-member="true"]::after{content:"";display:inline-block;flex:none;width:40px;height:20px;margin-left:5px;vertical-align:middle;background:url('assets/member/vip-badge.svg') center/contain no-repeat}
+[data-member="true"][data-annual-member="true"]::after{width:58px;height:22px;background-image:url('assets/member/annual-vip-badge-en.svg')}
+html[lang^="zh"] [data-member="true"][data-annual-member="true"]::after{background-image:url('assets/member/annual-vip-badge.svg')}
+.account-dialog-heading [data-member="true"]::after{width:50px;height:24px}
+.account-dialog-heading [data-member="true"][data-annual-member="true"]::after{width:70px;height:26px}
 .account-appearance{margin-top:20px;padding:18px 14px;border:1px solid #c4daf6;border-radius:18px;background:#f5faff}
 .account-appearance h3{margin:0 0 6px;font-size:17px;color:#253e97}
 .account-appearance p{font-size:11px;color:#7290ae;line-height:1.6;margin:0 0 15px}
@@ -617,3 +620,53 @@ header nav .account-button.signed-in-account{gap:13px}
  #play .roll-button{grid-column:2;grid-row:4;min-height:40px;height:40px;padding:8px;font-size:14px;margin:0}
 }
 #play[data-online="true"] .demo-actions{display:none}
+
+/* The headings and values share all five tracks, including the measured scrollbar gutter. */
+.leaderboard-shell{--lb-rank:35px;--lb-avatar:53px;--lb-points:56px;--lb-games:56px;--lb-gap:12px;--lb-pad:14px}
+.leaderboard-shell .leaderboard-row,.leaderboard-shell .leaderboard-columns{grid-template-columns:var(--lb-rank) var(--lb-avatar) minmax(0,1fr) var(--lb-points) var(--lb-games);column-gap:var(--lb-gap)}
+.leaderboard-shell .leaderboard-row{padding-left:var(--lb-pad);padding-right:var(--lb-pad)}
+.leaderboard-shell .leaderboard-columns{box-sizing:border-box;margin-right:calc(7px + var(--lb-scrollbar,8px));padding:13px calc(var(--lb-pad) + 1px) 8px;font-size:9px;letter-spacing:.2px;text-align:center;line-height:1.3}
+.leaderboard-shell .leaderboard-columns>span{white-space:nowrap}
+.leaderboard-shell .leaderboard-columns>span:first-child{grid-column:1/4;text-align:left;padding-left:calc(var(--lb-rank) + var(--lb-avatar) + var(--lb-gap)*2)}
+.leaderboard-shell .leaderboard-row strong,.leaderboard-shell .leaderboard-row strong.ranking-value-active{font-size:21px;line-height:1.2;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;color:#3670c6}
+.leaderboard-shell .leaderboard-row strong.ranking-value-active{color:#1f61dc}
+.leaderboard-row b,.header-account-name{display:flex;align-items:center;min-width:0}
+.membership-name-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.leaderboard-row b::after{margin-left:4px}
+.header-account-name[data-member="true"]::after{width:30px;height:16px;margin-left:4px}
+.header-account-name[data-member="true"][data-annual-member="true"]::after{width:46px;height:18px}
+.hangar-choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.hangar-choices button{min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.hangar-choices button small{font-size:9px;line-height:1.2;color:#9d6959}
+.hangar-choices button[data-plane-tier="annual"]{border-color:#d8b19b;background:linear-gradient(135deg,#fff9f4,#edf4ff)}
+.hangar-choices button[data-plane-tier="annual"][aria-pressed="true"]{border-color:#b47d65;box-shadow:0 0 0 1px #c7957a,inset 0 1px 0 #fff}
+@media(max-width:480px){
+ .leaderboard-shell{--lb-rank:28px;--lb-avatar:43px;--lb-points:42px;--lb-games:44px;--lb-gap:8px;--lb-pad:9px}
+ .leaderboard-shell .leaderboard-columns{font-size:8px;letter-spacing:0}
+ .leaderboard-shell .leaderboard-row strong,.leaderboard-shell .leaderboard-row strong.ranking-value-active{font-size:18px}
+ .leaderboard-row b{flex-wrap:wrap;gap:2px;align-content:center;white-space:normal;line-height:1.3}
+ .leaderboard-row b .membership-name-value{flex-basis:100%}
+ .leaderboard-row b::after{margin-left:0;width:34px;height:17px}
+ .leaderboard-row b[data-annual-member="true"]::after{width:49px;height:19px}
+ .header-account-name{flex-wrap:wrap;max-width:64px;line-height:1.1;row-gap:2px}
+ .header-account-name .membership-name-value{flex-basis:100%}
+ .header-account-name[data-member="true"]::after{margin-left:0;width:27px;height:13px}
+ .header-account-name[data-member="true"][data-annual-member="true"]::after{width:42px;height:15px}
+ .hangar-choices button{font-size:11px;padding:8px 3px}
+}
+@media(max-width:380px){
+ header nav .account-button.signed-in-account{max-width:82px}
+ .header-account-name{max-width:42px}
+}
+@media(max-width:360px){
+ .leaderboard-shell{--lb-rank:24px;--lb-avatar:34px;--lb-points:36px;--lb-games:36px;--lb-gap:6px;--lb-pad:6px}
+ .leaderboard-shell .leaderboard-row strong,.leaderboard-shell .leaderboard-row strong.ranking-value-active{font-size:17px}
+ .leaderboard-shell .leaderboard-row b{font-size:11px}
+ .leaderboard-shell .leaderboard-columns{font-size:7px}
+ .leaderboard-shell .leaderboard-avatar{width:30px;height:30px}
+}
+/* On phones the selected aircraft leads the copy on the same left edge. */
+@media(max-width:700px){
+ .hero-copy>.hero-plane-model{position:relative;left:auto;right:auto;top:auto;width:98px;height:84px;margin:0 0 12px;opacity:1}
+ .hero-copy.hero-model-ready h1{margin-top:20px}
+}

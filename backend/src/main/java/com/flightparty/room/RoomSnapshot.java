@@ -7,7 +7,7 @@ import java.util.UUID;
 /** Public room view: internal principal identities never cross the API boundary. */
 public record RoomSnapshot(UUID roomId, RoomRules.Phase phase, Instant matchingDeadline,
                            Instant serverNow, int yourSeat, List<Seat> seats, RoomRules.Origin origin) {
-    public record Seat(int index, boolean ready, boolean bot, String displayName,boolean member,String avatarFrame,String flightTrail,String victoryEffect,String avatarUrl,String planeStyle) {}
+    public record Seat(int index, boolean ready, boolean bot, String displayName,boolean member,String avatarFrame,String flightTrail,String victoryEffect,String avatarUrl,String planeStyle,boolean annualMember) {}
     public RoomSnapshot { seats=List.copyOf(seats); }
     public static RoomSnapshot forMember(RoomRules.Room room, UUID principal, Instant now) {
         return forMember(room,principal,now,java.util.Map.of());
@@ -19,7 +19,7 @@ public record RoomSnapshot(UUID roomId, RoomRules.Phase phase, Instant matchingD
         int own=room.seats().stream().filter(s->principal.equals(s.principal())).mapToInt(RoomRules.Seat::index).findFirst()
                 .orElseThrow(()->new IllegalStateException("not a room member"));
         return new RoomSnapshot(room.id(),room.phase(),room.deadline(),now,own,
-                room.seats().stream().map(s->new Seat(s.index(),s.ready(),s.bot(),s.bot()?null:names.get(s.index()),!s.bot()&&appearances.containsKey(s.index())&&appearances.get(s.index()).member(),!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).frame():"none",!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).trail():"none",!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).victory():"none",!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).avatarUrl():null,!s.bot()&&appearances.containsKey(s.index())?com.flightparty.auth.AppearanceService.displayPlane(appearances.get(s.index()).member(),appearances.get(s.index()).plane()):"classic")).toList(),
+                room.seats().stream().map(s->new Seat(s.index(),s.ready(),s.bot(),s.bot()?null:names.get(s.index()),!s.bot()&&appearances.containsKey(s.index())&&appearances.get(s.index()).member(),!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).frame():"none",!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).trail():"none",!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).victory():"none",!s.bot()&&appearances.containsKey(s.index())?appearances.get(s.index()).avatarUrl():null,!s.bot()&&appearances.containsKey(s.index())?com.flightparty.auth.AppearanceService.displayPlane(appearances.get(s.index()).member(),appearances.get(s.index()).annualMember(),appearances.get(s.index()).plane()):"classic",!s.bot()&&appearances.containsKey(s.index())&&appearances.get(s.index()).member()&&appearances.get(s.index()).annualMember())).toList(),
                 room.origin()==RoomRules.Origin.FRIENDS&&room.seats().stream().anyMatch(s->principal.equals(s.principal())&&s.invited())?RoomRules.Origin.FRIENDS:RoomRules.Origin.QUICK);
     }
 }

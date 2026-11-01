@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="124" height="44" viewBox="0 0 124 44" role="img" aria-labelledby="title">
+ <title id="title">Year VIP</title>
+ <defs>
+  <linearGradient id="rose" x1="0" y1="0" x2=".25" y2="1">
+   <stop stop-color="#ffe8d7"/><stop offset=".2" stop-color="#e8b89d"/><stop offset=".46" stop-color="#8e564b"/><stop offset=".7" stop-color="#efc1ad"/><stop offset="1" stop-color="#a46a58"/>
+  </linearGradient>
+  <linearGradient id="obsidian" x1="0" y1="0" x2="0" y2="1">
+   <stop stop-color="#34445e"/><stop offset=".43" stop-color="#202b43"/><stop offset=".5" stop-color="#10192b"/><stop offset="1" stop-color="#232d43"/>
+  </linearGradient>
+  <linearGradient id="letter" x1="0" y1="0" x2="0" y2="1">
+   <stop stop-color="#fff3dd"/><stop offset=".5" stop-color="#f4cdb4"/><stop offset="1" stop-color="#d49b80"/>
+  </linearGradient>
+  <filter id="shadow" x="-15%" y="-25%" width="130%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.1" flood-color="#11182b" flood-opacity=".4"/></filter>
+ </defs>
+ <g filter="url(#shadow)">
+  <path d="M12 3.5H112L120 11.5V31.5L112 39.5H12L4 31.5V11.5Z" fill="url(#rose)" stroke="#a77460" stroke-width="1"/>
+  <path d="M13 6.5H111L117 12.5V30.5L111 36.5H13L7 30.5V12.5Z" fill="url(#obsidian)" stroke="#d4a18a" stroke-width=".8"/>
+  <path d="M8 14L14 8H110L116 14" fill="none" stroke="#ffe9d7" stroke-width="1" stroke-linecap="round" opacity=".8"/>
+  <path d="M8 30L14 35H110L116 30" fill="none" stroke="#865846" stroke-width="1" opacity=".8"/>
+  <path d="M7.5 13H116.5V18.5L7.5 26.5Z" fill="#a5bddf" opacity=".09"/>
+  <path d="M19 13L25.5 21.5L19 30L12.5 21.5Z" fill="url(#rose)" stroke="#f1c9b2" stroke-width=".65"/>
+  <path d="M19 14V21.5H13.5Z" fill="#fff0da"/><path d="M19 21.5H24.5L19 29Z" fill="#935b49"/>
+  <path d="M30.5 12.5V30.5" stroke="#d5a48e" stroke-width=".75" opacity=".38"/>
+  <text x="73" y="27.7" text-anchor="middle" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="16.5" font-weight="900" letter-spacing=".2" fill="url(#letter)" stroke="#573d36" stroke-width=".35" paint-order="stroke fill">YEAR VIP</text>
+ </g>
+</svg>

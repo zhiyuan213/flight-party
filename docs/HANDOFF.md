@@ -98,3 +98,9 @@ v0.4曾按视口调整pitch，并让背景横向拉伸以填满空带；v0.5取�
 普通/VIP飞机上方均显示所属玩家公开昵称，附席位色点；长名按字符簇省略，标签保持正向，随跳格/碰撞移动。停机双机、叠机和边界统一检测并错开，姓名读取当前权威玩家数据，不改坐标、规则或命中区域。
 新增cloud2d云海巡航（珍珠白/冰蓝）及night2d星夜疾风（午夜蓝紫/银），与gold2d共同使用2D透明机身和独立动态桨。主页、机库、对局使用同一资产目录；有效会员可保存，过期回经典。旧三维模型仍删除。
 彩虹改为共享截面的连续七色丝带，渐细/渐隐并带浅色光边；修复预览遗漏z投影而叠成紫线的问题。预览与对局共用FlightTrails.draw。仅绘制层变更，积分与支付状态不变。实际检查见QA最新段落。
+
+## 2026-11-02 UI40 — 年VIP飞机与排行排版
+普通VIP可用gold2d/cloud2d/night2d；有效年VIP额外可用obsidian2d/aurora2d。所有飞机仍是可上棋盘的2D透明机身和独立活动桨；不恢复已删除的三维模型。机库六项可预览，保存由服务端验证；年权限过期时年专属回经典，普通VIP三款保留。
+V16为membership_entitlements新增billing_plan/product_id；仅通过现有真实Creem产品/金额/币种/账期校验的事件写入计划，保留乱序防护。历史未知计划与complimentary赠送不推断年权限。appearance、room、leaderboard显式下发annualMember，客户端无法自授。新徽章位于assets/member/{vip-badge,annual-vip-badge,annual-vip-badge-en}.svg。
+排行榜两数字列21px桌面/18px手机（极窄17px），表头共用列宽；SocialUI的ResizeObserver只测量滚动条宽度，替换列表时断开旧观察，隐藏后重现时重新计算。真实Canvas验收图：verification/annual-vip-board-ui40.png；本地模拟资格验收页ui40-preview.html不会修改生产数据。实际验证见QA。
+V17保存独立的订阅terminal水位和transaction撤销守卫，首次取消/退款早于paid时也会拒绝旧付款授予；身份仍只由合法checkout和完整付款校验绑定。迁移从已处理认证inbox回填拒绝证据，精确撤销terminal水位覆盖或matching退款的旧错误权益，保留更新合法paid、账号与统计。手机hero回到左侧文档流，不改变机库大图定位。

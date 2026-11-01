@@ -15,15 +15,15 @@ function boardFor(players) {
   if(key==='createLinearGradient')return ()=>({addColorStop(offset,color){if(offset===.35)rotorColors.push(color);}});
   return ()=>{};
  },set(target,key,value){target[key]=value;return true;}});
- const normal={width:1312,height:1199,name:'classic'},gold={width:1312,height:1199,name:'gold2d'},cloud={width:1312,height:1199,name:'cloud2d'},night={width:1312,height:1199,name:'night2d'};
+ const normal={width:1312,height:1199,name:'classic'},gold={width:1312,height:1199,name:'gold2d'},cloud={width:1312,height:1199,name:'cloud2d'},night={width:1312,height:1199,name:'night2d'},obsidian={width:1312,height:1199,name:'obsidian2d'},aurora={width:1312,height:1199,name:'aurora2d'};
  const board=Object.create(CanvasBoard.prototype);
- Object.assign(board,{ctx:context,scale:50,depth:()=>1,project:p=>({x:p.x,y:p.z-p.y}),keys:[],reduced:true,art:{},sprites:{plane0:normal,plane1:normal,plane2:normal,plane3:normal,vipGold:gold,vipCloud:cloud,vipNight:night},game:{players}});
+ Object.assign(board,{ctx:context,scale:50,depth:()=>1,project:p=>({x:p.x,y:p.z-p.y}),keys:[],reduced:true,art:{},sprites:{plane0:normal,plane1:normal,plane2:normal,plane3:normal,vipGold:gold,vipCloud:cloud,vipNight:night,vipObsidian:obsidian,vipAurora:aurora},game:{players}});
  const draw=(color=0,heading=0,piece=0)=>{
   images.length=labels.length=transforms.length=rotorColors.length=0;
   board.drawPlane({x:0,y:.4,z:0,groundY:.32,color,piece,spin:0,squash:0,heading},1000);
   return {image:images[0],labels:[...labels],transforms:[...transforms],rotorColors:[...rotorColors]};
  };
- return {board,draw,normal,gold,cloud,night};
+ return {board,draw,normal,gold,cloud,night,obsidian,aurora};
 }
 
 test('all three live VIP sprites use authoritative skin selection for local and remote members',()=>{
@@ -76,5 +76,18 @@ test('shared plane catalog rejects unknown and legacy client styles and isolates
  for(const style of [undefined,null,'gold','sapphire','night','__proto__','missing']){
   assert.equal(normalizePlaneStyle(style),'classic');
   assert.equal(playerPlaneSkin({member:true,planeStyle:style,type:'human'}),PLANE_SKINS.classic);
+ }
+});
+
+test('annual live aircraft require both verified flags and fall back immediately on annual expiry',()=>{
+ for(const style of ['obsidian2d','aurora2d']){
+  const player={member:true,annualMember:true,planeStyle:style,type:'remote'},setup=boardFor([player]);
+  const skin=planeSkin(style);assert.equal(skin.tier,'annual');
+  assert.equal(setup.draw().image,setup.board.sprites[skin.spriteKey]);
+  assert.ok(setup.draw().rotorColors.includes(skin.propellerColor));
+  for(const flags of [{member:true,annualMember:false},{member:false,annualMember:true},{member:true,annualMember:'true'},{member:true,annualMember:true,type:'bot'}]){
+   Object.assign(player,{type:'remote'},flags);
+   assert.equal(setup.draw().image,setup.normal,'annual qualification cannot be inferred from a monthly VIP, guest, bot or string');
+  }
  }
 });

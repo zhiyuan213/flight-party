@@ -17,9 +17,21 @@ class PlaneAppearanceTest {
   }
  }
  @Test void nonMembersClassicAndUnknownChoicesStayClassic(){
-  for(String choice:new String[]{"gold2d","cloud2d","night2d","gold","sapphire","night","classic","untrusted-client-value"})assertEquals("classic",AppearanceService.displayPlane(false,choice));
+  for(String choice:new String[]{"gold2d","cloud2d","night2d","obsidian2d","aurora2d","gold","sapphire","night","classic","untrusted-client-value"})assertEquals("classic",AppearanceService.displayPlane(false,choice));
   assertEquals("classic",AppearanceService.displayPlane(true,"classic"));
   assertEquals("classic",AppearanceService.displayPlane(true,"untrusted-client-value"));
   assertEquals("classic",AppearanceService.displayPlane(true,null));
+ }
+ @Test void annualSkinsAndFlagRequireBothRealMembershipAndAnnualQualification(){
+  for(String skin:new String[]{"obsidian2d","aurora2d"}){
+   assertEquals("classic",AppearanceService.displayPlane(true,skin));
+   assertEquals("classic",AppearanceService.displayPlane(false,true,skin));
+   assertEquals("classic",AppearanceService.displayPlane(true,false,skin));
+   assertEquals(skin,AppearanceService.displayPlane(true,true,skin));
+   var annual=AppearanceService.profile(true,true,"gold","star","gold",null,skin,0);
+   assertTrue(annual.member());assertTrue(annual.annualMember());assertEquals(skin,annual.plane());
+   var inactive=AppearanceService.profile(false,true,"gold","star","gold",null,skin,0);
+   assertFalse(inactive.member());assertFalse(inactive.annualMember());assertEquals("classic",inactive.plane());
+  }
  }
 }

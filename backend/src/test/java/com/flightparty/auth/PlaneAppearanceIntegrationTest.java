@@ -98,10 +98,69 @@ class PlaneAppearanceIntegrationTest {
   });
  }
 
+ @Test void annualSkinsBadgesAndRoomProfilesRequireVerifiedAnnualEntitlement(){
+  isolated(db->{
+   var appearance=new AppearanceService(db);var views=new RoomViewService(db);
+   UUID free=account(db),monthly=account(db),gift=account(db),sandbox=account(db),annual=account(db),legacy=account(db);
+   entitlement(db,monthly,"monthly","MONTHLY",false,400);
+   db.sql("insert into complimentary_memberships(account_id,valid_until,reason) values (:id,now()+interval '400 days','ordinary gift, not annual')").param("id",gift).update();
+   entitlement(db,sandbox,"sandbox","ANNUAL",true,400);
+   entitlement(db,annual,"annual","ANNUAL",false,2);
+   db.sql("insert into membership_entitlements(account_id,subscription_id,provider,status,valid_until) values (:id,'unclassified','creem','ACTIVE',now()+interval '400 days')").param("id",legacy).update();
+   assertTrue(appearance.get(monthly).member());assertTrue(appearance.get(gift).member());assertTrue(appearance.get(legacy).member());
+   for(UUID ordinary:List.of(free,monthly,gift,sandbox,legacy)){
+    assertFalse(appearance.get(ordinary).annualMember());
+    for(String skin:List.of("obsidian2d","aurora2d"))assertThrows(IllegalStateException.class,()->appearance.selectPlane(ordinary,skin));
+   }
+   assertTrue(appearance.get(annual).annualMember());
+   for(String skin:List.of("obsidian2d","aurora2d")){
+    appearance.selectPlane(annual,skin);assertEquals(skin,appearance.get(annual).plane());
+   }
+   appearance.selectPlane(gift,"cloud2d");appearance.selectPlane(monthly,"gold2d");
+   // A stored selection alone is never proof of paid access.
+   db.sql("update accounts set plane_style='obsidian2d' where id=:id").param("id",sandbox).update();
+   var accounts=List.of(gift,monthly,sandbox,annual);var principals=new java.util.ArrayList<UUID>();var seats=new java.util.ArrayList<RoomRules.Seat>();
+   UUID match=UUID.randomUUID();var now=Instant.now();
+   for(int i=0;i<accounts.size();i++){
+    UUID principal=UUID.randomUUID();principals.add(principal);seats.add(new RoomRules.Seat(i,principal,true,false));
+    db.sql("insert into principals(id,account_id) values (:id,:account)").param("id",principal).param("account",accounts.get(i)).update();
+   }
+   var waiting=new RoomRules.Room(match,RoomRules.Phase.WAITING_FRIENDS,seats,null);
+   var snapshot=views.forMember(waiting,principals.getFirst(),now);
+   assertEquals(List.of("cloud2d","gold2d","classic","aurora2d"),snapshot.seats().stream().map(com.flightparty.room.RoomSnapshot.Seat::planeStyle).toList());
+   assertEquals(List.of(false,false,false,true),snapshot.seats().stream().map(com.flightparty.room.RoomSnapshot.Seat::annualMember).toList());
+   db.sql("insert into matches(id,room_id,status,rules_version,started_at,settled_at) values (:id,:id,'SETTLED','test',now(),now())").param("id",match).update();
+   for(int i=0;i<accounts.size();i++){
+    db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank,points_delta) values (:match,:seat,:principal,:account,:rank,:points)").param("match",match).param("seat",i).param("principal",principals.get(i)).param("account",accounts.get(i)).param("rank",4-i).param("points",i-1).update();
+    db.sql("insert into account_match_results(match_id,account_id,seat_index,rank,points_delta) values (:match,:account,:seat,:rank,:points)").param("match",match).param("account",accounts.get(i)).param("seat",i).param("rank",4-i).param("points",i-1).update();
+    db.sql("insert into account_statistics(account_id,points,completed_games) values (:account,:points,1)").param("account",accounts.get(i)).param("points",i-1).update();
+    db.sql("update principals set account_id=null where id=:id").param("id",principals.get(i)).update();
+   }
+   var playing=new RoomRules.Room(match,RoomRules.Phase.PLAYING,seats,null);
+   assertEquals(snapshot.seats().stream().map(com.flightparty.room.RoomSnapshot.Seat::planeStyle).toList(),views.forMember(playing,principals.getFirst(),now.plusSeconds(2)).seats().stream().map(com.flightparty.room.RoomSnapshot.Seat::planeStyle).toList());
+   var board=new com.flightparty.stats.LeaderboardService(db);
+   for(String period:List.of("points","games","month","week","day"))assertEquals(List.of(true,false,false,false),board.top(period).stream().map(com.flightparty.stats.LeaderboardService.Entry::annualMember).toList());
+   // Expiring/revoking annual access removes its skin even while monthly VIP remains.
+   entitlement(db,annual,"monthly-after-annual","MONTHLY",false,400);
+   db.sql("update membership_entitlements set valid_until=now()-interval '1 second' where subscription_id='annual'").update();
+   assertTrue(appearance.get(annual).member());assertFalse(appearance.get(annual).annualMember());assertEquals("classic",appearance.get(annual).plane());
+   assertEquals("aurora2d",storedPlane(db,annual));
+   var expired=views.forMember(playing,principals.getFirst(),now.plusSeconds(4)).seats().get(3);
+   assertTrue(expired.member());assertFalse(expired.annualMember());assertEquals("classic",expired.planeStyle());
+   assertThrows(IllegalStateException.class,()->appearance.selectPlane(annual,"obsidian2d"));
+   db.sql("update membership_entitlements set valid_until=now()+interval '2 days' where subscription_id='annual'").update();
+   appearance.selectPlane(annual,"obsidian2d");
+   db.sql("update membership_entitlements set status='REVOKED' where subscription_id='annual'").update();
+   assertTrue(appearance.get(annual).member());assertFalse(appearance.get(annual).annualMember());assertEquals("classic",appearance.get(annual).plane());
+   for(String period:List.of("points","month","week","day"))assertTrue(board.top(period).stream().noneMatch(com.flightparty.stats.LeaderboardService.Entry::annualMember));
+  });
+ }
+
  private static UUID account(JdbcClient db){
   UUID id=UUID.randomUUID();db.sql("insert into accounts(id,display_name) values (:id,'plane test')").param("id",id).update();return id;
  }
  private static void grant(JdbcClient db,UUID account){db.sql("insert into complimentary_memberships(account_id,valid_until,reason) values (:id,now()+interval '1 day','isolated plane test')").param("id",account).update();}
+ private static void entitlement(JdbcClient db,UUID account,String id,String plan,boolean test,int days){db.sql("insert into membership_entitlements(account_id,subscription_id,provider,status,valid_until,test_mode,billing_plan,product_id) values (:account,:id,'creem',:status,now()+(:days*interval '1 day'),:test,:plan,:product)").param("account",account).param("id",id).param("status",test?"TEST_ACTIVE":"ACTIVE").param("days",days).param("test",test).param("plan",plan).param("product","product-"+plan).update();}
  private static String storedPlane(JdbcClient db,UUID account){return db.sql("select plane_style from accounts where id=:id").param("id",account).query(String.class).single();}
  private static void isolated(Consumer<JdbcClient> test){
   String schema="test_"+UUID.randomUUID().toString().replace("-","");String url=System.getenv("SETTLEMENT_TEST_URL"),user=System.getenv("SETTLEMENT_TEST_USER"),password=System.getenv("SETTLEMENT_TEST_PASSWORD");
