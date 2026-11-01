@@ -2,6 +2,7 @@
 .hero-copy>.hero-plane-model{
  position:relative;
  isolation:isolate;
+ --hero-airflow-angle:42deg;
 }
 .hero-copy>.hero-plane-model::before,
 .hero-copy>.hero-plane-model::after{
@@ -14,6 +15,7 @@
  opacity:0;
  animation:hero-wind-drift 3.4s linear infinite;
  will-change:transform,opacity;
+ transform-origin:58% 56%;
 }
 .hero-copy>.hero-plane-model::after{
  inset:3% -9% 3% -29%;
@@ -21,19 +23,19 @@
  animation-delay:-2.1s;
 }
 @keyframes hero-wind-drift{
- 0%{opacity:0;transform:translate3d(15px,0,0)}
+ 0%{opacity:0;transform:rotate(var(--hero-airflow-angle)) translate3d(15px,0,0)}
  18%{opacity:.7}
  70%{opacity:.58}
- 100%{opacity:0;transform:translate3d(-23px,0,0)}
+ 100%{opacity:0;transform:rotate(var(--hero-airflow-angle)) translate3d(-23px,0,0)}
 }
 .hero-copy>.hero-plane-model::after{
  animation-name:hero-wind-drift-soft;
 }
 @keyframes hero-wind-drift-soft{
- 0%{opacity:0;transform:translate3d(12px,2px,0)}
+ 0%{opacity:0;transform:rotate(var(--hero-airflow-angle)) translate3d(12px,2px,0)}
  20%{opacity:.34}
  76%{opacity:.3}
- 100%{opacity:0;transform:translate3d(-28px,2px,0)}
+ 100%{opacity:0;transform:rotate(var(--hero-airflow-angle)) translate3d(-28px,2px,0)}
 }
 #welcome.hidden .hero-copy>.hero-plane-model::before,
 #welcome.hidden .hero-copy>.hero-plane-model::after{
@@ -44,11 +46,11 @@
  animation:none;
  will-change:auto;
  opacity:.58;
- transform:translateX(-4px);
+ transform:rotate(var(--hero-airflow-angle)) translateX(-4px);
 }
 .reduce-motion .hero-copy>.hero-plane-model::after{
  opacity:.2;
- transform:translate(-14px,2px);
+ transform:rotate(var(--hero-airflow-angle)) translate(-14px,2px);
 }
 @media(prefers-reduced-motion:reduce){
  .hero-copy>.hero-plane-model::before,
@@ -56,10 +58,10 @@
   animation:none;
   will-change:auto;
   opacity:.58;
-  transform:translateX(-4px);
+  transform:rotate(var(--hero-airflow-angle)) translateX(-4px);
  }
  .hero-copy>.hero-plane-model::after{
   opacity:.2;
-  transform:translate(-14px,2px);
+  transform:rotate(var(--hero-airflow-angle)) translate(-14px,2px);
  }
 }

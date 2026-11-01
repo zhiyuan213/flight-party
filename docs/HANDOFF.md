@@ -108,3 +108,6 @@ V17保存独立的订阅terminal水位和transaction撤销守卫，首次取消/
 ## 2026-11-02 UI41 — 赠送年VIP、风线与昵称尺寸
 用户明确要求把大卫升级成年VIP：V18为complimentary_memberships加tier，默认VIP、限定VIP/ANNUAL；只有显式年级且有效未撤销才额外通过ANNUAL_MEMBER_SQL。历史赠送不自动升级，不能以有效期长度推断等级，不能伪造Creem付费记录。现有appearance/room/leaderboard字段自动传播，无需新增前端信任参数。
 排行榜昵称16px桌面/14px手机，VIP徽章48×24/40×20，年VIP68×26/58×22，极窄另有缩小以保留列对齐。hero-wind.css和assets/hero-wind-lines.svg仅为主页实际飞机的无指针伪元素，双层错相向左流动；reduce-motion与prefers-reduced-motion静态，隐藏主页暂停。server.mjs补充SVG正确MIME以支持本地启动；生产NGINX已有SVG支持。
+
+## 2026-11-02 UI42 — 顺机身风线、飞机VIP牌
+风线采用42deg旋转后沿local-x负向位移，按当前图像注册从机头右下移向机尾左上；减少动态静态画面保留同角度。plane-nameplates.js新增严格布尔等级helper，原生BOT无徽章，Canvas/实验Three每帧从当前owner读取公开等级。徽章固定18px高，姓名原宽度预算保留、额外扩展牌子宽度；小画布必要时横纵双向避让。中文复用现有金/黑曜SVG并缓存，未加载/失败用同尺寸金属Canvas文字；英文年牌以至少9px文字保障可读性。不会因资源到达改变布局，过期立即降级/移除。实验Three仅接入共享绘制逻辑，本轮未GPU视觉验收。验证/实际图见QA。

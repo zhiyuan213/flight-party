@@ -1,5 +1,5 @@
 import {playerPlaneSkin} from './plane-skin.js';
-import {drawPlaneNames} from './plane-nameplates.js';
+import {drawPlaneNames,planeMembershipGrade} from './plane-nameplates.js';
 import {drawPropeller} from './propeller.js';
 import {FlightTrails} from './flight-trails.js';
 // Fixed-camera 2.5D renderer. Rule coordinates are owned exclusively by engine.js.
@@ -218,9 +218,9 @@ export class CanvasBoard{
  drawNames(now){
   const entries=this.planes.map(p=>{
    const owner=this.game?.players?.[p.color],skin=playerPlaneSkin(owner),image=this.sprites[skin.spriteKey]||this.art[skin.spriteKey]||this.sprites['plane'+p.color]||this.art['plane'+p.color],width=1.36*this.scale*this.depth(p.z),height=image?.width?width*image.height/image.width:width,point=this.project(p),bob=this.reduced?0:Math.sin(now*.002+p.color+p.piece)*.011*this.scale;
-   return{key:`${p.color}:${p.piece}`,seat:p.color,name:owner?.name,color:MARKERS[p.color],x:point.x,y:point.y-height*.91-bob-4};
+   return{key:`${p.color}:${p.piece}`,seat:p.color,name:owner?.name,grade:planeMembershipGrade(owner),color:MARKERS[p.color],x:point.x,y:point.y-height*.91-bob-4};
   });
-  drawPlaneNames(this.ctx,entries,{width:this.w,height:this.h,fontSize:Math.min(13,Math.max(10,this.scale*.2+5)),maxWidth:Math.min(122,Math.max(76,this.scale*2.2))});
+  return drawPlaneNames(this.ctx,entries,{width:this.w,height:this.h,fontSize:Math.min(13,Math.max(10,this.scale*.2+5)),maxWidth:Math.min(122,Math.max(76,this.scale*2.2))});
  }
  frame(now){
   if(this.w&&this.h){const c=this.ctx;c.clearRect(0,0,this.w,this.h);const pending=this.anims;this.anims=[];for(const a of pending){const t=Math.min(1,(now-a.start)/a.ms);a.update(t);if(t===1)a.resolve();else this.anims.push(a);}
