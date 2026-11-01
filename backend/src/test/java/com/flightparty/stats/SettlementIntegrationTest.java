@@ -171,4 +171,3 @@ class SettlementIntegrationTest {
         } finally { flyway.clean(); }
     }
 }
-

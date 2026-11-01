@@ -206,4 +206,3 @@ $('confirm-leave').onclick=()=>{
 let lastIdentityRefresh=Date.now();
 const refreshLogin=()=>{if(document.hidden||Date.now()-lastIdentityRefresh<15000)return;lastIdentityRefresh=Date.now();(onlineSession.authState==='ready'?onlineSession.refreshIdentity():onlineSession.initialize()).catch(()=>{});};
 window.addEventListener('online',refreshLogin);window.addEventListener('focus',refreshLogin);document.addEventListener('visibilitychange',refreshLogin);
-
