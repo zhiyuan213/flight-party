@@ -485,3 +485,5 @@ npm test44项、修改JS语法检查通过；后端构建通过。隔离Postgres
 本地真实浏览器390px宽检查三款框和徽章，无横向溢出（对话框宽362px）；点击星夜后实际渲染选择状态及头像图层night。该预览使用显式标注的本地模拟会员，不能证明真实付款。首次本地服务器SVG MIME为octet-stream导致不显示，改用正确image/svg+xml预览后确认显示，并调整金翼底部装饰以避免遮挡脸部；生产Nginx四个SVG均200 image/svg+xml。视口覆盖已复原。线上auth HTTP通过注册/30天会话/普通用户外观403与非法枚举400；月周日榜均200并含公开外观字段。未启用正式收款、未另跑付费会员真实浏览器整局或实体手机验收。
 
 原监控对局661af86d-d01c-4e98-bc59-dbe5df3079f4实际2026-11-01北京时间18:53:39 SETTLED，大卫第1、本局+2，recorded=false reason=DAILY_LIMIT，账号仍1分1局，符合当时旧规则；已告知用户并删除该监控。
+
+2026-11-01：新增独立complimentary_memberships赠送权益，记录有效期/原因/撤销时间，不写Creem付款或订阅事件。外观与账号member统一允许有效未撤销赠送；页面显示赠送截止日期、不扣费不续费。npm test44项及JS语法通过，后端构建通过，隔离SettlementIntegrationTest覆盖赠送生效/选择、撤销/到期隐藏并保留选择。用户授权给大卫临时会员，已登记30天赠送，截止北京时间2026-12-01 19:24:13；线上月榜实际member=true、avatarFrame=gold，未改变分数。飞行尾迹/胜利效果概念图存入docs/design/trails-victory-reference.png，目前仅设计未实现。
