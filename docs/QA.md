@@ -576,3 +576,5 @@ UI37 production verification: HTTPS homepage serves UI37; all three deployed GLB
 - 真实浏览器使用隔离QA应用/数据库，创建一小时赠送测试会员，仅该隔离库授予资格。127.0.0.1与localhost两份独立Cookie身份创建并加入同一好友房，真实服务端开局/自动接管移动；双方棋盘均看见金翼机，刷新/重连后选择仍保留；新机库保存回显与主页金翼图已检查。实际棋盘截图docs/verification/vip2d-gameplay.png来自对局Canvas，不是设计图。生产账号资格/积分未修改。
 - 同一真实CanvasBoard本地效果验收页，650ms飞行中段观察到22个彩虹采样及明显长尾、尾端渐细渐隐；示例会员标识明确，仅渲染不产生账号/成绩。
 - 浏览器仅响应式手机视口；未进行实体iOS/Android/微信App的系统分享和实际发送测试。双身份浏览器已验收联机渲染与操作，未新增双设备完整结算录像；实验Three.js棋盘不是本轮VIP精灵视觉验收范围。正式收款状态不受本轮影响。
+
+UI38 生产验收：发布a851059，HTTPS主页200且UI38标记存在；新PNG与分享/主页模块200。线上真实浏览器机库仅Classic/Golden Wings 2D两项，新图及活动螺旋桨已显示，非会员保存禁用，控制台0错误。生产创建临时匿名好友等待房，公开planeStyle=classic，退出成功；未开局、未写积分。三款旧GLB均HTTP404。隔离QA应用/数据库/Redis/网络已清理，测试用隧道与本地代理停止。代码已推送GitHub main。实体微信发送边界仍如上。
