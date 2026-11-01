@@ -167,14 +167,18 @@ class CreemSubscriptionIntegrationTest {
             var earlierCancel=mapper.valueToTree(Map.of("id","earlier-valid-cancel","eventType","subscription.canceled","created_at",2000,"object",Map.of("id","newer-valid","mode","live")));
             db.sql("insert into creem_webhook_inbox(event_id,event_type,payload_hash,payload,processed_at) values ('earlier-valid-cancel','subscription.canceled',:hash,:payload,now())").param("hash","0".repeat(64)).param("payload",mapper.writeValueAsString(earlierCancel)).update();
             db.sql("insert into membership_entitlements(account_id,subscription_id,provider,status,valid_until,last_event_ms,last_transaction_id,billing_plan,product_id) values (:account,'newer-valid','creem','ACTIVE',now()+interval '1 day',3000,'new-paid-tx','ANNUAL','annual')").param("account",newerAccount).update();
+            UUID ordinaryGift=UUID.randomUUID();db.sql("insert into accounts(id,display_name) values (:id,'Historical ordinary gift')").param("id",ordinaryGift).update();
+            db.sql("insert into complimentary_memberships(account_id,valid_until,reason) values (:id,now()+interval '400 days','pre-tier ordinary gift')").param("id",ordinaryGift).update();
             // A manually malformed inbox row cannot break migration or manufacture a guard.
             db.sql("insert into creem_webhook_inbox(event_id,event_type,payload_hash,payload,processed_at) values ('malformed-old','refund.created',:hash,'not-json',now())").param("hash","0".repeat(64)).update();
-            assertTrue(new com.flightparty.auth.AppearanceService(db).get(account).annualMember());
+            assertEquals(3L,db.sql("select count(*) from membership_entitlements where account_id=:id and status='ACTIVE' and billing_plan='ANNUAL'").param("id",account).query(Long.class).single());
             Flyway.configure().dataSource(url,user,password).schemas(schema).load().migrate();
             // Denial applies immediately at upgrade, without waiting for another webhook.
             assertFalse(new com.flightparty.auth.AppearanceService(db).get(account).member());
             assertFalse(new com.flightparty.auth.AppearanceService(db).get(account).annualMember());
             assertTrue(new com.flightparty.auth.AppearanceService(db).get(newerAccount).annualMember());
+            assertEquals("VIP",db.sql("select tier from complimentary_memberships where account_id=:id").param("id",ordinaryGift).query(String.class).single());
+            assertTrue(new com.flightparty.auth.AppearanceService(db).get(ordinaryGift).member());assertFalse(new com.flightparty.auth.AppearanceService(db).get(ordinaryGift).annualMember());
             var service=new CreemSubscriptionService(db,"monthly","annual",true);
             for(String type:java.util.List.of("subscription.canceled","refund.created","dispute.created")){
                 String subscription="before-upgrade-"+type;

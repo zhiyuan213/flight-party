@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="170" viewBox="0 0 320 170" fill="none">
+ <defs>
+  <linearGradient id="air" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#71b9ef" stop-opacity=".12"/>
+   <stop offset=".22" stop-color="#64afea" stop-opacity=".85"/>
+   <stop offset=".6" stop-color="#b9e0fa" stop-opacity=".6"/>
+   <stop offset="1" stop-color="#69b1e9" stop-opacity=".3"/>
+  </linearGradient>
+  <linearGradient id="light" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#fff" stop-opacity="0"/>
+   <stop offset=".28" stop-color="#fff" stop-opacity=".9"/>
+   <stop offset=".8" stop-color="#fff" stop-opacity=".85"/>
+   <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+  </linearGradient>
+ </defs>
+ <!-- Broken, shallow curves leave the airplane's central silhouette quiet. -->
+ <g stroke="url(#air)" stroke-width="2.8" stroke-linecap="round">
+  <path d="M20 35H56C71 35 73 28 88 28H104"/>
+  <path d="M122 14H155C168 14 174 19 187 19H207"/>
+  <path d="M243 40H266C279 40 285 34 300 34"/>
+  <path d="M4 72H33C49 72 52 64 68 64H85"/>
+  <path d="M15 99H47C59 99 64 104 77 104"/>
+  <path d="M244 111H266C278 111 285 104 299 104H314"/>
+  <path d="M34 133H63C76 133 83 143 99 143H117"/>
+  <path d="M146 159H172C187 159 195 153 211 153H229"/>
+ </g>
+ <g stroke="url(#light)" stroke-width="1.9" stroke-linecap="round">
+  <path d="M32 29H57C70 29 75 23 89 23"/>
+  <path d="M175 11H195"/>
+  <path d="M265 47H294"/>
+  <path d="M17 79H35C48 79 55 72 68 72"/>
+  <path d="M10 107H42"/>
+  <path d="M269 117C281 117 288 111 300 111"/>
+  <path d="M51 139H63C75 139 84 150 101 150"/>
+  <path d="M166 164H176C190 164 199 158 212 158"/>
+ </g>
+ <g stroke="#6db5eb" stroke-opacity=".44" stroke-width="2" stroke-linecap="round">
+  <path d="M7 48H18"/><path d="M98 18H109"/><path d="M302 58H311"/><path d="M16 122H26"/><path d="M236 149H247"/>
+ </g>
+</svg>

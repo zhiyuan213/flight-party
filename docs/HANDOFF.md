@@ -104,3 +104,7 @@ v0.4曾按视口调整pitch，并让背景横向拉伸以填满空带；v0.5取�
 V16为membership_entitlements新增billing_plan/product_id；仅通过现有真实Creem产品/金额/币种/账期校验的事件写入计划，保留乱序防护。历史未知计划与complimentary赠送不推断年权限。appearance、room、leaderboard显式下发annualMember，客户端无法自授。新徽章位于assets/member/{vip-badge,annual-vip-badge,annual-vip-badge-en}.svg。
 排行榜两数字列21px桌面/18px手机（极窄17px），表头共用列宽；SocialUI的ResizeObserver只测量滚动条宽度，替换列表时断开旧观察，隐藏后重现时重新计算。真实Canvas验收图：verification/annual-vip-board-ui40.png；本地模拟资格验收页ui40-preview.html不会修改生产数据。实际验证见QA。
 V17保存独立的订阅terminal水位和transaction撤销守卫，首次取消/退款早于paid时也会拒绝旧付款授予；身份仍只由合法checkout和完整付款校验绑定。迁移从已处理认证inbox回填拒绝证据，精确撤销terminal水位覆盖或matching退款的旧错误权益，保留更新合法paid、账号与统计。手机hero回到左侧文档流，不改变机库大图定位。
+
+## 2026-11-02 UI41 — 赠送年VIP、风线与昵称尺寸
+用户明确要求把大卫升级成年VIP：V18为complimentary_memberships加tier，默认VIP、限定VIP/ANNUAL；只有显式年级且有效未撤销才额外通过ANNUAL_MEMBER_SQL。历史赠送不自动升级，不能以有效期长度推断等级，不能伪造Creem付费记录。现有appearance/room/leaderboard字段自动传播，无需新增前端信任参数。
+排行榜昵称16px桌面/14px手机，VIP徽章48×24/40×20，年VIP68×26/58×22，极窄另有缩小以保留列对齐。hero-wind.css和assets/hero-wind-lines.svg仅为主页实际飞机的无指针伪元素，双层错相向左流动；reduce-motion与prefers-reduced-motion静态，隐藏主页暂停。server.mjs补充SVG正确MIME以支持本地启动；生产NGINX已有SVG支持。

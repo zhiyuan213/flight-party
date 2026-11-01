@@ -156,6 +156,40 @@ class PlaneAppearanceIntegrationTest {
   });
  }
 
+ @Test void annualComplimentaryTierMustBeExplicitAndClosesOnExpiryOrRevocation(){
+  isolated(db->{
+   var appearance=new AppearanceService(db);UUID ordinary=account(db),annual=account(db),principal=UUID.randomUUID();
+   db.sql("insert into complimentary_memberships(account_id,valid_until,reason) values (:id,now()+interval '400 days','ordinary long gift')").param("id",ordinary).update();
+   db.sql("insert into complimentary_memberships(account_id,valid_until,reason,tier) values (:id,now()+interval '1 hour','explicit annual gift','ANNUAL')").param("id",annual).update();
+   assertEquals("VIP",db.sql("select tier from complimentary_memberships where account_id=:id").param("id",ordinary).query(String.class).single());
+   assertTrue(appearance.get(ordinary).member());assertFalse(appearance.get(ordinary).annualMember());
+   for(String skin:List.of("obsidian2d","aurora2d")){
+    assertThrows(IllegalStateException.class,()->appearance.selectPlane(ordinary,skin));
+    appearance.selectPlane(annual,skin);assertTrue(appearance.get(annual).annualMember());assertEquals(skin,appearance.get(annual).plane());
+   }
+   assertEquals(0L,db.sql("select count(*) from membership_entitlements where account_id=:id").param("id",annual).query(Long.class).single());
+   db.sql("insert into principals(id,account_id) values (:id,:account)").param("id",principal).param("account",annual).update();
+   var views=new RoomViewService(db);var room=RoomRules.friends(UUID.randomUUID(),principal);var now=Instant.now();
+   var member=views.forMember(room,principal,now).seats().getFirst();assertTrue(member.annualMember());assertEquals("aurora2d",member.planeStyle());
+   db.sql("insert into account_statistics(account_id,points,completed_games) values (:id,2,1)").param("id",annual).update();
+   var board=new com.flightparty.stats.LeaderboardService(db);assertTrue(board.top("points").getFirst().annualMember());
+   db.sql("update complimentary_memberships set revoked_at=now() where account_id=:id").param("id",annual).update();
+   assertFalse(appearance.get(annual).member());assertFalse(appearance.get(annual).annualMember());assertEquals("classic",appearance.get(annual).plane());
+   for(String skin:List.of("obsidian2d","aurora2d"))assertThrows(IllegalStateException.class,()->appearance.selectPlane(annual,skin));
+   db.sql("update complimentary_memberships set revoked_at=null,valid_until=now()-interval '1 second' where account_id=:id").param("id",annual).update();
+   assertFalse(appearance.get(annual).member());assertFalse(appearance.get(annual).annualMember());
+   entitlement(db,annual,"gift-member-monthly","MONTHLY",false,400);
+   assertTrue(appearance.get(annual).member());assertFalse(appearance.get(annual).annualMember());assertEquals("classic",appearance.get(annual).plane());
+   assertThrows(IllegalStateException.class,()->appearance.selectPlane(annual,"obsidian2d"));
+   db.sql("update complimentary_memberships set valid_until=now()+interval '1 hour' where account_id=:id").param("id",annual).update();
+   assertTrue(appearance.get(annual).annualMember());assertEquals("aurora2d",appearance.get(annual).plane());
+   db.sql("update complimentary_memberships set revoked_at=now() where account_id=:id").param("id",annual).update();
+   var revoked=views.forMember(room,principal,now.plusSeconds(2)).seats().getFirst();
+   assertTrue(revoked.member());assertFalse(revoked.annualMember());assertEquals("classic",revoked.planeStyle());
+   assertFalse(board.top("points").getFirst().annualMember());assertEquals("aurora2d",storedPlane(db,annual));
+  });
+ }
+
  private static UUID account(JdbcClient db){
   UUID id=UUID.randomUUID();db.sql("insert into accounts(id,display_name) values (:id,'plane test')").param("id",id).update();return id;
  }

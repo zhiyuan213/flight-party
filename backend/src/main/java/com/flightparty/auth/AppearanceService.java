@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppearanceService {
  public static final String MEMBER_SQL="(exists(select 1 from membership_entitlements e where e.account_id=a.id and e.provider='creem' and e.status='ACTIVE' and not e.test_mode and e.valid_until>now()) or exists(select 1 from complimentary_memberships c where c.account_id=a.id and c.revoked_at is null and c.valid_until>now()))";
- public static final String ANNUAL_MEMBER_SQL="exists(select 1 from membership_entitlements e where e.account_id=a.id and e.provider='creem' and e.status='ACTIVE' and not e.test_mode and e.valid_until>now() and e.billing_plan='ANNUAL' and e.product_id is not null and e.product_id<>'')";
+ public static final String ANNUAL_MEMBER_SQL="(exists(select 1 from membership_entitlements e where e.account_id=a.id and e.provider='creem' and e.status='ACTIVE' and not e.test_mode and e.valid_until>now() and e.billing_plan='ANNUAL' and e.product_id is not null and e.product_id<>'') or exists(select 1 from complimentary_memberships c where c.account_id=a.id and c.tier='ANNUAL' and c.revoked_at is null and c.valid_until>now()))";
  public record Appearance(boolean member,String frame,String selectedFrame,String trail,String victory,String selectedTrail,String selectedVictory,String avatarUrl,String plane,boolean annualMember) {
  public Appearance(boolean member,String frame,String selectedFrame){this(member,frame,selectedFrame,member?"star":"none",member?"gold":"none","star","gold",null,"classic",false);}
  }
