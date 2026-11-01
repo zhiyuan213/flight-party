@@ -22,12 +22,13 @@ public class RoomSocket extends TextWebSocketHandler {
     private final SessionRepository<? extends Session> sessions;
     private final StringRedisTemplate redis;
     private final ReactionService reactions;
+    private final RoomViewService views;
     private final JsonMapper json=JsonMapper.builder().build();
     private final Map<String,Subscription> subscriptions=new ConcurrentHashMap<>();
     private record Subscription(WebSocketSession socket,String sessionId,UUID principal,UUID room) {}
     private static class AccessDenied extends RuntimeException {}
     public record Subscribe(String type,UUID roomId) {}
-    public RoomSocket(RedisRoomStore rooms,SessionRepository<? extends Session> sessions,StringRedisTemplate redis,ReactionService reactions) { this.rooms=rooms;this.sessions=sessions;this.redis=redis;this.reactions=reactions; }
+    public RoomSocket(RedisRoomStore rooms,SessionRepository<? extends Session> sessions,StringRedisTemplate redis,ReactionService reactions,RoomViewService views) { this.views=views; this.rooms=rooms;this.sessions=sessions;this.redis=redis;this.reactions=reactions; }
     @Override public void afterConnectionEstablished(WebSocketSession socket) { socket.setTextMessageSizeLimit(4096); }
     @Override protected void handleTextMessage(WebSocketSession socket,TextMessage message) throws Exception {
         String sessionId=(String)socket.getAttributes().get("sessionId");
@@ -51,7 +52,7 @@ public class RoomSocket extends TextWebSocketHandler {
                 if(session==null || !sub.principal().toString().equals(session.getAttribute("flightparty.principal"))) throw new AccessDenied();
                 var stored=rooms.load(sub.room()).orElseThrow(AccessDenied::new);
                 if(stored.room().seats().stream().noneMatch(s->sub.principal().equals(s.principal())))throw new AccessDenied();
-                var view=RoomSnapshot.forMember(stored.room(),sub.principal(),Instant.now());
+                var view=views.forMember(stored.room(),sub.principal(),Instant.now());
                 var fields=redis.opsForHash().entries("fp:{rooms}:room:"+sub.room());
                 String game=(String)fields.get("game");
                 sub.socket().sendMessage(new TextMessage(json.writeValueAsString(Map.of("reactions",reactions.recent(sub.room()),"type","SNAPSHOT","room",view,"version",stored.version(),"gameVersion",fields.getOrDefault("gameVersion","0"),"busyUntil",fields.getOrDefault("busyUntil","0"),"actionDeadline",fields.getOrDefault("actionDeadline","0"),"game",game==null?Map.of():json.readTree(game)))));
