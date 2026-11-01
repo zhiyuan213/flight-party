@@ -521,3 +521,10 @@ npm test46项全部通过，修改JS语法检查通过；后端构建通过，�
 主页新增程序化真实3D飞机HeroPlane，复用本地Three.js几何、材质和灯光，螺旋桨持续旋转，离开主页或页面隐藏暂停渲染；WebGL不可用时回退插画动画。游戏默认2.5D棋盘保持，四种飞机通过imagegen只移除原位静态叶片，保留机身/金色轴心和透明背景，使用独立投影螺旋桨每帧旋转，随身体旋转/镜像/碰撞动作；实验Three.js机型仍原生旋转叶片，减少动态时停转。不是将棋盘飞机全部换成完整3D模型，也未开发可购买机型。
 
 npm test48项通过，修改JS语法检查通过；新增节点身份稳定与螺旋桨时间/减少动态检查。真实本地浏览器结算fixture确认四卡片/头像节点保持true，显示+2/+1/0/-1，三种主题边框可见；主页DOM heroRenderer=webgl、旋转角变化，勾减少动态后角度0；不是硬件GPU性能验收。CanvasBoard新机身/螺旋桨叠加已浏览器检查，棋盘校准/规则测试通过。未新增实体手机或真实双浏览器完整结算录像。生成资源与提示词见PLANE-PROPELLER-ASSETS.md。
+
+### 2026-11-01 UI32 — stronger volumetric trails and slower rotor
+- Rainbow trails now use shaded hexagonal tube faces in world coordinates projected through the existing board mapping; star and cloud particles use stronger gradients and contrast. This is Canvas projected volume, not a GPU 3D board migration.
+- Restored the illustrated homepage plane as default after the procedural model did not match the approved character. Experimental model remains opt-in.
+- Rotor speed reduced from .022 to .005 rad/ms; ghost blades reduced.
+- Local browser effects fixture: rainbow visible in flight with stronger saturated colors, no console errors. Rendering fixture is simulated membership only.
+- JavaScript syntax checks and npm tests run for this change. No physical-phone or GPU performance acceptance claimed.

@@ -118,3 +118,5 @@
 2026-11-01 用户确认实现飞行尾迹与胜利特效：会员/赠送会员选择star/rainbow/cloud/none，胜利gold/none，随账号保存并通过RoomSnapshot同步；减少动态效果停用尾迹、静态展示庆典，不改变游戏规则。3D可购买机型仍仅概念，尚无模型或商店实现。
 
 2026-11-01 用户覆盖：尾迹自动保存、预览常驻循环；会员结算卡片按头像主题装饰。主页真实3D程序化模型旋转螺旋桨，游戏默认2.5D飞机拆分螺旋桨动画；不视为可购买3D机型系统完成。
+
+Latest UI32 visual adjustment: default hero uses original illustrated plane with animated rotor. Experimental procedural model is opt-in only. Trails use projected tube volume and shaded particles with stronger saturation; board/rules unchanged.
