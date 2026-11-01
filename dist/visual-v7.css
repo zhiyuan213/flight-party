@@ -323,7 +323,7 @@
 .room-invite-strip b{display:block;font-size:20px;letter-spacing:2px;color:#2a78bb;margin-top:5px}
 .room-invite-strip button{padding:10px 12px;border-radius:10px;font-size:11px;flex:none}
 .live-room-invitation{display:block}
-.live-room-invitation b{font-size:13px;letter-spacing:.5px;overflow-wrap:anywhere;user-select:all}
+.room-invite-strip.live-room-invitation b{font-size:13px;letter-spacing:.5px;overflow-wrap:anywhere;user-select:all}
 .room-invite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .room-invite-actions button{flex:1;min-width:120px}
 .room-flow-note{overflow-wrap:anywhere}

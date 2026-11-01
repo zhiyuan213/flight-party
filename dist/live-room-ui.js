@@ -5,6 +5,7 @@ export function bindLiveRooms(social,session) {
  const t=(en,zh)=>social.t(en,zh),dialog=social.roomDialog;
  function invitation(id){const url=new URL('/',location.origin);url.searchParams.set('room',id);return url.href;}
  function render() {
+  dialog.setAttribute('aria-label',t('Online room','在线房间'));
   const room=session.room,matching=room?.phase==='MATCHING',waiting=room?.phase==='WAITING_FRIENDS';
   const phase=room?({WAITING_FRIENDS:t('Waiting for friends','等待好友'),MATCHING:t('Matching','匹配中'),STARTING:t('Starting','正在开始'),PLAYING:t('In flight','对局中'),SETTLED:t('Finished','已结束')})[room.phase]||room.phase:'';
   dialog.innerHTML=`<button type="button" class="close" data-live="close" aria-label="${t('Close room','关闭房间')}">×</button>
