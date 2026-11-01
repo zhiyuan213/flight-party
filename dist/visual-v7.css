@@ -398,3 +398,25 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
  header nav .icon-btn{min-width:26px;padding:0 5px}
  header nav .account-button.icon-btn{min-width:36px;max-width:64px;padding:0 6px;font-size:11px}
 }
+/* Member appearance: independent transparent overlays preserve existing portraits. */
+[data-frame="gold"],[data-frame="cloud"],[data-frame="night"]{position:relative;overflow:visible!important}
+[data-frame="gold"]::after,[data-frame="cloud"]::after,[data-frame="night"]::after{content:"";position:absolute;inset:-23%;background:center/contain no-repeat;pointer-events:none;z-index:1}
+[data-frame="gold"]::after{background-image:url('assets/member/frame-gold.svg')}
+[data-frame="cloud"]::after{background-image:url('assets/member/frame-cloud.svg')}
+[data-frame="night"]::after{background-image:url('assets/member/frame-night.svg')}
+[data-member="true"]::after{content:"";display:inline-block;width:30px;height:15px;margin-left:5px;vertical-align:middle;background:url('assets/member/wing-badge.svg') center/contain no-repeat}
+.account-dialog-heading [data-member="true"]::after{width:42px;height:22px}
+.account-appearance{margin-top:20px;padding:18px 14px;border:1px solid #c4daf6;border-radius:18px;background:#f5faff}
+.account-appearance h3{margin:0 0 6px;font-size:17px;color:#253e97}
+.account-appearance p{font-size:11px;color:#7290ae;line-height:1.6;margin:0 0 15px}
+.appearance-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.appearance-option{min-width:0;padding:19px 4px 12px;border:1px solid #d0e1f7;border-radius:14px;background:linear-gradient(#fff,#edf6ff);color:#285293;display:flex;flex-direction:column;align-items:center;gap:12px}
+.appearance-option[aria-pressed="true"]{border-color:#4e87ff;box-shadow:0 0 0 1px #4e87ff}
+.appearance-option b{font-size:11px}.appearance-option small{font-size:10px;color:#809bb9}
+.appearance-preview,.result-avatar{display:inline-block;flex:none;width:48px;height:48px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%}
+.appearance-preview-row{display:flex;align-items:center;gap:15px;margin:20px 4px 2px;padding:14px;background:white;border:1px solid #d0e1f7;border-radius:14px}
+.appearance-preview-row .appearance-preview{width:38px;height:38px}
+.appearance-preview-row b{font-size:14px}.appearance-preview-row small{margin-left:auto;font-size:10px;color:#8ca2be}
+.result-avatar{width:28px;height:28px;margin:0 8px}
+.rank-row b{min-width:0;overflow-wrap:anywhere}
+@media(max-width:380px){.appearance-options{gap:6px}.appearance-preview{width:41px;height:41px}.appearance-preview-row{gap:9px}.appearance-preview-row small{max-width:50px}.appearance-option b{font-size:10px}}

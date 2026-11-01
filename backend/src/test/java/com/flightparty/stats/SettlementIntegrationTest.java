@@ -67,6 +67,22 @@ class SettlementIntegrationTest {
             db.sql("update matches set settled_at=(date_trunc('month',now() at time zone 'UTC') at time zone 'UTC')-interval '40 days' where id=:id").param("id",match).update();
             assertTrue(boards.top("month").isEmpty());assertTrue(boards.top("week").isEmpty());assertTrue(boards.top("day").isEmpty());
             db.sql("update matches set settled_at=now() where id=:id").param("id",match).update();
+            var looks=new com.flightparty.auth.AppearanceService(db);
+            assertEquals("none",looks.get(account).frame());
+            assertThrows(IllegalStateException.class,()->looks.select(account,"night"));
+            assertThrows(IllegalArgumentException.class,()->looks.select(account,"invalid"));
+            db.sql("insert into membership_entitlements(account_id,subscription_id,provider,status,test_mode,valid_until) values (:id,'appearance-test','creem','TEST_ACTIVE',true,now()+interval '1 day')").param("id",account).update();
+            assertFalse(looks.get(account).member());
+            assertThrows(IllegalStateException.class,()->looks.select(account,"cloud"));
+            db.sql("update membership_entitlements set status='ACTIVE',test_mode=false where subscription_id='appearance-test'").update();
+            for(String frame:java.util.List.of("gold","cloud","night")){looks.select(account,frame);assertEquals(frame,looks.get(account).frame());}
+            var friendRoom=RoomRules.friends(UUID.randomUUID(),principal);
+            var publicSeat=new com.flightparty.room.RoomViewService(db).forMember(friendRoom,principal,Instant.now()).seats().getFirst();
+            assertTrue(publicSeat.member());assertEquals("night",publicSeat.avatarFrame());
+            assertTrue(boards.top("month").getFirst().member());assertEquals("night",boards.top("month").getFirst().avatarFrame());
+            db.sql("update membership_entitlements set valid_until=now()-interval '1 second' where subscription_id='appearance-test'").update();
+            assertEquals("none",looks.get(account).frame());assertEquals("night",looks.get(account).selectedFrame());
+            assertFalse(boards.top("month").getFirst().member());
             var starts=new MatchStartService(db);
             UUID guest=UUID.randomUUID();
             db.sql("insert into principals(id) values (:id)").param("id",guest).update();
@@ -130,9 +146,9 @@ class SettlementIntegrationTest {
                 db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:match,1,true,1)").param("match",extra).update();
                 assertTrue(Boolean.TRUE.equals(tx.execute(s->service.settle(extra))));
                 assertFalse(Boolean.TRUE.equals(tx.execute(s->service.settle(extra))));
-                assertEquals(attempt==1,db.sql("select recorded from score_recording_decisions where match_id=:id").param("id",extra).query(Boolean.class).single());
-                assertEquals(attempt==0?1L:2L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
-                assertEquals(attempt==0?-1L:0L,db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
+                assertEquals(true,db.sql("select recorded from score_recording_decisions where match_id=:id").param("id",extra).query(Boolean.class).single());
+                assertEquals(attempt==0?2L:3L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
+                assertEquals(attempt==0?0L:1L,db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
             }
         } finally { flyway.clean(); }
     }

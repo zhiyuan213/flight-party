@@ -34,8 +34,8 @@ class MidgameAccountIntegrationTest {
                 var b=pool.submit(()->tx.execute(s->settlement.settle(second)));
                 assertTrue(a.get());assertTrue(b.get());
             }
-            assertEquals(1L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
-            assertEquals(-1L,db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
+            assertEquals(2L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
+            assertEquals(-2L,db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
             assertEquals(2L,db.sql("select count(*) from score_recording_decisions where account_id=:id").param("id",account).query(Long.class).single());
             assertFalse(Boolean.TRUE.equals(tx.execute(s->settlement.settle(second))));
             assertFalse(Boolean.TRUE.equals(tx.execute(s->service.bind(second,principal,other))));

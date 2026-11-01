@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GuestSessionController {
     private static final String PRINCIPAL = "flightparty.principal";
     private final JdbcClient db;
+    @org.springframework.beans.factory.annotation.Autowired private AppearanceService appearances;
     @org.springframework.beans.factory.annotation.Autowired private com.flightparty.billing.BillingAccess billing;
     private final TransactionTemplate transaction;
     private final com.flightparty.room.RedisRoomStore rooms;
@@ -37,8 +38,8 @@ public class GuestSessionController {
     }
     public record Statistics(long points,long completedGames) {}
     public record Subscription(String id,String status,String validUntil,boolean testMode,boolean cancelScheduled) {}
-    public record Recording(boolean member,int freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions) {}
-    public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording) {}
+    public record Recording(boolean member,Integer freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions) {}
+    public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording,AppearanceService.Appearance appearance) {}
     @GetMapping("/me")
     public Me me(HttpServletRequest request) {
         var session=request.getSession(false);
@@ -50,13 +51,11 @@ public class GuestSessionController {
                 .query((rs,row)->new Statistics(rs.getLong(1),rs.getLong(2))).optional().orElse(new Statistics(0,0));
         Recording recording=null;
         if(profile!=null){
-            boolean member=db.sql("select count(*) from membership_entitlements where account_id=:id and status='ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
-            var today=java.time.LocalDate.now(java.time.ZoneOffset.UTC);
-            boolean used=db.sql("select count(*) from score_daily_usage where account_id=:id and usage_day=:day").param("id",profile.id()).param("day",today).query(Long.class).single()>0;
+            boolean member=db.sql("select count(*) from membership_entitlements where account_id=:id and provider='creem' and status='ACTIVE' and not test_mode and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
             boolean testMember=db.sql("select count(*) from membership_entitlements where account_id=:id and status='TEST_ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
             var subscriptions=db.sql("select subscription_id,status,valid_until,test_mode,cancel_scheduled from membership_entitlements where account_id=:id order by valid_until desc").param("id",profile.id()).query((rs,row)->new Subscription(rs.getString(1),rs.getString(2),rs.getTimestamp(3).toInstant().toString(),rs.getBoolean(4),rs.getBoolean(5))).list();
-            recording=new Recording(member,used?0:1,today.plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC).toString(),9,59,billing.allowed(profile.id()),billing.testMode(),testMember,subscriptions);
+            recording=new Recording(member,null,null,9,59,billing.allowed(profile.id()),billing.testMode(),testMember,subscriptions);
         }
-        return new Me(principal==null?"none":profile==null?"guest":"account",principal==null?null:rooms.active(UUID.fromString(principal.toString())).orElse(null),profile,statistics,recording);
+        return new Me(principal==null?"none":profile==null?"guest":"account",principal==null?null:rooms.active(UUID.fromString(principal.toString())).orElse(null),profile,statistics,recording,profile==null?null:appearances.get(profile.id()));
     }
 }
