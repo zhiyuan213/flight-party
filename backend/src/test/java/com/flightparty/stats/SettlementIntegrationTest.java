@@ -113,7 +113,12 @@ class SettlementIntegrationTest {
             tx.execute(s->projection.apply(new EventProjection.Event(start,1,"TURN_CHANGED","{}",finalJson)));
             var completion=new MatchCompletionService(db,service);
             assertTrue(Boolean.TRUE.equals(tx.execute(s->completion.complete(start))));
-            assertFalse(Boolean.TRUE.equals(tx.execute(s->completion.complete(start))));
+            assertFalse(Boolean.TRUE.equals(tx.execute(s->completion.complete(start))));            assertEquals(MatchScoring.VERSION,db.sql("select rules_version from matches where id=:id").param("id",start).query(String.class).single());
+            for(var player:simulated.players()) {
+                int finished=(int)player.planes().stream().filter(p->p==57).count();
+                assertEquals(finished,db.sql("select finished_planes from match_participants where match_id=:id and seat_index=:seat").param("id",start).param("seat",player.seat()).query(Integer.class).single());
+                assertEquals(MatchScoring.points(player.rank(),finished),db.sql("select points_delta from match_participants where match_id=:id and seat_index=:seat").param("id",start).param("seat",player.seat()).query(Integer.class).single());
+            }
             assertEquals("SETTLED",db.sql("select status from matches where id=:id").param("id",start).query(String.class).single());
             db.sql("insert into daily_usage(principal_id,usage_day,starts) values (:id,current_date,20)").param("id",guest).update();
             var blocked=RoomRules.expire(RoomRules.quick(UUID.randomUUID(),guest,Instant.now().minusSeconds(31)),Instant.now());
@@ -167,8 +172,22 @@ class SettlementIntegrationTest {
             for(int seat=1;seat<4;seat++)db.sql("insert into match_participants(match_id,seat_index,native_bot,rank) values (:id,:seat,true,:rank)").param("id",zeroMatch).param("seat",seat).param("rank",seat==3?4:seat).update();
             assertTrue(Boolean.TRUE.equals(tx.execute(t->service.settle(zeroMatch))));assertFalse(Boolean.TRUE.equals(tx.execute(t->service.settle(zeroMatch))));
             assertEquals(0,db.sql("select points_delta from account_match_results where match_id=:id").param("id",zeroMatch).query(Integer.class).single());
-            assertEquals(4L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
+            assertEquals(4L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());            long before=db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single();
+            for(int finished=0;finished<=2;finished++) {
+                UUID scoring=UUID.randomUUID();
+                db.sql("insert into matches(id,room_id,status,rules_version,started_at) values (:id,:id,'COMPLETED_PENDING',:rules,now())").param("id",scoring).param("rules",MatchScoring.VERSION).update();
+                db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,rank) values (:id,0,:principal,:account,4)").param("id",scoring).param("principal",principal).param("account",account).update();
+                for(int seat=1;seat<4;seat++)db.sql("insert into match_participants(match_id,seat_index,native_bot,rank,finished_planes) values (:id,:seat,true,:seat,:finished)").param("id",scoring).param("seat",seat).param("finished",seat<=2?2:0).update();
+                assertThrows(IllegalStateException.class,()->tx.execute(t->service.settle(scoring)));
+                assertEquals(0L,db.sql("select count(*) from account_match_results where match_id=:id").param("id",scoring).query(Long.class).single());
+                db.sql("update match_participants set finished_planes=:finished where match_id=:id and seat_index=0").param("finished",finished).param("id",scoring).update();
+                assertTrue(Boolean.TRUE.equals(tx.execute(t->service.settle(scoring))));
+                assertFalse(Boolean.TRUE.equals(tx.execute(t->service.settle(scoring))));
+                assertEquals(finished*2,db.sql("select points_delta from account_match_results where match_id=:id").param("id",scoring).query(Integer.class).single());
+                assertEquals(java.util.List.of(7,6,0,finished*2),db.sql("select points_delta from match_participants where match_id=:id order by rank").param("id",scoring).query(Integer.class).list());
+            }
+            assertEquals(before+6,db.sql("select points from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
+            assertEquals(7L,db.sql("select completed_games from account_statistics where account_id=:id").param("id",account).query(Long.class).single());
         } finally { flyway.clean(); }
     }
 }
-

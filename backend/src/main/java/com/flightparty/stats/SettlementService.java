@@ -18,13 +18,15 @@ public class SettlementService {
                 .param("id", matchId).query(String.class).optional().orElseThrow();
         if (status.equals("SETTLED")) return false;
         if (!status.equals("COMPLETED_PENDING")) throw new IllegalStateException("match is not ready for settlement");
-        var participants = db.sql("select seat_index, coalesce(account_id_at_start,score_account_id), rank from match_participants where match_id = :id order by seat_index")
-                .param("id", matchId).query((rs, row) -> new Participant(rs.getInt(1), rs.getObject(2, UUID.class), (Integer) rs.getObject(3, Integer.class))).list();
+        boolean newScoring=MatchScoring.VERSION.equals(db.sql("select rules_version from matches where id=:id").param("id",matchId).query(String.class).single());
+        var participants = db.sql("select seat_index, coalesce(account_id_at_start,score_account_id), rank, finished_planes from match_participants where match_id = :id order by seat_index")
+                .param("id", matchId).query((rs, row) -> new Participant(rs.getInt(1), rs.getObject(2, UUID.class), (Integer) rs.getObject(3, Integer.class),rs.getObject(4,Integer.class))).list();
         validateRanks(participants);
         for(var account:participants.stream().map(Participant::accountId).filter(java.util.Objects::nonNull).distinct().sorted().toList())
             db.sql("select id from accounts where id=:id for update").param("id",account).query(UUID.class).single();
         for (var p : participants) {
-            int points = switch (p.rank()) { case 1 -> 2; case 2 -> 1; case 3 -> 0; default -> -1; };
+            if(newScoring && p.finishedPlanes()==null)throw new IllegalStateException("missing authoritative plane completion count");
+            int points = newScoring ? MatchScoring.points(p.rank(),p.finishedPlanes()) : switch (p.rank()) { case 1 -> 2; case 2 -> 1; case 3 -> 0; default -> -1; };
             db.sql("update match_participants set points_delta=:points where match_id=:match and seat_index=:seat")
                     .param("points", points).param("match", matchId).param("seat", p.seat()).update();
             if (p.accountId() == null) continue;
@@ -44,5 +46,5 @@ public class SettlementService {
         if (ps.size() < 2 || ps.size() > 4 || ps.stream().anyMatch(p -> p.rank() == null || p.rank() < 1 || p.rank() > ps.size()) || ps.stream().map(Participant::rank).distinct().count() != ps.size())
             throw new IllegalStateException("incomplete or invalid server rankings");
     }
-    private record Participant(int seat, UUID accountId, Integer rank) {}
+    private record Participant(int seat, UUID accountId, Integer rank,Integer finishedPlanes) {}
 }

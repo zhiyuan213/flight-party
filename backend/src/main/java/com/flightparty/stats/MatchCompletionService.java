@@ -25,7 +25,7 @@ public class MatchCompletionService {
         for(int i=0;i<game.ranking().size();i++) {
             int seat=game.ranking().get(i);var player=game.players().stream().filter(p->p.seat()==seat).findFirst().orElseThrow();
             if(player.rank()==null || player.rank()!=i+1 || (i<2 && player.planes().stream().anyMatch(p->p!=57))) throw new IllegalStateException("invalid final ranking");
-            db.sql("update match_participants set rank=:rank where match_id=:id and seat_index=:seat").param("rank",i+1).param("id",match).param("seat",seat).update();
+            db.sql("update match_participants set rank=:rank,finished_planes=:finished where match_id=:id and seat_index=:seat").param("finished",player.planes().stream().filter(p->p==57).count()).param("rank",i+1).param("id",match).param("seat",seat).update();
         }
         db.sql("update matches set status='COMPLETED_PENDING' where id=:id").param("id",match).update();
         return settlement.settle(match);

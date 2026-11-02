@@ -20,6 +20,9 @@ export async function shareRoomInvitation({roomId,origin,language='zh',nav=globa
  const url=roomInvitationUrl(roomId,origin,language),wechat=/MicroMessenger/i.test(nav?.userAgent||'');
  const data={title:language==='zh'?'来和我一起玩 Flight Party':'Join my Flight Party room',text:language==='zh'?'房间已准备好，点击链接加入，一起起飞！':'Open the link to join my room. Ready for takeoff!',url};
  if(!isCurrent())return{status:'cancelled',url,wechat};
+ if(wechat&&typeof prepareWeChatPage==='function'){
+  try{if(prepareWeChatPage(url)===true)return{status:'wechat-menu',url,wechat,menuReady:true};}catch{/* Clipboard fallback remains available. */}
+ }
  try{
   if(typeof nav?.share==='function'&&(typeof nav.canShare!=='function'||nav.canShare(data))){
    await nav.share(data);return{status:isCurrent()?'native':'cancelled',url,wechat};

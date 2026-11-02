@@ -35,8 +35,8 @@ public class MatchStartService {
             if(!existing.get().equals(room.id())) throw new IllegalStateException("start key conflict");
             return match;
         }
-        db.sql("insert into matches(id,room_id,status,rules_version,started_at) values (:id,:room,'PREPARED','classic-two-finish-1',now())")
-                .param("id",match).param("room",room.id()).update();
+        db.sql("insert into matches(id,room_id,status,rules_version,started_at) values (:id,:room,'PREPARED',:rules,now())")
+                .param("id",match).param("room",room.id()).param("rules",com.flightparty.stats.MatchScoring.VERSION).update();
         for(var seat:room.seats()) {
             db.sql("insert into match_participants(match_id,seat_index,principal_id,account_id_at_start,native_bot) values (:match,:seat,:principal,:account,:bot)")
                     .param("match",match).param("seat",seat.index()).param("principal",seat.principal()).param("account",accounts.get(seat.principal())).param("bot",seat.bot()).update();

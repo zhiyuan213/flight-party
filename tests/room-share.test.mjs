@@ -31,7 +31,7 @@ test('canceling native share stays quiet and never copies or sends anything else
 
 test('leaving while native sharing is pending prevents stale WeChat URL and clipboard fallbacks',async()=>{
  let active=true,rejectNative,copies=0,pages=0;
- const nav={userAgent:'iPhone MicroMessenger',share:()=>new Promise((resolve,reject)=>{rejectNative=reject;}),clipboard:{writeText(){copies++;}}};
+ const nav={userAgent:'iPhone',share:()=>new Promise((resolve,reject)=>{rejectNative=reject;}),clipboard:{writeText(){copies++;}}};
  const pending=shareRoomInvitation({roomId,origin,nav,isCurrent:()=>active,prepareWeChatPage(){pages++;return true;}});
  active=false;rejectNative({name:'NotAllowedError'});
  assert.equal((await pending).status,'cancelled');assert.equal(copies,0);assert.equal(pages,0);
@@ -40,8 +40,8 @@ test('leaving while native sharing is pending prevents stale WeChat URL and clip
 test('WeChat fallback prepares the real invitation page and copies the same URL',async()=>{
  let page,copied;const nav={userAgent:'iPhone MicroMessenger/8.0',clipboard:{writeText:async value=>{copied=value;}}};
  const result=await shareRoomInvitation({roomId,origin,nav,prepareWeChatPage:url=>{page=url;return true;}});
- assert.equal(result.status,'copied');assert.equal(result.menuReady,true);assert.equal(result.wechat,true);
- assert.equal(page,copied);assert.equal(page,roomInvitationUrl(roomId,origin,'zh'));
+ assert.equal(result.status,'wechat-menu');assert.equal(result.menuReady,true);assert.equal(result.wechat,true);
+ assert.equal(copied,undefined);assert.equal(page,roomInvitationUrl(roomId,origin,'zh'));
 });
 
 test('unsupported or denied sharing exposes a usable manual URL without claiming success',async()=>{
