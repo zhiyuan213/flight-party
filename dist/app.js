@@ -1,6 +1,6 @@
 import {translateStaticUI} from './static-i18n.js';
 import {onlineMovement} from './online-movement.js';
-import {bindHangar} from './hangar.js';
+import {bindHangar} from './hangar.js?v=20261103-auto-plane';
 import {avatarStyle} from './avatar.js';
 import {HeroPlane} from './hero-plane.js';
 import {renderResultRankings} from './result-rankings.js';
@@ -9,7 +9,7 @@ import {Game,COLORS,FINISH,secureDie} from './engine.js';
 import {BoardScene,PALETTE} from './scene.js';
 import {AudioFX} from './audio.js';
 import {CanvasBoard} from './fallback.js';
-import {Die3D} from './die3d.js';
+import {Die3D} from './die3d.js?v=20261103-classic-die';
 import {SocialUI} from './social-ui.js';
 import {ReactionPreview} from './reaction-preview.js';
 import {OnlineSession} from './online-session.js';
@@ -23,6 +23,24 @@ let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}
 const inviteLanguage=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(inviteLanguage))prefs.lang=inviteLanguage;
 let heroModel=new HeroPlane(document.querySelector('.hero-copy'),{reduced:prefs.reduced});
 const die=new Die3D($('dice'),{reduced:prefs.reduced});
+
+
+function updateRoomTheme(){
+ const play = document.getElementById('play');
+ if(!play) return;
+ const hasAnnual = game?.players?.some(p => p.annualMember);
+ const hasVip = game?.players?.some(p => p.member);
+ play.dataset.roomTheme = hasAnnual ? 'annual-vip' : hasVip ? 'vip' : 'classic';
+}
+
+function updateDieVip(){
+ if(!die?.setVipAppearance) return;
+ const current = game?.players?.[game.turn];
+ const isVip = current?.member === true;
+ const intensity = current?.annualMember ? 'annual' : 'vip';
+ die.setVipAppearance(isVip, intensity);
+}
+
 let diceBusy=false,dieValue=1,dieHasResult=false;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const t=(en,zh)=>prefs.lang==='zh'?zh:en;
@@ -110,7 +128,7 @@ function playerCard(s){
  return `<div class="player-row ${current?'active':''}" data-color="${s.color}" style="--seat:#${PALETTE[s.color].toString(16).padStart(6,'0')}"><div class="player-avatar avatar-${s.color}" ${avatarStyle(s.avatarUrl)} data-frame="${esc(s.avatarFrame||'none')}" aria-hidden="true"></div><div class="player-info"><div class="name-line"><span class="seat-dot"></span><b data-member="${s.member===true}" data-annual-member="${s.member===true&&s.annualMember===true}" title="${esc(s.name)}">${esc(s.name)}</b></div><div class="fleet-status player-detail-line"><span class="type-badge ${takeover?'autopilot-preview':''}" title="${takeover?t('UI preview: original player, bot control','界面预览：保留玩家身份，由机器人代玩'):''}">${takeover?t('AUTO*','托管*'):s.type==='bot'?'BOT':'HUMAN'}</span>${fleet}</div></div>${social.playerStats(s)}<div class="player-progress">${current?`<span class="current-badge">${t('CURRENT TURN','当前回合')}</span>`:''}<small>${s.rank?t(`Rank #${s.rank}`,`第 ${s.rank} 名`):`${finished} / 2 ${t('finished','已到达')}`}</small></div></div>`;
 }
 
-function render(){const p=game.current,automaticChoice=game.phase==='choose'&&p.pieces.filter(progress=>progress<FINISH).length===1,choices=game.phase==='choose'?game.legal():[],canChoose=!diceBusy&&game.phase==='choose'&&p.type==='human'&&choices.length>1;document.querySelector('.turn-panel').style.setProperty('--turn-color','#'+PALETTE[p.color].toString(16).padStart(6,'0'));$('round-label').textContent=t('ROUND ','回合 ')+String(game.round).padStart(2,'0');$('player-count').textContent=t(`${game.active.length} aboard`,`${game.active.length} 方参与`);$('players').innerHTML=game.active.map(playerCard).join('');reactions.sync();syncTakeoverPreview();$('turn-title').textContent=t(p.name==='You'?'Your turn':`${p.name}'s turn`,`${p.name} 的回合`);$('roll').disabled=diceBusy||game.phase!=='roll'||p.type!=='human';$('demo').disabled=diceBusy||game.phase!=='roll'||p.type!=='human';$('record-demo').disabled=$('demo').disabled;$('board-tip').textContent=diceBusy?t('Rolling…','正在掷骰…'):automaticChoice?t('Moving your remaining plane…','正在自动移动剩余飞机…'):game.phase==='choose'?t('Click a glowing plane to move','点击发光的飞机移动'):t('Two planes. One finish line.','两架飞机，一个终点。');$('action-hint').textContent=diceBusy?t('A little roll. A little luck.','骰子翻滚中…'):automaticChoice?t('Moving your remaining plane…','正在自动移动剩余飞机…'):game.phase==='choose'?t('Choose a plane. Make it count.','选择一架飞机，准备起飞。'):game.phase==='animating'?t('A little turbulence…','遇到一点小气流…'):p.type==='bot'?t('Your copilot is thinking…','电脑正在思考…'):t('Give your luck a little nudge.','掷出你的好运气。');$('piece-buttons').innerHTML=canChoose?choices.map(i=>`<button data-piece="${i}">${t('Plane ','飞机 ')}${i+1} ${p.pieces[i]<0?'↗':'→'}</button>`).join(''):'';document.querySelectorAll('[data-piece]').forEach(b=>b.onclick=()=>choose(+b.dataset.piece));scene?.setSelectable(canChoose?choices.map(i=>`${p.color}:${i}`):[]);$('event-label').textContent=game.party?(game.event==='tailwind'?t('TAILWIND · +1 STEP','顺风 · 前进 +1'):game.event==='peace'?t('PEACEFUL SKIES · NO BUMPS','和平天空 · 禁止撞机'):t('PARTY · VOTE BETWEEN ROUNDS','派对 · 每轮投票')):t('CLASSIC · NO POWER-UPS','经典模式 · 无道具');}
+function render(){try{updateDieVip?.();updateRoomTheme?.();}catch(e){/* test-safe */} const p=game.current,automaticChoice=game.phase==='choose'&&p.pieces.filter(progress=>progress<FINISH).length===1,choices=game.phase==='choose'?game.legal():[],canChoose=!diceBusy&&game.phase==='choose'&&p.type==='human'&&choices.length>1;document.querySelector('.turn-panel').style.setProperty('--turn-color','#'+PALETTE[p.color].toString(16).padStart(6,'0'));$('round-label').textContent=t('ROUND ','回合 ')+String(game.round).padStart(2,'0');$('player-count').textContent=t(`${game.active.length} aboard`,`${game.active.length} 方参与`);$('players').innerHTML=game.active.map(playerCard).join('');reactions.sync();syncTakeoverPreview();$('turn-title').textContent=t(p.name==='You'?'Your turn':`${p.name}'s turn`,`${p.name} 的回合`);$('roll').disabled=diceBusy||game.phase!=='roll'||p.type!=='human';$('demo').disabled=diceBusy||game.phase!=='roll'||p.type!=='human';$('record-demo').disabled=$('demo').disabled;$('board-tip').textContent=diceBusy?t('Rolling…','正在掷骰…'):automaticChoice?t('Moving your remaining plane…','正在自动移动剩余飞机…'):game.phase==='choose'?t('Click a glowing plane to move','点击发光的飞机移动'):t('Two planes. One finish line.','两架飞机，一个终点。');$('action-hint').textContent=diceBusy?t('A little roll. A little luck.','骰子翻滚中…'):automaticChoice?t('Moving your remaining plane…','正在自动移动剩余飞机…'):game.phase==='choose'?t('Choose a plane. Make it count.','选择一架飞机，准备起飞。'):game.phase==='animating'?t('A little turbulence…','遇到一点小气流…'):p.type==='bot'?t('Your copilot is thinking…','电脑正在思考…'):t('Give your luck a little nudge.','掷出你的好运气。');$('piece-buttons').innerHTML=canChoose?choices.map(i=>`<button data-piece="${i}">${t('Plane ','飞机 ')}${i+1} ${p.pieces[i]<0?'↗':'→'}</button>`).join(''):'';document.querySelectorAll('[data-piece]').forEach(b=>b.onclick=()=>choose(+b.dataset.piece));scene?.setSelectable(canChoose?choices.map(i=>`${p.color}:${i}`):[]);$('event-label').textContent=game.party?(game.event==='tailwind'?t('TAILWIND · +1 STEP','顺风 · 前进 +1'):game.event==='peace'?t('PEACEFUL SKIES · NO BUMPS','和平天空 · 禁止撞机'):t('PARTY · VOTE BETWEEN ROUNDS','派对 · 每轮投票')):t('CLASSIC · NO POWER-UPS','经典模式 · 无道具');}
 function updateClock(paused=false){$('timer').textContent=paused?t('Paused','已暂停'):`${seconds}s`;$('timer').classList.toggle('urgent',!paused&&seconds<=5);}
 function beginTurn(){render();seconds=15;updateClock();clearInterval(clock);clock=setInterval(()=>{if(screen!=='play'||diceBusy||game.phase==='animating'||game.phase==='vote'||document.querySelector('dialog[open]')||document.hidden){updateClock(true);return;}seconds--;updateClock();if(seconds<=0){clearInterval(clock);if(game.phase==='roll')roll(true);else if(game.phase==='choose')choose(bestMove());}},1000);if(game.current.type==='bot')later(()=>roll(true),850);}
 function bestMove(){const legal=game.legal();let best=legal[0],score=-Infinity;for(const i of legal){const dest=game.destination(i),tile=(dest+game.turn*13)%52;let value=dest*.2+(dest===FINISH?100:0)+(game.current.pieces[i]<0?4:0);if(dest<52&&tile%13!==0&&game.event!=='peace')for(const p of game.active)if(p!==game.current)for(const progress of p.pieces)if(progress>=0&&progress<52&&(progress+p.color*13)%52===tile)value+=30;if(value>score){best=i;score=value;}}return best;}
@@ -208,3 +226,6 @@ $('confirm-leave').onclick=()=>{
 let lastIdentityRefresh=Date.now();
 const refreshLogin=()=>{if(document.hidden||Date.now()-lastIdentityRefresh<15000)return;lastIdentityRefresh=Date.now();(onlineSession.authState==='ready'?onlineSession.refreshIdentity():onlineSession.initialize()).catch(()=>{});};
 window.addEventListener('online',refreshLogin);window.addEventListener('focus',refreshLogin);document.addEventListener('visibilitychange',refreshLogin);
+
+
+

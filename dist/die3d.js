@@ -24,6 +24,8 @@ export class Die3D{
   this.canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.useSoftware();this.resize();});
   this.ro=new ResizeObserver(()=>this.resize());this.ro.observe(host);this.resize();
  }
+ // Membership does not alter the original white die or its recessed blue pips.
+ setVipAppearance(){delete this.host.dataset.dieVip;}
  makeShadow(){
   const image=document.createElement('canvas');image.width=256;image.height=64;const c=image.getContext('2d');const g=c.createRadialGradient(128,32,0,128,32,110);g.addColorStop(0,'#25497570');g.addColorStop(.4,'#25497530');g.addColorStop(1,'#25497500');c.fillStyle=g;c.fillRect(0,0,256,64);
   this.shadow=new T.Mesh(new T.PlaneGeometry(1.9,.35),new T.MeshBasicMaterial({map:new T.CanvasTexture(image),transparent:true,depthWrite:false,opacity:.65}));this.shadow.position.set(0,-.75,-1);this.scene.add(this.shadow);
@@ -95,3 +97,5 @@ export class Die3D{
  }
  dispose(){this.cancel();this.ro.disconnect();this.renderer?.dispose();this.geometry.dispose();this.mesh.material.dispose();this.shadow.geometry.dispose();this.shadow.material.map.dispose();this.shadow.material.dispose();this.canvas.remove();}
 }
+
+

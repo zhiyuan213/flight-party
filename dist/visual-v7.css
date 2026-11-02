@@ -404,9 +404,9 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 [data-frame="gold"]::after{background-image:url('assets/member/frame-gold.svg')}
 [data-frame="cloud"]::after{background-image:url('assets/member/frame-cloud.svg')}
 [data-frame="night"]::after{background-image:url('assets/member/frame-night.svg')}
-[data-member="true"]::after{content:"";display:inline-block;flex:none;width:40px;height:20px;margin-left:5px;vertical-align:middle;background:url('assets/member/vip-badge.svg') center/contain no-repeat}
-[data-member="true"][data-annual-member="true"]::after{width:58px;height:22px;background-image:url('assets/member/annual-vip-badge-en.svg')}
-html[lang^="zh"] [data-member="true"][data-annual-member="true"]::after{background-image:url('assets/member/annual-vip-badge.svg')}
+[data-member="true"]::after{content:"";display:inline-block;flex:none;width:40px;height:20px;margin-left:5px;vertical-align:middle;background:url('assets/member/vip-laurel-v3.png') center/contain no-repeat}
+[data-member="true"][data-annual-member="true"]::after{width:58px;height:22px;background-image:url('assets/member/annual-vip-laurel-v3.png')}
+html[lang^="zh"] [data-member="true"][data-annual-member="true"]::after{background-image:url('assets/member/annual-vip-laurel-v3.png')}
 .account-dialog-heading [data-member="true"]::after{width:50px;height:24px}
 .account-dialog-heading [data-member="true"][data-annual-member="true"]::after{width:70px;height:26px}
 .account-appearance{margin-top:20px;padding:18px 14px;border:1px solid #c4daf6;border-radius:18px;background:#f5faff}
@@ -685,3 +685,4 @@ header nav .account-button.signed-in-account{gap:13px}
  .leaderboard-shell .leaderboard-row b[data-member="true"]::after{width:36px;height:18px}
  .leaderboard-shell .leaderboard-row b[data-member="true"][data-annual-member="true"]::after{width:50px;height:20px}
 }
+

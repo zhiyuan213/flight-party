@@ -1,7 +1,7 @@
-import {playerPlaneSkin} from './plane-skin.js';
+import {playerPlaneSkin, vipTrailStyle} from './plane-skin.js';
+import {FlightTrails, drawVipGlow} from './flight-trails.js';
 import {drawPlaneNames,planeMembershipGrade} from './plane-nameplates.js';
 import {drawPropeller} from './propeller.js';
-import {FlightTrails} from './flight-trails.js';
 // Fixed-camera 2.5D renderer. Rule coordinates are owned exclusively by engine.js.
 // All board geometry, contact shadows, movement and particles share this projection.
 import {TRACK,HOMES,coord,FINISH} from './engine.js';
@@ -205,7 +205,16 @@ export class CanvasBoard{
   const c=this.ctx,s=this.scale,img=this.sprites.smoke||this.art.smoke;
   for(const e of this.effects){if(e.kind!=='smoke')continue;const t=(now-e.start)/e.life,a=this.project({x:e.x+Math.sin(e.seed*2)*t*.14,y:e.y+t*.24,z:e.z});if(t<0||t>=1)continue;const size=e.size*s*(.65+t*.95)*this.depth(e.z),alpha=Math.min(1,t*9)*(1-t)*.87;c.save();c.globalAlpha=alpha;c.translate(a.x,a.y);c.rotate(Math.sin(e.seed*5)*.3+t*.2);if(img&&(img.width||img.naturalWidth)){const ratio=(img.height||img.naturalHeight)/(img.width||img.naturalWidth);c.drawImage(img,-size*.6,-size*.58,size*1.2,size*1.2*ratio);}else{for(let i=0;i<5;i++){const x=Math.cos(i*2.4)*size*.2,y=Math.sin(i*2.4)*size*.2,g=c.createRadialGradient(x-size*.09,y-size*.1,0,x,y,size*.3);g.addColorStop(0,'#fff');g.addColorStop(.65,'#f7fbff');g.addColorStop(1,'#a9bad000');c.fillStyle=g;c.beginPath();c.arc(x,y,size*.3,0,TAU);c.fill();}}c.restore();}
  }
- drawTrails(now){const c=this.ctx,s=this.scale;for(const trail of this.trails){const age=(now-trail.start)/trail.life;if(trail.points.length<3||age>1)continue;c.save();c.lineCap='round';c.lineJoin='round';c.globalAlpha=(1-age)*.75;for(const offset of [-.07,.07]){c.beginPath();trail.points.forEach((p,i)=>{const a=this.project({...p,x:p.x+offset});if(i)c.lineTo(a.x,a.y);else c.moveTo(a.x,a.y);});c.strokeStyle=offset<0?'#ffffff':'#cdeaff';c.lineWidth=s*(offset<0?.035:.016);c.stroke();}c.restore();}}
+ drawTrails(now){const c=this.ctx,s=this.scale;for(const trail of this.trails){const age=(now-trail.start)/trail.life;if(trail.points.length<3||age>1)continue;c.save();c.lineCap='round';c.lineJoin='round';c.globalAlpha=(1-age)*.75;for(const offset of [-.07,.07]){c.beginPath();trail.points.forEach((p,i)=>{const a=this.project({...p,x:p.x+offset});if(i)c.lineTo(a.x,a.y);else c.moveTo(a.x,a.y);});c.strokeStyle=offset<0?'#ffffff':'#cdeaff';c.lineWidth=s*(offset<0?.035:.016);c.stroke();}c.restore();}
+  // Optional VIP outer glow (no gameplay impact)
+  try{
+    for(const plane of this.planes||[]){
+      const style = vipTrailStyle?.(this.game?.players?.find(p=>p.color===plane.color));
+      if(style) drawVipGlow(c, (this.trails.find(t=>t.points?.length)?.points)||[], p=>this.project(p), now, style);
+    }
+  }catch(e){/* silent */}
+}
+    // VIP glow (safe no-op if not imported yet in this scope)
  drawImpact(now){
   const c=this.ctx,s=this.scale;
   for(const e of this.effects){if(e.kind!=='impact')continue;const age=(now-e.start)/e.life,a=this.project(e);if(age<0||age>=1)continue;

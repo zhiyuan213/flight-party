@@ -116,3 +116,29 @@ export function startTrailPreview(canvas,style,reduced=false,loop=false,planeSty
  };requestAnimationFrame(draw);
 }
 
+
+// VIP-only soft outer glow for selected trail styles (does not affect scoring or hitboxes)
+export function drawVipGlow(c, samples, project, now, style){
+ if(!style || samples.length < 2) return;
+ const glow = style === 'gold-glow' ? 'rgba(255,225,69,0.35)' :
+              style === 'night-glow' ? 'rgba(201,168,255,0.4)' :
+              style === 'aurora-shimmer' ? 'rgba(224,255,255,0.45)' :
+              style === 'obsidian-edge' ? 'rgba(255,179,160,0.3)' :
+              style === 'soft-cloud' ? 'rgba(184,230,255,0.25)' : null;
+ if(!glow) return;
+ c.save();
+ c.strokeStyle = glow;
+ c.lineWidth = 18;
+ c.lineCap = 'round';
+ c.lineJoin = 'round';
+ c.globalCompositeOperation = 'lighter';
+ c.beginPath();
+ let started = false;
+ for(const p of samples){
+  const pt = project(p);
+  if(!started){ c.moveTo(pt.x, pt.y); started = true; }
+  else c.lineTo(pt.x, pt.y);
+ }
+ c.stroke();
+ c.restore();
+}

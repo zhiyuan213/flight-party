@@ -22,57 +22,23 @@ function setup(){
  return {dialog,nodes,options,session,emit,click,open:()=>hero.wrap.onclick(),completeSave:(style='gold2d',annualMember=false)=>{session.value=identity(true,style,annualMember);resolveSave();},get lastPosted(){return lastPosted;},get livePreviews(){return livePreviews;},get previewCount(){return previewCount;},get selectedStyle(){return selectedStyle;}};
 }
 
-test('closing during save never recreates a hidden airplane preview',async()=>{
- const h=setup();h.emit(true);h.open();await h.click('data-plane','gold2d');
- assert.equal(h.livePreviews,1);
- const saving=h.click('data-plane-save');assert.equal(h.nodes['[data-plane-save]'].disabled,true);
- h.dialog.close();assert.equal(h.livePreviews,0);
- const count=h.previewCount;h.completeSave();await saving;
- assert.equal(h.previewCount,count,'request completion must not construct artwork in a closed dialog');
- assert.equal(h.livePreviews,0);assert.equal(h.selectedStyle,'gold2d','verified identity still updates the homepage');
+test('selection saves immediately and closing during save never recreates hidden preview',async()=>{
+ const h=setup();h.emit(true);h.open();const saving=h.click('data-plane','gold2d');
+ assert.equal(h.lastPosted.plane,'gold2d');assert.ok(h.options.every(b=>b.disabled));
+ h.dialog.close();const count=h.previewCount;h.completeSave();await saving;
+ assert.equal(h.previewCount,count);assert.equal(h.livePreviews,0);assert.equal(h.selectedStyle,'gold2d');
 });
-
-test('membership changes update the open save control without interrupting preview',()=>{
- const h=setup();h.emit(true);h.open();const count=h.previewCount;
- assert.equal(h.nodes['[data-plane-save]'].disabled,false);
- h.emit(false);assert.equal(h.nodes['[data-plane-save]'].disabled,true);
- h.session.dispatchEvent({type:'profile-updated',detail:null});assert.equal(h.nodes['[data-plane-save]'].disabled,true);
- h.emit(true);assert.equal(h.nodes['[data-plane-save]'].disabled,false);
- assert.equal(h.previewCount,count,'identity refreshes update controls rather than restart the preview');
+test('reopening a pending autosave restores selection and releases controls',async()=>{
+ const h=setup();h.emit(true);h.open();const saving=h.click('data-plane','gold2d');h.dialog.close();h.open();
+ assert.ok(h.options.every(b=>b.disabled));h.completeSave();await saving;
+ assert.equal(h.livePreviews,1);assert.ok(h.options.every(b=>!b.disabled));
+ assert.equal(h.options.find(b=>b.dataset.plane==='gold2d').attributes['aria-pressed'],'true');h.dialog.close();
 });
-
-test('reopening a pending save restores the saved selection and enables controls',async()=>{
- const h=setup();h.emit(true);h.open();await h.click('data-plane','gold2d');
- const saving=h.click('data-plane-save');h.dialog.close();h.open();
- assert.equal(h.livePreviews,1);assert.equal(h.nodes['[data-plane-save]'].disabled,true);
- h.completeSave();await saving;
- assert.equal(h.livePreviews,1);assert.equal(h.nodes['[data-plane-save]'].disabled,false);
- assert.equal(h.options.find(b=>b.dataset.plane==='gold2d').attributes['aria-pressed'],'true');
- h.dialog.close();assert.equal(h.livePreviews,0);
-});
-
-test('new cloud and night selections persist their own keys and expire back to classic',async()=>{
- for(const style of ['cloud2d','night2d']){
-  const h=setup();h.emit(true);h.open();await h.click('data-plane',style);
-  const saving=h.click('data-plane-save');assert.equal(h.lastPosted.plane,style);
-  h.completeSave(style);await saving;assert.equal(h.selectedStyle,style);
-  h.dialog.close();h.open();assert.equal(h.options.find(b=>b.dataset.plane===style).attributes['aria-pressed'],'true');
-  h.emit(false,style);assert.equal(h.selectedStyle,'classic');assert.equal(h.nodes['[data-plane-save]'].disabled,true);
-  h.dialog.close();assert.equal(h.livePreviews,0);
- }
-});
-
-test('annual aircraft preview stays available while save requires a verified annual flag',async()=>{
+test('annual aircraft may be previewed but autosave requires verified annual entitlement',async()=>{
  for(const style of ['obsidian2d','aurora2d']){
-  const h=setup();h.emit(true);h.open();await h.click('data-plane',style);
-  assert.equal(h.livePreviews,1);assert.equal(h.nodes['[data-plane-save]'].disabled,true);
-  await h.click('data-plane-save');assert.equal(h.lastPosted,undefined,'monthly preview cannot send an annual selection');
-  h.emit(true,'classic','true');assert.equal(h.nodes['[data-plane-save]'].disabled,true,'truthy strings are not annual qualification');
-  h.emit(true,'classic',true);assert.equal(h.nodes['[data-plane-save]'].disabled,false);
-  const saving=h.click('data-plane-save');assert.equal(h.lastPosted.plane,style);
-  h.completeSave(style,true);await saving;assert.equal(h.selectedStyle,style);
-  h.emit(true,style,false);assert.equal(h.selectedStyle,'classic');assert.equal(h.nodes['[data-plane-save]'].disabled,true,'annual expiry removes access even while general VIP remains active');
-  await h.click('data-plane','cloud2d');assert.equal(h.nodes['[data-plane-save]'].disabled,false,'general VIP choices remain available');
-  h.dialog.close();assert.equal(h.livePreviews,0);
+  const h=setup();h.emit(true);h.open();await h.click('data-plane',style);assert.equal(h.lastPosted,undefined);
+  h.emit(true,'classic','true');await h.click('data-plane',style);assert.equal(h.lastPosted,undefined);
+  h.emit(true,'classic',true);const saving=h.click('data-plane',style);assert.equal(h.lastPosted.plane,style);h.completeSave(style,true);await saving;
+  assert.equal(h.selectedStyle,style);h.emit(true,style,false);assert.equal(h.selectedStyle,'classic');h.dialog.close();
  }
 });

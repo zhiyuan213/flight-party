@@ -7,7 +7,7 @@ const badgeImages=new Map();
 function badgeLanguage(language){const value=typeof language==='string'?language:typeof document!=='undefined'?document.documentElement?.lang:'';return /^zh(?:-|$)/i.test(value||'')?'zh':'en';}
 function badgeImage(grade,language){
  if(typeof Image==='undefined')return null;
- const asset=grade==='annual'?`assets/member/annual-vip-badge${language==='zh'?'':'-en'}.svg`:'assets/member/vip-badge.svg';
+ const asset=grade==='annual'?'assets/member/annual-vip-laurel-v3.png':'assets/member/vip-laurel-v3.png';
  if(!badgeImages.has(asset)){try{const image=new Image();badgeImages.set(asset,image);image.src=asset;}catch{badgeImages.set(asset,null);}}
  const image=badgeImages.get(asset);return image?.complete&&image.naturalWidth>0?image:null;
 }
@@ -56,13 +56,13 @@ function drawBadge(c,label,language){
  const {badgeWidth:w,badgeHeight:h,grade}=label;if(!w||grade==='none')return;
  const x=label.x+label.nameWidth-1,y=label.y+(label.height-h)/2,image=badgeImage(grade,language);
  // The English SVG's longer title becomes too small at nameplate scale; use crisp text.
- if(image&&!(grade==='annual'&&language!=='zh'&&h<22)){c.drawImage(image,x,y,w,h);return;}
+ if(image){c.drawImage(image,x,y,w,h);return;}
  const annual=grade==='annual';c.save();
- bevel(c,x+.5,y+.5,w-1,h-1);c.fillStyle=gradient(c,x,y,w,h,annual?[[0,'#34435b'],[.48,'#202b43'],[.5,'#10192b'],[1,'#263149']]:[[0,'#fff1b2'],[.45,'#f4ce68'],[.5,'#dfab3c'],[1,'#edc477']]);c.fill();
- c.strokeStyle=gradient(c,x,y,w,h,annual?[[0,'#ffead8'],[.45,'#b47b66'],[1,'#e0ae94']]:[[0,'#fff7c6'],[.45,'#a77625'],[1,'#d6a246']]);c.lineWidth=1;c.stroke();
- c.beginPath();c.moveTo(x+4,y+2);c.lineTo(x+w-4,y+2);c.strokeStyle=annual?'#ffead866':'#fff9daaa';c.lineWidth=.6;c.stroke();
- const gemX=x+5.5,gemY=y+h/2,r=h*.17;c.beginPath();c.moveTo(gemX,gemY-r);c.lineTo(gemX+r*.7,gemY);c.lineTo(gemX,gemY+r);c.lineTo(gemX-r*.7,gemY);c.closePath();c.fillStyle=annual?'#efc0a6':'#fff1b7';c.fill();
- const text=annual?(language==='zh'?'年VIP':'YEAR VIP'):'VIP',textLeft=x+10,textWidth=Math.max(1,w-13);c.font=`900 ${annual&&language!=='zh'?Math.max(9,h*.52):h*.68}px Arial, sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillStyle=annual?'#f3cfb6':'#623c0d';c.fillText(text,textLeft+textWidth/2,y+h/2+.4,textWidth);c.restore();
+ bevel(c,x+.5,y+.5,w-1,h-1);c.fillStyle=gradient(c,x,y,w,h,[[0,'#fff1b2'],[.45,'#f4ce68'],[.5,'#dfab3c'],[1,'#edc477']]);c.fill();
+ c.strokeStyle=gradient(c,x,y,w,h,[[0,'#fff7c6'],[.45,'#a77625'],[1,'#d6a246']]);c.lineWidth=1;c.stroke();
+ c.beginPath();c.moveTo(x+4,y+2);c.lineTo(x+w-4,y+2);c.strokeStyle='#fff9daaa';c.lineWidth=.6;c.stroke();
+ const gemX=x+5.5,gemY=y+h/2,r=h*.17;c.beginPath();c.moveTo(gemX,gemY-r);c.lineTo(gemX+r*.7,gemY);c.lineTo(gemX,gemY+r);c.lineTo(gemX-r*.7,gemY);c.closePath();c.fillStyle='#fff1b7';c.fill();
+ const text=annual?'YEAR VIP':'VIP',textLeft=x+10,textWidth=Math.max(1,w-13);c.font=`900 ${annual&&language!=='zh'?Math.max(9,h*.52):h*.68}px Arial, sans-serif`;c.textAlign='center';c.textBaseline='middle';c.fillStyle='#623c0d';c.fillText(text,textLeft+textWidth/2,y+h/2+.4,textWidth);c.restore();
 }
 export function drawPlaneNames(context,entries,options){
  const labels=layoutPlaneNames(context,entries,options),c=context,language=badgeLanguage(options?.language);
@@ -80,3 +80,5 @@ export function drawPlaneNames(context,entries,options){
  }
  c.restore();return labels;
 }
+
+

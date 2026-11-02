@@ -57,10 +57,11 @@ test('badge loading keeps fixed layout, readable fallback and explicit or docume
  globalThis.document={documentElement:{lang:'zh-CN'}};
  try{
   const c=context(),entries=[{key:'0:0',name:'大卫',grade:'annual',x:150,y:80}],options={width:375,height:398,fontSize:11};
-  const loading=drawPlaneNames(c,entries,options);assert.ok(c.text.includes('年VIP'));assert.equal(c.images.length,0);assert.equal(created[0].src,'assets/member/annual-vip-badge.svg');
+  const loading=drawPlaneNames(c,entries,options);assert.ok(c.text.includes('YEAR VIP'));assert.equal(c.images.length,0);assert.equal(created[0].src,'assets/member/annual-vip-laurel-v3.png');
   created[0].complete=true;created[0].naturalWidth=124;const loaded=drawPlaneNames(c,entries,options);assert.equal(c.images.length,1);assert.deepEqual(loaded.map(({x,y,width,height})=>[x,y,width,height]),loading.map(({x,y,width,height})=>[x,y,width,height]),'asset arrival cannot shift names or badge budget');
-  drawPlaneNames(c,entries,{...options,language:'en'});assert.ok(c.text.includes('YEAR VIP'));assert.equal(created[1].src,'assets/member/annual-vip-badge-en.svg');
-  drawPlaneNames(c,[{...entries[0],grade:'vip'}],options);assert.ok(c.text.includes('VIP'));assert.equal(created[2].src,'assets/member/vip-badge.svg');
-  drawPlaneNames(c,entries,{...options,language:'en'});assert.equal(created.length,3,'each badge asset is requested once');
+  drawPlaneNames(c,entries,{...options,language:'en'});assert.equal(c.images.length,2);assert.equal(created.length,1);
+  drawPlaneNames(c,[{...entries[0],grade:'vip'}],options);assert.ok(c.text.includes('VIP'));assert.equal(created[1].src,'assets/member/vip-laurel-v3.png');
+  drawPlaneNames(c,entries,{...options,language:'en'});assert.equal(created.length,2,'English badge assets are shared across all interface languages');
  }finally{if(priorImage===undefined)delete globalThis.Image;else globalThis.Image=priorImage;if(priorDocument===undefined)delete globalThis.document;else globalThis.document=priorDocument;}
 });
+
