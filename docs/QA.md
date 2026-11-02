@@ -631,3 +631,5 @@ UI43生产部署补充（2026-11-02）：重试43.153.70.181后SSH恢复。6eaea
 ## 2026-11-03 本地外观修订：桂冠英文徽章
 用户选择方案3桂冠荣耀，明确只用英文VIP/YEAR VIP。内置imagegen依据已批准第三排参考，生成亮金皇冠桂冠横牌、透明背景、深琥珀字，不使用黑金底；项目正式资产为dist/assets/member/vip-laurel-v3.png和annual-vip-laurel-v3.png。原生成文件保留在Codex generated_images。CSS昵称牌与Canvas姓名牌统一消费新资产；无语言分支，加载失败也使用金色英文兜底。中文年VIP草稿未接入产品。
 原版白色蓝点骰子恢复，不附加会员材质/边框/光晕；机库保留6款，选中合资格飞机自动保存，无单独保存按钮。更新了异步关闭/重开及资格变化回归，npm test90项全部通过。浏览器本地排行榜已看到桂冠YEAR VIP资源实际显示，非身份模拟；未改账号积分或会员记录。
+
+桂冠徽章线上验收：静态资源已备份到/opt/joyflock/before-laurel-dist.tar.gz并部署，NGINX reload成功；新PNG HTTPS200。生产浏览器确认app.js?v=20261103-laurel-final，中文界面大卫旁实际加载annual-vip-laurel-v3.png，显示英文YEAR VIP，控制台0错误。此次未重启后端、未部署本地其他后端未提交改动，也未修改生产数据。源码提交7d91183，首次GitHub push因TLS EOF失败，部署通过SSH完成。
