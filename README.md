@@ -158,3 +158,6 @@ V18给赠送会员增加VIP/ANNUAL明确等级，历史记录仍为VIP；仅显�
 
 ## 2026-11-02 最新积分规则
 新开局名次分：第一+3、第二+2、第三0、第四0；每架到终点额外+2，结算按服务端最终飞机完成数一次累计。因此第一两架完成共7分，第二共6分，第三/第四各按0/1/2架获得0/2/4分。历史已结算不改；上线前已经开局的对局按开局rules_version保留旧规则。无客户端报分或即时重复加分。
+
+## JoyFlock additional games
+Buildless pages under `dist/table/index.html?game=four|gomoku|puzzle|chess|draw|cards|pool`. Local play works without the backend. Online rooms require the shared PostgreSQL/Redis service and use existing account sessions and membership display. Portal entry: https://joyflock.com/. New games are two-player and use separate per-game rankings. Cards is color/number matching; pool is casual shared-target pool, not full tournament eight-ball. See docs/HANDOFF.md for exact rules and validation limits.

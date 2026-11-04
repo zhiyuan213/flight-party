@@ -3,5 +3,7 @@ flight.joyflock.com {
 }
 
 joyflock.com, www.joyflock.com {
-    redir https://flight.joyflock.com{uri} 302
+    @home path /
+    rewrite @home /portal/index.html
+    reverse_proxy web:80
 }

@@ -633,3 +633,25 @@ UI43生产部署补充（2026-11-02）：重试43.153.70.181后SSH恢复。6eaea
 原版白色蓝点骰子恢复，不附加会员材质/边框/光晕；机库保留6款，选中合资格飞机自动保存，无单独保存按钮。更新了异步关闭/重开及资格变化回归，npm test90项全部通过。浏览器本地排行榜已看到桂冠YEAR VIP资源实际显示，非身份模拟；未改账号积分或会员记录。
 
 桂冠徽章线上验收：静态资源已备份到/opt/joyflock/before-laurel-dist.tar.gz并部署，NGINX reload成功；新PNG HTTPS200。生产浏览器确认app.js?v=20261103-laurel-final，中文界面大卫旁实际加载annual-vip-laurel-v3.png，显示英文YEAR VIP，控制台0错误。此次未重启后端、未部署本地其他后端未提交改动，也未修改生产数据。源码提交7d91183，首次GitHub push因TLS EOF失败，部署通过SSH完成。
+
+## JoyFlock portal — 2026-11-04
+- Root domain now serves dist/portal/index.html through Caddy; flight.joyflock.com keeps the existing independent game.
+- Desktop game page provides a left game rail and cross-origin iframe; mobile rail becomes horizontal. Only Flight Party is playable; other cards explicitly say coming soon.
+- No room/score/auth state is implemented in the portal. Embedded game retains its own origin and invitation generation; no share URL rewriting.
+- Checked: npm test 90/90, portal JavaScript syntax, production HTTP 200, root no longer redirects, independent Flight Party still serves original welcome page.
+- Browser observed root home, card navigation and cross-origin iframe game rendering; narrow viewport had no horizontal document overflow. Browser automation could not activate iframe controls (stale click-target errors), so embedded room creation, full game, real-device WeChat sharing and fullscreen were not end-to-end verified in this pass.
+- Deployment changed only static portal files and the edge route. Edge was recreated to refresh its bind-mounted Caddyfile; backend/database were not restarted. Rollback config: /opt/joyflock/Caddyfile.before-portal.
+
+## Room re-entry fix — 2026-11-04
+- Same-version authoritative snapshots now dismiss an open room lobby before the deduplication return. Returning from a non-game screen reconstructs the same match even if its game version has not advanced.
+- Failed renderer initialization resets the applied version so the next snapshot can retry.
+- Validation: node syntax check; npm test 93/93 including three regressions for same-version lobby reentry, homepage restoration and settled snapshots. Production HTTP source/version verified. No full browser game replay performed for this patch.
+
+## Seven additional platform games — 2026-11-04
+- Final npm test: 112 passed, 0 failed. Modified module syntax checks passed.
+- Targeted Java rule suites: Grid 7, Chess 3, Sketch 3, Cards 2, Pool 2; all passed.
+- Exact-release isolated PostgreSQL/Redis HTTP QA completed all 7 games; grid/chess replay, races, rematch, account recovery; drawing secret/role checks; cards stock/hidden hand and pool physics complete games.
+- Browser completed chess mate, played legal cards, guessed computer geometry and confirmed pool next-shot recovery after animation. No real phone/touch claim: viewport emulation did not actually change width.
+- Existing Flight Party visual renderer/assets were not changed for this release.
+
+Final authenticated isolated-release checks also passed for drawing/cards/pool: each signed-in account received exactly one game result and server-derived points, including duplicate action replay. Production regression used anonymous sessions exclusively.
