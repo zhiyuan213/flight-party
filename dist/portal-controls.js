@@ -3,6 +3,7 @@ export function bindPortalControls(){
  if(window.parent===window||new URLSearchParams(location.search).get('embed')!=='joyflock')return;
  const allowed=new Set(['https://joyflock.com','https://www.joyflock.com']);
  let parentOrigin;try{parentOrigin=new URL(document.referrer).origin;}catch{return;}
+ if(['localhost','127.0.0.1'].includes(location.hostname)&&parentOrigin===location.origin)allowed.add(location.origin);
  if(!allowed.has(parentOrigin))return;
  document.body.classList.add('portal-embedded');
  const style=document.createElement('style');style.textContent='body.portal-embedded #settings{display:none!important}@media(min-width:769px){body.portal-embedded>header{display:none!important}body.portal-embedded{--header-h:0px}body.portal-embedded .screen{min-height:100dvh}body.portal-embedded #play{height:100dvh}}';document.head.append(style);

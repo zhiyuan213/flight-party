@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-04",
+  "tool": "built-in image_gen.imagegen",
+  "purpose": "Original production cover illustrations; not screenshots or promises of 3D gameplay",
+  "sharedPrompt": "Premium original JoyFlock browser game cover, polished playful high-end 3D-rendered key art, tactile sculpted objects, rich saturation, studio highlights and soft contact shadows, bold centered square composition readable at small size. No words, logos, UI or watermark.",
+  "export": "900x900 JPEG quality 88 for web delivery; original generated PNGs retained in Codex generated_images.",
+  "assets": [
+    {
+      "id": "four",
+      "promptSubject": "A glossy cobalt Connect Four board with red and golden discs, purple-indigo background.",
+      "path": "D:/code/flight-party/dist/assets/covers/four.jpg"
+    },
+    {
+      "id": "gomoku",
+      "promptSubject": "Obsidian black and ivory white stones on a honey wooden grid board, emerald background.",
+      "path": "D:/code/flight-party/dist/assets/covers/gomoku.jpg"
+    },
+    {
+      "id": "puzzle",
+      "promptSubject": "Thick interlocking jigsaw pieces forming a sunlit tropical island, turquoise water and golden beach.",
+      "path": "D:/code/flight-party/dist/assets/covers/puzzle.jpg"
+    },
+    {
+      "id": "chess",
+      "promptSubject": "Sculpted ivory knight and midnight king on a beveled chessboard, lavender and gold lighting.",
+      "path": "D:/code/flight-party/dist/assets/covers/chess.jpg"
+    },
+    {
+      "id": "draw",
+      "promptSubject": "Chunky yellow pencil and brush drawing a smiling cat in a sketchbook, colorful paint splashes.",
+      "path": "D:/code/flight-party/dist/assets/covers/draw.jpg"
+    },
+    {
+      "id": "cards",
+      "promptSubject": "A fan of rounded red/yellow/green/blue numeral cards, numbers 1–9, magenta background, no brand logos.",
+      "path": "D:/code/flight-party/dist/assets/covers/cards.jpg"
+    },
+    {
+      "id": "pool",
+      "promptSubject": "Glossy black number-8 billiard ball, colorful billiard balls and a wooden cue on emerald felt.",
+      "path": "D:/code/flight-party/dist/assets/covers/pool.jpg"
+    }
+  ]
+}
