@@ -1,4 +1,4 @@
-import {poolStart,poolMove,poolBot} from './pool.js?v=20261104-lobby2';
+import {poolStart,poolMove,poolBot} from './pool.js?v=20261104-pool2';
 import {cardsStart,cardsMove,cardsLegal} from './cards.js?v=20261104-lobby2';
 import {sketchStart} from './sketch.js?v=20261104-lobby2';
 import {chessStart,chessMove,chessLegal,chessBot} from './chess-rules.js?v=20261104-lobby2';

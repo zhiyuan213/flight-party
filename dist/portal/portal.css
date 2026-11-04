@@ -4,3 +4,6 @@
 .rail-game{overflow:hidden}.rail-game .game-symbol{font-size:30px;line-height:1}@media(max-width:600px){.rail-game .game-symbol{font-size:23px}}
 
 .game-card:not(.blue) .card-art img{width:100%;height:100%;object-fit:cover}.rail-game img{object-fit:cover}
+
+/* Flight cover keeps the original aircraft over a bright cloudscape. */
+.game-card.blue .card-art{background: url('/assets/cloud-bank.png') center bottom / 155% auto no-repeat,radial-gradient(ellipse at 75% 12%,#fff7c9 0,transparent 38%),linear-gradient(145deg,#54b9f5,#b6e8ff 68%,#f3fbff)}.game-card.blue .card-art:before{display:none}.game-card.blue .card-art img{width:94%;height:94%;filter:drop-shadow(0 12px 8px #1d51854d)}
