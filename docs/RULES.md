@@ -65,3 +65,7 @@
 
 ## 2026-11-02 最新积分规则
 新开局名次分：第一+3、第二+2、第三0、第四0；每架到终点额外+2，结算按服务端最终飞机完成数一次累计。因此第一两架完成共7分，第二共6分，第三/第四各按0/1/2架获得0/2/4分。历史已结算不改；上线前已经开局的对局按开局rules_version保留旧规则。无客户端报分或即时重复加分。
+
+
+## 2026-11-05 Pool control and hit-point extension
+Existing casual pool target/win/scoring rules are retained. Added selectable center or eight directional cue hit points, with bounded first-contact follow/draw and side deflection plus speed-preserving cushion side influence. Server and local implementations share golden trajectory fixtures. Online first turn has a server-enforced three-second opening before normal30-second control; guests, memberships and cumulative-score eligibility unchanged.

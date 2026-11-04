@@ -1,0 +1,96 @@
+/* The pool scene has its own compact match header and full-height chat column. */
+.pool-left-controls{display:flex;flex-direction:column;align-items:center;gap:10px;align-self:stretch;padding-top:7px;min-height:0}.pool-left-controls .pool-sound{font-size:9px;width:52px;min-height:27px;background:#17273a;color:#a6bed5;border:1px solid #31465d;box-shadow:none;margin:0;padding:4px}.pool-hit{width:64px;text-align:center}.pool-left-controls .pool-spot{display:block;width:64px;height:64px;aspect-ratio:1;border:0;box-shadow:none;border-radius:50%;cursor:crosshair;margin:0}.pool-hit .pool-spot-reset{display:block;width:64px;margin:5px 0 0;padding:2px;min-height:21px;font-size:9px;box-shadow:none;background:none;color:#a2b8cf;border:0}.pool-power-meter{position:relative;flex:1;max-height:480px;min-height:80px;width:23px;border:1px solid #21344e;background:#101b2d;border-radius:5px;overflow:hidden;margin-top:12px;box-shadow:inset 0 1px 7px #0009}.power-cue{position:absolute;top:10px;bottom:10px;left:8px;width:7px;background:linear-gradient(90deg,#79512f,#ecc991 45%,#9b6e3b);border-top:4px solid #9eb5b9;transform:translateY(var(--cue-pull,0px));transition:transform .045s;box-shadow:1px 0 3px #0008}.power-cue:after{content:'';position:absolute;top:65%;left:0;right:0;height:30%;background:repeating-linear-gradient(#222c38 0 12px,#b58a55 13px 15px)}.power-fill{position:absolute;inset:auto 0 0;height:var(--pull,0%);background:linear-gradient(#fae59b88,#e6a33a88);pointer-events:none}.pool-power-value{font-size:10px;color:#e6c783;font-weight:700}.pool-table-wrap{position:relative;min-width:0;display:grid;place-items:center}.pool-countdown{position:absolute;inset:0;background:#020a17b8;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;border-radius:26px;pointer-events:auto}.pool-countdown b{font-size:clamp(64px,12vw,150px);font-weight:900;line-height:1.1;color:#e9f7ff;text-shadow:0 4px 0 #4587ba,0 10px 30px #155a8c;animation:pool-count-pulse 1s infinite}.pool-countdown span{margin-top:22px;color:#dceeff;font-size:22px;font-weight:700}.pool-controls{display:none!important}@keyframes pool-count-pulse{0%{transform:scale(1.12)}70%,100%{transform:scale(1)}}@media(prefers-reduced-motion:reduce){.pool-countdown b{animation:none}}
+body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hidden}
+.pool-game[data-screen="play"] header{height:46px;background:#090f1b;border-color:#243042;padding:0 20px;color:#c0d1e2}
+.pool-game[data-screen="play"] header>a{font-size:20px;color:#e8f4ff}
+.pool-game[data-screen="play"] header button{min-height:30px;padding:5px 11px;background:#26354b;border-color:#42536c;color:#e5edf8;box-shadow:none}
+.pool-game[data-screen="play"] header #game-name,.pool-game[data-screen="play"] header>div>a{color:#9bb0c8}
+.pool-game[data-screen="play"] .arena{height:calc(100dvh - 46px);min-height:0;grid-template-columns:minmax(0,1fr) 285px;padding:0;gap:0;align-items:stretch;background:#070c14}
+.pool-game.portal-embedded[data-screen="play"] .arena{height:100dvh}
+.pool-game[data-screen="play"] .game-panel{min-height:0;height:100%;padding:10px 16px 14px;border:0;border-radius:0;background:radial-gradient(ellipse at 50% 55%,#132a3c,#050a11 78%);overflow:hidden}
+.pool-game[data-screen="play"] .game-panel .board-top{position:absolute;left:16px;top:13px;z-index:2;gap:10px}
+.pool-game[data-screen="play"] .board-top>.eyebrow{display:none}
+.pool-game[data-screen="play"] .board-top button{width:32px;height:30px;padding:0;min-height:30px;overflow:hidden;font-size:0;color:#d8e9f6;background:#1b293c;border:1px solid #36475e;border-radius:9px;box-shadow:none}
+.pool-game[data-screen="play"] .board-top button::before{content:'←';font-size:23px;line-height:1}
+.pool-matchup{position:relative;flex:none;width:min(780px,calc(100% - 110px));margin:0 auto;height:74px;min-height:74px}
+.pool-matchup #seats{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:105px;height:100%;align-items:center}
+.pool-matchup .seat{display:flex;align-items:center;gap:12px;min-height:0;padding:7px 0;background:none;border:0;border-radius:0;box-shadow:none;color:#e1ecf5}
+.pool-matchup .seat:nth-child(2){flex-direction:row-reverse;text-align:right}
+.pool-matchup .seat.active{background:none;box-shadow:none;border:0;color:#fff}
+.pool-matchup .seat.active .seat-avatar{border-color:#fff4d4;box-shadow:0 0 14px #d9b96a60}
+.pool-matchup .avatar-shell{width:47px;height:47px;flex:0 0 47px}
+.pool-matchup .seat-avatar{border-radius:12px;border:2px solid #5a6b85;box-shadow:0 3px 8px #0006}
+.pool-matchup .avatar-frame{inset:-8px;width:63px;height:63px}
+.pool-matchup .seat-copy{display:flex;flex-direction:column;gap:5px}
+.pool-matchup .seat-name{gap:6px;flex-wrap:wrap}
+.pool-matchup .seat:nth-child(2) .seat-name{justify-content:flex-end}
+.pool-matchup .seat-name strong{font-size:15px;max-width:180px;line-height:1.3}
+.pool-matchup .member-label{font-size:7px;min-width:0;padding:1px 4px}
+.pool-matchup .seat-status{font-size:9px;margin:0;color:#7c96b0}
+.pool-matchup .seat.active .seat-status{color:#ecd294}
+.pool-player-score{font-size:11px;color:#9db7cc;white-space:nowrap;align-self:flex-end;margin-bottom:11px}
+.pool-match-clock{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;width:66px;height:53px;background:#101b2e;border:1px solid #24344d;border-radius:10px;gap:4px}
+.pool-clock-label{font-size:8px;color:#6c86a5;letter-spacing:2px}
+.pool-match-clock #turn-clock{font-size:19px;line-height:1;margin:0;color:#f4cf7b;font-variant-numeric:tabular-nums}
+.pool-round-strip{position:relative;min-height:23px;max-width:850px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;gap:12px;color:#9eb7cb;flex:none}
+.pool-round-strip #status{font-size:11px;color:#9eb7cb;min-height:0;margin:0;text-align:center;line-height:1.4}
+.pool-round-strip #again{width:auto;min-height:26px;padding:4px 12px;margin:0;background:#bf9b51;color:#fff8df;border:1px solid #f0d08a;box-shadow:none;font-size:11px}
+.pool-game[data-screen="play"] .play-sidebar{display:flex;height:100%;min-height:0;gap:0;border-left:1px solid #263652;background:#172844}
+.pool-game[data-screen="play"] .play-sidebar>.players-panel,.pool-game[data-screen="play"] .play-sidebar>.turn-panel{display:none}
+.pool-game[data-screen="play"] .pool-chat-panel{display:flex;flex-direction:column;gap:0;flex:1;min-height:0;padding:16px 12px 12px;background:linear-gradient(#203657,#172844);border:0;border-radius:0;box-shadow:none;overflow:hidden}
+.pool-chat-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:14px;border-bottom:1px solid #ffffff10;flex:none}
+.pool-chat-heading h2{margin:0;font-size:15px;color:#e7f1fb;letter-spacing:0}
+.pool-chat-count{font-size:9px;color:#98b1cf}
+.pool-chat-log{flex:1;min-height:100px;overflow:auto;overscroll-behavior:contain;padding:12px 2px;scrollbar-width:thin;scrollbar-color:#49668b transparent}
+.pool-chat-empty{font-size:11px;color:#7d9bbc;line-height:1.7;margin:6px 0}
+.pool-chat-message{margin:0 0 15px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;word-break:break-word}
+.pool-chat-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+.pool-chat-meta strong{font-size:11px;color:#a5d5ff;overflow:hidden;text-overflow:ellipsis;max-width:175px;white-space:nowrap}
+.pool-chat-meta time{font-size:8px;color:#637f9f;margin-left:auto;font-variant-numeric:tabular-nums}
+.pool-chat-message p{margin:0;color:#e3edf7;white-space:pre-wrap}
+.pool-chat-notice{font-size:9px;line-height:1.5;margin:0 1px 8px;color:#87a4c5;min-height:14px;flex:none}
+.pool-chat-panel .reactions-panel{padding:0;margin:0 0 9px;border:0;border-radius:0;background:none;box-shadow:none;flex:none}
+.pool-chat-panel .reaction-buttons{gap:5px;display:grid;grid-template-columns:repeat(6,1fr)}
+.pool-chat-panel .reaction-buttons button{padding:3px 0;min-height:31px;font-size:18px;border-radius:8px;border:1px solid #3d5574;background:#203857;color:#d7e5f2;box-shadow:none}
+.pool-chat-panel #reaction-note,.pool-chat-panel #reaction-feed{display:none}
+.pool-chat-form{display:flex;align-items:center;gap:6px;margin:0;flex:none}
+.pool-chat-form input{min-width:0;flex:1;width:100%;margin:0;padding:10px;font-size:12px;border-radius:10px;border:1px solid #3e5676;background:#10213a;color:#eaf4ff;box-shadow:inset 0 2px 5px #0002}
+.pool-chat-form input::placeholder{color:#6887ab}
+.pool-chat-form button{min-height:38px;padding:8px 10px;font-size:11px;margin:0;border-radius:10px;border:1px solid #6681a5;background:#344f75;color:#e6f2ff;box-shadow:none}
+.pool-chat-form button:disabled{opacity:.45}
+.pool-game[data-screen="play"] .pool-leave{margin:0 12px 12px;padding:7px 12px;min-height:29px;width:calc(100% - 24px);font-size:10px;color:#a0b6cf;background:#15233a;border:1px solid #344b69;box-shadow:none}
+.pool-game[data-screen="play"] .game-panel .board.pool{margin:auto;max-width:none;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.pool-game[data-screen="play"] .pool-hud{display:none}
+.pool-game[data-screen="play"] .pool canvas:not(.pool-spot){max-width:100%;max-height:calc(100dvh - 175px);width:100%;height:auto;object-fit:contain;box-shadow:none;margin:auto}
+.pool-game.portal-embedded[data-screen="play"] .pool canvas:not(.pool-spot){max-height:calc(100dvh - 125px)}
+.pool-game[data-screen="play"] .pool-left-controls{flex-shrink:0}
+.pool-game[data-screen="play"] .pool-note{font-size:10px;color:#718da5;margin:6px 0 0;min-height:13px}
+/* Keep canvas geometry proportional: pointer coordinates use its real box. */
+.pool-game[data-screen="play"] .game-panel .board.pool{display:grid;grid-template-columns:64px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto auto;column-gap:10px;align-items:stretch}
+.pool-game[data-screen="play"] .pool-left-controls{grid-column:1;grid-row:1/4;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
+.pool-game[data-screen="play"] .pool-table-wrap{grid-column:2;grid-row:1;display:grid;place-items:center;min-width:0;min-height:0;position:relative}
+.pool-game[data-screen="play"] .pool canvas.pool-table-canvas{display:block;width:min(100%,calc((100dvh - 202px)*1.817));height:auto;max-height:none;aspect-ratio:1112/612;object-fit:fill}
+.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:min(100%,calc((100dvh - 156px)*1.817));height:auto;max-height:none}
+.pool-game[data-screen="play"] .pool-controls{display:none;grid-column:2;grid-row:2;width:100%;max-width:none}
+.pool-game[data-screen="play"] .pool-note{grid-column:2;grid-row:3}
+.pool-game[data-screen="play"] .pool canvas.pool-spot{display:block;width:62px;height:62px;max-width:62px;max-height:62px;aspect-ratio:1;box-shadow:none;border-radius:50%;cursor:crosshair;touch-action:none}
+.pool-game[data-screen="play"] .pool-hit{width:64px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pool-game[data-screen="play"] .pool .pool-spot-reset{font-size:8px;min-height:20px;padding:2px 4px;margin:0;width:62px;background:#1c2c3f;border-color:#34475d;color:#c3d4e3;box-shadow:none}
+.pool-game[data-screen="play"] .pool .pool-sound{font-size:9px;width:62px;min-height:24px;padding:3px 5px;margin:0;background:#1c2c3f;border-color:#34475d;color:#bbcee0;box-shadow:none}
+@media(max-width:1000px) and (min-width:761px){
+ .pool-game[data-screen="play"] .arena{grid-template-columns:minmax(0,1fr) 240px}
+ .pool-matchup{width:calc(100% - 70px)}.pool-matchup #seats{gap:80px}.pool-matchup .seat-name strong{max-width:110px;font-size:12px}.pool-player-score{display:none}.pool-matchup .avatar-shell{width:38px;height:38px;flex-basis:38px}.pool-matchup .avatar-frame{width:52px;height:52px;inset:-7px}.pool-match-clock{width:52px;height:47px;top:15px}
+}
+@media(max-width:760px){
+ body.pool-game[data-screen="play"]{overflow:auto}.pool-game[data-screen="play"] header{height:44px;padding:0 12px}.pool-game[data-screen="play"] header>div{gap:8px}.pool-game[data-screen="play"] header>a{font-size:18px}.pool-game[data-screen="play"] #profile{display:none}
+ .pool-game[data-screen="play"] .arena,.pool-game.portal-embedded[data-screen="play"] .arena{height:auto;min-height:calc(100dvh - 44px);grid-template-columns:1fr;display:grid;gap:0}
+ .pool-game[data-screen="play"] .game-panel{height:auto;padding:5px 6px 10px;min-height:0;overflow:hidden}
+ .pool-game[data-screen="play"] .game-panel .board-top{top:10px;left:8px}.pool-game[data-screen="play"] .board-top button{width:27px;height:26px;min-height:26px}
+ .pool-matchup{width:calc(100% - 70px);height:64px;min-height:64px;margin-left:40px}.pool-matchup #seats{gap:58px}.pool-matchup .seat{gap:7px;padding:6px 0}.pool-matchup .avatar-shell{width:32px;height:32px;flex-basis:32px}.pool-matchup .avatar-frame{width:44px;height:44px;inset:-6px}.pool-matchup .seat-name strong{font-size:11px;max-width:75px}.pool-matchup .seat-status{font-size:7px}.pool-matchup .member-label{font-size:6px;padding:0 2px}.pool-match-clock{width:43px;height:42px;top:10px;border-radius:8px}.pool-match-clock #turn-clock{font-size:15px}.pool-clock-label{font-size:7px}.pool-player-score{display:none}
+ .pool-round-strip{min-height:20px;margin-bottom:3px}.pool-round-strip #status{font-size:9px}.pool-game[data-screen="play"] .game-panel .board.pool{margin:0 auto;display:block;min-height:0}
+ .pool-game[data-screen="play"] .pool canvas:not(.pool-spot),.pool-game.portal-embedded[data-screen="play"] .pool canvas:not(.pool-spot){max-height:none;width:100%;height:auto}
+ .pool-game[data-screen="play"] .game-panel .board.pool{display:grid;grid-template-columns:42px minmax(0,1fr);column-gap:4px}.pool-game[data-screen="play"] .pool canvas.pool-spot{width:40px;height:40px;max-width:40px;max-height:40px}.pool-game[data-screen="play"] .pool-hit{width:42px}.pool-game[data-screen="play"] .pool .pool-spot-reset,.pool-game[data-screen="play"] .pool .pool-sound{width:42px;font-size:7px;padding:2px 1px}
+ .pool-game[data-screen="play"] .play-sidebar{height:300px;min-height:0;border-left:0;border-top:1px solid #2d405c}.pool-game[data-screen="play"] .pool-chat-panel{padding:11px 12px 9px}.pool-chat-heading{padding-bottom:8px}.pool-chat-heading h2{font-size:13px}.pool-chat-log{padding:8px 1px}.pool-chat-message{margin-bottom:10px;font-size:11px}.pool-chat-notice{margin-bottom:5px}.pool-chat-panel .reaction-buttons button{min-height:28px;font-size:17px}.pool-chat-panel .reactions-panel{margin-bottom:7px}.pool-game[data-screen="play"] .pool-leave{margin-bottom:9px;min-height:27px}
+}
+
+.pool-game .pool-chat-form button:hover:not(:disabled){background:#42628c;color:#fff;border-color:#86a1c4}.pool-game .pool-left-controls .pool-sound:hover:not(:disabled){background:#263f5c;color:#e8f3ff}

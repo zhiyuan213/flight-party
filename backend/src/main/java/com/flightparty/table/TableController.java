@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.*;
 public class TableController {
  private final TableService service;public TableController(TableService service){this.service=service;}
 
+ public record ChatInput(UUID commandId,String text){}
+ @GetMapping("/rooms/{id}/chat") public java.util.List<TableService.Chat> chat(@PathVariable UUID id,@RequestParam(defaultValue="0") long after,HttpServletRequest r){return service.chat(id,after,r);}
+ @PostMapping("/rooms/{id}/chat") public java.util.List<TableService.Chat> sendChat(@PathVariable UUID id,@RequestBody ChatInput input,HttpServletRequest r){return service.sendChat(id,input.commandId(),input.text(),r);}
  public record React(UUID commandId,String emoji){}
  @GetMapping("/rooms/{id}/reactions") public java.util.List<TableService.Reaction> reactions(@PathVariable UUID id,@RequestParam(defaultValue="0") long after,HttpServletRequest r){return service.reactions(id,after,r);}
  @PostMapping("/rooms/{id}/reactions") public java.util.List<TableService.Reaction> react(@PathVariable UUID id,@RequestBody React input,HttpServletRequest r){return service.react(id,input.commandId(),input.emoji(),r);}

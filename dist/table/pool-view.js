@@ -1,4 +1,5 @@
-import {poolImpact, poolMuted, setPoolMuted, unlockPoolAudio} from './pool-audio.js?v=20261104-pool2';
+import {pullPower,spotCode,encodePoolShot,openingSeconds} from './pool-input.js?v=20261105-mouse1';
+import {poolImpact, poolMuted, setPoolMuted, unlockPoolAudio} from './pool-audio.js?v=20261105-mouse1';
 
 const W = 1112, H = 612, PAD = 56, R = 12;
 const holes = [[0,0],[500,0],[1000,0],[0,500],[500,500],[1000,500]];
@@ -70,32 +71,41 @@ function guide(ctx,c,angle) {
 }
 
 export function renderPool(host,s,can) {
-  if(!host.querySelector('canvas')) {
-    host.innerHTML='<div class="pool-hud"><span>JOYFLOCK <b>POOL CLUB</b></span><span class="pool-score"></span><button type="button" class="pool-sound" aria-label="切换台球音效"></button></div><canvas width="1668" height="918" aria-label="台球桌，点击选择瞄准方向"></canvas><div class="pool-controls"><label>击球力度 <output>65%</output><input type="range" min="1" max="100" value="65" aria-label="击球力度"></label><button class="pool-shoot" data-position="234000">击球</button></div><p class="pool-note"></p>';
-    host._angle=0;host._roll=Array(9).fill(0);host._heading=Array(9).fill(0);
+  if(!host.querySelector('.pool-table-canvas')) {
+    host.innerHTML='<div class="pool-left-controls"><button class="pool-sound" type="button" aria-label="切换台球音效"></button><div class="pool-hit"><canvas class="pool-spot" width="160" height="160" role="button" tabindex="0" aria-label="选择白球击球点"></canvas><button type="button" class="pool-spot-reset">中心击球</button></div><div class="pool-power-meter" role="meter" aria-label="击球力度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="power-cue"></div><div class="power-fill"></div></div><output class="pool-power-value">0%</output></div><div class="pool-table-wrap"><canvas class="pool-table-canvas" width="1668" height="918" aria-label="台球桌，移动鼠标瞄准，按住左键后拉蓄力，松开击球"></canvas><div class="pool-countdown" hidden aria-live="polite"><b>3</b><span>准备开球</span></div></div><div class="pool-controls"><label>击球力度 <output>65%</output><input type="range" min="1" max="100" value="65" aria-label="击球力度"></label><button class="pool-shoot" data-position="234000">击球</button><button class="pool-unlock" type="button">重新瞄准</button></div><p class="pool-note"></p>';
+    host._angle=0;host._power=0;host._spin=0;host._roll=Array(9).fill(0);host._heading=Array(9).fill(0);
     host.addEventListener('pointerdown',unlockPoolAudio);
-    host.querySelector('.pool-sound').onclick=()=>{unlockPoolAudio();setPoolMuted(!poolMuted());host.querySelector('.pool-sound').textContent=poolMuted()?'音效：关':'音效：开';};
-    host.addEventListener('click',event=>{
-      const b=event.target.closest?.('.pool-shoot');if(!b||b.disabled||host._cueDispatched)return;
-      unlockPoolAudio();if(reduced()){poolImpact('cue',.8);return;}
-      event.stopImmediatePropagation();host._striking=true;host._update();const start=performance.now(),token=host._animationToken;
-      const strike=now=>{if(token!==host._animationToken||!host.isConnected){host._striking=false;return;}const t=Math.max(0,(now-start)/280);host._paint(host._current.cells,t<.7?30*t/.7:30*(1-t)/.3);if(t<1)requestAnimationFrame(strike);else{host._striking=false;host._cueDispatched=true;host._update();poolImpact('cue',.8);b.click();host._cueDispatched=false;}};requestAnimationFrame(strike);
-    },true);
+    host.querySelector('.pool-sound').onclick=()=>{unlockPoolAudio();setPoolMuted(!poolMuted());host.querySelector('.pool-sound').textContent=poolMuted()?'静音':'声音';};
+    host._releaseAim=()=>{host._locked=false;host._pullStart=null;host._power=0;host._update?.();host._paint?.(host._current.cells);};
+    host.querySelector('.pool-unlock').onclick=host._releaseAim;
+    host._strike=(power)=>{if(!host._ready()||host._striking)return;const b=host.querySelector('.pool-shoot');host._power=power;host._locked=true;host._striking=true;host._update();const start=performance.now(),token=host._animationToken;const strike=now=>{if(token!==host._animationToken||!host.isConnected){host._striking=false;return;}const t=Math.max(0,(now-start)/150);host._paint(host._current.cells,Math.max(0,(1-t)*power*.8));if(t<1&&!reduced())requestAnimationFrame(strike);else{host._striking=false;host._cueDispatched=true;host._update();b.dataset.position=encodePoolShot(power,host._angle,host._spin);poolImpact('cue',power/100);b.click();host._cueDispatched=false;host._locked=false;host._power=0;}};requestAnimationFrame(strike);};
+    host.addEventListener('click',event=>{const b=event.target.closest?.('.pool-shoot');if(!b||host._cueDispatched)return;event.stopImmediatePropagation();if(!b.disabled)host._strike(Number(host.querySelector('input').value));},true);
+    const spot=host.querySelector('.pool-spot');spot.onpointerdown=e=>{const r=spot.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*2-1,y=(e.clientY-r.top)/r.height*2-1;if(Math.hypot(x,y)>.88)return;host._spin=spotCode(x,y);host._update();};spot.onkeydown=e=>{const map={ArrowUp:1,ArrowRight:3,ArrowDown:5,ArrowLeft:7,'0':0};if(e.key in map){e.preventDefault();host._spin=map[e.key];host._update();}};host.querySelector('.pool-spot-reset').onclick=()=>{host._spin=0;host._update();};
   }
   if(host._animating&&s.moves!==host._lastMove){host._queued={s,can};return;}
   host._current=s;host._can=can;
-  const canvas=host.querySelector('canvas'),ctx=canvas.getContext('2d');
-  host.querySelector('.pool-note').textContent=s.fen||'点击台面瞄准，调整力度后击球。';
-  host.querySelector('.pool-score').textContent='落袋 '+s.cells[27]+' : '+s.cells[28];
-  host.querySelector('.pool-sound').textContent=poolMuted()?'音效：关':'音效：开';
-  const update=()=>{const input=host.querySelector('input'),button=host.querySelector('.pool-shoot');host.querySelector('output').textContent=input.value+'%';input.style.setProperty('--power',input.value+'%');button.dataset.position=Number(input.value)*3600+host._angle;button.disabled=!host._can||!!host._animating||!!host._striking;input.disabled=button.disabled;button.textContent=host._animating?'球正在滚动…':host._striking?'正在出杆…':'击球';};host._update=update;
+  const canvas=host.querySelector('.pool-table-canvas'),ctx=canvas.getContext('2d');
+  host.querySelector('.pool-note').textContent=s.fen||'移动瞄准 · 按住左键后拉蓄力 · 松开击球 · 右键取消';
+  
+  host.querySelector('.pool-sound').textContent=poolMuted()?'静音':'声音';
+  host._ready=()=>host._can&&!host._animating&&!host._striking&&Date.now()+(host._serverOffset||0)>=(host._openingUntil||0)&&!host._current.over;
+  const update=()=>{const input=host.querySelector('input'),button=host.querySelector('.pool-shoot'),power=host._locked?host._power:Number(input.value);host.querySelector('.pool-controls output').textContent=power+'%';button.dataset.position=encodePoolShot(Math.max(1,power),host._angle,host._spin);button.disabled=!host._ready();input.disabled=button.disabled;button.textContent=host._animating?'球正在滚动…':host._striking?'正在出杆…':'击球';
+    const meter=host.querySelector('.pool-power-meter');meter.setAttribute('aria-valuenow',String(host._power));meter.style.setProperty('--pull',host._power+'%');meter.style.setProperty('--cue-pull',(host._power*1.2)+'px');host.querySelector('.pool-power-value').textContent=host._power+'%';
+    const spot=host.querySelector('.pool-spot'),c=spot.getContext('2d');c.clearRect(0,0,160,160);const g=c.createRadialGradient(55,45,1,80,80,68);g.addColorStop(0,'#fff');g.addColorStop(.7,'#f2f2ee');g.addColorStop(1,'#999da5');circle(c,80,80,65,g);const theta=(host._spin-1)*Math.PI/4;circle(c,80+(host._spin?Math.sin(theta)*40:0),80-(host._spin?Math.cos(theta)*40:0),6,'#df5048');host.querySelector('.pool-spot-reset').textContent=['中心击球','高杆','右上塞','右塞','右下塞','低杆','左下塞','左塞','左上塞'][host._spin];};host._update=update;
   const paint=(c,pull=0)=>{ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);if(!host._table){host._table=document.createElement('canvas');host._table.width=W;host._table.height=H;makeTable(host._table.getContext('2d'));}ctx.clearRect(0,0,W,H);ctx.drawImage(host._table,0,0);ctx.save();ctx.translate(PAD,PAD);
-    if(host._can&&!s.over&&!host._animating){guide(ctx,c,host._angle);cue(ctx,c,host._angle,pull);}
+    if(host._can&&!s.over&&!host._animating){guide(ctx,c,host._angle);cue(ctx,c,host._angle,pull||host._power*.8);}
     const prev=host._painted;
     for(let i=0;i<9;i++)if(c[i*3+2]){if(prev?.[i*3+2]){const dx=(c[i*3]-prev[i*3])/10,dy=(c[i*3+1]-prev[i*3+1])/10,d=Math.hypot(dx,dy);if(d<100){host._roll[i]+=d;if(d>.02)host._heading[i]=Math.atan2(dy,dx);}}ball(ctx,i,c[i*3]/10,c[i*3+1]/10,host._roll[i],host._heading[i]);}host._painted=c.slice();ctx.restore();};host._paint=paint;
-  canvas.onpointerdown=e=>{unlockPoolAudio();if(host._animating||host._striking||!host._can)return;host._angle=poolAim(e.clientX,e.clientY,canvas.getBoundingClientRect(),host._current.cells);paint(host._current.cells);update();};
-  canvas.onpointermove=e=>{if(e.buttons===1)canvas.onpointerdown(e);};
+  canvas.onpointerdown=e=>{if(e.button!==0||!host._ready())return;e.preventDefault();unlockPoolAudio();if(!host._locked)host._angle=poolAim(e.clientX,e.clientY,canvas.getBoundingClientRect(),host._current.cells);host._locked=true;host._pullStart={x:e.clientX,y:e.clientY};host._power=0;canvas.setPointerCapture?.(e.pointerId);paint(host._current.cells);update();};
+  canvas.onpointermove=e=>{if(!host._ready())return;if(host._locked){if(!host._pullStart)return;host._power=pullPower(host._pullStart,{x:e.clientX,y:e.clientY},host._angle,W/canvas.getBoundingClientRect().width);}else host._angle=poolAim(e.clientX,e.clientY,canvas.getBoundingClientRect(),host._current.cells);paint(host._current.cells);update();};
+  canvas.onpointerup=e=>{if(!host._locked||!host._pullStart)return;host._pullStart=null;try{canvas.releasePointerCapture?.(e.pointerId);}catch{}if(host._power>=3)host._strike(host._power);else{host._locked=false;host._power=0;update();paint(host._current.cells);}};
+  canvas.onpointercancel=host._releaseAim;canvas.oncontextmenu=e=>{e.preventDefault();host._releaseAim();};
+  host.onkeydown=e=>{if(e.key==='Escape')host._releaseAim();};
   host.querySelector('input').oninput=()=>{update();if(!host._animating)paint(host._current.cells);};
+  if(host._aimMove!==s.moves||!can||s.over){host._locked=false;host._pullStart=null;host._power=0;host._aimMove=s.moves;}
+  const countdown=host.querySelector('.pool-countdown');
+  const tick=()=>{const count=openingSeconds(host._openingUntil||0,Date.now()+(host._serverOffset||0));countdown.hidden=!count;countdown.querySelector('b').textContent=String(count);update();if(count){host._counting=true;host._countdownFrame=requestAnimationFrame(tick);}else{host._counting=false;host._countdownFrame=null;}};
+  if(!host._counting)tick();
   const previous=host._snapshot;host._snapshot=s.cells.slice();
   if(s.moves&&host._lastMove!==s.moves&&s.history?.length&&previous&&!reduced()) {
     host._lastMove=s.moves;host._animating=true;
