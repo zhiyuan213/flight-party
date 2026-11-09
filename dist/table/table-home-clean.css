@@ -6,7 +6,7 @@ body.table-home-theme:not([data-screen="play"]){
   background:#090d1c;
 }
 body.table-home-theme:not([data-screen="play"]) #intro{
-  max-width:1080px;margin:0 auto;padding:26px 32px 22px;
+  max-width:1080px;margin:0 auto;padding:30px 30px 22px;
 }
 body.table-home-theme:not([data-screen="play"]) .intro-heading{display:none}
 /* No decorative all-caps labels anywhere in the game shell. */
@@ -16,44 +16,46 @@ body.table-home-theme[data-screen="play"] .board-top .eyebrow{display:none}
 
 /* Two plain columns: game info on the left, standings on the right. */
 body.table-home-theme:not([data-screen="play"]) .intro-grid{
-  grid-template-columns:minmax(0,1fr) 320px;
-  gap:32px;min-height:0;align-items:start;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:24px;min-height:0;align-items:start;
 }
 
 /* Cover + copy: no giant hero, no oversized title, no check-mark badges. */
 body.table-home-theme:not([data-screen="play"]) .game-hero{
-  display:grid;grid-template-columns:116px minmax(0,1fr);
+  display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);
   column-gap:22px;row-gap:0;align-content:start;align-items:start;
   max-width:none;padding:0;
 }
 body.table-home-theme:not([data-screen="play"]) .hero-art{
-  grid-column:1;grid-row:1/span 6;align-self:start;
-  width:116px;height:116px;aspect-ratio:auto;margin:0;
-  border:1px solid #ffffff12;border-radius:10px;
+  grid-column:1;grid-row:1/span 6;align-self:center;justify-self:center;
+  /* The first-frame inline cover is a 192px thumbnail, later swapped for
+     a 900px one. Keep the picture at its approved rendered size (~259px)
+     while the column narrows, so it stays crisp and centred. */
+  width:94%;height:auto;aspect-ratio:1/1;margin:0;
+  border:1px solid #ffffff12;border-radius:14px;
   background:#141b30;box-shadow:none;overflow:hidden;
 }
 body.table-home-theme:not([data-screen="play"]) .hero-art img{width:100%;height:100%;object-fit:cover}
-body.table-home-theme:not([data-screen="play"]) .game-kicker,
 body.table-home-theme:not([data-screen="play"]) #hero-title,
 body.table-home-theme:not([data-screen="play"]) #hero-description,
 body.table-home-theme:not([data-screen="play"]) .hero-tags,
 body.table-home-theme:not([data-screen="play"]) .launch-actions,
 body.table-home-theme:not([data-screen="play"]) .join-box{grid-column:2}
 
-body.table-home-theme:not([data-screen="play"]) .game-kicker{
-  margin:1px 0 0;font-size:10px;font-weight:700;letter-spacing:normal;
-  text-transform:none;color:#8390b0;
-}
+/* The small English game name above the title is gone. The node stays in the
+   DOM because intro-boot.js and table.js write into it on the first frame;
+   display:none removes the grid item entirely, so the title moves up with no
+   empty row left behind. */
+body.table-home-theme:not([data-screen="play"]) .game-kicker{display:none}
 body.table-home-theme:not([data-screen="play"]) #hero-title{
-  margin:5px 0 7px;font-size:30px;line-height:1.22;letter-spacing:-.6px;color:#f6f7ff;
+  margin:3px 0 6px;font-size:27px;line-height:1.2;letter-spacing:-.3px;
+  font-weight:600;color:#dbe4fa;
 }
-/* In English the kicker would repeat the translated title. */
-html:lang(en) body.table-home-theme:not([data-screen="play"]) .game-kicker{display:none}
 body.table-home-theme:not([data-screen="play"]) #hero-description{
-  max-width:44em;margin:0;font-size:13px;line-height:1.75;color:#a1aecb;
+  max-width:44em;margin:0;font-size:12.5px;line-height:1.6;color:#8e9dbe;
 }
 body.table-home-theme:not([data-screen="play"]) .hero-tags{
-  display:flex;gap:0;margin:12px 0 16px;font-size:11px;color:#8390b0;
+  display:flex;gap:0;margin:8px 0 9px;font-size:11px;color:#7a8aac;
 }
 body.table-home-theme:not([data-screen="play"]) .hero-tags span:before{content:none;display:none}
 body.table-home-theme:not([data-screen="play"]) .hero-tags span{padding:0 12px}
@@ -64,28 +66,37 @@ body.table-home-theme:not([data-screen="play"]) .hero-tags span+span{border-left
 body.table-home-theme:not([data-screen="play"]) .intro-screen button{
   border:1px solid #46518a;border-radius:8px;
   background:#1b254a;color:#e7eeff;box-shadow:none;
-  font-size:13px;min-height:38px;padding:9px 13px;
+  font-size:12.5px;min-height:36px;padding:8px 12px;
 }
 body.table-home-theme:not([data-screen="play"]) .intro-screen button:hover:not(:disabled){
   background:#293657;border-color:#8d9dff;transform:none;
 }
-body.table-home-theme:not([data-screen="play"]) .launch-actions{width:320px;max-width:100%}
+/* Four stacked launch buttons: Quick play / Create room / Join room /
+   Play computer. The old .local-buttons wrapper put the last two side by
+   side; it is gone from the markup, so every button owns a full row. */
+body.table-home-theme:not([data-screen="play"]) .launch-actions{
+  width:100%;max-width:100%;
+  display:grid;grid-template-columns:minmax(0,1fr);gap:6px;
+}
 body.table-home-theme:not([data-screen="play"]) .launch-actions>button{
-  min-height:42px;margin-bottom:8px;font-size:14px;
+  min-height:38px;margin:0;font-size:14px;font-weight:500;color:#d3ddf5;
 }
 body.table-home-theme:not([data-screen="play"]) .launch-actions>.primary{
-  min-height:42px;font-size:14px;
-  background:#4159c8;background-image:none;border-color:#6f8bff;color:#fff;box-shadow:none;
+  min-height:38px;font-size:14px;font-weight:600;
+  background:#3c54bd;background-image:none;border-color:#6f8bff;color:#eef2ff;box-shadow:none;
 }
 body.table-home-theme:not([data-screen="play"]) .launch-actions>.primary:hover:not(:disabled){
   background:#4d66d8;background-image:none;border-color:#8d9dff;
 }
+/* The sign-in dialog still pairs Login / Register in .local-buttons. Keep its
+   original sizing here; the launch row no longer has that wrapper at all. */
 body.table-home-theme:not([data-screen="play"]) .local-buttons{gap:8px;margin-top:0}
 body.table-home-theme:not([data-screen="play"]) .local-buttons button{
-  min-height:34px;font-size:11px;padding:7px 8px;
+  min-height:40px;font-size:13.5px;padding:8px 10px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
 }
 body.table-home-theme:not([data-screen="play"]) .join-box{
-  margin-top:12px;max-width:320px;font-size:11px;color:#8390b0;
+  margin-top:8px;width:100%;max-width:100%;font-size:12.5px;color:#8390b0;
 }
 body.table-home-theme:not([data-screen="play"]) .join-box form{
   margin-top:8px;padding:12px;background:#141b30;border:1px solid #ffffff12;border-radius:8px;
@@ -102,7 +113,7 @@ body.table-home-theme:not([data-screen="play"]) .home-ranking{
 }
 body.table-home-theme:not([data-screen="play"]) .ranking-heading{margin:0 0 10px}
 body.table-home-theme:not([data-screen="play"]) .ranking-heading h2{
-  margin:0;font-size:16px;letter-spacing:0;color:#f0f4ff;
+  margin:0;font-size:15px;letter-spacing:0;color:#dfe6fb;
 }
 body.table-home-theme:not([data-screen="play"]) .ranking-heading>img,
 body.table-home-theme:not([data-screen="play"]) .ranking-heading .eyebrow{display:none}
@@ -158,14 +169,14 @@ body.table-home-theme:not([data-screen="play"]) .intro-bottom>section+section{
   padding:0 0 0 22px;border-left:1px solid #ffffff14;
 }
 body.table-home-theme:not([data-screen="play"]) .intro-bottom h2{
-  margin:0 0 6px;font-size:13px;font-weight:700;color:#c8d3ff;
+  margin:0 0 6px;font-size:14px;font-weight:600;color:#a9b8dc;
 }
 body.table-home-theme:not([data-screen="play"]) .intro-bottom p{
-  margin:0;font-size:11px;line-height:1.75;color:#94a0be;
+  margin:0;font-size:12.5px;line-height:1.7;color:#8494b4;
 }
 body.table-home-theme:not([data-screen="play"]) .member-note>.member-label{display:none}
 body.table-home-theme:not([data-screen="play"]) .member-note a{
-  display:inline-block;margin-top:7px;font-size:11px;color:#aab9ff;
+  display:inline-block;margin-top:8px;font-size:12px;color:#93a4e8;
 }
 
 @media(max-width:900px){
@@ -178,9 +189,9 @@ body.table-home-theme:not([data-screen="play"]) .member-note a{
 }
 @media(max-width:560px){
   body.table-home-theme:not([data-screen="play"]) #intro{padding:20px 16px}
-  body.table-home-theme:not([data-screen="play"]) .game-hero{grid-template-columns:84px minmax(0,1fr);column-gap:14px}
-  body.table-home-theme:not([data-screen="play"]) .hero-art{width:84px;height:84px}
-  body.table-home-theme:not([data-screen="play"]) #hero-title{font-size:24px}
+  body.table-home-theme:not([data-screen="play"]) .game-hero{grid-template-columns:minmax(0,150px) minmax(0,1fr);column-gap:16px}
+  body.table-home-theme:not([data-screen="play"]) .hero-art{width:100%;height:auto;aspect-ratio:1/1}
+  body.table-home-theme:not([data-screen="play"]) #hero-title{font-size:21px}
   body.table-home-theme:not([data-screen="play"]) .hero-tags{flex-wrap:wrap;row-gap:4px}
 }
 
@@ -188,8 +199,8 @@ body.table-home-theme:not([data-screen="play"]) .member-note a{
    a standings panel that spans both rows and always reserves ten player rows. */
 body.table-home-theme:not([data-screen="play"]) #intro{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 320px;
-  column-gap:32px;row-gap:0;align-items:start;
+  grid-template-columns:minmax(0,1fr) 360px;
+  column-gap:24px;row-gap:0;align-items:start;
 }
 body.table-home-theme:not([data-screen="play"]) .intro-grid{display:contents;min-height:0}
 body.table-home-theme:not([data-screen="play"]) .game-hero{grid-column:1;grid-row:1}
@@ -221,9 +232,16 @@ body.table-home-theme:not([data-screen="play"]) #leaderboard .avatar-shell{
   width:24px;height:24px;flex:0 0 24px;
 }
 body.table-home-theme:not([data-screen="play"]) #leaderboard .seat{gap:8px}
-body.table-home-theme:not([data-screen="play"]) #leaderboard .seat-name strong{
-  font-size:11px;max-width:150px;
+/* One line per player: the name plus its VIP / YEAR VIP badge. The old 280px
+   column was too narrow, so flex-wrap pushed the badge onto a second line and
+   the medals looked stacked. The name may ellipsise, the badge never moves. */
+body.table-home-theme:not([data-screen="play"]) #leaderboard .seat-name{
+  flex-wrap:nowrap;gap:5px;min-width:0;
 }
+body.table-home-theme:not([data-screen="play"]) #leaderboard .seat-name strong{
+  font-size:11px;max-width:none;flex:0 1 auto;min-width:0;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .member-label{flex:0 0 auto}
 body.table-home-theme:not([data-screen="play"]) #leaderboard .rank-medal{
   font-size:10px;color:#8a9ac0;
 }
@@ -234,16 +252,16 @@ body.table-home-theme:not([data-screen="play"]) .demo-tag{color:#6f7fa0}
 
 /* Membership figures keep the lower-left block populated on a new deployment. */
 body.table-home-theme:not([data-screen="play"]) .member-facts{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;
 }
 body.table-home-theme:not([data-screen="play"]) .member-facts>div{
   display:flex;flex-direction:column;gap:3px;min-width:0;
-  padding:9px 10px;border:1px solid #ffffff12;border-radius:8px;background:#111a2e;
+  padding:10px 12px;border:1px solid #ffffff12;border-radius:8px;background:#111a2e;
 }
 body.table-home-theme:not([data-screen="play"]) .member-facts b{
-  font-size:14px;color:#dbe3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:15.5px;color:#c6d2f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-body.table-home-theme:not([data-screen="play"]) .member-facts span{font-size:10px;color:#8390b0}
+body.table-home-theme:not([data-screen="play"]) .member-facts span{font-size:11px;color:#7e8eb0}
 body.table-home-theme:not([data-screen="play"]) .member-note a{margin-top:10px}
 
 @media(max-width:900px){
@@ -259,3 +277,178 @@ body.table-home-theme:not([data-screen="play"]) .member-note a{margin-top:10px}
 @media(max-width:560px){
   body.table-home-theme:not([data-screen="play"]) .member-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Intro stage upscale: the detail used to sit as a small island in the middle
+   of the game iframe. Scale the whole composition (cover, type, buttons,
+   standings and rules) and let the ten ranking rows absorb the extra height,
+   so it reads as one larger panel instead of a stretched empty box.
+   `zoom` is a layout scale, so text stays crisp; the height media query keeps
+   it inside shorter / 100%-zoom viewports without introducing a scrollbar. */
+body.table-home-theme:not([data-screen="play"]) #intro{
+  --intro-zoom:1.3;
+  zoom:var(--intro-zoom);
+  /* The standings column grew from 280px to 360px so a name and its
+     VIP / YEAR VIP badge fit on one line. Grow the shell by the same 80px:
+     the left column keeps its old width, so the description and buttons do
+     not wrap into a tall column and push the panel past the iframe. */
+  max-width:min(1000px,64vw);
+  grid-template-rows:auto minmax(0,1fr);
+  align-items:stretch;
+}
+body.table-home-theme:not([data-screen="play"]) .game-hero{align-self:start}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom{
+  align-self:stretch;
+  display:flex;flex-direction:column;justify-content:space-between;
+  gap:0;margin-top:18px;padding-top:16px;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom>section+section{
+  margin-top:0;padding-top:12px;
+}
+body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:760px}
+
+@media(max-height:900px){
+  body.table-home-theme:not([data-screen="play"]) #intro{--intro-zoom:1.2}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:650px}
+}
+/* The standalone /table/index.html document has a taller viewport than the
+   portal iframe. Keep the stretched ranking from outgrowing it there too. */
+@media(min-height:901px){
+  body.table-home-theme:not([data-screen="play"]) #intro{--intro-zoom:1.15}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:650px}
+}
+/* Narrower viewports step the scale down so the zoomed panel never exceeds
+   the iframe width (76vw x zoom stays inside the viewport). */
+@media(max-width:1500px){
+  body.table-home-theme:not([data-screen="play"]) #intro{--intro-zoom:1.15}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:520px}
+}
+/* Below ~1200px the two-column composition gets cramped by wrapped copy and
+   would grow taller than the iframe, so fall back to the original stacked
+   layout with no zoom (vertical scrolling is expected there). */
+@media(max-width:1200px){
+  body.table-home-theme:not([data-screen="play"]) #intro{
+    --intro-zoom:1;zoom:1;max-width:none;
+    grid-template-columns:1fr;grid-template-rows:auto auto;align-items:start;row-gap:20px;
+  }
+  body.table-home-theme:not([data-screen="play"]) .game-hero,
+  body.table-home-theme:not([data-screen="play"]) .intro-bottom,
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{grid-column:1;grid-row:auto}
+  body.table-home-theme:not([data-screen="play"]) .game-hero{align-self:start}
+  body.table-home-theme:not([data-screen="play"]) .intro-bottom{
+    display:grid;justify-content:normal;align-self:auto;gap:0;
+  }
+  body.table-home-theme:not([data-screen="play"]) .intro-bottom>section+section{
+    margin-top:14px;padding-top:14px;
+  }
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{align-self:auto;min-height:0}
+  body.table-home-theme:not([data-screen="play"]) #leaderboard{flex:none}
+}
+
+/* Medium desktops (1201-1450px): the shell is narrower, so take 40px back
+   from the standings and 35px from the cover column. 320px still fits a name
+   plus a 40px VIP badge on one line, while the description and the launch
+   buttons keep a usable width instead of being clipped. The extra #intro
+   qualifier keeps this hero split ahead of the wider <=1500px rule below. */
+@media(min-width:1201px) and (max-width:1450px){
+  body.table-home-theme:not([data-screen="play"]) #intro{
+    grid-template-columns:minmax(0,1fr) 320px;
+  }
+  body.table-home-theme:not([data-screen="play"]) #intro .game-hero{
+    grid-template-columns:minmax(0,165px) minmax(0,1fr);column-gap:16px;
+  }
+  body.table-home-theme:not([data-screen="play"]) #intro .hero-art{width:96%}
+}
+
+/* Responsive hero split: the cover column shrinks with the panel so the
+   right-hand copy and the full-width buttons always keep a usable width.
+   Declared last and ordered wide -> narrow; only .game-hero is touched, so
+   the <=1200px single-column #intro fallback above still applies. */
+@media(max-width:1500px){
+  body.table-home-theme:not([data-screen="play"]) .game-hero{
+    grid-template-columns:minmax(0,200px) minmax(0,1fr);column-gap:20px;
+  }
+  body.table-home-theme:not([data-screen="play"]) .hero-art{width:94%}
+}
+@media(max-width:900px){
+  body.table-home-theme:not([data-screen="play"]) .game-hero{
+    grid-template-columns:minmax(0,185px) minmax(0,1fr);column-gap:18px;
+  }
+  body.table-home-theme:not([data-screen="play"]) .hero-art{width:96%}
+}
+@media(max-width:560px){
+  body.table-home-theme:not([data-screen="play"]) .game-hero{
+    grid-template-columns:minmax(0,140px) minmax(0,1fr);column-gap:14px;
+  }
+  body.table-home-theme:not([data-screen="play"]) .hero-art{
+    width:100%;height:auto;aspect-ratio:1/1;
+  }
+}
+
+/* Larger type makes the left column taller. On shorter laptop viewports the
+   two-column panel would otherwise grow past the iframe, so step the layout
+   scale down there while the type itself stays enlarged. Wide/large screens
+   (the normal case) keep the full 1.2 scale. */
+@media(max-height:860px) and (min-width:1451px){
+  body.table-home-theme:not([data-screen="play"]) #intro{--intro-zoom:1.05}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:520px}
+}
+@media(max-height:860px) and (min-width:1201px) and (max-width:1450px){
+  body.table-home-theme:not([data-screen="play"]) #intro{--intro-zoom:1}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:500px}
+}
+
+
+/* Join room: the old collapsed <details> row is now a real launch button that
+   opens one focused text field. A top-layer dialog keeps the field readable
+   inside the portal iframe and never changes the intro layout. */
+body.table-home-theme dialog#join-dialog{
+  width:340px;max-width:calc(100vw - 24px);
+  padding:20px 20px 18px;border-radius:12px;
+  border:1px solid #2c3a5e;background:#141b30;color:#e7eeff;
+  box-shadow:0 18px 50px #0009;
+}
+body.table-home-theme dialog#join-dialog::backdrop{background:#050a18b8;backdrop-filter:blur(4px)}
+body.table-home-theme dialog#join-dialog .close{
+  position:absolute;top:12px;right:12px;
+  width:24px;height:24px;min-width:24px;min-height:24px;
+  padding:0;margin:0;border:0;border-radius:50%;background:transparent;
+  color:#9aa9cc;font-size:19px;line-height:1;box-shadow:none;
+}
+body.table-home-theme dialog#join-dialog .close:hover{background:#26324f;color:#fff}
+body.table-home-theme dialog#join-dialog h2{
+  margin:0 0 6px;padding-right:28px;font-size:16px;font-weight:600;color:#e4ebff;
+}
+body.table-home-theme dialog#join-dialog>p{
+  margin:0 0 14px;font-size:11.5px;line-height:1.6;color:#8493b4;
+}
+body.table-home-theme dialog#join-dialog form{margin:0}
+body.table-home-theme dialog#join-dialog label{
+  display:block;margin:0 0 6px;font-size:11px;color:#9aa9cc;
+}
+body.table-home-theme dialog#join-dialog input{
+  width:100%;margin:0;padding:10px 11px;box-sizing:border-box;
+  font-size:13px;color:#e8edff;background:#0c1426;
+  border:1px solid #46518a;border-radius:8px;
+}
+body.table-home-theme dialog#join-dialog input:focus{
+  outline:none;border-color:#8d9dff;box-shadow:0 0 0 2px #6f8bff33;
+}
+body.table-home-theme dialog#join-dialog #join-error{
+  margin:8px 0 0;font-size:11px;line-height:1.5;color:#f0a8a8;
+}
+body.table-home-theme dialog#join-dialog #join-error:empty{display:none}
+body.table-home-theme dialog#join-dialog .join-dialog-actions{
+  display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:16px;
+}
+body.table-home-theme dialog#join-dialog .join-dialog-actions button{
+  width:100%;min-height:36px;margin:0;padding:8px 10px;font-size:12.5px;
+  border-radius:8px;border:1px solid #3d4f7d;background:#1c2a4b;
+  color:#dbe4ff;box-shadow:none;
+}
+body.table-home-theme dialog#join-dialog .join-dialog-actions button:hover{
+  background:#27375d;border-color:#6f8bff;
+}
+body.table-home-theme dialog#join-dialog .join-dialog-actions button.primary{
+  background:#4159c8;border-color:#6f8bff;color:#fff;font-weight:600;
+}
+body.table-home-theme dialog#join-dialog .join-dialog-actions button.primary:hover{background:#4d66d8}

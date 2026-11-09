@@ -86,6 +86,14 @@ html.embedded-game{
   --ambient-star-opacity:.55;
 }
 
+/* site-floating-dots.js owns the pinpoints now. Turn the old static field
+   off in the stylesheet as well, so the very first paint after navigating
+   to a game never flashes the previous eighteen dots before the ten motes
+   are mounted. Reduced-motion visitors keep the still field instead. */
+@media(prefers-reduced-motion:no-preference){
+  body::after{display:none}
+}
+
 @media(prefers-reduced-motion:reduce){
   body::before,body::after{animation:none}
   body::after{opacity:var(--ambient-star-opacity)}

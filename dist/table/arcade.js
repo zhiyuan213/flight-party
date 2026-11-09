@@ -60,10 +60,9 @@ function syncLanguage(){
   $('#lobby').textContent=label('← All games','← 所有游戏');
   $('#back').setAttribute('aria-label',label('Back to game overview','返回游戏介绍页'));
   $('#start').textContent=label('Play computer','电脑对战');
-  $('#two').textContent=label('Local two-player','双人同屏');
   $('#online').textContent=label('Play online','联网对战');
   $('#instructions').textContent=game==='snooker'
-    ?label('Two players take turns at the table. Pot a red, then a colour; clear the colours in order. Challenge the computer, share a screen, or play online.','两人轮流击球，红球与彩球交替，最后按分值顺序清彩。可挑战电脑、双人同屏或联网对战。')
+    ?label('Two players take turns at the table. Pot a red, then a colour; clear the colours in order. Challenge the computer or play online.','两人轮流击球，红球与彩球交替，最后按分值顺序清彩。可挑战电脑或联网对战。')
     :label('Take turns shooting. Match three or more bubbles to clear them; the higher score after 24 rounds wins.','两人轮流发射，三个及以上同色泡泡相连即可消除；24 回合后得分高者获胜。');
   $('#again').textContent=label('Play again','再玩一局');
   $('#power-label span').textContent=label('Power','力度');
@@ -89,9 +88,7 @@ function startGame(withComputer){
   showScreen('play');
   controller.start(computer);canvas.focus();
 }
-$('#two').hidden=false;
 $('#online').hidden=false;
-$('#two').onclick=()=>startGame(false);
 $('#start').onclick=()=>startGame(true);
 $('#online').onclick=()=>{location.href='/table/index.html?game='+game;};
 $('#again').onclick=()=>startGame(computer);

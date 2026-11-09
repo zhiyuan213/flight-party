@@ -1,6 +1,6 @@
 export const CATALOG={
-  snooker:{name:'斯诺克',en:'Snooker',description:'两人轮流击球，红球与彩球交替，最后按分值顺序清彩。可挑战电脑、双人同屏或联网对战。',instruction:'轮到你时瞄准并向后拖动蓄力，松手击球。红球和彩球交替击打，最后按分值顺序清彩。'},
-  bubbles:{name:'泡泡射击',en:'Bubble Shooter',description:'两人轮流发射，三个及以上同色泡泡相连即可消除；24 回合后得分高者获胜。可挑战电脑、双人同屏或联网对战。',instruction:'轮到你时移动鼠标瞄准，点击发射。三个及以上同色泡泡相连即可消除，24 回合后比分高者获胜。'},
+  snooker:{name:'斯诺克',en:'Snooker',description:'两人轮流击球，红球与彩球交替，最后按分值顺序清彩。可挑战电脑或联网对战。',instruction:'轮到你时瞄准并向后拖动蓄力，松手击球。红球和彩球交替击打，最后按分值顺序清彩。'},
+  bubbles:{name:'泡泡射击',en:'Bubble Shooter',description:'两人轮流发射，三个及以上同色泡泡相连即可消除；24 回合后得分高者获胜。可挑战电脑或联网对战。',instruction:'轮到你时移动鼠标瞄准，点击发射。三个及以上同色泡泡相连即可消除，24 回合后比分高者获胜。'},
  xo:{name:'井字棋',en:'Tic-tac-toe',description:'3×3 棋盘，双方轮流放 X 或 O，先连成一条线获胜。',instruction:'横、竖或斜线连成三个同样的符号即可获胜。'},
  four:{name:'四子连珠',en:'Connect Four',description:'7 列棋盘，轮流选一列落子，棋子堆到该列最下方。先横、竖或斜连成 4 颗获胜。',instruction:'点击左侧任意一列落子。横、竖或斜向连成四颗就能获胜。'},
  gomoku:{name:'五子棋',en:'Gomoku',description:'黑白轮流落子，先连成 5 颗获胜。当前为无禁手规则。',instruction:'点击棋盘空位落子。连成五颗及以上获胜，当前采用无禁手规则。'},
@@ -17,6 +17,8 @@ export function playerCard(document,profile,index,active){
  const avatar=document.createElement('span');avatar.className='avatar-shell';const image=document.createElement('img');image.className='seat-avatar';image.alt='';image.src=/^\/api\/avatars\//.test(profile.avatarUrl||'')?profile.avatarUrl:'/api/avatars/system/'+index;if(profile.name==='等待加入'){avatar.textContent='＋';item.classList.add('empty-seat');}else avatar.append(image);
  if(profile.member&&['gold','cloud','night'].includes(profile.frame)){const frame=document.createElement('img');frame.src='../assets/member/frame-'+profile.frame+'-v2.png';frame.alt='';frame.className='avatar-frame';avatar.append(frame);}
  const copy=document.createElement('div');copy.className='seat-copy';const line=document.createElement('div');line.className='seat-name';const name=document.createElement('strong');name.textContent=profile.name||'等待加入';line.append(name);
- if(profile.member){const badge=document.createElement('span');badge.className='member-label';badge.setAttribute('role','img');badge.setAttribute('aria-label','VIP');line.append(badge);item.classList.add('member');}
+ if(profile.member){const annual=profile.member&&profile.annualMember===true;
+  const badge=document.createElement('span');badge.className='member-label'+(annual?' annual':'');
+  badge.setAttribute('role','img');badge.setAttribute('aria-label',annual?'Annual VIP':'VIP');line.append(badge);item.classList.add('member');}
  const status=document.createElement('span');status.className='seat-status';status.textContent=profile.bot?'电脑玩家':active?'当前回合':'真人玩家';copy.append(line,status);item.append(avatar,copy);return item;
 }

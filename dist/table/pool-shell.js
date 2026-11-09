@@ -1,5 +1,6 @@
 import {drawPoolBall} from './pool-ball.js';
 import {poolTargets,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261106-penalty';
+import {playPocketChime} from './pool-pocket-sfx.js?v=20261109-pocketscore2';
 // Pool-only presentation. Existing account, turn and reaction nodes keep their handlers.
 let shell, current = null, roomId, chatKey, cursor = 0, polling = false, timer = null, sending = false, localId = 0;
 // Live room chat: server rooms keep their REST history, while a same-origin
@@ -10,6 +11,11 @@ let channel=null,roomKey=null,seen=new Set(),clientSeq=0;
 const clientId=globalThis.crypto?.randomUUID?.()||Math.random().toString(36).slice(2)+Date.now().toString(36);
 const CHAT_POLL_MS=250;
 let resultKey = null, resultFrame = 0, resultShown = false, confettiTimer = null, rematchBusy = false;
+/* The seven games without their own result dialog (Gomoku, Chess, Cards,
+   Puzzle, Draw, Bubble Duel, Snooker) now open this very same dialog. They
+   behave like Connect Four: SVG emblem, no pool ball counts, no 3-second
+   pocket-animation preview, and the reveal fires on the final frame. */
+let gridResult = false, gridGame = '';
 const element = (tag, className, text) => {const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const $ = id => document.getElementById(id);
 
@@ -44,6 +50,13 @@ function createShell() {
   Object.assign(shell,{arena,panel,sidebar,top,strip});
   const feedback=element('div','pool-feedback');
   feedback.setAttribute('aria-hidden','true');panel.append(feedback);shell.feedback=feedback;
+  /* A short, non-blocking caption over the table for every change of shooter.
+     It lives in the panel (not inside #board) because renderPool() rewrites the
+     board's innerHTML when it first builds the canvas. */
+  const turnToast=element('div','pool-turn-toast');
+  turnToast.setAttribute('aria-hidden','true');turnToast.hidden=true;
+  turnToast.append(element('i'),element('span','pool-turn-label'));
+  panel.append(turnToast);shell.turnToast=turnToast;
   createResult();
   return shell;
 }
@@ -76,7 +89,7 @@ function createResult() {
   dialog.id='pool-result';dialog.setAttribute('aria-labelledby','pool-result-title');dialog.setAttribute('aria-describedby','pool-result-description');
   const confetti=element('div','pool-result-confetti');confetti.setAttribute('aria-hidden','true');
   const close=element('button','pool-result-close','×');close.type='button';close.setAttribute('aria-label','关闭结算');
-  const label=element('p','pool-result-label','本局结束'),emblem=element('div','pool-result-emblem'),isFour=document.body.classList.contains('four-game');
+  const label=element('p','pool-result-label','本局结束'),emblem=element('div','pool-result-emblem'),isFour=document.body.classList.contains('four-game')||gridResult;
   if(isFour)emblem.setAttribute('role','img');
   else {const ball=document.createElement('canvas');ball.width=160;ball.height=160;ball.setAttribute('aria-hidden','true');drawPoolBall(ball.getContext('2d'),8,80,76,53);emblem.append(ball);}
   const title=element('h2'),description=element('p','pool-result-description'),players=element('div','pool-result-players'),note=element('p','pool-result-note');
@@ -89,6 +102,13 @@ function createResult() {
   const reopen=element('button','pool-result-open','查看本局结算');reopen.type='button';reopen.hidden=true;
   shell.sidebar.insertBefore(reopen,$('leave-play'));
   Object.assign(shell,{resultDialog:dialog,resultTitle:title,resultDescription:description,resultPlayers:players,resultNote:note,resultReopen:reopen,confetti,resultEmblem:emblem,resultIsPool:!isFour});
+  /* Only the newly shared dialog follows the page locale. Pool / Connect Four
+     keep their original fixed wording so this change cannot alter them. */
+  if(gridResult&&document.documentElement.lang.toLowerCase().indexOf('en')===0){
+    label.textContent='MATCH OVER';close.setAttribute('aria-label','Close result');
+    again.textContent='Play again';reopen.textContent='View result';
+    toGame.textContent='Back to game';toHome.textContent='Home';
+  }
   close.onclick=()=>dialog.close();reopen.onclick=()=>openResult(false);
   toGame.onclick=()=>{dialog.close();$('home-link')?.click();};
   toHome.onclick=()=>{window.top.location.assign('/portal/index.html');};
@@ -172,18 +192,32 @@ function updateResult(options) {
     if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultReopen.hidden=true;shell.resultNote.hidden=true;return;
   }
   const key=[options.room?.id||'local',options.board.moves,options.board.winner].join(':'),details=resultDetails(options);
+  if(gridResult){
+    const en=document.documentElement.lang.toLowerCase().indexOf('en')===0;
+    if(!details.winner){
+      /* Puzzle / Draw are co-op or free-play: a zero winner is a completed
+         round, not a draw. */
+      if(gridGame==='puzzle'){details.title=en?'Puzzle solved!':'拼图完成！';details.description=en?'Nice teamwork. Play another round.':'合作愉快，再来一局。';}
+      else if(gridGame==='draw'){details.title=en?'Round over':'本轮结束';details.description=en?'Pencils down — take a look at the drawings.':'画笔放下，看看大家的作品。';}
+      else if(en){details.title='Draw';details.description='Evenly matched. Play another round.';}
+    }else if(en){
+      details.title=details.kind==='loss'?'You lost this one':'You won!';
+      details.description=details.kind==='loss'?(options.names?.[details.winner-1]||'Opponent')+' won this round.':'The win is yours.';
+    }
+  }
   if(resultKey!==key){
     if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=key;resultShown=false;
     if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultNote.hidden=true;
   }
   shell.resultDialog.dataset.outcome=details.kind;setResultEmblem(details.kind);shell.resultTitle.textContent=details.title;shell.resultDescription.textContent=details.description;
-  const isFour=document.body.classList.contains('four-game');
-  const archived=!isFour&&poolSeatSummary(options.board,1).legacy;
+  const isFour=document.body.classList.contains('four-game')||gridResult;
+  const isPool=!isFour;   // only Pool has pocketed-ball counts / legacy boards
+  const archived=isPool&&poolSeatSummary(options.board,1).legacy;
   if(archived)shell.resultDescription.textContent='这是升级前的共用目标对局，下一局将使用全色／花色分组玩法。';
   shell.resultPlayers.replaceChildren(...[0,1].map(i=>{
     const row=element('div','pool-result-player'),name=element('strong','',options.names?.[i]||'玩家 '+(i+1)),score=element('span','','落袋 '+poolSeatSummary(options.board,i+1).score+' 颗');
-    row.classList.toggle('winner',details.winner===i+1);name.title=name.textContent;row.append(name);if(!isFour)row.append(score);
-    if(details.winner===i+1)row.append(element('b','pool-result-winner','胜方'));return row;
+    row.classList.toggle('winner',details.winner===i+1);name.title=name.textContent;row.append(name);if(isPool)row.append(score);
+    if(details.winner===i+1)row.append(element('b','pool-result-winner',document.documentElement.lang.toLowerCase().indexOf('en')===0&&gridResult?'Winner':'胜方'));return row;
   }));
   const again=$('again');again.hidden=false;
   // Move the original action, then wrap its existing local/online handler only once.
@@ -198,7 +232,7 @@ function updateResult(options) {
     };
   }
   if(resultShown||resultFrame)return;
-  const preview=!isFour&&!archived&&details.kind!=='draw';
+  const preview=isPool&&!archived&&details.kind!=='draw';
   let celebrationStartedAt=null;
   const reveal=now=>{
     resultFrame=0;if(resultKey!==key||!current?.board?.over||document.body.dataset.screen!=='play')return;
@@ -367,7 +401,7 @@ function updatePoolFeedback({board,room,me,computer}) {
       const shot=board.moves;
       const text=(shooter?shooter+'的第 '+shot+' 杆，':'第 '+shot+' 杆，')+'本杆落袋 ';
       const english=(shooterEn?shooterEn+' · ':'')+'Shot '+shot+' · Pocketed: ';
-      pendingFeedback.push({system:true,text,english,potted});
+      pendingFeedback.push({system:true,text,english,potted,shot:board.moves,over:!!board.over});
     }
     if(result.startsWith('犯规：')){
       const offenderSeat=previous?.turn??(3-board.turn);
@@ -418,6 +452,11 @@ function updatePoolFeedback({board,room,me,computer}) {
     }
     feedbackFrame=0;
     for(const message of pendingFeedback)appendMessage(message);
+    /* One chime per shot, at the same moment the "落袋" system line appears —
+       i.e. after the pocket/return animation has finished. The match-ending
+       8-ball already gets the win/lose fanfare, so don't stack the two. */
+    const scored=pendingFeedback.find(message=>Array.isArray(message.potted)&&message.potted.length);
+    if(scored&&!scored.over)playPocketChime(scored.potted.length,'m'+scored.shot);
     const viewer=room?Number(room.you)+1:computer?1:null;
     const kinds=new Set(pendingFeedback
       .filter(message=>message.seat&&(message.kind==='reward'||viewer===null||message.seat===viewer))
@@ -455,6 +494,78 @@ function updatePoolFeedback({board,room,me,computer}) {
   feedbackFrame=requestAnimationFrame(reveal);
 }
 
+/* Turn announcement follows the VISIBLE turn, not the server's turn field.
+   The server switches `board.turn` as soon as a shot is accepted, while the
+   client is still replaying that shot: balls are rolling, the shoot button is
+   disabled and the player cannot move yet. Announcing "your turn" at that
+   point feels premature. Wait for the replay / cue animation to settle and —
+   for the local player — for the shoot control to actually be armed, then
+   announce whoever really holds the table. Seat changes are de-duped by seat
+   (not by move count), so potting several balls in a row stays one caption,
+   while an A -> B -> A exchange is announced again. */
+let turnPromptSeat=null,turnPromptChat=null,turnPromptPending=null,turnPromptBoard=null;
+let turnPromptFrame=0,turnPromptTimer=0;
+function resetTurnPrompt(){
+  cancelAnimationFrame(turnPromptFrame);turnPromptFrame=0;
+  clearTimeout(turnPromptTimer);turnPromptTimer=0;
+  turnPromptSeat=null;turnPromptChat=null;turnPromptPending=null;turnPromptBoard=null;
+  if(shell?.turnToast)shell.turnToast.hidden=true;
+}
+function showTurnPrompt(text,english,kind){
+  const toast=shell.turnToast;if(!toast)return;
+  const label=toast.querySelector('.pool-turn-label');
+  label.textContent=text;label.dataset.systemEnglish=english;
+  toast.dataset.kind=kind;toast.hidden=false;
+  // Restart the one-shot animation even when the previous caption is still up.
+  toast.style.animation='none';void toast.offsetWidth;toast.style.animation='';
+  clearTimeout(turnPromptTimer);
+  turnPromptTimer=setTimeout(()=>{toast.hidden=true;turnPromptTimer=0;},2050);
+}
+function updatePoolTurnPrompt({board,room,computer,names}){
+  if(document.body.dataset.screen!=='play'||board.over||board.cells.length<48){resetTurnPrompt();return;}
+  const seat=board.turn,you=room?Number(room.you)+1:computer?1:0;
+  const mine=you>0&&you===seat;
+  const seatName=(names||[])[seat-1]||'';
+  turnPromptBoard=board;
+  // A new room / fresh game restarts the sequence even when the same seat breaks.
+  if(turnPromptChat!==chatKey){turnPromptChat=chatKey;turnPromptSeat=null;turnPromptPending=null;}
+  if(seat!==turnPromptSeat){
+    turnPromptSeat=seat;
+    turnPromptPending={seat,mine,
+      text:mine?'该你击球':you?'对方击球':'轮到'+seatName+'击球',
+      english:mine?'Your turn':you?"Opponent's turn":seatName+' to shoot',
+      kind:mine?'you':'opponent'};
+  }
+  if(!turnPromptPending||turnPromptFrame)return;
+  const reveal=()=>{
+    turnPromptFrame=0;
+    const pending=turnPromptPending,latest=turnPromptBoard,host=$('board');
+    if(!pending||!latest||!host||turnPromptChat!==chatKey||
+       document.body.dataset.screen!=='play'||latest.over)return;
+    const countdown=host.querySelector('.pool-countdown');
+    const beforeBreak=(countdown&&!countdown.hidden)||
+      Date.now()+(host._serverOffset||0)<(host._openingUntil||0);
+    // Balls still rolling, a cue still swinging or another replay queued: the
+    // next shooter has not actually taken the table yet.
+    const rolling=host._animating||host._striking||host._queued;
+    const cue=host._opponentCue||host._cancelOpponentCue;
+    let settled;
+    if(pending.mine){
+      // "确实到我了": the shoot button must really be armed. _ready() also
+      // covers a pending request, the room phase, the break clock and game over.
+      settled=!rolling&&!cue&&typeof host._ready==='function'&&host._ready();
+    }else{
+      // The opponent's turn begins as soon as the previous shot has settled;
+      // their cue / replay may already be visible by then.
+      settled=!rolling;
+    }
+    if(beforeBreak||!settled){turnPromptFrame=requestAnimationFrame(reveal);return;}
+    turnPromptPending=null;
+    showTurnPrompt(pending.text,pending.english,pending.kind);
+  };
+  turnPromptFrame=requestAnimationFrame(reveal);
+}
+
 let turnHighlightFrame=0;
 function updatePoolTurnHighlight(board){
   cancelAnimationFrame(turnHighlightFrame);
@@ -472,6 +583,7 @@ export function updatePoolShell(options) {
   updateTableChat(options);
   if(!shell.top)createShell();
   updatePoolFeedback(options);
+  updatePoolTurnPrompt(options);
   updateResult(options);
   updatePoolTurnHighlight(options.board);
   const seats=$('seats').children;
@@ -492,6 +604,17 @@ export function updatePoolShell(options) {
 }
 
 export function updateFourResult(options){
+  if(!shell.resultDialog)createResult();
+  updateResult(options);
+}
+
+/* Shared result dialog for every game that used to show the win only in the
+   sidebar. updateTableChat() has already created the sidebar shell by the
+   time syncPresentation() reaches here. */
+export function updateGridResult(options){
+  gridResult=true;
+  gridGame=new URLSearchParams(location.search).get('game')||'';
+  if(!shell)createChat();
   if(!shell.resultDialog)createResult();
   updateResult(options);
 }

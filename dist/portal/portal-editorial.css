@@ -1,13 +1,15 @@
-/* JoyFlock home — simple blue/violet skin.
+/* JoyFlock home — shared near-black backdrop.
    Loaded after portal.css. Rules are scoped to #home or body:not(.playing)
    so the in-game #play view keeps its original layout and sizing. */
 
 :root{
-  /* Three-step blue/violet depth, like a classic game lobby:
-     near-black chrome, a clearly lifted content layer, brighter cards. */
-  --home-bg:#1a2342;
-  --home-bg-top:#202b52;
-  --home-bg-bottom:#131a33;
+  /* The lobby now uses exactly the same backdrop as the info pages
+     (membership / terms / privacy / contact): one near-black base from
+     legal.css / portal.css, with the shared ambient nebula on top. Only the
+     lobby's own surfaces (cards, pills) stay lifted above it. */
+  --home-bg:#090d1c;
+  --home-bg-top:#090d1c;
+  --home-bg-bottom:#090d1c;
   --home-surface:#283357;
   --home-line:#ffffff1f;
   --home-text:#f6f7ff;
@@ -23,14 +25,10 @@ html,body{height:100%}
 body{
   height:100dvh;min-height:0;margin:0;
   display:flex;flex-direction:column;overflow:hidden;
-  /* The footer fade must end on this page's own background, not the dark one
-     used by the info pages. */
-  --chrome-fade:var(--home-bg-bottom);
-  /* The lobby is already a lighter blue/violet, so the ambient layer
-     is toned down here compared with the dark info pages. */
-  --ambient-nebula-opacity:.62;
-  --ambient-star-opacity:.75;
-  background:linear-gradient(180deg,var(--home-bg-top) 0%,var(--home-bg) 38%,var(--home-bg-bottom) 100%);
+  /* No page-specific overrides: --chrome-fade, --ambient-nebula-opacity and
+     --ambient-star-opacity all keep their site-wide defaults, so the footer
+     fade and nebula match the info pages frame for frame. */
+  background:var(--home-bg);
   color:var(--home-text);
 }
 .topbar{
@@ -116,10 +114,16 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
   position:relative;display:flex;flex-direction:column;aspect-ratio:1/1;
   overflow:hidden;counter-increment:none;
   border:1px solid var(--home-line);border-radius:12px;background:var(--home-surface);
-  transition:transform .18s,border-color .18s,background .18s;
+  transition:transform .18s,border-color .18s,background .18s,box-shadow .18s;
 }
 #home .cards .game-card.live:hover{
-  transform:translateY(-3px);z-index:1;border-color:#9db0ff;background:#323e6d;
+  /* Do NOT transform the card itself. Moving its hit box up by 3px drops a
+     pointer resting near the bottom edge, which cancels :hover, snaps the
+     card back, re-enters ... a visible flicker plus a repeated zoom sound.
+     A soft shadow gives the lifted feel without changing hit-testing, and
+     transform:none also blocks portal.css's older scale(1.05) fallback. */
+  transform:none;z-index:1;background:#323e6d;
+  box-shadow:0 8px 22px #00000066;
 }
 /* The whole card stays square: the cover gives up a little height to the
    caption row instead of pushing the second row below the fold. */
@@ -128,7 +132,17 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
   display:grid;place-items:center;
   overflow:hidden;border-radius:0;isolation:isolate;
 }
-#home .cards .card-art:before,#home .cards .card-art:after{display:none}
+/* The old decorative ring from portal.css stays off. ::after is repurposed as
+   a soft darkening veil that only appears while the card is hovered, so the
+   play prompt stays legible on both pale and busy covers. */
+#home .cards .card-art:before{display:none}
+#home .cards .card-art::after{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,#060a1826 0%,#060a1852 52%,#060a18b3 100%);
+  opacity:0;transition:opacity .24s ease;pointer-events:none;
+}
+#home .cards .game-card.live:hover .card-art::after,
+#home .cards .game-card.live:focus-visible .card-art::after{opacity:1}
 #home .cards .card-art img{
   width:100%;height:100%;object-fit:cover;border-radius:0;
   filter:none;transform:none;transition:transform .25s;
@@ -138,52 +152,63 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
 }
 #home .cards .game-card.live:hover .card-art img{transform:scale(1.05)}
 #home .cards .game-card.blue.live:hover .card-art img{transform:scale(1.03)}
-#home .card-label{display:none}
-/* Keep ONE caption row per card: the game name (big text) plus a quiet arrow.
-   The small grey description line ("2人 · 休闲台球") is intentionally gone —
-   the cover and the name are enough. The p guard also neutralises an older
-   cached script that might still inject the descriptive line. */
+/* Hover-only call to action. The reference site slaps a big orange button
+   over the caption; ours is a compact deep-blue glass pill centred on the
+   cover (both axes), so the game title below stays visible. Locale text comes
+   from the existing .lang-en / .lang-cn spans. */
+#home .cards .card-label{
+  position:absolute;z-index:2;left:50%;top:50%;bottom:auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:118px;padding:9px 18px;border-radius:999px;
+  background:linear-gradient(135deg,#3b5bd9 0%,#263f9e 100%);
+  border:1px solid #8ea3ff;
+  box-shadow:0 8px 20px #050a1ccc,inset 0 1px 0 #ffffff3d,0 0 0 4px #6f8bff1a;
+  color:#fff;font:800 13px/1.2 Nunito,system-ui,sans-serif;
+  letter-spacing:.4px;white-space:nowrap;
+  backdrop-filter:blur(6px);pointer-events:none;
+  opacity:0;transform:translate(-50%,calc(-50% + 10px)) scale(.96);
+  transition:opacity .24s ease,transform .24s cubic-bezier(.2,.8,.2,1);
+}
+#home .cards .game-card.live:hover .card-label,
+#home .cards .game-card.live:focus-visible .card-label{
+  opacity:1;transform:translate(-50%,-50%) scale(1);
+}
+/* The CJK fallback font draws its glyphs ~1.5px above the optical centre of
+   the line box (English "Play now" is already centred within 0.3px). Nudge
+   only the Chinese label so the ink, not just the line box, sits centred in
+   the pill; transform keeps the pill's size and hit box untouched. */
+#home .cards .card-label .lang-cn{transform:translateY(1.5px)}
+/* Keep ONE caption row per card: just the game name. No arrow, no underline —
+   the cover and the name are enough. The small grey description line
+   ("2人 · 休闲台球") is intentionally gone too, and the p guard also
+   neutralises an older cached script that might still inject it. */
+/* Caption bar: 1.5x the old 36px height, pure black, with the name centred. */
 #home .card-copy{
   display:flex;align-items:center;flex:0 0 auto;
-  padding:7px 11px 8px;border-top:1px solid #ffffff12;
-  background:var(--home-surface);
+  min-height:54px;padding:0 6px;border-top:1px solid #ffffff12;
+  background:#000;
 }
 /* Card captions start at the same muted blue-grey as the header links
-   (--chrome-muted), then brighten to full white on hover/focus. Only colour,
-   glow and a 1px sweep animate: no letter-spacing / font-size changes, so
-   switching locale or hovering never shifts the text. */
+   (--chrome-muted), then brighten to full white on hover/focus. Only colour
+   and glow animate: no letter-spacing / font-size changes, so switching
+   locale or hovering never shifts the text. */
 #home .card-copy h3{
-  position:relative;
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
   width:100%;min-width:0;margin:0;
-  color:var(--chrome-muted,#94a0be);font-size:15px;font-weight:800;letter-spacing:.1px;
+  color:var(--chrome-muted,#94a0be);font-size:22.5px;font-weight:800;letter-spacing:.1px;
   transition:color .22s ease,text-shadow .22s ease;
 }
-#home .card-copy h3::after{
-  content:'';position:absolute;left:0;right:0;bottom:-3px;height:1px;
-  background:linear-gradient(90deg,#aab9ff 0%,#c9d6ff 45%,transparent 100%);
-  transform:scaleX(0);transform-origin:left center;opacity:0;
-  transition:transform .28s ease,opacity .28s ease;pointer-events:none;
-}
 #home .card-copy .game-card-title{
-  min-width:0;color:inherit;
+  min-width:0;max-width:100%;color:inherit;text-align:center;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 /* portal.css colours every span inside h3 muted; the two locale spans must
    inherit the caption colour instead of the old grey. */
 #home .card-copy .game-card-title>span{color:inherit}
-#home .card-copy .card-arrow{
-  flex:0 0 auto;color:#8f9dc4;font-size:14px;font-weight:400;
-  transition:transform .18s,color .18s;
-}
-#home .cards .game-card.live:hover .card-arrow,
-#home .cards .game-card.live:focus-visible .card-arrow{color:#c9d6ff;transform:translate(2px,-2px)}
 #home .cards .game-card.live:hover .card-copy h3,
 #home .cards .game-card.live:focus-visible .card-copy h3{
   color:var(--home-text);text-shadow:0 0 14px #bccaff66;
 }
-#home .cards .game-card.live:hover .card-copy h3::after,
-#home .cards .game-card.live:focus-visible .card-copy h3::after{transform:scaleX(1);opacity:.8}
 #home .card-copy p{display:none!important}
 
 /* Colophon: pinned to the bottom of the viewport, never in the scroll area. */
@@ -229,13 +254,15 @@ body.playing>footer{display:none}
   body>footer span{margin-left:0;width:100%}
   body>footer div{margin-left:0;width:100%}
   #home .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  #home .card-copy{padding:8px 9px 9px}
-  #home .card-copy h3{font-size:13px}
+  #home .card-copy{padding:0 6px;min-height:54px}
+  #home .card-copy h3{font-size:19.5px}
+  #home .cards .card-label{min-width:104px;padding:8px 14px;font-size:12px}
   #home .section-heading p{display:none}
 }
 @media(prefers-reduced-motion:reduce){
   #home .cards .game-card,#home .cards .card-art img,
-  #home .card-copy h3,#home .card-copy h3::after,
+  #home .cards .card-art::after,#home .cards .card-label,
+  #home .card-copy h3,
   #home .card-copy .game-card-title{transition:none}
 }
 

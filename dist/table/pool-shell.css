@@ -158,7 +158,7 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-result-card .pool-result-close:hover{background:#abc6e31a;color:#eff6ff}
 .pool-result-card button:focus-visible,.pool-result-open:focus-visible{outline:2px solid #fff1bc;outline-offset:3px}
 .pool-result-note{margin:15px 0 0;color:#e5d2a0;font-size:12px;line-height:1.65}
-.pool-game[data-screen="play"] .pool-result-open{flex:none;min-height:34px;width:calc(100% - 24px);margin:0 12px 9px;padding:7px 12px;border:1px solid #8c7852;border-radius:10px;background:#283343;color:#e6ce93;box-shadow:none;font-size:11px}
+[data-screen="play"] .pool-result-open{flex:none;min-height:34px;width:calc(100% - 24px);margin:0 12px 9px;padding:7px 12px;border:1px solid #8c7852;border-radius:10px;background:#283343;color:#e6ce93;box-shadow:none;font-size:11px}
 .pool-result-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 body>.pool-result-confetti{position:fixed;z-index:100}
 .pool-result-confetti i{position:absolute;left:var(--x);top:-24px;width:var(--width);height:calc(var(--width)*1.6);border-radius:1px;background:var(--color);opacity:0;animation:pool-confetti-fall var(--duration) var(--delay) linear both}
@@ -243,8 +243,38 @@ body>.pool-result-confetti{position:fixed;z-index:100}
 .pool-chat-system[data-kind="reward"]{--system-color:#86e9ab}
 .pool-feedback{position:absolute;top:28%;left:50%;transform:translateX(-50%);z-index:5;display:grid;justify-items:center;gap:8px;pointer-events:none}
 .pool-feedback span{padding:.36em .95em;border:1px solid #ff929d88;border-radius:14px;background:#402330;color:#fff2f5;font-size:clamp(19px,2.4vw,36px);font-weight:800;box-shadow:0 8px 25px #0005}
+/* Every caption over the cloth now shares one height: the turn toast uses the
+   same font-size and em-based padding as the feedback labels, so "该你击球"
+   is exactly as tall as "你打全色球 / 犯规 / 奖励一杆" at every viewport. */
 .pool-feedback [data-kind="reward"]{background:#173b31;color:#b7ffd3;border-color:#86e9ab88}
 .pool-feedback [data-kind="groups"]{background:#172b49;color:#eef5ff;border-color:#8eb5ed99}
+/* Brief turn caption over the table: gold for the local player, cool blue for
+   the opponent. Purely decorative (pointer-events:none, aria-hidden) so it can
+   never block aiming, dragging or a click on the cue ball. */
+/* Sits inside the blue cloth, clear of the top rail and centre pocket: 15%
+   used to pin the caption right on the black cushion, which looked cramped. */
+.pool-turn-toast{position:absolute;top:22%;left:50%;z-index:6;
+  display:flex;align-items:center;gap:10px;
+  padding:.36em .95em;border-radius:999px;white-space:nowrap;pointer-events:none;
+  border:1px solid #f4d78c8a;
+  background:linear-gradient(180deg,#22334eea,#0e1a2cea);
+  box-shadow:0 12px 34px #0009,0 0 22px #f4d78c1f,inset 0 1px #ffffff26;
+  color:#ffe6ad;font-size:clamp(19px,2.4vw,36px);font-weight:800;letter-spacing:.05em;
+  transform:translateX(-50%);
+  animation:pool-turn-pop 2s cubic-bezier(.22,.7,.25,1) both}
+.pool-turn-toast i{flex:none;width:10px;height:10px;border-radius:50%;
+  background:#f4d78c;box-shadow:0 0 12px 3px #f4d78c99}
+.pool-turn-toast[data-kind="opponent"]{border-color:#8fb6e47a;color:#d8e8ff;
+  background:linear-gradient(180deg,#1b2c46e8,#0d182ae8)}
+.pool-turn-toast[data-kind="opponent"] i{background:#8fb6e4;box-shadow:0 0 12px 3px #8fb6e488}
+@keyframes pool-turn-pop{
+  0%{opacity:0;transform:translate(-50%,14px) scale(.86)}
+  13%{opacity:1;transform:translate(-50%,0) scale(1)}
+  74%{opacity:1;transform:translate(-50%,0) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-10px) scale(.98)}
+}
+@media(prefers-reduced-motion:reduce){.pool-turn-toast{animation:none;transform:translate(-50%,0)}}
+@media(max-width:760px){.pool-turn-toast{top:19%;gap:7px}}
 .table-home-theme[data-screen="play"]{background:#0b1120;color:#e6edf8}
 .table-home-theme[data-screen="play"]:not(.pool-game) .game-panel{background:#111a30;border-color:#263654}
 .table-home-theme[data-screen="play"]:not(.pool-game) .play-sidebar>section{background:#151f37;color:#e6edf8;border-color:#303e60}

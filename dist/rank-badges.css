@@ -1,0 +1,66 @@
+/* Shared leaderboard badges.
+   ONE file, ONE look. The flight-home board (.leaderboard-row) and every game
+   intro board (#leaderboard) used to draw their own podium coins: the intro
+   ones were flat colour circles with a washed-out number, while the home
+   board had proper gold / silver / bronze coins. Both now resolve to the
+   same medal and the same VIP badge image, so the two screens cannot drift
+   apart again. */
+.podium .leaderboard-rank,
+body.table-home-theme #leaderboard li .rank-medal.rank-1,
+body.table-home-theme #leaderboard li .rank-medal.rank-2,
+body.table-home-theme #leaderboard li .rank-medal.rank-3{
+  --metal-light:#fff5b5;--metal-mid:#efbe45;--metal-dark:#94621b;
+  position:relative;place-items:center;
+  border-radius:50%;border:1px solid var(--metal-dark);
+  background:radial-gradient(circle at 35% 25%,#ffffffa0,transparent 43%),
+    conic-gradient(from 35deg,var(--metal-mid),var(--metal-light),var(--metal-mid),
+      var(--metal-dark),var(--metal-light),var(--metal-mid));
+  box-shadow:inset 0 0 0 2px var(--metal-light),inset 0 0 0 4px var(--metal-mid),
+    inset 0 -3px 3px #6f481b55,0 3px 4px #36527730;
+  color:#805213;font-weight:900;text-shadow:0 1px 0 var(--metal-light);
+}
+.podium .leaderboard-rank::after,
+body.table-home-theme #leaderboard li .rank-medal.rank-1::after,
+body.table-home-theme #leaderboard li .rank-medal.rank-2::after,
+body.table-home-theme #leaderboard li .rank-medal.rank-3::after{
+  content:"";position:absolute;inset:5px;border:1px solid var(--metal-dark);
+  opacity:.5;border-radius:50%;pointer-events:none;
+}
+.podium-1 .leaderboard-rank,
+body.table-home-theme #leaderboard li .rank-medal.rank-2{
+  --metal-light:#f5fcff;--metal-mid:#b8c9d8;--metal-dark:#697b90;color:#526579;
+}
+.podium-2 .leaderboard-rank,
+body.table-home-theme #leaderboard li .rank-medal.rank-3{
+  --metal-light:#ffe1bd;--metal-mid:#d49a63;--metal-dark:#825033;color:#754424;
+}
+/* The intro board is a compact ten-row grid: keep its 24px coin but make
+   the number legible again instead of the old 10px washed-out grey. */
+body.table-home-theme #leaderboard li .rank-medal.rank-1,
+body.table-home-theme #leaderboard li .rank-medal.rank-2,
+body.table-home-theme #leaderboard li .rank-medal.rank-3{font-size:12px}
+
+/* 4th place and below stay a plain number on both boards. */
+.leaderboard-row:not(.podium) .leaderboard-rank,
+body.table-home-theme #leaderboard li .rank-medal:not(.rank-1):not(.rank-2):not(.rank-3){
+  border:0;background:none;box-shadow:none;color:#a4b3d1;text-shadow:none;
+}
+
+/* The VIP badge is a single shared image. Declare it once for both boards
+   (a real span on game intros, an ::after on the flight-home board) so the
+   proportions and the file in use can never diverge. */
+body.table-home-theme #leaderboard .member-label,
+[data-member="true"]::after{
+  content:"";display:inline-block;flex:none;
+  width:40px;height:20px;margin-left:5px;padding:0;
+  border:0;border-radius:0;box-shadow:none;vertical-align:middle;
+  background:url('/assets/member/vip-laurel-v3.png') center/contain no-repeat;
+  color:transparent;font-size:0;
+}
+/* Annual members get the YEAR VIP artwork instead of the plain VIP one.
+   Both boards resolve to the same two shared files, so the intro standings
+   and the flight-home standings can never show different medals. */
+body.table-home-theme #leaderboard .member-label.annual,
+[data-member="true"][data-annual-member="true"]::after{
+  background-image:url('/assets/member/annual-vip-laurel-v3.png');
+}

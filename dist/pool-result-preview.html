@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>台球结算验收 · 本地示例</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
   <link rel="stylesheet" href="./table/table.css?v=20261105-pool15">
-  <link rel="stylesheet" href="./table/pool-shell.css?v=20261109-confetti1">
+  <link rel="stylesheet" href="./table/pool-shell.css?v=20261110-toastheight1">
   <style>
     .preview-label{font-size:12px;color:#e4cf94;white-space:nowrap}
     .pool-game[data-screen="play"] .play-sidebar>.preview-tools{flex:none;margin:0 10px 10px;padding:12px;border:1px solid #4c5f79;border-radius:12px;background:#142138;box-shadow:none}
@@ -60,7 +60,7 @@
   </script>
   <script type="module">
     import {poolStart,poolMove,renderPool} from './table/pool.js?v=20261105-pool15';
-    import {updatePoolShell} from './table/pool-shell.js?v=20261109-confetti1';
+    import {updatePoolShell} from './table/pool-shell.js?v=20261109-turnsettle1';
     import {cancelPoolCountdown} from './table/pool-countdown.js';
     import {unlockPoolAudio} from './table/pool-audio.js?v=20261105-pool15';
 
@@ -120,5 +120,5 @@
     window.addEventListener('pagehide',()=>{cancelPoolCountdown(host);cancelAnimationFrame(watch);host._animationToken++;});
     paint();
   </script>
-<script defer src="/site-context-menu.js?v=20261109-noselect1"></script></body>
+<script defer src="/site-context-menu.js?v=20261109-noselect1"></script><script defer src="/site-floating-dots.js?v=20261109-motes2"></script><script defer src="/site-shooting-star.js?v=20261109-fxgame1"></script></body>
 </html>

@@ -31,4 +31,4 @@ document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{
 document.querySelectorAll('[data-roll]').forEach(b=>b.onclick=()=>{unlock();stop();for(let i=0;i<18;i++)timers.push(setTimeout(()=>poolImpact('wood-roll',Number(b.dataset.roll)),i*90));played.textContent='正在播放：'+b.textContent;timers.push(setTimeout(()=>{played.textContent='播放完成：'+b.textContent;},1800));});
 document.querySelector('#stop').onclick=()=>{stop();played.textContent='试听已停止';};
 for(const [id,play]of [['go',()=>poolCountdownSound('GO')],['victory',poolVictorySound]])document.getElementById(id).onclick=()=>{unlock();stop();played.textContent=play()?'已播放：'+document.getElementById(id).textContent:'音频准备中，请再次点击';};
-</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script></html>
+</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script><script defer src="/site-floating-dots.js?v=20261109-motes2"></script><script defer src="/site-shooting-star.js?v=20261109-fxgame1"></script></html>
