@@ -1,0 +1,261 @@
+/* Table game intro screen — plain, factual game index.
+   Scoped to #intro so the play screen, dialogs and theme layers stay untouched.
+   Loaded after table.css / table-home-theme.css / four-theme.css. */
+
+body.table-home-theme:not([data-screen="play"]){
+  background:#090d1c;
+}
+body.table-home-theme:not([data-screen="play"]) #intro{
+  max-width:1080px;margin:0 auto;padding:26px 32px 22px;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-heading{display:none}
+/* No decorative all-caps labels anywhere in the game shell. */
+body.table-home-theme:not([data-screen="play"]) .eyebrow{display:none}
+body.table-home-theme[data-screen="play"] .play-sidebar .eyebrow,
+body.table-home-theme[data-screen="play"] .board-top .eyebrow{display:none}
+
+/* Two plain columns: game info on the left, standings on the right. */
+body.table-home-theme:not([data-screen="play"]) .intro-grid{
+  grid-template-columns:minmax(0,1fr) 320px;
+  gap:32px;min-height:0;align-items:start;
+}
+
+/* Cover + copy: no giant hero, no oversized title, no check-mark badges. */
+body.table-home-theme:not([data-screen="play"]) .game-hero{
+  display:grid;grid-template-columns:116px minmax(0,1fr);
+  column-gap:22px;row-gap:0;align-content:start;align-items:start;
+  max-width:none;padding:0;
+}
+body.table-home-theme:not([data-screen="play"]) .hero-art{
+  grid-column:1;grid-row:1/span 6;align-self:start;
+  width:116px;height:116px;aspect-ratio:auto;margin:0;
+  border:1px solid #ffffff12;border-radius:10px;
+  background:#141b30;box-shadow:none;overflow:hidden;
+}
+body.table-home-theme:not([data-screen="play"]) .hero-art img{width:100%;height:100%;object-fit:cover}
+body.table-home-theme:not([data-screen="play"]) .game-kicker,
+body.table-home-theme:not([data-screen="play"]) #hero-title,
+body.table-home-theme:not([data-screen="play"]) #hero-description,
+body.table-home-theme:not([data-screen="play"]) .hero-tags,
+body.table-home-theme:not([data-screen="play"]) .launch-actions,
+body.table-home-theme:not([data-screen="play"]) .join-box{grid-column:2}
+
+body.table-home-theme:not([data-screen="play"]) .game-kicker{
+  margin:1px 0 0;font-size:10px;font-weight:700;letter-spacing:normal;
+  text-transform:none;color:#8390b0;
+}
+body.table-home-theme:not([data-screen="play"]) #hero-title{
+  margin:5px 0 7px;font-size:30px;line-height:1.22;letter-spacing:-.6px;color:#f6f7ff;
+}
+/* In English the kicker would repeat the translated title. */
+html:lang(en) body.table-home-theme:not([data-screen="play"]) .game-kicker{display:none}
+body.table-home-theme:not([data-screen="play"]) #hero-description{
+  max-width:44em;margin:0;font-size:13px;line-height:1.75;color:#a1aecb;
+}
+body.table-home-theme:not([data-screen="play"]) .hero-tags{
+  display:flex;gap:0;margin:12px 0 16px;font-size:11px;color:#8390b0;
+}
+body.table-home-theme:not([data-screen="play"]) .hero-tags span:before{content:none;display:none}
+body.table-home-theme:not([data-screen="play"]) .hero-tags span{padding:0 12px}
+body.table-home-theme:not([data-screen="play"]) .hero-tags span:first-child{padding-left:0}
+body.table-home-theme:not([data-screen="play"]) .hero-tags span+span{border-left:1px solid #ffffff24}
+
+/* Flat buttons: one solid primary, no gradients, no 3D shadows. */
+body.table-home-theme:not([data-screen="play"]) .intro-screen button{
+  border:1px solid #46518a;border-radius:8px;
+  background:#1b254a;color:#e7eeff;box-shadow:none;
+  font-size:13px;min-height:38px;padding:9px 13px;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-screen button:hover:not(:disabled){
+  background:#293657;border-color:#8d9dff;transform:none;
+}
+body.table-home-theme:not([data-screen="play"]) .launch-actions{width:320px;max-width:100%}
+body.table-home-theme:not([data-screen="play"]) .launch-actions>button{
+  min-height:42px;margin-bottom:8px;font-size:14px;
+}
+body.table-home-theme:not([data-screen="play"]) .launch-actions>.primary{
+  min-height:42px;font-size:14px;
+  background:#4159c8;background-image:none;border-color:#6f8bff;color:#fff;box-shadow:none;
+}
+body.table-home-theme:not([data-screen="play"]) .launch-actions>.primary:hover:not(:disabled){
+  background:#4d66d8;background-image:none;border-color:#8d9dff;
+}
+body.table-home-theme:not([data-screen="play"]) .local-buttons{gap:8px;margin-top:0}
+body.table-home-theme:not([data-screen="play"]) .local-buttons button{
+  min-height:34px;font-size:11px;padding:7px 8px;
+}
+body.table-home-theme:not([data-screen="play"]) .join-box{
+  margin-top:12px;max-width:320px;font-size:11px;color:#8390b0;
+}
+body.table-home-theme:not([data-screen="play"]) .join-box form{
+  margin-top:8px;padding:12px;background:#141b30;border:1px solid #ffffff12;border-radius:8px;
+}
+body.table-home-theme:not([data-screen="play"]) .join-box button{margin-top:8px;width:100%}
+body.table-home-theme:not([data-screen="play"]) input{
+  color:#e8edff;background:#0c1426;border:1px solid #46518a;border-radius:8px;
+}
+
+/* Standings: a thin-rule table, not a trophy card with a dashed empty state. */
+body.table-home-theme:not([data-screen="play"]) .home-ranking{
+  padding:16px 16px 12px;border:1px solid #ffffff12;border-radius:10px;
+  background:#141b30;box-shadow:none;min-width:0;
+}
+body.table-home-theme:not([data-screen="play"]) .ranking-heading{margin:0 0 10px}
+body.table-home-theme:not([data-screen="play"]) .ranking-heading h2{
+  margin:0;font-size:16px;letter-spacing:0;color:#f0f4ff;
+}
+body.table-home-theme:not([data-screen="play"]) .ranking-heading>img,
+body.table-home-theme:not([data-screen="play"]) .ranking-heading .eyebrow{display:none}
+body.table-home-theme:not([data-screen="play"]) .period-tabs{
+  gap:16px;padding:0;margin:0 0 8px;border:0;border-bottom:1px solid #ffffff14;
+  background:none;border-radius:0;
+}
+body.table-home-theme:not([data-screen="play"]) .period-tabs button{
+  flex:0 0 auto;min-height:0;padding:6px 0;border-radius:0;
+  background:none;border:0;box-shadow:none;font-size:11px;color:#8390b0;
+}
+body.table-home-theme:not([data-screen="play"]) .period-tabs button:hover:not(:disabled){background:none;color:#c8d3ff}
+body.table-home-theme:not([data-screen="play"]) .period-tabs button[aria-pressed="true"]{
+  background:none;box-shadow:none;color:#c8d3ff;border-bottom:2px solid #9caaff;
+}
+body.table-home-theme:not([data-screen="play"]) .ranking-columns{
+  padding:0 0 6px;border-bottom:1px solid #ffffff0c;font-size:10px;color:#7f8cab;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard{
+  min-height:0;max-height:190px;margin:0;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li{
+  min-height:0;margin:0;padding:8px 0;border:0;border-bottom:1px solid #ffffff0c;
+  border-radius:0;background:none;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li .seat{
+  padding:0;border:0;background:none;box-shadow:none;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points{
+  font-size:13px;color:#c8d3ff;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-games{font-size:11px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-empty{
+  min-height:0;justify-content:flex-start;padding:14px 0;
+  border:0;background:none;color:#8390b0;font-size:11px;
+}
+body.table-home-theme:not([data-screen="play"]) .ranking-footnote{
+  margin:8px 0 0;text-align:left;font-size:10px;color:#7f8cab;
+}
+body.table-home-theme:not([data-screen="play"]) #stats{
+  margin:3px 0 0;text-align:left;font-size:10px;line-height:1.6;color:#8390b0;
+}
+
+/* Bottom: two text columns separated by a rule, no promo cards. */
+body.table-home-theme:not([data-screen="play"]) .intro-bottom{
+  grid-template-columns:1.25fr 1fr;gap:0;
+  margin-top:22px;padding-top:16px;border-top:1px solid #ffffff14;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom>section{
+  padding:0 22px 0 0;background:none;border:0;border-radius:0;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom>section+section{
+  padding:0 0 0 22px;border-left:1px solid #ffffff14;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom h2{
+  margin:0 0 6px;font-size:13px;font-weight:700;color:#c8d3ff;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom p{
+  margin:0;font-size:11px;line-height:1.75;color:#94a0be;
+}
+body.table-home-theme:not([data-screen="play"]) .member-note>.member-label{display:none}
+body.table-home-theme:not([data-screen="play"]) .member-note a{
+  display:inline-block;margin-top:7px;font-size:11px;color:#aab9ff;
+}
+
+@media(max-width:900px){
+  body.table-home-theme:not([data-screen="play"]) .intro-grid{grid-template-columns:1fr;gap:24px}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{max-width:520px}
+  body.table-home-theme:not([data-screen="play"]) .intro-bottom{grid-template-columns:1fr;gap:14px}
+  body.table-home-theme:not([data-screen="play"]) .intro-bottom>section+section{
+    padding:14px 0 0;border-left:0;border-top:1px solid #ffffff14;
+  }
+}
+@media(max-width:560px){
+  body.table-home-theme:not([data-screen="play"]) #intro{padding:20px 16px}
+  body.table-home-theme:not([data-screen="play"]) .game-hero{grid-template-columns:84px minmax(0,1fr);column-gap:14px}
+  body.table-home-theme:not([data-screen="play"]) .hero-art{width:84px;height:84px}
+  body.table-home-theme:not([data-screen="play"]) #hero-title{font-size:24px}
+  body.table-home-theme:not([data-screen="play"]) .hero-tags{flex-wrap:wrap;row-gap:4px}
+}
+
+/* Intro layout: left column = game info, rules, membership; right column =
+   a standings panel that spans both rows and always reserves ten player rows. */
+body.table-home-theme:not([data-screen="play"]) #intro{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px;
+  column-gap:32px;row-gap:0;align-items:start;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-grid{display:contents;min-height:0}
+body.table-home-theme:not([data-screen="play"]) .game-hero{grid-column:1;grid-row:1}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom{
+  grid-column:1;grid-row:2;
+  grid-template-columns:1fr;gap:0;
+  margin-top:14px;padding-top:14px;border-top:1px solid #ffffff14;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom>section{padding:0}
+body.table-home-theme:not([data-screen="play"]) .intro-bottom>section+section{
+  margin-top:14px;padding:14px 0 0;border-left:0;border-top:1px solid #ffffff14;
+}
+body.table-home-theme:not([data-screen="play"]) .home-ranking{
+  grid-column:2;grid-row:1/span 2;align-self:stretch;
+  display:flex;flex-direction:column;min-height:500px;
+}
+body.table-home-theme:not([data-screen="play"]) .ranking-heading{margin-bottom:8px}
+body.table-home-theme:not([data-screen="play"]) .period-tabs{margin-bottom:6px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard{
+  --rank-row:34px;
+  flex:1 1 auto;display:grid;grid-auto-rows:minmax(var(--rank-row),1fr);
+  min-height:calc(var(--rank-row)*10);max-height:none;height:auto;
+  overflow:hidden;margin:0;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li{
+  padding:4px 0;margin:0;min-height:0;align-items:center;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .avatar-shell{
+  width:24px;height:24px;flex:0 0 24px;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .seat{gap:8px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .seat-name strong{
+  font-size:11px;max-width:150px;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .rank-medal{
+  font-size:10px;color:#8a9ac0;
+}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points{font-size:13px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-games{font-size:11px}
+body.table-home-theme:not([data-screen="play"]) .ranking-footnote{margin-top:8px}
+body.table-home-theme:not([data-screen="play"]) .demo-tag{color:#6f7fa0}
+
+/* Membership figures keep the lower-left block populated on a new deployment. */
+body.table-home-theme:not([data-screen="play"]) .member-facts{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;
+}
+body.table-home-theme:not([data-screen="play"]) .member-facts>div{
+  display:flex;flex-direction:column;gap:3px;min-width:0;
+  padding:9px 10px;border:1px solid #ffffff12;border-radius:8px;background:#111a2e;
+}
+body.table-home-theme:not([data-screen="play"]) .member-facts b{
+  font-size:14px;color:#dbe3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+body.table-home-theme:not([data-screen="play"]) .member-facts span{font-size:10px;color:#8390b0}
+body.table-home-theme:not([data-screen="play"]) .member-note a{margin-top:10px}
+
+@media(max-width:900px){
+  body.table-home-theme:not([data-screen="play"]) #intro{grid-template-columns:1fr;row-gap:20px}
+  body.table-home-theme:not([data-screen="play"]) .game-hero,
+  body.table-home-theme:not([data-screen="play"]) .intro-bottom,
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{grid-column:1;grid-row:auto}
+  body.table-home-theme:not([data-screen="play"]) .home-ranking{
+    align-self:auto;min-height:0;
+  }
+  body.table-home-theme:not([data-screen="play"]) #leaderboard{flex:none}
+}
+@media(max-width:560px){
+  body.table-home-theme:not([data-screen="play"]) .member-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

@@ -18,7 +18,7 @@ test('same-version room updates immediately remove annual eligibility without re
  const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
  const fn=source.slice(source.indexOf('async function applyOnlineSnapshot('),source.indexOf("onlineSession.addEventListener('snapshot'"));
  const player={color:0,name:'大卫',member:true,annualMember:true,planeStyle:'obsidian2d'},game={players:[player]};let renders=0;
- const context=vm.createContext({onlineRoomId:'room',onlineVersion:4,game,screen:'play',render:()=>renders++});vm.runInContext(fn,context);
+ const context=vm.createContext({social:{roomDialog:{open:false}},onlineMode:true,onlineRoomId:'room',onlineVersion:4,game,screen:'play',render:()=>renders++});vm.runInContext(fn,context);
  await context.applyOnlineSnapshot({gameVersion:4,game:{players:[{}]},room:{roomId:'room',phase:'PLAYING',yourSeat:0,seats:[{index:0,displayName:'大卫',member:true,annualMember:false,planeStyle:'classic'}]}});
  assert.equal(game.players[0],player);assert.equal(player.member,true);assert.equal(player.annualMember,false);assert.equal(player.planeStyle,'classic');assert.equal(renders,1);
 });

@@ -164,3 +164,73 @@ Production deployment confirmed: Flyway V23 applied; backend health passed. Gues
 - Checks: npm test123/123; Java table suites21/21; syntax checks passed. Exact production-baseline jar SHA256 2a39e1ac886068a6e7b514f7656d43803cc55c5c34d14e4d47d1c4c0662f5030. Production V24 healthy. Guest-only HTTP chat permissions/bounds/Unicode/dedup/rate/cursor, countdown + leave boundary, encoded low-shot acceptance, and existing reaction regression passed.
 - Browser: local and production native pointer drags completed shots; countdown observed; two independent-origin production guest sessions exchanged messages, persisted after reload and exited. No console errors seen. Screenshots docs/verification/pool-countdown-20261105.png and pool-mouse-chat-20261105.png. Audio listening and realphone validation were not performed this pass.
 - Deployment uses isolated baseline jar (no unrelated local backend changes). Rollback image joyflock-backend:before-pool-mouse; DB backup /opt/joyflock/before-pool-mouse-20261104.dump; static archive /opt/joyflock/static-before-pool-mouse-20261105.tgz.
+
+## 2026-11-05 台球 15 球与回球管道
+
+- 新球局状态有 52 个整数：前 48 项为 16 球坐标/存活标志；48、49 为两组落袋数量；50、51 为组别（0未分组、1全色、2花色）。前后端必须同步更新；旧的 29/31 项球局不能按新布局恢复，应在部署前结束旧局并重新开局。本次没有部署线上。
+- 物理与显示半径都为16，球间碰撞直径32，三角架间距同步扩大。回放每2物理步采样，16ms插值显示；回球通过同画布绘制，包含入洞收缩、桌内隐蔽路段、右侧出口与下滚停靠。
+- `pool-ball.js` 在 Canvas 上投影球面纹理，累积三维旋转基；不是 WebGL 模型。桌面、槽与顶部共用绘制器；16张192px独立透明PNG在 `dist/assets/pool`，由同一绘制器导出。
+- 可复测场景：`dist/pool-15-preview.html`，源文档副本为 `docs/verification/pool-15-preview.html`；全色/花色固定落袋与球体图库不发送网络成绩。
+- 实测画面：`docs/verification/pool-15-stripe-20261105.png`。本次通过浏览器标签页直接操作完成满杆击球，避免之前原生窗口控制路径故障。
+
+### Pool cloth/pocket renderer — 2026-11-05
+Table rendering lives in dist/table/pool-table.js; makeTable builds shared cloth once per cached table. pocketPath is shared with pool-return.js so returning balls use the visible opening as their clip. pool-view.js retains unchanged physical coordinates and draws a 2x cached table. Current visual review: docs/verification/pool-cloth-pockets-20261105.png. Sound was explicitly accepted as basically satisfactory and not changed in this pass.
+
+### 2026-11-05 台球追加交接
+最新本地台球修复见QA末节：白球650ms袋内动作后复位；pool-return.js按袋位路线计时及槽内微回弹；pool-table.js加宽外框、统一袋边厚度、袋口层级在桌上球下方；pool-countdown.js处理3/2/1/GO及独立同步音效。初速度+25%、4ms物理子步已同步Java/JS。验证151前端通过，Docker Java54通过21跳过。8099资源已与工作区比对一致；没有本轮线上部署。用户已基本认可球碰球实录音，不要顺手替换。
+
+## 2026-11-05 台球最新细节交接
+最新本地版：圆背斜肩角袋＋尖端灰色护口，清除入口布面凸角，袋底中央稍亮；中袋与边框留缝，贝壳点居中。桌面球杆340单位；更紧凑等比布局。右槽为65外宽的分离双轨，RETURN_X1184、弯半径40、入口28，返回时长按路径自动变化。
+音效：本地ball/rail/pocket都使用真实碰撞速度；入袋后继承强度递减；wood-roll独立木腔滚动并有短弱反射，其他声音不加回声。已接受的球碰球CC0录音保留。结算改全屏撒花+dialog内再玩一局，复用原handler，并防在线再战旧响应覆盖已离开的新状态。
+最终163项测试通过，8099的8份资源与工作区字节一致；浏览器正式开球与结算场景已验。入口仍是http://127.0.0.1:8099/table/index.html?game=pool，已打开的旧页面需要刷新。完整证据和实际限制见QA最新条目，未部署线上。
+
+
+2026-11-05 袋口追加：pool-table.js统一台呢绘制与完整斜口接触阴影，导出pocketEntryPath供pool-return.js裁切；删除矩形入口裁切缺口。角袋回弹路径按sx/sy镜像。逐帧验收入口dist/pool-pocket-preview.html；164项测试通过，详见QA最新记录。
+
+
+2026-11-05 追加：台球JS/Java击球初速度已按用户要求翻倍至power*0.40，步长2ms，每秒衰减/16ms回放保留，旋转冲量同比、音量归一化同步。8种击球点跨语言基准更新；Node165通过，Docker台球10通过。前端白色定位点+16%、中袋视觉宽度-9%、顶灯中央亮四周暗。未上线部署；详见QA最新记录。
+
+2026-11-05 最新台球音画：GO音效0.34秒；胜利首次撒花同步1.28秒短乐句，重开弹窗不重播、遵循静音。桌布中央更亮、四边更暗。166测试通过，浏览器真实末球结算/重开/静音触发验证通过，详见QA。音效试听页新增GO和胜利按钮。
+
+2026-11-05 当前台球微调：力度为此前80%，台呢整体暗6%；中袋收窄内收、灰色护口两端外张。验收截图docs/verification/pool-narrow-middle-dimmer-20261105.png，166前端测试通过，Docker后端成功（21外部服务集成测试跳过）。
+
+2026-11-05 中袋缺角已补：蓝色库边接护口内缘，圆滑接入直边，入袋裁切同步。当前视觉证据docs/verification/pool-mouth-filled-20261105.png。
+
+2026-11-05 最新中袋防撞垫为等宽7单位，共用洞口内弧描边；库边补角与接点保留。截图docs/verification/pool-even-guard-20261105.png。
+
+## 2026-11-05 当前台球：中心落袋、材质分层、对手出杆与精细球杆
+
+最新实现以QA末节为准。pool-geometry.js与Java PoolGeometry统一可见洞口、球心捕获和库边袋颚接触，替换旧半径吸入判定。pool-return.js沿实际入射方向模拟袋后壁接触，落至下层后朝管道滚到边缘被遮挡，保留球面朝向、白球动画和六袋行程差。灰胶/木腔音效分离，强落袋追加递减木质短碰撞，GO为520ms；已认可的球碰球录音保留。
+
+pool-opponent-cue.js提供本地电脑1100ms和接收在线回放后650ms瞄准/后拉/出杆，不是远端实时瞄准。pool-cue.js与assets/pool/power-cue.svg分别绘制桌面和左侧球杆，弧形皮头、渐细木纹、握把环节；桌面杆长340、力度映射不变。台呢加细织纹，角框及护口加深度阴影。
+
+Node200/200通过；Docker Java59通过21外部集成跳过，台球15/15；语法、Chrome正式单机及逐帧场景已验。8099当前11份资源与源码一致，刷新即可查看；本轮未部署线上。证据pool-live-cue-weave-20261105.png及pool-directional-pocket-20261105.png。QA记录完整限制，历史段落中的圆形吸袋、固定左右摆动和GO340ms已被取代。
+
+## 2026-11-05 台球已部署：pool-20261105
+
+上述台球版本已于2026-11-05 15:35:15 UTC发布到生产，目录 `/opt/joyflock/releases/pool-20261105`。后端JAR SHA256为 `1349217973c6d31c7736e5d66f081378d717b8fb8680a5ed184bf88650db48ab`；以核对过的生产基线隔离构建，仅替换台球规则/几何类及相关内部类。数据库保持Flyway V24，没有带入其他本地后端或迁移改动。发布前备份与 `before-pool-20261105` 回滚标签保留。
+
+建房/再战等写入短暂门禁后，确认旧版活跃台球房间为0再切换。历史29格归档不迁移、不伪造为新球局，前端保留比分和结果并提示重新开局。首次预检查因旧nginx绑定文件inode未更新而在后端替换前中止；重建web容器后重试成功。
+
+发布验证为Node202/202、Java59通过/21外部集成跳过（台球15/15）；隔离本地与生产31杆HTTP验证覆盖JS/Java一致性、再战、权限、命令幂等、游客统计保持0；36份公网资源与包匹配。15:53:37 UTC只读复核服务运行、数据库和Redis健康，后续 `/api/csrf` 返回200，release1脚本及旧版归档保护已在公网取得。后续连接不稳定，未独立完成日志无错误核查；不宣称全部生产浏览器、跨设备或主观听感验收通过。专用三个本地QA容器及网络已清理，详细证据与限制见QA同名章节。
+
+击球点控件接线已验证，不是无效按钮。当前仍是八向简化旋转：高低杆影响首次撞球后的白球，左右塞另影响撞库，空台自由滚动和直线瞄准提示不会变化；点击偏心距离不控制旋转强度。选择保留到手动点下方文字按钮重置，未实现独立侧旋视觉。此核查未修改规则。后续进行中的布局、主题和全屏调整须另记验证/部署状态，不应与本次已部署版本混记。
+
+
+## 2026-11-06 最新部署交接：pool-ui2-20261106
+
+前一版 pool-ui-20261106 为静态 UI1 发布：41 文件、Node207/207、公网41项资源哈希一致，未更新后端。随后发现旧父页缓存、首屏亮暗切换和全屏进入时机问题；UI1 已由本节 UI2 替代。历史记录保留，不能将旧资源校验解释为公网完整浏览器通过。
+
+UI2 已于 **2026-11-05 18:28:36 UTC / 北京时间2026-11-06 02:28:36** 上线，目录 /opt/joyflock/releases/pool-ui2-20261106；JAR SHA256 为 ba5b2b507695297a1ea03ede019930276e8bf25d6ade176b2dec7ba7d2770b4a。数据库仍为 V24。JAR 从前次生产基线隔离构建，327 个内容条目仅 PoolRules.class 改变，未混入其他本地后端工作。原29格已结束房间的显示保护保留。
+
+用户明确保留并增强击球点。指令仍为 spot×363600+power×3600+angle；高低杆/球碰球侧旋/库边侧旋系数分别36%/18%/32%，按实际接触速度和碰撞厚度衰减。首次撞球旋转仅使用一次，限制入射速度与额外能量；库边改变方向而不增加速度。先碰库后的高低杆使用真正入射方向，左右库切向符号镜像正确。初速度power×0.32、2ms子步、16ms回放、球心入洞和组别规则不变。仍是八向二维近似；空台未接触时不弯曲，红点偏心距离不连续控制旋转量，不应宣称完整三维旋转物理。
+
+前端版本串为20261106-ui2，发布45文件。Flight/table主页统一深色，HTML预初始化避免脚本加载前闪亮；可信portal桥在台球进入PLAYING时展开视口，提供原生全屏请求及拒绝时的布局回退，支持按钮/Escape退出。聊天使用“名字：内容”同行，表情进入聊天记录。nginx根静态路径补no-cache，包含portal父页与控制脚本，修复父旧子新的缓存风险；已经打开的旧页仍需刷新。本次只原文件写入nginx配置，避免单文件bind mount的inode失配。
+
+实际验证：最终Node217/217；隔离Docker Java64通过、21外部服务集成跳过（台球20/20）；168场景JS/Java全部回放帧及最终状态一致；独立616组镜像轨迹误差零。隔离本地和公网HTTP各完成31杆双客人比赛、逐杆结果一致、权限/幂等/倒计时/分组、双人再战及游客统计保持零。公网45/45文件HTTP200、SHA256匹配且no-cache。发布专用JAR、Java报告、差异清单及本地HTTP/帧一致性证据均在backend/target/pool-ui2-release-20261106；最终前端、公网HTTP与资源日志在docs/verification/pool-ui2-20261106-tests.log、pool-ui2-public-http-20261106.log、pool-ui2-public-assets-20261106.log。三个专用本地QA容器及网络已清理，无持久卷。
+
+本地浏览器已观察游戏自动铺满视口、按钮退出、聊天同行与表情同流，证据pool-ui2-chat-fullscreen-local-20261106.png；深色首页证据unified-flight-home-local-20261106.png、unified-table-home-local-20261106.png。公网自动化跨域iframe仍显示about:blank，直达Flight/table可加载；**不宣称公网iframe流程或原生fullscreen浏览器验收通过**。手机、双设备及扬声器听感未在本轮验收。详细数值与验证边界见QA同名章节。
+
+回滚镜像为joyflock-backend:before-pool-ui2-20261106。线上发布目录保留static.before.tgz、nginx.before.conf、deploy.log、existing-files.txt及发布脚本；后端、前端物理与配置应一起恢复，nginx原文件写回、先语法检查再重载。本次没有数据库迁移，不应回退数据库。下一轮变更必须另记验证和部署状态，避免把未上线源码与本节已发布制品混记。
+
+Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?game=pool loaded the deployed version and account avatar correctly; local two-player session visibly rendered `大卫：你好` and `大卫：🎉` in the same chat stream, inactive opponent dimmed. Screenshot: `docs/verification/pool-ui2-chat-public-20261106.png`. This is direct-page/single-machine UI evidence, not cross-origin portal/native-fullscreen evidence. Latest explicit user instruction: shut down the local computer after deployment and verification; no remote shutdown requested.

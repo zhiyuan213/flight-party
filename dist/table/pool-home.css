@@ -1,0 +1,93 @@
+/* Pool's landing screen shares the portal's navy surfaces and lavender accents. */
+body.pool-game:not([data-screen="play"]){
+  --ink:#edf1ff;
+  --muted:#a1aecb;
+  --line:#303c5c;
+  --accent:#9caaff;
+  color:var(--ink);
+  color-scheme:dark;
+  background:radial-gradient(ellipse at 32% 24%,#1b294740,transparent 55%),#0b1020;
+}
+.pool-game:not([data-screen="play"]) header{
+  color:#edf1ff;
+  background:#0b1020;
+  border-bottom:1px solid #ffffff10;
+  box-shadow:none;
+}
+.pool-game:not([data-screen="play"]) header>a{color:#edf1ff}
+.pool-game:not([data-screen="play"]) #profile.vip{color:#efd38d}
+.pool-game:not([data-screen="play"]) .intro-heading>a,
+.pool-game:not([data-screen="play"]) .eyebrow,
+.pool-game:not([data-screen="play"]) .game-kicker{color:#93a3ce}
+.pool-game:not([data-screen="play"]) .hero-art{
+  background:#17243b;
+  box-shadow:0 18px 40px #0005,0 0 0 1px #ffffff12;
+}
+.pool-game:not([data-screen="play"]) #hero-title{color:#f4f6ff}
+.pool-game:not([data-screen="play"]) #hero-description{color:#a5b2cf}
+.pool-game:not([data-screen="play"]) .hero-tags{color:#a9b6d1}
+.pool-game:not([data-screen="play"]) .hero-tags span:before{color:#a8b8ff}
+.pool-game:not([data-screen="play"]) button{
+  background:linear-gradient(#202b47,#182139);
+  border-color:#3a4869;
+  color:#dbe4ff;
+  box-shadow:0 3px 0 #060a15;
+}
+.pool-game:not([data-screen="play"]) button:hover:not(:disabled){
+  background:#293657;
+  border-color:#8e9edc;
+}
+.pool-game:not([data-screen="play"]) .primary{
+  color:#fff;
+  background:linear-gradient(#7b8ced,#5c6fd0);
+  border-color:#a0afff;
+  box-shadow:0 4px 0 #344387,0 8px 24px #667cd422;
+}
+.pool-game:not([data-screen="play"]) .primary:hover:not(:disabled){background:linear-gradient(#8b9bf6,#6a7ddb)}
+.pool-game:not([data-screen="play"]) .join-box{color:#a9b9df}
+.pool-game:not([data-screen="play"]) .join-box form{background:#121b30;border-color:#303c5c}
+.pool-game:not([data-screen="play"]) .join-box label{color:#a5b4d3}
+.pool-game:not([data-screen="play"]) input{color:#e8edff;background:#0c1426;border-color:#3a4869}
+.pool-game:not([data-screen="play"]) input::placeholder{color:#8393b5}
+.pool-game:not([data-screen="play"]) .home-ranking{
+  background:radial-gradient(ellipse at 85% 0,#303b6b35,transparent 65%),#131c31;
+  border-color:#303c5c;
+  box-shadow:0 18px 42px #0003,inset 0 1px #ffffff05;
+}
+.pool-game:not([data-screen="play"]) .ranking-heading h2{color:#edf1ff}
+.pool-game:not([data-screen="play"]) .period-tabs{background:#0b1327;border-color:#2d3956}
+.pool-game:not([data-screen="play"]) .period-tabs button{color:#99a8cc;background:transparent;border:0;box-shadow:none}
+.pool-game:not([data-screen="play"]) .period-tabs button:hover:not(:disabled){color:#d5dfff;background:#1e2946}
+.pool-game:not([data-screen="play"]) .period-tabs button[aria-pressed="true"]{
+  color:#eef1ff;
+  background:#35436e;
+  box-shadow:inset 0 1px #ffffff12,0 2px 6px #0002;
+}
+.pool-game:not([data-screen="play"]) .ranking-columns,
+.pool-game:not([data-screen="play"]) .ranking-footnote{color:#96a6c6}
+.pool-game:not([data-screen="play"]) #stats{color:#a6b5d8}
+.pool-game:not([data-screen="play"]) #leaderboard{scrollbar-color:#3f507b transparent}
+.pool-game:not([data-screen="play"]) #leaderboard li{background:#19243d;border-color:#2e3c5b}
+.pool-game:not([data-screen="play"]) #leaderboard .seat{color:#e2e9fa}
+.pool-game:not([data-screen="play"]) #leaderboard .ranking-points{color:#b4c2ff}
+.pool-game:not([data-screen="play"]) #leaderboard .ranking-games{color:#a6b7d5}
+.pool-game:not([data-screen="play"]) #leaderboard .ranking-empty{color:#9fafce;background:#10192d;border-color:#344363}
+.pool-game:not([data-screen="play"]) .intro-bottom>section{background:#121a2c;border-color:#2a3651}
+.pool-game:not([data-screen="play"]) .intro-bottom h2{color:#dfe7fb}
+.pool-game:not([data-screen="play"]) .intro-bottom p{color:#9cacc9}
+.pool-game:not([data-screen="play"]) .member-note a{color:#aebfff}
+.pool-game:not([data-screen="play"]) a:hover{color:#d2dcff}
+/* Matchmaking and account dialogs use the same surfaces without touching result dialogs. */
+.pool-game #waiting,.pool-game #auth{color:#edf1ff;background:linear-gradient(145deg,#1b2742,#111a2e);border-color:#405071;box-shadow:0 24px 80px #0007}
+.pool-game #waiting::backdrop,.pool-game #auth::backdrop{background:#030817b3}
+.pool-game #waiting p,.pool-game #auth form label{color:#a8b6d3}
+.pool-game #waiting .seat{color:#e4eaff;background:#17223b;border-color:#354461}
+.pool-game #waiting .seat-status{color:#a1b1d0}
+.pool-game #waiting #room-status{background:#10182c;border-color:#3d4f75;color:#bdcbed}
+.pool-game #waiting .empty-seat .avatar-shell{color:#8e9fc5;border-color:#485b80}
+.pool-game #auth input{color:#e8edff;background:#0c1426;border-color:#3a4869}
+.pool-game #auth-error{color:#ffb3a5}
+.pool-game #waiting button,.pool-game #auth button{color:#dbe4ff;background:#202d4b;border-color:#415477;box-shadow:none}
+.pool-game #waiting .primary{color:#fff;background:linear-gradient(#7b8ced,#5c6fd0);border-color:#a0afff}
+.pool-game #waiting .close,.pool-game #auth .close{color:#aebcda;background:transparent;border:0}
+.pool-game #waiting .close:hover,.pool-game #auth .close:hover{color:#fff;background:#2b3a5d}

@@ -6,20 +6,20 @@ import {HeroPlane} from './hero-plane.js';
 import {renderResultRankings} from './result-rankings.js';
 import {renderVictory} from './victory-effects.js';
 import {Game,COLORS,FINISH,secureDie} from './engine.js';
-import {BoardScene,PALETTE} from './scene.js';
-import {AudioFX} from './audio.js';
+import {PALETTE} from './scene.js';
+import {AudioFX} from './audio.js?v=20261109-result1';
 import {CanvasBoard} from './fallback.js';
 import {Die3D} from './die3d.js?v=20261103-classic-die';
 import {SocialUI} from './social-ui.js';
 import {ReactionPreview} from './reaction-preview.js';
 import {OnlineSession} from './online-session.js';
-import {bindLiveRooms} from './live-room-ui.js';
-import {bindLiveAccount} from './live-account-ui.js';
+import {bindLiveRooms} from './live-room-ui.js?v=20261109-rankdemo1';
+import {bindLiveAccount} from './live-account-ui.js?v=20261104-auth-validation';
 import {track} from './analytics.js';
 const $=id=>document.getElementById(id),fx=new AudioFX();
 $('play').addEventListener('contextmenu',event=>event.preventDefault());
 let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
-let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,visual:'illustrated',...prefs};
+let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,...prefs,visual:'illustrated'};
 const inviteLanguage=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(inviteLanguage))prefs.lang=inviteLanguage;
 let heroModel=new HeroPlane(document.querySelector('.hero-copy'),{reduced:prefs.reduced});
 const die=new Die3D($('dice'),{reduced:prefs.reduced});
@@ -57,7 +57,10 @@ function authoritativeView(state,room){
 }
 async function applyOnlineSnapshot(message){
  if(!message.game?.players||!['PLAYING','SETTLED'].includes(message.room.phase))return;
- if(onlineRoomId===message.room.roomId&&Number(message.gameVersion)<=onlineVersion){
+ // A room dialog may have been reopened while this match was already loaded.
+ if(social.roomDialog.open)social.roomDialog.close();
+ const restoring=!onlineMode||!game||onlineRoomId!==message.room.roomId||!['play','results'].includes(screen);
+ if(!restoring&&onlineRoomId===message.room.roomId&&Number(message.gameVersion)<=onlineVersion){
   let changed=false;
   for(const player of game.players){const name=message.room.seats.find(s=>s.index===player.color)?.displayName||(player.color===message.room.yourSeat?'You':`Pilot ${player.color+1}`);const appearance=message.room.seats.find(s=>s.index===player.color);if(player.avatarUrl!==appearance?.avatarUrl){player.avatarUrl=appearance?.avatarUrl;changed=true;}if(player.planeStyle!==(appearance?.planeStyle||'classic')){player.planeStyle=appearance?.planeStyle||'classic';changed=true;}player.flightTrail=appearance?.flightTrail||'none';player.victoryEffect=appearance?.victoryEffect||'none';if(player.annualMember!==(appearance?.member===true&&appearance?.annualMember===true)){player.annualMember=appearance?.member===true&&appearance?.annualMember===true;changed=true;}if(player.member!==!!appearance?.member||player.avatarFrame!==(appearance?.avatarFrame||'none')){player.member=!!appearance?.member;player.avatarFrame=appearance?.avatarFrame||'none';changed=true;}if(name!==player.name){player.name=name;changed=true;}}
   if(changed&&screen==='play')render();
@@ -67,11 +70,11 @@ async function applyOnlineSnapshot(message){
   }
   return;
  }
- const initial=!onlineMode||onlineRoomId!==message.room.roomId;
+ const initial=restoring;
  const previous=initial?null:game,next=authoritativeView(message.game,message.room);
  if(next.phase!=='choose'||next.legal().length<2){$('piece-buttons').replaceChildren();scene?.setSelectable([]);}
  onlineVersion=Number(message.gameVersion);onlineRoomId=message.room.roomId;
- if(initial){cancel();onlineMode=true;party=false;social.roomDialog.close();show('play');if(!ensureScene())return;game=next;scene.setGame(game);drawDie(next.die||1,!!next.die);if(next.phase!=='over')track('game_start',message.room.origin==='FRIENDS'?'friends':'quick');}
+ if(initial){cancel();onlineMode=true;party=false;show('play');if(!ensureScene()){onlineMode=false;onlineVersion=-1;return;}game=next;scene.setGame(game);drawDie(next.die||1,!!next.die);if(next.phase!=='over')track('game_start',message.room.origin==='FRIENDS'?'friends':'quick');}
  game=next;
  const generation=epoch;
  const movement=onlineMovement(previous,next);
@@ -105,7 +108,7 @@ function renderSeats(){$('seat-grid').innerHTML=seats.map((s,i)=>`<article class
 function lobby(){cancel();show('lobby');renderSeats();}
 $('create').onclick=()=>social.openRoom('invite');$('back-home').onclick=()=>show('welcome');$('classic-mode').onclick=()=>{party=false;renderSeats();};$('party-mode').onclick=()=>{party=true;renderSeats();};
 document.addEventListener('flight-party-practice-preview',()=>{seats=[{name:social.viewer.name||'You',type:'human'},{name:'Alex',type:'bot'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}];party=false;start();});
-function ensureScene(){if(scene)return true;try{scene=prefs.visual==='three'?new BoardScene($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced}):new CanvasBoard($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced});$('loading').remove();return true;}catch(e){console.warn('WebGL unavailable; switching to compatibility rendering:',e.message);try{scene=new CanvasBoard($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced});$('loading').remove();toast(t('Compatibility mode. Enable WebGL for full 3D.','已启用兼容画面。开启 WebGL 可体验完整 3D。'));return true;}catch(error){console.error(error);$('loading').textContent=t('Unable to render the board. Please try an updated browser.','无法绘制棋盘，请尝试新版浏览器。');$('roll').disabled=true;$('demo').disabled=true;return false;}}}
+function ensureScene(){if(scene)return true;try{scene=new CanvasBoard($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced});$('loading').remove();return true;}catch(e){console.warn('WebGL unavailable; switching to compatibility rendering:',e.message);try{scene=new CanvasBoard($('canvas-wrap'),i=>choose(i),{reduced:prefs.reduced});$('loading').remove();toast(t('Compatibility mode. Enable WebGL for full 3D.','已启用兼容画面。开启 WebGL 可体验完整 3D。'));return true;}catch(error){console.error(error);$('loading').textContent=t('Unable to render the board. Please try an updated browser.','无法绘制棋盘，请尝试新版浏览器。');$('roll').disabled=true;$('demo').disabled=true;return false;}}}
 function start(){onlineMode=false;onlineRoomId=null;onlineVersion=-1;clearInterval(onlineTimer);onlineSession.close();cancel();social.setResult(null);drawDie(1,false);game=new Game(seats.map((s,i)=>({...s,name:s.name.trim()||COLORS[i]})),{party});show('play');if(!ensureScene())return;scene.setGame(game);scene.resize();beginTurn();}
 $('start').onclick=start;$('rematch').onclick=start;$('edit-crew').onclick=lobby;$('camera-reset').onclick=()=>scene?.resize();
 function askLeave(){if(screen!=='play'){show('welcome');return;}$('confirm-dialog').showModal();}
@@ -178,7 +181,7 @@ function finish(){
 function openVote(){clearInterval(clock);render();updateClock(true);votes={tailwind:0,peace:0};voteQueue=game.active.filter(p=>p.rank===null);voteIndex=0;$('vote-dialog').showModal();nextVote();}
 function nextVote(){if(voteIndex>=voteQueue.length){const result=votes.tailwind===votes.peace?(secureDie()>3?'tailwind':'peace'):votes.tailwind>votes.peace?'tailwind':'peace';game.applyEvent(result);$('vote-dialog').close();toast(result==='tailwind'?t('Tailwind! Every move gets +1.','顺风！本轮每次移动 +1。'):t('Peaceful skies! No bumps this round.','和平天空！本轮禁止撞机。'));beginTurn();return;}const p=voteQueue[voteIndex];$('voter-label').textContent=t(`${p.name}, your vote?`,`${p.name}，请选择你的投票`);$('votes-tailwind').textContent=t(`${votes.tailwind} votes`,`${votes.tailwind} 票`);$('votes-peace').textContent=t(`${votes.peace} votes`,`${votes.peace} 票`);document.querySelectorAll('[data-vote]').forEach(b=>b.disabled=p.type==='bot');if(p.type==='bot')later(()=>castVote(secureDie()>3?'tailwind':'peace'),450);}
 function castVote(event){votes[event]++;voteIndex++;nextVote();}document.querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>castVote(b.dataset.vote));$('vote-dialog').addEventListener('cancel',e=>e.preventDefault());
-function finishLocal(){cancel();show('results');const localPlayer=game.active.find(p=>p.type==='human');social.setResult(localPlayer?{rank:localPlayer.rank,name:localPlayer.name}:null);fx.win();const winner=game.players[game.ranking[0]];renderVictory($('results'),winner,{reduced:prefs.reduced,label:t('Golden Wings Celebration','金翼庆典')});$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);$('winner-name').dataset.member=String(winner.member===true);$('winner-name').dataset.annualMember=String(winner.member===true&&winner.annualMember===true);renderResultRankings($('rankings'),game.players,game.ranking,{key:onlineMode?onlineRoomId:'local-'+epoch,online:onlineMode,t});if(!prefs.reduced)for(let i=0;i<45;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background=winner.member&&winner.victoryEffect==='gold'?['#f6ca54','#4d88ff','#fff0b0'][i%3]:'#'+PALETTE[i%4].toString(16).padStart(6,'0');c.style.animationDelay=Math.random()*.7+'s';document.body.append(c);setTimeout(()=>c.remove(),4000);}}
+function finishLocal(){cancel();show('results');const localPlayer=game.active.find(p=>p.type==='human');const localWon=!localPlayer||localPlayer.rank===1;social.setResult(localPlayer?{rank:localPlayer.rank,name:localPlayer.name}:null);if(localWon)fx.win();else fx.lose();const winner=game.players[game.ranking[0]];renderVictory($('results'),winner,{reduced:prefs.reduced,label:t('Golden Wings Celebration','金翼庆典')});$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);$('winner-name').dataset.member=String(winner.member===true);$('winner-name').dataset.annualMember=String(winner.member===true&&winner.annualMember===true);renderResultRankings($('rankings'),game.players,game.ranking,{key:onlineMode?onlineRoomId:'local-'+epoch,online:onlineMode,t});if(!prefs.reduced)for(let i=0;i<45;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background=winner.member&&winner.victoryEffect==='gold'?['#f6ca54','#4d88ff','#fff0b0'][i%3]:'#'+PALETTE[i%4].toString(16).padStart(6,'0');c.style.animationDelay=Math.random()*.7+'s';document.body.append(c);setTimeout(()=>c.remove(),4000);}}
 const pause=ms=>new Promise(r=>setTimeout(r,prefs.reduced?Math.min(ms,100):ms));
 async function demoFlight(){if(game.phase!=='roll'||game.current.type!=='human')return;cancel();const id=epoch,saved=game;const demo=new Game([{name:'You',type:'human'},{name:'Alex',type:'human'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}]);demo.players[0].pieces=[41,-1];demo.players[3].pieces=[6,-1];scene.setGame(demo);game=demo;game.phase='animating';render();updateClock(true);$('demo-status').classList.remove('hidden');await pause(650);if(epoch!==id)return;fx.unlock();await fx.ready;fx.roll();diceBusy=true;syncDieLabel();render();await die.rollTo(4);if(epoch!==id)return;diceBusy=false;demo.phase='roll';demo.roll(4);drawDie(4);const result=demo.move(0);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t('You bumped Coco!','你撞飞了 Coco！'));});if(epoch!==id)return;fx.land();await pause(1100);if(epoch!==id)return;game=saved;scene.setGame(game);$('demo-status').classList.add('hidden');beginTurn();toast(t('Back to your flight.','已恢复你的对局。'));}
 $('demo').onclick=demoFlight;
@@ -229,3 +232,6 @@ window.addEventListener('online',refreshLogin);window.addEventListener('focus',r
 
 
 
+
+import {bindPortalControls} from './portal-controls.js?v=20261104-home';
+bindPortalControls();

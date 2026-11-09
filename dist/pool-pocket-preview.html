@@ -1,0 +1,20 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>袋口入球逐帧验收</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
+<style>body{margin:24px;background:#0b1119;color:#e3edf5;font:16px system-ui}h1{font-size:22px}p{color:#adbdcc}.row{display:grid;grid-template-columns:repeat(6,190px);gap:14px;margin-bottom:22px}canvas{width:190px;height:190px;background:#0b1119}figure{margin:0}figcaption{margin-bottom:6px;font-size:14px}button{padding:8px 16px;background:#243d56;color:white;border:1px solid #62778b;border-radius:6px}</style>
+<h1>袋口入球逐帧验收</h1><p>正式球桌与入袋渲染器的固定时间截帧。逐格检查球体遮挡、连续布面及斜角阴影。</p><button id="play">播放袋内动作</button><main></main>
+<script type="module">
+import{makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES}from './table/pool-table.js';
+import{drawReturnChannel,pocketMotion}from './table/pool-return.js';
+import{poolStart,poolMove}from './table/pool.js';
+const table=document.createElement('canvas');table.width=TABLE_WIDTH*2;table.height=TABLE_HEIGHT*2;const t=table.getContext('2d');t.scale(2,2);makeTable(t);
+const times=[0,40,80,160,300,480],views=[];
+for(const [name,x,y,angle] of [['正面直进上中袋',500,100,2700],['斜向进入上中袋',530,100,2550],['左上角袋',100,100,2250],['右下角袋',900,400,450]]){
+const s=poolStart();for(let id=1;id<16;id++)s.cells[id*3+2]=0;s.cells[0]=x*10;s.cells[1]=y*10;
+const result=poolMove(s,1,30*3600+angle),capture=result.audioEvents.find(e=>e.kind==='pocket'),frame=result.history.map(f=>f.split(',').map(Number)).find(f=>!f[2]);
+const item={...capture,id:0,start:0,scratch:true,x:TABLE_PAD+frame[0]/10,y:TABLE_PAD+frame[1]/10},motion=pocketMotion(item);
+const title=document.createElement('h2');title.textContent=name;document.querySelector('main').append(title);
+const info=document.createElement('p');info.textContent=`正式物理捕获速度 (${item.vx.toFixed(2)}, ${item.vy.toFixed(2)})；袋壁接触 ${motion.contacts.length} 次；落到袋底 ${Math.round(motion.dropAt)} ms`;document.querySelector('main').append(info);
+const row=document.createElement('div');row.className='row';document.querySelector('main').append(row);
+for(const age of times){const f=document.createElement('figure'),cap=document.createElement('figcaption'),canvas=document.createElement('canvas');cap.textContent=age+' ms';canvas.width=440;canvas.height=440;f.append(cap,canvas);row.append(f);views.push({item,age,canvas});}}
+function paint(v,age){const [x,y]=TABLE_HOLES[v.item.holeIndex],c=v.canvas.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,440,440);c.scale(440/150,440/150);c.translate(-(TABLE_PAD+x-65),-(TABLE_PAD+y-65));c.drawImage(table,0,0,TABLE_WIDTH,TABLE_HEIGHT);drawReturnChannel(c,[v.item],age,'pockets');}
+views.forEach(v=>paint(v,v.age));let run=0;document.querySelector('#play').onclick=()=>{const token=++run,start=performance.now();function tick(now){if(token!==run)return;const age=(now-start)%900;views.forEach(v=>paint(v,age));if(now-start<3600)requestAnimationFrame(tick);else views.forEach(v=>paint(v,v.age));}requestAnimationFrame(tick);};
+</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script></html>

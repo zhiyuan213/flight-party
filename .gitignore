@@ -10,3 +10,9 @@ backend/target/
 deploy/backups/
 deploy/secrets/
 *.log
+
+# Local-only artifacts: Maven cache mounted during docker builds, the agent
+# workspace memory/logs, and superseded script backups.
+.m2-cache/
+.workbuddy/
+*.bak

@@ -1,0 +1,34 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>台球分层音效试听</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
+<style>body{background:#101822;color:#e7f0f8;font:18px system-ui;padding:28px;max-width:1050px;margin:auto}h1{font-size:28px}h2{font-size:20px;margin-top:25px}p{color:#a9bfd1;line-height:1.7}button{font:inherit;margin:5px 9px 5px 0;padding:10px 17px;border:1px solid #52718b;border-radius:8px;background:#233b51;color:white}output{display:block;margin:12px 0;color:#efd78e}</style>
+<h1>台球分层音效试听</h1><p>球碰球使用同一 CC0 实录的轻微音色变体；布包胶垫、洞口硬胶、木质落点和木槽滚动各用独立合成。所有按钮调用正式游戏的音频模块。</p>
+<button id="load">加载录音并开启声音</button><output id="status">未加载</output>
+<h2>球碰球 · 树脂实录</h2><div data-kind="ball"><button data-level=".15">轻碰球</button><button data-level=".5">中力碰球</button><button data-level="1">重力碰球</button></div>
+<h2>库边 · 布包胶垫</h2><div data-kind="rail"><button data-level=".15">轻碰库边</button><button data-level=".5">中力碰库</button><button data-level="1">重力碰库</button></div>
+<h2>灰色洞口 · 硬胶防撞</h2><div data-kind="rubber"><button data-level=".15">轻碰硬胶</button><button data-level=".5">中力碰硬胶</button><button data-level="1">大力碰硬胶</button></div>
+<h2>落到洞下 · 木质接球槽</h2><div data-kind="wood-drop"><button data-level=".15">轻落木槽</button><button data-level=".5">中力落木槽</button><button data-level="1">大力落木槽</button></div>
+<h2>强力落袋 · 木腔快速回弹</h2><div data-kind="wood-rattle"><button data-level=".1">较弱木腔回弹</button><button data-level=".5">中等木腔回弹</button><button data-level="1">强力木腔回弹</button></div>
+<h2>进袋全程 · 按实际碰撞播放</h2><div data-kind="pocket"><button data-level=".15">轻力进袋</button><button data-level=".5">中力进袋</button><button data-level="1">大力进袋</button></div>
+<h2>木槽 · 滚动和短木腔回声</h2><div><button data-roll=".0684">桌下滚动（实际强度）</button><button data-roll=".152">明槽滚动（实际强度）</button><button data-roll=".5">较快滚动对照</button><button id="stop">停止试听</button></div>
+<output id="played" aria-live="polite">选择一个声音试听</output>
+<h2>开局与胜利</h2><button id="go">GO（0.52 秒）</button><button id="victory">胜利撒花（1.28 秒）</button>
+<script type="module">
+import {unlockPoolAudio,poolImpact,pocketSoundStages,poolRecordingStatus,setPoolMuted,poolCountdownSound,poolVictorySound} from './table/pool-audio.js?v=20261105-pool15';
+import {pocketMotion} from './table/pool-return.js';
+import {TABLE_PAD} from './table/pool-table.js';
+let timers=[];const played=document.querySelector('#played');
+function stop(){timers.forEach(clearTimeout);timers=[];setPoolMuted(true);setPoolMuted(false);}
+function unlock(){setPoolMuted(false);unlockPoolAudio();}
+document.querySelector('#load').onclick=()=>{unlock();const timer=setInterval(()=>{const s=poolRecordingStatus();document.querySelector('#status').textContent=s;if(s!=='loading')clearInterval(timer)},100);};
+document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{
+ unlock();const kind=b.parentElement.dataset.kind,level=Number(b.dataset.level);stop();
+ if(kind==='pocket'){
+  const item={id:1,holeIndex:1,x:TABLE_PAD+500,y:TABLE_PAD-11,vx:level*8,vy:-level*24,strength:level},motion=pocketMotion(item);
+  for(const [at,,voice,volume]of pocketSoundStages(motion,level))timers.push(setTimeout(()=>poolImpact(voice,volume),at));
+  for(let i=0;i<11;i++)timers.push(setTimeout(()=>poolImpact('wood-roll',.0684),motion.dropAt+i*90));
+  played.textContent='正在播放：'+b.textContent;
+ }else played.textContent=poolImpact(kind,level)?'已播放：'+b.textContent:'音频准备中，请再次点击';
+});
+document.querySelectorAll('[data-roll]').forEach(b=>b.onclick=()=>{unlock();stop();for(let i=0;i<18;i++)timers.push(setTimeout(()=>poolImpact('wood-roll',Number(b.dataset.roll)),i*90));played.textContent='正在播放：'+b.textContent;timers.push(setTimeout(()=>{played.textContent='播放完成：'+b.textContent;},1800));});
+document.querySelector('#stop').onclick=()=>{stop();played.textContent='试听已停止';};
+for(const [id,play]of [['go',()=>poolCountdownSound('GO')],['victory',poolVictorySound]])document.getElementById(id).onclick=()=>{unlock();stop();played.textContent=play()?'已播放：'+document.getElementById(id).textContent:'音频准备中，请再次点击';};
+</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script></html>

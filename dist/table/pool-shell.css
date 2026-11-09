@@ -43,11 +43,13 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-chat-count{font-size:9px;color:#98b1cf}
 .pool-chat-log{flex:1;min-height:100px;overflow:auto;overscroll-behavior:contain;padding:12px 2px;scrollbar-width:thin;scrollbar-color:#49668b transparent}
 .pool-chat-empty{font-size:11px;color:#7d9bbc;line-height:1.7;margin:6px 0}
-.pool-chat-message{margin:0 0 15px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;word-break:break-word}
-.pool-chat-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
-.pool-chat-meta strong{font-size:11px;color:#a5d5ff;overflow:hidden;text-overflow:ellipsis;max-width:175px;white-space:nowrap}
-.pool-chat-meta time{font-size:8px;color:#637f9f;margin-left:auto;font-variant-numeric:tabular-nums}
-.pool-chat-message p{margin:0;color:#e3edf7;white-space:pre-wrap}
+.pool-chat-message{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;word-break:break-word}
+.pool-chat-line{margin:0;min-width:0;color:#e3edf7}
+.pool-chat-line strong{font-size:inherit;color:#a5d5ff}
+.pool-chat-message time{padding-top:3px;font-size:8px;color:#637f9f;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pool-chat-body{white-space:pre-wrap}
+.pool-chat-ball{display:inline-block;width:17px;height:17px;margin-inline-end:2px;vertical-align:middle}
+.pool-chat-emoji .pool-chat-body{font-size:20px;line-height:1.2;vertical-align:-2px}
 .pool-chat-notice{font-size:9px;line-height:1.5;margin:0 1px 8px;color:#87a4c5;min-height:14px;flex:none}
 .pool-chat-panel .reactions-panel{padding:0;margin:0 0 9px;border:0;border-radius:0;background:none;box-shadow:none;flex:none}
 .pool-chat-panel .reaction-buttons{gap:5px;display:grid;grid-template-columns:repeat(6,1fr)}
@@ -94,3 +96,351 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 }
 
 .pool-game .pool-chat-form button:hover:not(:disabled){background:#42628c;color:#fff;border-color:#86a1c4}.pool-game .pool-left-controls .pool-sound:hover:not(:disabled){background:#263f5c;color:#e8f3ff}
+.pool-power-meter{touch-action:none;cursor:ns-resize;width:32px}.power-cue{transition:none}.pool-pocketed{display:flex;gap:3px;min-height:22px}.pool-mini-ball{display:grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 32% 25%,#fff 0%,var(--ball) 38%,#080c19 100%);font:bold 11px sans-serif;color:white;text-shadow:0 1px 2px #000;box-shadow:0 2px 3px #0008}.pool-return{position:absolute;right:0;top:8%;bottom:8%;width:30px;display:flex;flex-direction:column-reverse;gap:3px;align-items:center;padding:8px 2px;border:3px solid #bb944f;border-radius:22px;background:#060b12;box-shadow:inset 0 0 0 2px #493b25;overflow:hidden;pointer-events:none}.pool-return .pool-mini-ball{animation:pool-sink-roll .7s ease-out both}@keyframes pool-sink-roll{from{transform:translateY(-450px) rotate(-720deg)}to{transform:translateY(0) rotate(0)}}@media(prefers-reduced-motion:reduce){.pool-return .pool-mini-ball{animation:none}}
+/* Return channel shares the table canvas, scale and ball artwork. */
+.pool-return{display:none}.pool-game[data-screen="play"] .pool canvas.pool-table-canvas{aspect-ratio:1232/644;width:min(100%,calc((100dvh - 202px)*1.9130))}.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:min(100%,calc((100dvh - 156px)*1.9130))}.pool-pocketed{font-size:9px;color:#91acc4;align-items:center}.pool-matchup .pool-pocketed canvas.pool-target-ball{display:block;width:27px;height:27px;max-height:none;margin:0;box-shadow:none}.pool-matchup .seat-copy{min-width:0}.pool-pocketed{flex-wrap:wrap}.pool-game .pool-table-canvas{touch-action:none}@media(max-width:700px){.pool-game[data-screen="play"] .pool canvas.pool-table-canvas,.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:100%}.pool-matchup .pool-pocketed canvas.pool-target-ball{width:16px;height:16px}.pool-pocketed{gap:1px}}
+.power-cue{left:50%;margin-left:-7px;width:14px;border:0;background:url('../assets/pool/power-cue.svg') center/100% 100% no-repeat;box-shadow:none;filter:drop-shadow(1px 1px 1px #0009)}
+.power-cue:after{display:none}
+/* Reclaim the duplicate turn-caption rows for the table. */
+.pool-matchup{height:60px;min-height:60px}
+.pool-matchup .seat-status{display:none}
+.pool-matchup .seat{padding:3px 0}
+.pool-match-clock{top:4px}
+.pool-round-strip:not(.pool-ended){display:none}
+.pool-game[data-screen="play"] .pool canvas.pool-table-canvas{width:min(100%,calc((100dvh - 162px)*1.9130))}
+.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:min(100%,calc((100dvh - 116px)*1.9130))}
+@media(max-width:760px){.pool-matchup{height:52px;min-height:52px}.pool-match-clock{top:5px}}
+@media(max-width:700px){.pool-game[data-screen="play"] .pool canvas.pool-table-canvas,.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:100%}}
+/* Each countdown phase animates once through the Web Animations API. GO never blocks a shot. */
+.pool-countdown b{animation:none}
+.pool-countdown[data-phase="GO"]{pointer-events:none;background:#020a1750}
+.pool-countdown[data-phase="GO"] b{color:#ffe9a3;text-shadow:0 4px 0 #8a672b,0 10px 30px #155a8c}
+/* Lead-in: one caption-only second before 3 · 2 · 1. No number is shown yet. */
+.pool-countdown[data-phase="READY"] b{display:none}
+.pool-countdown[data-phase="READY"] span{
+  margin-top:0;color:#eaf3ff;font-size:clamp(22px,4.2vmin,44px);
+  letter-spacing:.14em;text-shadow:0 0 26px #8ab4ff99;
+  animation:pool-ready-in .9s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes pool-ready-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.pool-countdown[data-phase="READY"] span{animation:none}}
+
+/* Pool results occupy the viewport without replacing the real rematch action. */
+.pool-game .pool-round-strip{display:none}
+.pool-result-overlay{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:24px;border:0;border-radius:0;background:transparent;box-shadow:none;color:#eaf4ff;overflow:hidden}
+.pool-result-overlay[open]{display:grid;place-items:center}
+.pool-result-overlay::backdrop{background:#030a15b8;backdrop-filter:blur(5px)}
+.pool-result-card{--result-accent:#f4d78c;position:relative;z-index:1;width:min(460px,100%);max-height:calc(100dvh - 48px);overflow:auto;padding:30px 34px 28px;border:1px solid #c9a76280;border-radius:26px;text-align:center;background:radial-gradient(ellipse at 50% 0,#715c303a,transparent 62%),linear-gradient(160deg,#192c43,#0d192b 75%);box-shadow:0 24px 85px #0009,inset 0 1px #ffffff14;animation:pool-result-arrive .32s ease-out both}
+.pool-result-overlay[data-outcome="loss"] .pool-result-card{--result-accent:#b6cdee;border-color:#7796bf88;background:radial-gradient(ellipse at 50% 0,#536f9840,transparent 65%),linear-gradient(160deg,#192c43,#0d192b 75%)}
+.pool-result-overlay[data-outcome="draw"] .pool-result-card{--result-accent:#8cded5;border-color:#6dbbb388}
+.pool-result-label{margin:2px 0 5px;color:var(--result-accent);font-size:11px;font-weight:700;letter-spacing:4px}
+.pool-result-emblem{position:relative;display:grid;place-items:center;width:114px;height:114px;margin:2px auto 5px;border-radius:50%;background:radial-gradient(circle,#e2bd5440,transparent 69%)}
+.pool-result-emblem::before,.pool-result-emblem::after{content:'✦';position:absolute;color:var(--result-accent);font-size:23px;top:18px;left:5px;transform:rotate(-14deg)}
+.pool-result-emblem::after{font-size:15px;top:69px;left:auto;right:4px;transform:rotate(12deg)}
+.pool-result-emblem canvas{display:block;width:108px;height:108px}
+.pool-result-emblem svg{display:block;width:66px;height:66px;color:var(--result-accent);filter:drop-shadow(0 4px 16px #0006)}
+.pool-result-card h2{margin:0;color:#fff4d4;font-size:clamp(27px,5vw,36px);font-weight:900;line-height:1.3;letter-spacing:-.5px;overflow-wrap:anywhere}
+.pool-result-overlay[data-outcome="loss"] h2,.pool-result-overlay[data-outcome="draw"] h2{color:var(--result-accent)}
+.pool-result-description{margin:11px 0 23px;color:#a5bbd2;font-size:13px;line-height:1.65}
+.pool-result-players{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:25px}
+.pool-result-player{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px;padding:17px 10px;background:#06112266;border:1px solid #6984a433;border-radius:14px}
+.pool-result-player strong{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e3edf8;font-size:14px;font-weight:700}
+.pool-result-player>span{color:#91a9c2;font-size:11px}
+.pool-result-player.winner{border-color:#d5b5657a;background:#a9822214}
+.pool-result-winner{position:absolute;top:-9px;right:10px;padding:2px 7px;border-radius:5px;background:#d8bc73;color:#32260c;font-size:9px;line-height:1.3}
+.pool-result-actions{display:flex;flex-direction:column;gap:10px}
+.pool-result-card #again{width:100%;min-height:49px;margin:0;padding:12px 18px;border:1px solid #ffdfa0;border-radius:12px;background:linear-gradient(#f6d88a,#d8ac52);box-shadow:0 5px 15px #0003,inset 0 1px #fff5;color:#30240f;font-size:16px;font-weight:800}
+.pool-result-card #again:hover:not(:disabled){background:linear-gradient(#ffe6a6,#e5ba65);border-color:#fff0c0;color:#30240f}
+.pool-result-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pool-result-card .pool-result-nav button{width:100%;min-height:38px;padding:8px 10px;border:1px solid #8fa8c438;border-radius:10px;background:#ffffff08;box-shadow:none;color:#cbd8ea;font-size:12px;font-weight:700}
+.pool-result-card .pool-result-nav button:hover{background:#aec9ed1c;border-color:#a9bdd366;color:#fff}
+.pool-result-card .pool-result-close{position:absolute;top:13px;right:13px;display:grid;place-items:center;width:33px;height:33px;min-height:33px;margin:0;padding:0;border:0;border-radius:50%;background:#93abc40d;box-shadow:none;color:#9cb2ca;font-size:25px;font-weight:400;line-height:1}
+.pool-result-card .pool-result-close:hover{background:#abc6e31a;color:#eff6ff}
+.pool-result-card button:focus-visible,.pool-result-open:focus-visible{outline:2px solid #fff1bc;outline-offset:3px}
+.pool-result-note{margin:15px 0 0;color:#e5d2a0;font-size:12px;line-height:1.65}
+.pool-game[data-screen="play"] .pool-result-open{flex:none;min-height:34px;width:calc(100% - 24px);margin:0 12px 9px;padding:7px 12px;border:1px solid #8c7852;border-radius:10px;background:#283343;color:#e6ce93;box-shadow:none;font-size:11px}
+.pool-result-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+body>.pool-result-confetti{position:fixed;z-index:100}
+.pool-result-confetti i{position:absolute;left:var(--x);top:-24px;width:var(--width);height:calc(var(--width)*1.6);border-radius:1px;background:var(--color);opacity:0;animation:pool-confetti-fall var(--duration) var(--delay) linear both}
+.pool-result-confetti i:nth-child(3n){border-radius:50%;height:var(--width)}
+/* Linear travel keeps an even top-to-bottom density. Fading only in the last
+   10% also removes the long invisible tail that used to empty the screen. */
+@keyframes pool-confetti-fall{0%{opacity:0;transform:translate3d(0,-4vh,0) rotate(0)}6%{opacity:1}90%{opacity:.95}100%{opacity:0;transform:translate3d(var(--drift),112vh,0) rotate(var(--spin))}}
+@keyframes pool-result-arrive{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:480px){.pool-result-overlay{padding:16px}.pool-result-card{padding:25px 23px 20px;max-height:calc(100dvh - 32px);border-radius:22px}.pool-result-emblem{width:98px;height:98px}.pool-result-emblem canvas{width:94px;height:94px}.pool-result-description{margin-bottom:19px}.pool-result-players{margin-bottom:20px}.pool-result-nav{gap:8px}.pool-result-card .pool-result-nav button{font-size:11px;padding:7px 6px}}
+@media(prefers-reduced-motion:reduce){.pool-result-card{animation:none}.pool-result-confetti{display:none}.pool-result-confetti i{animation:none}}
+
+/* Size the controls and table as one group: a height-limited canvas must not leave a gap beside the cue. */
+.pool-game[data-screen="play"] .game-panel .board.pool{grid-template-rows:minmax(0,1fr);row-gap:0}
+.pool-game[data-screen="play"] .pool-left-controls{grid-row:1}
+.pool-game[data-screen="play"] .pool-note{display:none}
+@media(min-width:761px){
+ .pool-game[data-screen="play"] .game-panel{padding:6px 8px}
+ .pool-game[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 118px);width:min(100%,calc(var(--pool-table-height)*1232/644 + 70px));flex:0 1 auto;margin:auto;grid-template-columns:64px minmax(0,1fr);column-gap:6px}
+ .pool-game.portal-embedded[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 72px)}
+ .pool-game[data-screen="play"] .pool-table-wrap{place-items:center;align-self:center}
+ .pool-game[data-screen="play"] .pool canvas.pool-table-canvas,.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:100%;height:auto;max-width:100%;max-height:none;aspect-ratio:1232/644;margin:0}
+}
+
+/* Match identities face the clock; target rows stay in seven fixed positions. */
+.pool-matchup{container-type:inline-size;width:min(1080px,calc(100% - 90px));height:84px;min-height:84px;margin:0 auto}
+.pool-matchup #seats{gap:clamp(48px,8.9cqw,96px)}
+.pool-matchup .seat{gap:clamp(4px,1.1cqw,12px);padding:2px 0;transition:opacity .25s,filter .25s}
+.pool-matchup .seat:not(.active){opacity:.42;filter:saturate(.7)}
+.pool-matchup .seat:first-child{flex-direction:row-reverse;text-align:right}
+.pool-matchup .seat:nth-child(2){flex-direction:row;text-align:left}
+.pool-matchup .seat-copy{gap:2px}
+.pool-matchup .seat:first-child .seat-name{justify-content:flex-end}
+.pool-matchup .seat:nth-child(2) .seat-name{justify-content:flex-start}
+.pool-matchup .seat-name{flex-wrap:nowrap;min-height:19px}
+.pool-matchup .seat-name strong{max-width:260px}
+.pool-matchup .avatar-shell{width:clamp(26px,5.55cqw,60px);height:clamp(26px,5.55cqw,60px);flex-basis:clamp(26px,5.55cqw,60px)}
+.pool-matchup .avatar-frame{inset:-17%;width:134%;height:134%}
+.pool-matchup .pool-pocketed{flex-wrap:nowrap;gap:clamp(0px,.37cqw,4px);min-height:0}
+.pool-matchup .seat:first-child .pool-pocketed{justify-content:flex-end}
+.pool-matchup .seat:nth-child(2) .pool-pocketed{justify-content:flex-start}
+.pool-matchup .pool-pocketed canvas.pool-target-ball{width:clamp(16px,5cqw,54px);height:clamp(16px,5cqw,54px);flex:none}
+.pool-matchup .pool-pocketed:empty{display:none}
+/* Defensive: an older cached script may still create placeholder recesses. */
+.pool-target-empty{display:none!important}
+.pool-match-clock{top:50%;transform:translate(-50%,-50%)}
+@media(min-width:761px){
+ .pool-game[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 142px);width:min(100%,calc(var(--pool-table-height)*1232/644 + 86px));grid-template-columns:80px minmax(0,1fr)}
+ .pool-game.portal-embedded[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 96px)}
+ .pool-game[data-screen="play"] .pool-hit{width:80px}
+ .pool-game[data-screen="play"] .pool canvas.pool-spot{width:78px;height:78px;max-width:78px;max-height:78px}
+ .pool-game[data-screen="play"] .pool .pool-sound,.pool-game[data-screen="play"] .pool .pool-spot-reset{width:76px;font-size:10px;min-height:25px}
+ .pool-game[data-screen="play"] .pool .pool-sound{min-height:29px;font-size:11px}
+ .pool-power-meter{width:42px;max-height:600px}
+ .power-cue{width:18px;margin-left:-9px}
+ .pool-power-value{font-size:12px}
+}
+@media(max-width:760px){
+ .pool-matchup{width:calc(100% - 40px);height:60px;min-height:60px;margin-left:40px}
+ .pool-matchup .seat-name{min-height:14px;gap:3px}
+ .pool-matchup .seat-name strong{font-size:10px;max-width:100px}
+ .pool-matchup .member-label{display:none}
+ .pool-match-clock{width:34px;height:38px}
+}
+
+.table-chat-layout#arena{max-width:none;min-height:calc(100dvh - var(--table-header));grid-template-columns:minmax(0,1fr) minmax(220px,290px) minmax(220px,280px);gap:12px;padding:8px}
+.table-chat-layout .game-panel{min-height:0;padding:0;position:relative}
+.table-chat-layout .game-panel h1,.table-chat-layout .board-top #mode{display:none}
+.table-chat-layout .board-top{position:absolute;inset:5px auto auto 5px;z-index:3}
+.table-chat-layout .board-top button{font-size:0;width:30px;padding:0}
+.table-chat-layout .board-top button::before{content:'←';font-size:21px}
+.table-chat-layout .game-panel>.board:not(.cards):not(.sketch){width:min(100%,calc(100dvh - var(--table-header) - 18px));max-width:none;margin:auto}
+.table-chat-layout>.pool-chat-panel{display:flex;flex-direction:column;min-height:0;height:calc(100dvh - var(--table-header) - 16px);padding:16px 12px;background:linear-gradient(#203657,#172844);color:#e7f1fb;position:sticky;top:0;overflow:hidden}
+.table-chat-layout>.pool-chat-panel .pool-chat-log{min-height:0}
+@media(max-width:920px){.table-chat-layout#arena{grid-template-columns:minmax(0,1fr) minmax(200px,265px)}.table-chat-layout>.pool-chat-panel{grid-column:2;grid-row:1;height:min(70dvh,600px)}.table-chat-layout>.play-sidebar{grid-column:1/-1}}
+@media(max-width:620px){.table-chat-layout#arena{grid-template-columns:minmax(0,1fr)}.table-chat-layout>.pool-chat-panel{grid-column:1;grid-row:auto;position:static;height:340px}.table-chat-layout>.play-sidebar{grid-column:1}.table-chat-layout .game-panel>.board:not(.cards):not(.sketch){width:100%}}
+.portal-embedded[data-screen="play"]{--table-header:0px}
+.portal-embedded[data-screen="play"]>header{display:none}
+
+.pool-chat-system .pool-chat-line,.pool-chat-system .pool-chat-line strong{color:var(--system-color,#f3f6ff)}
+
+.pool-chat-system[data-kind="foul"]{--system-color:#ff929d}
+.pool-chat-system[data-kind="reward"]{--system-color:#86e9ab}
+.pool-feedback{position:absolute;top:28%;left:50%;transform:translateX(-50%);z-index:5;display:grid;justify-items:center;gap:8px;pointer-events:none}
+.pool-feedback span{padding:.36em .95em;border:1px solid #ff929d88;border-radius:14px;background:#402330;color:#fff2f5;font-size:clamp(19px,2.4vw,36px);font-weight:800;box-shadow:0 8px 25px #0005}
+.pool-feedback [data-kind="reward"]{background:#173b31;color:#b7ffd3;border-color:#86e9ab88}
+.pool-feedback [data-kind="groups"]{background:#172b49;color:#eef5ff;border-color:#8eb5ed99}
+.table-home-theme[data-screen="play"]{background:#0b1120;color:#e6edf8}
+.table-home-theme[data-screen="play"]:not(.pool-game) .game-panel{background:#111a30;border-color:#263654}
+.table-home-theme[data-screen="play"]:not(.pool-game) .play-sidebar>section{background:#151f37;color:#e6edf8;border-color:#303e60}
+.table-home-theme[data-screen="play"]:not(.pool-game) .play-sidebar h2{color:#e6edf8}
+.table-chat-layout#arena{align-items:stretch}
+.table-chat-layout .game-panel>.board.puzzle{width:min(100%,calc((100dvh - var(--table-header) - 20px) * 1.778))}
+@media(min-width:921px){.table-chat-layout#arena>.pool-chat-panel{grid-column:3;grid-row:1}}
+@media(min-width:621px) and (max-width:920px){
+ .table-chat-layout#arena>.pool-chat-panel{grid-column:2;grid-row:1/3}
+ .table-chat-layout#arena>.play-sidebar{grid-column:1}
+}
+
+.pool-result-confetti:is([data-outcome="win"],[data-outcome="loss"]) i{animation-iteration-count:infinite}
+.pool-countdown b{font-size:clamp(76px,16vmin,220px)}
+.pool-countdown span{font-size:clamp(20px,3.4vmin,38px)}
+
+.board-countdown .game-panel>.pool-countdown{z-index:4}
+
+.board-countdown .table-chat-layout .board-top{z-index:6}
+/* The READY / 3-2-1 overlay blocks the board, but "back to game home" must be
+   clickable from the very first frame of a match, not only after GO clears it.
+   Works for every countdown game (pool, snooker, bubbles, chess, four), not
+   just the ones that use the table-chat layout. */
+body.board-countdown[data-screen="play"] .game-panel>.board-top{z-index:7}
+body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-events:auto}
+.table-chat-layout .play-sidebar .seat{background:#1c2945;color:#e6edf8;border-color:#354968}
+.table-chat-layout .play-sidebar .seat.active{background:#253757;border-color:#819ee3}
+.table-chat-layout .play-sidebar .seat-status,.table-chat-layout .play-sidebar p{color:#a9badd}
+.table-chat-layout .play-sidebar .turn-panel{background:#151f37}
+.table-chat-layout .play-sidebar button,.table-chat-layout .board-top button{background:#192846;color:#e6edf8;border-color:#3a5076;box-shadow:none}
+.table-chat-layout .game-panel>.board.cards{width:min(96%,1350px);max-width:none;margin:auto;container-type:inline-size}
+.table-chat-layout .cards .card-table{padding:clamp(16px,5cqw,62px) 12px;font-size:clamp(12px,2cqw,22px)}
+.table-chat-layout .cards .playing-card{width:clamp(42px,9cqw,112px);height:auto;aspect-ratio:65/95;font-size:clamp(24px,5cqw,56px)}
+.table-chat-layout .cards .card-hand{padding:clamp(10px,4cqw,45px) 0}
+
+.pool-chat-log{display:flex;flex-direction:column}
+.pool-chat-log::before{content:'';flex:1 0 0}
+.pool-chat-log>*{flex-shrink:0}
+.pool-chat-log .pool-chat-message{margin-bottom:4px;line-height:1.4}
+.pool-game{--pool-player-text-size:15px}
+.pool-game .pool-matchup .seat-name strong,
+.pool-game .pool-chat-log .pool-chat-message{font-size:var(--pool-player-text-size)}
+@media(max-width:1000px){.pool-game{--pool-player-text-size:13px}}
+@media(max-width:760px){.pool-game{--pool-player-text-size:12px}}
+.pool-chat-log .pool-chat-message time{padding-top:1px}
+.connect-four-game .table-chat-layout .game-panel{
+  container-type:inline-size;
+  padding-top:var(--four-launch-height,12dvh);
+}
+.connect-four-game .table-chat-layout .game-panel>.board{
+  --four-width:min(96cqw,calc(100dvh - var(--table-header) - 36px));
+  width:var(--four-width);
+  margin:0 auto auto;
+}
+/* Connect Four: recessed slots, glossy counters, opaque held coin and a 50%-opacity landing hint. */
+.connect-four-game{
+  --four-one:radial-gradient(circle at 32% 24%,#fff8d6 0%,#ffd878 24%,#f2b33c 58%,#c47d1c 88%,#8a4f10 100%);
+  --four-two:radial-gradient(circle at 32% 24%,#ffe0e8 0%,#ffa7b8 24%,#e85b79 58%,#a62d54 88%,#6e1837 100%);
+  --four-hole:radial-gradient(circle at 50% 34%,#0a1330 0%,#111e42 62%,#1c2d5b 100%);
+}
+.connect-four-game.table-home-theme[data-screen="play"] .game-panel{
+  background:radial-gradient(ellipse 70% 55% at 50% 0%,#3b56a055,transparent 70%),radial-gradient(ellipse 65% 45% at 50% 100%,#1d356a4d,transparent 75%),linear-gradient(165deg,#101b33,#0a1122 72%);
+  border-color:#2a3a60;
+  box-shadow:inset 0 1px 0 #ffffff12,inset 0 -30px 60px #050a18a8;
+}
+.connect-four-game .table-chat-layout .game-panel>.board:not(.cards):not(.sketch){
+  width:min(96cqw,calc(100dvh - var(--table-header) - 52px));
+  max-width:none;
+  margin:0 auto auto;
+}
+.connect-four-game .board{
+  background:linear-gradient(155deg,#4b6ad0 0%,#3149a6 42%,#1d2d78 100%);
+  border:1px solid #8ea9ff80;
+  border-bottom:9px solid #14215e;
+  border-radius:22px;
+  box-shadow:0 26px 55px #0009,inset 0 2px 0 #ffffff55,inset 0 -20px 36px #0a133a80;
+}
+.connect-four-game .board .cell[data-value="0"]{
+  background:var(--four-hole);
+  box-shadow:inset 0 6px 11px #000a,inset 0 -2px 1px #6f8dff33,0 1px 0 #b9ccff24;
+}
+.connect-four-game .board .cell[data-value="0"]:hover:not(:disabled){background:var(--four-hole)}
+.connect-four-game .board .cell.four-col-hover[data-value="0"]:not(:disabled){
+  background:radial-gradient(circle at 50% 34%,#1b3160,#0e1b3d 68%,#2a4486);
+  box-shadow:inset 0 6px 11px #000a,inset 0 0 0 2px #8fb0ff55,0 0 18px #4774ff66;
+}
+.connect-four-game .board .cell.four-landing[data-value="0"]:not(:disabled){
+  background:radial-gradient(circle at 50% 36%,#242b4c,#101830 70%);
+  box-shadow:inset 0 6px 11px #0008,inset 0 0 0 2px #ffd87877,0 0 22px #ffd87844;
+}
+.connect-four-game .board .cell[data-value="1"]{background:var(--four-one);box-shadow:inset 0 2px 3px #fff9,inset 0 -6px 9px #0004,0 3px 7px #0007}
+.connect-four-game .board .cell[data-value="2"]{background:var(--four-two);box-shadow:inset 0 2px 3px #fff9,inset 0 -6px 9px #0004,0 3px 7px #0007}
+.connect-four-game .board .cell[data-value="1"]::before,
+.connect-four-game .board .cell[data-value="2"]::before{
+  display:block;inset:13%;width:auto;height:auto;background:none;filter:none;
+  border:1px solid #ffffff4d;border-radius:50%;
+  box-shadow:inset 0 1px 2px #0003,0 1px 0 #ffffff2e;
+}
+.connect-four-game .board .cell.last::after{inset:40%;border:2px solid #fff;box-shadow:0 0 10px #ffffffcc,inset 0 0 6px #ffffffaa}
+.connect-four-game .board .cell[data-value="1"]:hover:not(:disabled){background:var(--four-one)}
+.connect-four-game .board .cell[data-value="2"]:hover:not(:disabled){background:var(--four-two)}
+.connect-four-game .board .cell.four-drop-hidden[data-value]{
+  background:var(--four-hole);
+  box-shadow:inset 0 6px 11px #000a,inset 0 -2px 1px #6f8dff33,0 1px 0 #b9ccff24;
+}
+.connect-four-game .table-chat-layout .board-top button{
+  width:34px;height:34px;border-radius:10px;
+  border-color:#3d4f78;background:#182744e0;color:#c9d8f5;box-shadow:0 3px 10px #0006;
+}
+.connect-four-game .table-chat-layout .play-sidebar>section{
+  background:linear-gradient(160deg,#182642,#111b31);border-color:#2f4067;
+  box-shadow:0 10px 26px #0004,inset 0 1px 0 #ffffff0d;
+}
+/* The shared turn card is forced light by table.css; keep it on-theme here. */
+.connect-four-game .table-chat-layout .play-sidebar .turn-panel{
+  background:linear-gradient(160deg,#203455,#15223b)!important;
+  border-color:#3a4c73;color:#e6edf8;
+}
+.connect-four-game .table-chat-layout .play-sidebar .turn-panel h2,
+.connect-four-game .table-chat-layout .play-sidebar #status{color:#f2f6ff}
+.connect-four-game .table-chat-layout .play-sidebar .turn-panel .eyebrow{color:#93a9d8}
+.connect-four-game .table-chat-layout .play-sidebar .turn-panel #turn-instruction,
+.connect-four-game .table-chat-layout .play-sidebar .turn-panel p{color:#a9badd}
+.connect-four-game #message{background:#1d2b47;border-color:#3c5076;color:#d6e3f8;box-shadow:0 8px 24px #0006}
+.connect-four-game .table-chat-layout>.pool-chat-panel{
+  background:linear-gradient(160deg,#1a2c4c,#111c33);
+  border:1px solid #2f4067;border-radius:18px;
+}
+.four-drop-marker{position:absolute;z-index:3;pointer-events:none;width:var(--coin-size);height:var(--coin-size);translate:-50% -50%;opacity:1}
+.four-drop-marker i{
+  position:absolute;inset:0;border-radius:50%;background:var(--four-one);
+  box-shadow:0 0 0 3px #ffffff1a,0 10px 22px #0009,inset 0 2px 3px #fff9,inset 0 -6px 9px #0004;
+}
+.four-drop-marker i::after{
+  content:'';position:absolute;inset:13%;border-radius:50%;
+  border:1px solid #ffffff4d;box-shadow:inset 0 1px 2px #0003,0 1px 0 #ffffff2e;
+}
+.four-drop-marker[data-player="2"] i{background:var(--four-two)}
+.four-drop-marker span{position:absolute;left:23%;top:-27%;width:90%;height:auto}
+.four-drop-marker[data-mode="preview"] span{display:none}
+.four-drop-ghost{
+  position:absolute;z-index:2;pointer-events:none;width:var(--coin-size);height:var(--coin-size);
+  border-radius:50%;translate:-50% -50%;background:var(--four-one);opacity:.5;
+  box-shadow:0 0 0 2px #ffe6a680,0 0 22px #ffd87855,inset 0 2px 3px #fff9,inset 0 -6px 9px #0004;
+  transition:left .1s ease,top .1s ease;
+}
+.four-drop-ghost::after{content:'';position:absolute;inset:9%;border:2px dashed #fff6d9;border-radius:50%}
+.four-drop-ghost[data-player="2"]{background:var(--four-two)}
+.four-drop-beam{
+  position:absolute;z-index:1;pointer-events:none;width:calc(var(--coin-size) * .3);
+  translate:-50% 0;border-radius:999px;opacity:.32;
+  background:linear-gradient(180deg,#ffd87800,#ffd87855 22%,#ffd87822 78%,#ffd87800);
+}
+.four-drop-beam[data-player="2"]{background:linear-gradient(180deg,#e85b7900,#e85b7955 22%,#e85b7922 78%,#e85b7900)}
+.four-drop-marker[hidden],.four-drop-ghost[hidden],.four-drop-beam[hidden]{display:none!important}
+
+.table-chat-layout .game-panel > .board.arcade-board:not(.cards):not(.sketch) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-content: center;
+  background: none;
+  box-shadow: none;
+  padding: 8px;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  gap: 8px;
+  border: 0;
+}
+.arcade-board canvas {
+  display: block;
+  width: min(100%, calc((100dvh - 120px) * 1.96));
+  height: auto;
+  touch-action: none;
+}
+.arcade-board.bubbles canvas {
+  width: min(100%, calc((100dvh - 120px) * .47));
+  border: 1px solid rgba(196,132,255,.45);
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px rgba(112,52,196,.22), 0 20px 60px rgba(78,24,156,.45);
+}
+.arcade-board.bubbles .arcade-controls button {
+  background: linear-gradient(135deg,#a45cff,#ff56ac);
+  border: 1px solid #dcb2ff;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 10px;
+  box-shadow: 0 6px 22px rgba(164,92,255,.4);
+}
+.arcade-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+}
+.arcade-controls label[hidden] { display: none; }
+.arcade-controls input { width: min(25vw, 180px); margin: 0; padding: 0; vertical-align: middle; }

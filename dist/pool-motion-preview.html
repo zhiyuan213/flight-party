@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><title>台球动作验收 · 白球与回球槽</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
+<link rel="stylesheet" href="/table/pool-shell.css">
+<style>
+[hidden]{display:none!important}body{margin:18px;background:#0b111b;color:#dce8f4;font:15px system-ui}h1{font-size:22px;margin:0 0 6px}p{margin:8px 0;color:#aabed0}button{font:inherit;margin:4px 7px 4px 0;padding:9px 13px;border:1px solid #47637e;background:#1b3047;color:#e8f2fb;border-radius:7px;cursor:pointer}#status{display:block;margin:10px 0;color:#f1d78a;min-height:22px}#board{display:grid;grid-template-columns:64px 1fr;gap:10px;max-width:1640px}.pool-table-canvas{width:100%}.pool-table-wrap{width:100%}.pool-note{grid-column:2}.pool-left-controls{height:620px}details{max-width:1640px;margin:14px 0}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #263b50}code{color:#b0d5f6}#timing{font-variant-numeric:tabular-nums}
+</style>
+<h1>台球动作验收 · 白球与回球槽</h1>
+<p>白球场景运行正式物理规则；六袋场景只构造同步落袋回放，使用正式渲染和回球动画。此页不联网提交成绩。</p>
+<nav><button id="scratch-middle">白球进上中袋</button><button id="scratch-corner">白球进左上角袋</button><button id="six-pockets">六袋同时落袋 · 回弹检查</button><button id="countdown">3 · 2 · 1 · GO 倒计时</button><button id="reset">恢复开局</button></nav>
+<output id="status" aria-live="polite">准备就绪</output><div id="arena"></div>
+<nav><button id="pass-top">沿上边横穿中袋</button><button id="pass-bottom">沿下边横穿中袋</button><button id="rest-mouth">球停在中袋前</button><button id="hit-jaw">碰中袋左胶垫</button><button id="direct-pot">正面直进中袋</button><button id="angled-pot">斜向进入中袋</button><button id="opponent-shot">对手瞄准与出杆</button></nav>
+<output id="physics-check" aria-live="polite">袋口物理验收：请选择场景</output>
+<details open><summary>本次动作时间与槽位</summary><p id="timing-note">时间来自正式回球条目的计时；按实际到达出口顺序分配槽位。单位毫秒。</p><table><thead><tr><th>球 / 袋位</th><th>桌下路径</th><th>计划出槽</th><th>首次接触</th><th>完全停下</th><th>当前阶段</th></tr></thead><tbody id="timing"></tbody></table></details>
+<script type="module">
+import {poolStart,poolMove,poolBot,renderPool} from '/table/pool.js';
+import {animatePoolOpponentShot,cancelPoolOpponentShot} from '/table/pool-view.js?v=20261105-pool15';
+import {returnTiming,POCKET_DURATION} from '/table/pool-return.js';
+import {TABLE_PAD,TABLE_HOLES} from '/table/pool-table.js';
+import {unlockPoolAudio} from '/table/pool-audio.js?v=20261105-pool15';
+import {cancelPoolCountdown} from '/table/pool-countdown.js';
+let host,state,watchToken=0,scenario='开局',scratchSeen=false,scratchStart=0;
+const status=document.querySelector('#status'),timing=document.querySelector('#timing'),names=['左上','上中','右上','左下','下中','右下'];
+function mount(initial=poolStart()){
+  watchToken++;
+  if(host){cancelPoolOpponentShot(host);host._animationToken=(host._animationToken||0)+1;cancelPoolCountdown(host);}
+  host=document.createElement('div');host.id='board';document.querySelector('#arena').replaceChildren(host);state=initial;scratchSeen=false;scratchStart=0;timing.replaceChildren();
+  host.addEventListener('click',e=>{const b=e.target.closest('[data-position]');if(b){state=poolMove(state,state.turn,Number(b.dataset.position));renderPool(host,state,true);observe();}});
+  renderPool(host,state,true);
+}
+function ms(v){return Number.isFinite(v)?Math.round(v):'—';}
+function observe(){
+  const token=++watchToken;let idleFrames=0;
+  const tick=now=>{
+    if(token!==watchToken)return;
+    const entries=host._returns||[],rows=[];
+    for(const e of entries){const t=returnTiming(e),age=now-e.start;if(e.scratch){scratchSeen=true;scratchStart=e.start;}
+      const localX=e.x-TABLE_PAD,localY=e.y-TABLE_PAD,hi=TABLE_HOLES.reduce((best,h,i)=>Math.hypot(localX-h[0],localY-h[1])<Math.hypot(localX-TABLE_HOLES[best][0],localY-TABLE_HOLES[best][1])?i:best,0);
+      const phase=e.scratch?(age<POCKET_DURATION?'白球袋内动作':'等待复位'):now<t.exitAt?'袋内 / 桌下输送':now<t.impactAt?'沿槽滚动':now<t.completeAt?'轻微回弹':'静止';
+      rows.push(`<tr><td>${e.id===0?'白球':e.id+'号'} / ${names[hi]}${e.scratch?'':' / 槽位'+(t.slot+1)}</td><td>${e.scratch?'不进入回球槽':t.distance}</td><td>${ms(t.exitAt-e.start)}</td><td>${ms(t.impactAt-e.start)}</td><td>${ms(t.completeAt-e.start)}</td><td>${phase}</td></tr>`);
+    }
+    if(scratchSeen&&!entries.some(e=>e.scratch))rows.unshift(`<tr><td>白球</td><td>不占回球槽位</td><td>—</td><td>—</td><td>${POCKET_DURATION}</td><td>袋内动作已结束，检查台面复位</td></tr>`);
+    timing.innerHTML=rows.join('');
+    const overlay=host.querySelector('.pool-countdown'),label=overlay&&!overlay.hidden?overlay.querySelector('b').textContent:null;
+    if(label)status.textContent=`${scenario} · 正式倒计时：${label}`;
+    else if(host._opponentCue)status.textContent=`${scenario} · 对手${host._opponentCue.guide?'瞄准 / 后拉':'出杆'} · 后拉 ${host._opponentCue.pull.toFixed(1)}`;
+    else if(host._animating)status.textContent=`${scenario} · 动画播放中${scratchSeen?' · 白球袋内已过 '+ms(now-scratchStart)+' ms':''}`;
+    else status.textContent=`${scenario} · ${state.fen||'准备就绪'}${scratchSeen?' · 白球袋内动作完成后复位':''}`;
+    const active=host._animating||host._opponentCue||label||entries.some(e=>now<returnTiming(e).completeAt);
+    idleFrames=active?0:idleFrames+1;if(idleFrames<12)requestAnimationFrame(tick);
+  };requestAnimationFrame(tick);
+}
+function scratch(corner){
+  unlockPoolAudio();const s=poolStart();s.cells[0]=corner?1200:5000;s.cells[1]=1200;
+  scenario=corner?'白球进左上角袋':'白球进上中袋';mount(s);host._angle=corner?2250:2700;host._paint(state.cells);
+  state=poolMove(state,state.turn,55*3600+(corner?2250:2700));renderPool(host,state,true);observe();
+}
+document.querySelector('#scratch-middle').onclick=()=>scratch(false);
+document.querySelector('#scratch-corner').onclick=()=>scratch(true);
+document.querySelector('#opponent-shot').onclick=async()=>{
+  unlockPoolAudio();scenario='电脑实际指令出杆';mount();state.turn=2;renderPool(host,state,false);
+  const activeHost=host,initial=state,command=poolBot(state);const preparing=animatePoolOpponentShot(host,command,()=>host===activeHost);observe();
+  if(await preparing){state=poolMove(initial,2,command);renderPool(host,state,false);observe();}
+};
+for(const [id,x,y,power,angle,rest]of [['pass-top',400,16,5,0,false],['pass-bottom',400,484,5,0,false],['rest-mouth',250,250,1,0,true],['hit-jaw',500,50,30,2400,false],['direct-pot',500,100,30,2700,false],['angled-pot',530,100,30,2550,false]]){
+  document.getElementById(id).onclick=()=>{
+    unlockPoolAudio();scenario=document.getElementById(id).textContent;
+    const s=poolStart();for(let i=1;i<16;i++)s.cells[i*3+2]=0;
+    s.cells[0]=x*10;s.cells[1]=y*10;
+    if(rest){s.cells[3]=5000;s.cells[4]=0;s.cells[5]=1;}
+    mount(s);host._angle=angle;host._paint(state.cells);
+    state=poolMove(s,1,power*3600+angle);
+    const events=state.audioEvents,frames=state.history.map(f=>f.split(',').map(Number));
+    document.getElementById('physics-check').textContent=`${scenario}：落袋 ${events.filter(e=>e.kind==='pocket').length} 次，胶垫碰撞 ${events.filter(e=>e.kind==='rail').length} 次；${rest?'洞口目标球仍在：'+(state.cells[5]===1):'白球落袋前最后球心：'+(frames.find(f=>!f[2])?.slice(0,2).map(v=>v/10).join(', ')||'没有落袋')}`;
+    renderPool(host,state,true);observe();
+  };
+}
+document.querySelector('#six-pockets').onclick=()=>{
+  unlockPoolAudio();scenario='六袋同步落袋回放';const s=poolStart();
+  TABLE_HOLES.forEach(([x,y],i)=>{s.cells[(i+1)*3]=(x===0?65:x===1000?935:500)*10;s.cells[(i+1)*3+1]=(y===0?65:435)*10;});mount(s);
+  const start=s.cells.slice(),history=[];let last;
+  for(let frame=0;frame<=30;frame++){
+    const c=start.slice(),u=Math.min(1,frame/30);
+    TABLE_HOLES.forEach(([x,y],i)=>{const id=i+1,tx=x===0?16:x===1000?984:500,ty=y===0?16:484;c[id*3]=Math.round(start[id*3]+(tx*10-start[id*3])*u);c[id*3+1]=Math.round(start[id*3+1]+(ty*10-start[id*3+1])*u);if(frame===30)c[id*3+2]=0;});history.push(c.slice(0,48).join(','));last=c;
+  }
+  state={...s,cells:last,moves:1,history,audioEvents:[],fen:'六袋同步捕获：观察不同出槽时间、槽位顺序及末端回弹'};renderPool(host,state,true);observe();
+};
+document.querySelector('#countdown').onclick=()=>{unlockPoolAudio();scenario='开局倒计时';mount();host._openingUntil=Date.now()+3000;renderPool(host,state,true);observe();};
+document.querySelector('#reset').onclick=()=>{scenario='开局';mount();observe();};
+mount();observe();
+</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script></html>

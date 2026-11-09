@@ -4,6 +4,9 @@ export class AudioFX{
  play(name,gain=1){if(!this.enabled||!this.ctx)return;this.master.gain.setTargetAtTime(this.volume,this.ctx.currentTime,.02);const buffer=this.buffers[name];if(!buffer){this.tone(330,120,.15);return;}const s=this.ctx.createBufferSource(),v=this.ctx.createGain();s.buffer=buffer;v.gain.value=gain;s.connect(v);v.connect(this.master);s.start();}
  tone(freq,end,duration=.12,type='sine',delay=0,gain=.12){if(!this.enabled||!this.ctx)return;this.master.gain.setTargetAtTime(this.volume,this.ctx.currentTime,.02);const t=this.ctx.currentTime+delay,osc=this.ctx.createOscillator(),v=this.ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,t);osc.frequency.exponentialRampToValueAtTime(Math.max(20,end),t+duration);v.gain.setValueAtTime(.001,t);v.gain.exponentialRampToValueAtTime(Math.max(.001,gain),t+.01);v.gain.exponentialRampToValueAtTime(.001,t+duration);osc.connect(v);v.connect(this.master);osc.start(t);osc.stop(t+duration+.01);}
  click(){this.play('click',.4);}roll(){this.play('roll',.7);}move(){this.play('takeoff',.65);}land(){this.play('land',.45);}
+ /* A quiet falling cadence for a finished game the local player did not win.
+    Synthesised into this context so screen recordings keep the result audio. */
+ lose(){this.tone(440,412,.38,'triangle',0,.07);this.tone(349,326,.42,'triangle',.30,.07);this.tone(294,274,.62,'triangle',.60,.07);this.tone(147,138,.85,'sine',.95,.045);}
  bump(){let pick;do{pick=Math.floor(Math.random()*5);}while(pick===this.lastBump);this.lastBump=pick;this.play('bump-'+(pick+1),.8);}
  win(){this.play('win',.8);}
  setMusic(on){this.musicEnabled=on;clearInterval(this.musicTimer);if(!on)return;this.unlock();const melody=[523,659,784,659,587,698,880,698,523,659,784,1046,880,784,659,587];let n=0;this.musicTimer=setInterval(()=>{if(this.musicEnabled&&this.enabled&&!document.hidden){this.tone(melody[n++%melody.length],melody[(n-1)%melody.length],.28,'sine',0,.018);}},360);}

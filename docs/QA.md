@@ -684,3 +684,181 @@ Production deployment confirmed: Flyway V23 applied; backend health passed. Gues
 - Checks: npm test123/123; Java table suites21/21; syntax checks passed. Exact production-baseline jar SHA256 2a39e1ac886068a6e7b514f7656d43803cc55c5c34d14e4d47d1c4c0662f5030. Production V24 healthy. Guest-only HTTP chat permissions/bounds/Unicode/dedup/rate/cursor, countdown + leave boundary, encoded low-shot acceptance, and existing reaction regression passed.
 - Browser: local and production native pointer drags completed shots; countdown observed; two independent-origin production guest sessions exchanged messages, persisted after reload and exited. No console errors seen. Screenshots docs/verification/pool-countdown-20261105.png and pool-mouse-chat-20261105.png. Audio listening and realphone validation were not performed this pass.
 - Deployment uses isolated baseline jar (no unrelated local backend changes). Rollback image joyflock-backend:before-pool-mouse; DB backup /opt/joyflock/before-pool-mouse-20261104.dump; static archive /opt/joyflock/static-before-pool-mouse-20261105.tgz.
+
+## 2026-11-05 15球分组、球体与回球槽验证
+
+- `npm test`：130项通过，0失败。覆盖15球间距、双方分组、剩余目标、犯规换手、8号胜负、回球路线、球面旋转逆向连续性、强力回放与拉杆行程。
+- 修改的台球JavaScript均通过 `node --check`。
+- Docker `backend/Dockerfile` build阶段运行 Maven verify 成功：72项，51通过、21跳过、0失败。PoolRulesTest 的7项均通过；跳过项主要是需要外部数据库/Redis的集成测试，不能计作通过。
+- Chrome本地8099实际操作：单机新局15球显示；左侧拉杆拖到底显示100%，松开击球后球群散开并换手；固定场景分别打进1号/9号，确认全色/花色分组、剩余目标和回球槽停靠。
+- 截图 `verification/pool-15-stripe-20261105.png`；回放与球体预览页 `verification/pool-15-preview.html`。
+- 限制：未完成移动设备实测、跨设备联网联调、音频听感验收或连续视频逐帧检查；视觉结果仍等待用户验收。不宣称生产部署完成。
+
+## 2026-11-05 台球细节追加验证
+- 杆身居中，移除 power-fill；嵌入式角袋/中袋，库边底色修正黑色接缝；回球通道先于球桌绘制，入口被桌沿遮挡。
+- 进袋球保持16半径，650ms袋内两次折返后向右滚入桌下；袋口裁剪遮挡，取消缩小消失。随后从右侧出口滚入槽。为表现动画，并非袋内刚体模拟。
+- 本地和Java每步滚动衰减从0.985调整为0.991；最大初速度未增加。空桌满力累计行程测试在1500–1900之间（桌长1000）。8个旋转球前后端黄金位置同步更新并核对。
+- 球碰球改28ms高频短音，移除降至120Hz的沉闷尾音；库边保留独立低频音。未完成实际扬声器听感验收。
+- npm test：132通过；修改JS语法检查通过。Docker build --target build 成功，Java72项，51通过、21集成项跳过、0失败。
+- Chrome实际拉满开球、花色落袋场景完成，球进入右侧槽；截图 verification/pool-refined-20261105.png。未录制逐帧动画视频，未做联机部署。
+
+## 2026-11-05 顶灯、袋口、回球槽及分阶段声音
+台呢新增椭圆顶灯照明、斜向织纹与四边软遮蔽。球面高光、球影方向取决于球相对灯中心的位置，球杆投影同源。角袋仅外侧保留金属包边，取消台面内侧闭合圆环。回球槽入口改28半径圆弧，球心路径与槽弯同步；护边、斜壁和偏移槽底分层绘制。
+进袋增加两次袋沿/袋内碰撞声、落槽声、回球途中短段连续滚动声和终点轻碰声；球碰撞改为无扫频的非谐波短衰减合成。仍为程序合成，未采用实录台球音频，未完成扬声器听感验收。
+本次132项前端测试通过，修改JS语法检查通过。Chrome查看顶灯、阴影、弧形管道；未更改后端物理。
+
+## 2026-11-05 树脂球音频规格替换
+以用户最新酚醛树脂规格覆盖旧高频清脆方向：2ms attack、30–60ms球碰球包络，800Hz以上噪声带与弱1200/2400Hz模态、185Hz且18ms内收束的体感层，双级5kHz低通，无混响/扫频/持续振荡器；强度映射亮度、音量，音高±4%、音量±10%、调度抖动0–8ms。cue/rail/pocket/roll分开音色，慢球不触发台呢声，静音停止活跃声音。
+回放按球对估算法向/切向相对速度，切向只驱动短摩擦；去除全局碰撞55ms门控，使用每球对去重。开球密集声音来自检测到的实际球对，没有人为补齐8–14声。现有回放每两个物理步采样，可能漏掉采样之间的接触；不是服务端逐碰撞事件流。
+验证：134项npm测试通过，音频与回放JS语法通过。新增波形时长、首尾零值、末尾能量、无削波、法向/切向触发测试。可试听样音pool-resin-audition.wav依次轻/中/重球碰球、杆头、库边、落袋。未完成真实扬声器听感验收，程序合成并非实录。
+
+## 2026-11-05 参考桌框与实录碰撞音
+按用户参考改为深灰分段桌框、银灰角袋包边、白色圆点，移除旧木框；台呢增加缓存纤维细节。未更改球大小或胜负规则。
+球碰球接入Za-Games的CC0真实录音（许可/下载来源见dist/assets/audio/pool/LICENSE.md）。三种播放变体由同一段实录生成，避免声称三份独立录音。浏览器解码ready，实际点击试听按钮成功；未由代理进行主观听感验收。限流32声部、按活跃声部衰减和压缩器减少密集叠加过载。
+本地音频事件在物理冲量解决时产生，沿法向相对速度控制强度，不依赖位置回放猜测。在线旧后端仍采用回放推断，尚未接入服务端逐碰撞音频事件。其他音效保留独立合成。
+135项前端测试通过，修改JS语法检查通过；新增本地真实冲量事件和空桌无误触发检查。此次未修改Java，不重复Docker构建。
+
+## 2026-11-05 统一台呢和内嵌袋口
+- 台面、六段库边和袋口斜面使用同一张2080×1080细纤维材质，取消相关随机数生成的大颗粒点阵；库边仅叠加透明斜面明暗。整桌静态缓存升为2368×1224。
+- 渲染分离到dist/table/pool-table.js。袋底先绘制，布面袋颚在上层；中袋由梯形改为圆滑椭圆开口，底缘收在库边内侧。角袋统一外侧包边和下沉内壁。进袋球裁剪共享pocketPath，不再使用另一个固定椭圆。
+- 本轮未改音频、玩法、物理袋位、球体或后端。声音按用户反馈保留。
+- 实际验证：135项npm测试通过；pool-table.js/pool-view.js/pool-return.js语法检查通过；Chrome检查整桌与中袋/角袋放大细节，执行花色80%落袋场景，确认分组和右侧收球结果。
+- 截图：verification/pool-cloth-pockets-20261105.png。放大验收页：dist/pool-material-preview.html。动态遮挡使用同一袋口轮廓，但未录制逐帧视频；视觉仍待用户验收。本轮未部署线上。
+
+## 2026-11-05 白球入袋、袋口层级与开局追加验收
+- 白球现在与有色球共用650ms袋内滚动/碰壁动画；白球不占右槽，动画结束后才显示规则给定的复位坐标。回放逐个检查死亡转变，避免低帧率跨过死亡帧；JS/Java复位前保证写入死亡帧，覆盖近袋满力在两次采样之间落袋的情况。减少动态效果时直接显示最终状态。
+- 四边外框增加16桌面单位宽度，画布1216×644、2倍缓存2432×1288。统一7单位袋口外侧缓冲边；中袋开口贯通，四角斜椭圆与蓝色库边衔接。桌框、布面、袋颚全部在静态层，桌上球绘制在其上。进袋后才按袋口轮廓遮挡。
+- 去掉玩家下方重复回合说明和桌上方独立回合行，保留头像高亮、目标球与终局再来一局。桌面高度预算收回40px。
+- 回球桌下路线按“横向到右侧汇流道，再向上到出口”计长，速度1单位/ms；650ms袋内动作之后，六袋无排队出槽延迟依次1694、1194、694、2194、1694、1194ms。排队按到达出口时间分槽，防止后球穿过前球。末端接触后220ms内轻微回弹3单位再停下。该路线和回弹是表现动画，不是桌下刚体物理。
+- 满力及同档初速度增加25%，物理子步8ms改4ms，并对应调整每步位移/阻尼和旋转衰减，回放仍16ms采样；空桌满力累计约2056单位。前后端黄金位置同步核对。
+- 3/2/1后显示450ms GO；每个数字/GO单次跳动并触发独立短音，开始按钮用户手势提前解锁音频。阶段去重，重开/退出取消旧倒计时，GO不阻挡操作。既有实录球碰球声音保持。
+- 实际检查：npm test 151/151通过；8个修改JS语法检查及git diff --check通过。Docker构建运行Java75项：54通过、21外部服务集成项跳过、0失败；PoolRulesTest 10/10通过。日志pool-final-tests.log、pool-power-java.log。
+- Chrome本地8099正式页：单机开局观察到3、2、1、GO；100%拉杆开球、1号落袋、分组/目标球与回球终点通过。动作验收页中袋/角袋白球先入袋，273ms及537ms仍可见袋内球，650ms后复位；六袋同步回放显示不同到达时间及最终排列。无捕获到的页面JS错误。
+- HTTP获取7个当前台球资源与工作区逐字节SHA256相同，确认8099提供最新源文件。当前8099为静态本地单机预览；本轮未部署在线服务或进行跨设备联机验证。音效触发/包络已测，代理未进行扬声器主观听感验收。
+- 新证据：verification/pool-white-middle-20261105.png、pool-corner-rim-20261105.png、pool-latest-table-20261105.png、pool-go-20261105.png。动作验收页dist/pool-motion-preview.html；细节页dist/pool-material-preview.html。视觉仍待用户验收。
+
+## 2026-11-05 台球护口、双层回球槽与结算追加验收
+- 四角改为圆背斜肩的袋口，灰色缓冲护口两端逐渐收尖；移除入口额外布面凸块，袋口与台呢连续。袋底改径向明暗（中央稍亮、四周暗），中袋上沿与边框线保持间隙。贝壳定位点增至3.2半径，并在黑色桌框内居中；角盖加外缘高光与细接缝。
+- 桌面球杆木杆215→340单位，保留皮头与先角尺寸；靠近画布边缘时杆尾自然出画。桌面等比布局回收底部提示及左右空隙，2048×972浏览器视口实测画布约1634×854，完整桌面和回球槽在视口内，没有横向或纵向页面溢出。
+- 回球槽采用65单位外宽、57单位黑色间隙开口、47单位低导轨、39单位槽底；每侧高金轨和暗低轨之间相隔5单位。底部为独立双U圆弧，短横撑只连接壁面，不跨球路。槽中心1184，左外缘1151.5保持桌沿间隔；入口28、转弯半径40，内弯最小7.5，画布宽1232。时长随真实显示路径重新计算，固定滚速和队列防重叠规则不变。
+- 库边声音改为短促低沉的胶垫体感，接触噪声只在前6ms。木槽独立wood-roll：低频不规则滚动、颠簸，带约25/48ms的两次弱低通反射，220ms有限粒段且无反馈循环；台呢保留独立轻摩擦，球碰球保留已有CC0实录。木槽试听WAV包含实际桌下0.0684、明槽0.152和较快0.5强度。
+- 本地球碰球、碰库、落袋均在真实物理事件时产生音频强度；球碰球按法向相对速度、碰库按入射法向速度、落袋按捕获前速度。袋内后续声保留捕获强度并按0.78/0.5/0.32递减。多颗回球取可听见的最大滚动强度统一节流，避免隐藏球盖过明槽球；不会与回放推断重复发声。在线无事件流时仍按位置回放推断，未宣称在线逐物理事件接入。
+- 顶部结果小行移除；末杆和回球结束后出现全屏撒花及结算dialog，保留原#again处理器。关闭后可从侧栏重看结算；同局不会反复撒花；减少动画时不撒花。在线再战请求加入generation/roomId校验，离开后旧成功或失败响应不会拉回房间。
+- 最终检查：npm test 163/163通过；7个JS及3个验收页内联模块语法检查通过；目标git diff --check通过。当前8个台球HTTP资源与工作区逐字节SHA256一致，日志pool-local-assets-20261105.log；全套日志pool-detail-final-tests.log。此次未修改Java物理，没有重复后端Docker构建。
+- Chrome正式页面：100%拖杆击球、散球、1号进袋和分组目标显示正常；整桌占屏、无溢出已测。正式模块的结算验收页通过真实poolMove击入最后8号，回放结束后出现获胜弹窗；再玩一局处理器执行一次、新15球局与倒计时恢复。平局示例显示正确，撒花DOM实际76/44颗且运行CSS动画。六袋回放不同到达时间、六球最终排列通过。音频实录解码ready，球/库/袋三档及实际明槽滚动均成功触发，无捕获到的JS错误。
+- 证据：verification/pool-pearl-pockets-20261105.png（最新护口细节）、pool-double-return-20261105.png（六袋回球场景）、pool-expanded-table-20261105.png（正式页占屏）、pool-result-dialog-20261105.png（真实规则获胜弹窗）。可复现页：dist/pool-material-preview.html、pool-motion-preview.html、pool-result-preview.html、pool-audio-preview.html。
+- 限制：本轮验证为8099本地静态单机和正式模块验收场景，未部署线上、未做双设备在线再战。音频验证覆盖波形、强弱、触发和录音解码，代理未作实际扬声器主观听感验收。视觉仍由用户对照参考验收。
+
+
+### 2026-11-05 袋口直角遮挡与布面拼接修正
+- 原因：袋内球的圆形裁切与矩形入口相接形成直角缺口；入口补画台呢发生在接触阴影之后，抹掉阴影造成色块。改为沿袋口、斜边连续的入口轮廓，台呢使用相同世界坐标纹理，先完成所有布面再统一绘制库边和两侧斜口阴影。
+- 四个角袋的袋内回弹路径随袋口镜像，避免右侧球反向跨过库边；650ms袋内时长和回球槽行程计时不变。新增镜像路径回归测试。
+- npm test：164/164通过；pool-table.js、pool-return.js语法检查及差异空白检查通过；逐帧验收页内联脚本语法通过。8099实际HTTP取得6个台球模块/样式与工作区逐字节一致。
+- Chrome检查正式模块固定截帧（0/80/160/325/500ms），左上/右下角袋与中袋裁切；点击播放袋内动作。白球实际物理角袋场景确认650ms袋内动作后复位，不占槽位。截图：docs/verification/pool-pocket-continuity-20261105.png；布面细节：pool-pearl-pockets-20261105.png。
+- 本轮是本地静态单机与渲染验收，未部署线上。pool-pocket-preview.html为正式绘制函数的固定时间验收场景，不冒充完整对局录像。
+
+
+2026-11-05 角袋护口与直边衔接：将角部灰色面板/直边接缝从32调整到护口尖端18，使护口、蓝色斜口与黑色直边共享接点，去掉护口下方多余灰块。四角镜像一致；不改洞形、球路及物理规则。Chrome正式绘制函数放大截图检查，证据docs/verification/pool-corner-junction-20261105.png。npm test 164/164通过，pool-table.js语法通过。
+
+
+2026-11-05 护口末端延伸：浅灰护口外缘继续沿斜向伸至黑色直边接缝，末端保留11单位接触宽度，避免提前收成悬空尖点。四角共用轮廓；不改袋口裁切与物理。Chrome放大检查截图docs/verification/pool-guard-extension-20261105.png；语法检查通过，npm test 164/164通过。
+
+
+2026-11-05 护口两端对称：右上端同样延伸至横向黑框，接触宽度与下端均为11单位。四个角袋共享此护口轮廓。Chrome放大视觉检查，截图docs/verification/pool-guard-symmetric-20261105.png；语法检查与164项测试通过。
+
+
+2026-11-05 库边外侧投影：删除中袋/角袋垫子内部的深色斜块，减弱鼻口内渐变；阴影改由完整库边轮廓投到外侧桌布，通过evenodd扣除六块库边本体，连续覆盖斜口到直边。仅静态绘制变更。Chrome全桌及中袋/角袋放大截图确认外侧投影：docs/verification/pool-cushion-cast-shadow-20261105.png。JS语法通过，npm test 164/164通过。
+
+
+2026-11-05 护口宽度微调：两个斜向末端接触宽度由11减至9单位（约18%），保持对称和贴合黑框。Chrome细节检查截图docs/verification/pool-guard-width-20261105.png；JS语法和164项测试通过。
+
+
+### 2026-11-05 顶灯、定位点、中袋与双倍击球力度
+- 贝壳定位点整体放大16%，高光与纹理同步放大，中心位置不变。中袋水平半径32→29（约收窄9%），斜口端点和入袋裁切同步收窄，物理入袋判定半径未改。
+- 台呢改为同一材质上的宽椭圆顶灯衰减：中心亮度系数1.48、向四边平滑下降，保持外侧库边投影。既有球影朝远离灯心方向偏移。
+- 用户明确要求力度再加一倍：JS与Java初速度系数均从0.20→0.40；旋转冲量同比调整；2ms四分之一步取代4ms半步，保持每秒衰减、16ms回放和最大9.6秒时长。真实碰撞音量归一化范围同步扩大，保留轻重差异。
+- 新满力空台16ms自由位移约79单位（此前约39），累积路径3771.8单位，约3.77个长边；受撞库损耗影响总路径不宣称严格翻倍。正撞/薄球、多角度满力边界与8种击球点一致性通过。
+- npm test 165/165通过；两份修改JS语法、目标diff空白检查通过。Docker backend build阶段Maven verify成功：75项中54通过、21外部服务集成项跳过，零失败；PoolRulesTest 10/10通过。日志pool-double-power-tests.log、pool-double-power-java.log。Java验证后仅修正步长注释，无逻辑变化。
+- Chrome正式本地页实际拖动拉杆至100%、松开开球，球群散开、3号落袋、全色/花色分组与下一杆解锁正常；捕获JS错误为空。截图docs/verification/pool-overhead-light-power-20261105.png。HTTP8099的pool.js与pool-table.js逐字节等于当前工作区。
+- 当前为本地静态单机验证和Docker编译测试，未更新线上服务；数据库/Redis集成跳过项不计作通过。
+
+### 2026-11-05 GO延长、胜利音效与更强顶灯对比
+- GO提示音由0.18秒延长至0.34秒，3/2/1仍为0.105秒，开局截止时间及GO视觉450ms不变。
+- 新增1.28秒上行胜利短乐句，与首次胜利撒花同步；使用同一音频上下文和静音开关。重复打开结算不重播；失利/平局不播放胜利声音；减少动态效果设置仅禁用撒花动画。
+- 台呢共享材质调整为更亮的蓝色中央光区与更深的四边暗部，连续椭圆渐变，无额外拼接图层；保持库边投影及原有球影。
+- npm test 166/166通过；3份修改JS语法通过。新增胜利波形起止归零、幅度、静音、未解锁、隐藏页与声源释放检查；GO时长断言通过。
+- Chrome本地结算验收使用正式物理击入最后8号球：实际AudioBufferSourceNode.start观测胜利播放1次，关闭再开结算仍1次；再玩一局GO播放1次；静音后再赢一局胜利计数仍1次。验收页无控制台错误。听感未作真人听辨验收。
+- HTTP8099的pool-audio.js/pool-table.js/pool-shell.js与工作区逐字节相等。本轮无后端/物理修改，没有重新执行Docker后端测试；仅本地更新，未部署线上。
+- 正式单机页灯光截图：docs/verification/pool-strong-light-celebration-20261105.png。
+
+2026-11-05 后续微调：击球初速度与旋转冲量同步减20%（JS/Java），保留2ms碰撞步长。满力空台路径3102.6单位，16ms位移约63单位；更新两端8个确定性轨迹基准。台呢RGB整体乘0.94。中袋半径26×25、中心y=-29，降低伸出量并收窄，斜口裁切同步；护口改为向外张开的拱脚。Chrome共享绘制页截图docs/verification/pool-narrow-middle-dimmer-20261105.png。npm166/166，JS语法通过；Docker后端75项中54通过21跳过、零失败。仅本地，未线上部署。
+
+2026-11-05 中袋外护口与库边斜口统一接点±34，斜口鼻端±40，护口末端切线斜率与库边一致。入袋裁切同步，物理未改。npm166/166与JS语法通过。Chrome共享绘制截图：docs/verification/pool-mouth-alignment-20261105.png。
+
+2026-11-05 补齐中袋库边缺角：库边从灰色护口内缘±26接下，以贝塞尔圆角过渡至鼻口±34。材质、外侧投影与入袋裁切共用对应轮廓，四个接头左右/上下镜像一致。仅绘制调整，不改变物理与规则。JS语法及npm166/166通过；Chrome共享绘制页确认，截图docs/verification/pool-mouth-filled-20261105.png。
+
+2026-11-05 中袋灰色防撞垫等宽：使用共同内弧与14单位描边，洞内填充覆盖内半侧，留下沿法线7单位宽的灰垫。取消独立内外贝塞尔造成的厚薄变化，保持库边接点与上下镜像，入袋裁切使用同一洞口。Chrome放大核对截图docs/verification/pool-even-guard-20261105.png；npm166/166和JS语法通过，未修改物理。
+
+## 2026-11-05 球心落袋、袋内方向与新版球杆（最新本地验证）
+
+- 入袋不再用扩大圆形范围吸球：JS和Java使用同一可见袋口轮廓，只有球心进入洞内才捕获。库边和圆角袋颚按实际轮廓碰撞；可横穿中袋前方、停在袋前，或撞袋颚弹回。当前力度仍为power×0.32，2ms子步；未再调整分组/犯规/胜负规则。
+- 袋内动作继承入袋速度和球面朝向，只有实际碰到后壁才回弹，不再固定左右摆动。落至下层后朝汇流道转向：前五袋向右，右下袋向上；球保持大小和不透明度，滚到袋缘后由遮挡消失。白球同样播放袋内动作。650ms袋内总时长、不同袋位的桌下行程与槽末端小回弹保留。这是按几何接触生成的表现动画，不是完整三维刚体模拟。
+- 蓝色袋颚与直库共用胶垫声；灰护口为短硬胶撞击；掉落木腔为独立低沉木声。仅强入袋（归一化强度>0.5）追加3–5次递减木质敲击，间隔渐长，替代持续摩擦层；已有球碰球实录不变。GO音效延长至0.52秒，视觉与开局时间不延迟。
+- 左拉杆改为独立矢量材质：弧形皮头、先角、渐细木杆、木纹、握把与连接环。桌面球杆使用同类细节，原340单位长度和拉力映射保留。四角外沿和护口增加轻微深度阴影；中央与库边共用更细的台呢织纹。
+- 本地电脑按实际选定指令先瞄准、后拉、出杆，再执行击球；在线接收到对手权威回放时补650ms出杆前奏。退出/换局取消动画，玩家输入状态不被对手覆盖。在线部分是已收到击球的回放表现，未实现远端实时鼠标瞄准广播。
+- 自动验证：npm test 200/200通过，零失败/跳过；9份修改JS与3个验收页内联模块语法检查通过。Docker Maven verify构建成功，Java共80项，59通过、21外部服务集成项跳过，零失败；其中PoolRulesTest 15/15通过。日志：verification/pool-pocket-center-tests.log、pool-pocket-center-java.log。目标git diff --check通过。
+- Chrome实际验证：上下中袋平行掠过均零落袋；袋前静止目标保持；袋颚回弹；六袋及斜向入袋、白球复位；逐帧观察正面不横摆、斜入按来向碰壁并朝出口遮挡；电脑瞄准/后拉/击球及下一回合解锁。正式单机页完成玩家小力击球和电脑回合，目标组与回球槽更新正常。音频验收页实录解码ready，GO与强落袋分层成功触发。上述页面捕获的JS错误均为空。
+- HTTP8099取得11份当前脚本/样式/球杆SVG，与工作区逐字节一致。当前本地入口：http://127.0.0.1:8099/table/index.html?game=pool；旧页需要刷新。未部署线上或验证双设备联网；旧服务器无事件流时，16ms位置回放不能重建同帧所有接触。音频检查覆盖触发、波形与强弱，未作扬声器主观听感验收。
+- 实图证据：verification/pool-live-cue-weave-20261105.png（正式对局、新球杆及织纹）、pool-pocket-shadows-weave-20261105.png（细节）、pool-directional-pocket-20261105.png（正式函数逐帧场景）、pool-opponent-cue-20261105.png（电脑出杆前奏）。视觉仍待用户确认。
+
+## 2026-11-05 台球正式部署（pool-20261105，已完成）
+
+- 本节记录上述台球版本的线上发布，取代前面对应版本“未部署线上”的状态；后续布局、主题和全屏调整不包含在此次发布内。发布目录为 `/opt/joyflock/releases/pool-20261105`，完成时间为 **2026-11-05 15:35:15 UTC**（北京时间23:35:15）。后端JAR SHA256：`1349217973c6d31c7736e5d66f081378d717b8fb8680a5ed184bf88650db48ab`。
+- 后端从已核对的生产基线隔离构建，类差异仅限 `PoolRules`、`PoolGeometry` 及相关内部类，没有带入工作区其他后端改动；数据库仍为Flyway V24，无本次迁移。发布前已备份并保留 `before-pool-20261105` 回滚标签。
+- 切换期间短暂阻止台球建房/再战等写入，复核旧版活跃台球房间为0。历史29格已结束/关闭房间保留原始状态、比分与胜负，前端显示旧版提示并提供重新开局入口，不虚构15球局、不把缺失字段读成NaN。首次门禁预检查发现旧nginx绑定仍指向旧文件inode，在替换后端前中止；重建web容器后第二次发布成功。
+- 发布验证：npm **202/202通过**；Docker Java共80项，**59通过、21外部服务集成项跳过**，其中台球15/15通过。隔离本地及生产HTTP验证均完成31杆JS/Java结果一致性、再战、权限、命令幂等性检查，游客累计统计保持0。公网36份发布资源与发布包逐字节匹配。
+- 发布后独立只读复核：15:53:37 UTC时backend/web均运行约18分钟，Postgres/Redis为healthy，edge运行正常；`/api/csrf`返回200。线上 `pool.js?v=20261105-pool-release1` 为52格状态，Last-Modified为15:25:37 GMT、Cache-Control为no-cache；`pool-view.js`含旧29格归档保护。后续SSH连接关闭、部分HTTPS请求出现TLS握手失败，限制了独立日志/精确启动时间复核，不能据此宣称“日志零错误”。
+- 本次没有据自动测试宣称完整生产浏览器、跨设备或扬声器主观听感全部通过；既有本地浏览器证据和音频验证限制仍适用。发布验证结束后，仅清理本次 `pool-release-app-20261105`、`pool-release-redis-20261105`、`pool-release-db-20261105` 及专用 `pool-release-qa-20261105` 网络，未清理其他项目容器。
+- 击球点只读核查：UI红点、指令编码、本地JS和Java后端接线一致，输入/旋转定向测试9/9通过。当前为中心加八向档位的简化模型：高低杆作用于白球首次撞球之后，左右塞还影响撞库；未碰球/碰库的自由滚动不变，偏心距离不调节旋转强度，瞄准线与球面不额外预览侧旋。选择不会每杆自动归零，下方文字按钮可重置中心。此核查未修改规则或重新部署。
+
+
+## 2026-11-06 台球静态 UI1 发布（已由 UI2 取代）
+
+先前 pool-ui-20261106 静态包已发布 41 个文件，覆盖台球紧凑布局、深色入口及 portal 控件调整；没有更换后端 JAR 或数据库。该版 npm test 207/207 通过，公网 41 项资源 HTTP 200、SHA256 与包一致。证据：verification/pool-ui-20261106-tests.log、pool-ui-public-assets-20261106.log、pool-ui-manifest-20261106.txt。之后实际截图暴露旧 portal 父页缓存、首屏先亮后暗及全屏进入时机问题，因此不能把文件可下载等同于完整浏览器验收；本节所述 UI1 已被下述 UI2 替代。
+
+## 2026-11-06 台球 UI2、统一深色入口与旋转增强（已上线）
+
+- 发布于 **2026-11-05 18:28:36 UTC**（北京时间 **2026-11-06 02:28:36**），线上目录为 /opt/joyflock/releases/pool-ui2-20261106。JAR SHA256：ba5b2b507695297a1ea03ede019930276e8bf25d6ade176b2dec7ba7d2770b4a；Flyway 保持 V24，无本次数据库迁移。部署先短暂门禁 table 入口/API，确认活跃台球房间为零，完成后端与静态入口切换再解除门禁。
+- 后端使用前次已部署版本的隔离源码构建，仅替换 PoolRules.java 及测试，未带入工作区其他后端变更。对比原 JAR 的 327 个内容条目，仅 BOOT-INF/classes/com/flightparty/table/PoolRules.class 改变，无新增/删除。构建文件和差异证据在 backend/target/pool-ui2-release-20261106：app.jar、source-audit.json、jar-audit.json、java-build.log、surefire-reports。
+- 用户选择保留并增强击球点：仍使用中心加八向的原指令编码，不变更分组/犯规/胜负。首次球碰球的跟进/回拉系数为入射速度的 36%，侧旋为 18%；以实际剩余速度及碰撞厚度衰减、只使用一次，并限制白球速度不超过该次入射速度、额外旋转能量不超过入射动能约 12.96%。库边侧旋切向系数为 32%，之后按未叠加侧旋时的反弹速度模长归一化；修复法线符号镜像及先碰库后仍沿原击球方向跟进的问题。初速度 power×0.32、2ms 子步、16ms 回放和球心入洞判定保持不变。
+- 定量对照：同一空旷布局白球(250,250)、目标球(450,250)、25%直线出杆，白球终点为中杆(418.8,250)、高杆(672.8,250)、低杆(164.8,250)、右塞(418.8,375.1)、左塞(418.8,124.9)，目标球终点均(820.1,250)。先撞右库再碰目标球的对照中，高杆向实际入射的左方跟进；左右塞在两侧库边互为镜像。自由滚动在尚未接触球/库时仍无虚构弯曲；偏心距离不是连续旋转强度，模型仍是受限二维近似。
+- 静态包共 45 文件，版本串 20261106-ui2。统一 Flight 与 table 游戏主页深色主题，HTML 首屏预先设置游戏/嵌入状态，portal 和 iframe 背景一致；保留已核对的生产 Flight HTML，仅增加本次主题/预初始化。台球进入 PLAYING 时自动铺满视口，可信父子消息处理原生全屏请求与被浏览器拒绝时的视口展开，按钮/Escape 可退出；房间聊天为“名字：内容”同行、时间靠右，表情进入同一聊天记录，保留安全纯文本渲染和输入草稿。所有 /portal/ 等静态路径补 no-cache；修改 nginx 配置时原文件写入保留 bind mount inode，避免前次旧配置问题。
+- 自动验证：最终 npm test **217/217 通过**，零失败/跳过；相关 JS 语法及目标 diff 空白检查通过。隔离 Docker Maven verify 共 **85 项：64 通过、21 外部服务集成项跳过**，其中 PoolRulesTest **20/20**。168 个控制场景逐项核对 JS/Java 的 52 格状态、回合、赢家、终局、步数、全部回放帧 SHA256 和提示文案，全部一致；独立只读审阅的 616 组非落袋逐帧镜像检查坐标误差为零。证据：verification/pool-ui2-20261106-tests.log；target 发布目录内 parity-report.json、parity-cases.txt、js-parity.txt、java-parity.txt。
+- 隔离本地 HTTP 和部署后的公网 HTTP 各完成双客人 **31 杆完整比赛及再战**，逐杆 JS/Java 状态一致，覆盖分组、开局倒计时门禁、非成员/错误回合权限、命令幂等、双方再战进入新15球局及游客累计统计保持零。本地实测 JAR 哈希与发布包一致、数据库 V24，测试期间应用日志未见 ERROR / Exception；只清理本次带任务标签的 pool-ui2-app-20261106、pool-ui2-redis-20261106、pool-ui2-db-20261106 和 pool-ui2-qa-20261106 网络，无持久数据卷。公网日志：verification/pool-ui2-public-http-20261106.log；本地报告：target 发布目录内 http-report.json、http-qa.log、http-app.log。
+- 公网 **45/45** 资源返回 HTTP 200，SHA256 与发布清单一致且 Cache-Control: no-cache；证据 verification/pool-ui2-public-assets-20261106.log。本地浏览器确认进入游戏自动铺满视口、按钮退出展开状态、聊天姓名与内容同行及表情同流；截图 verification/pool-ui2-chat-fullscreen-local-20261106.png。Flight/Gomoku 深色首页截图：verification/unified-flight-home-local-20261106.png、unified-table-home-local-20261106.png。
+- 验证界限：公网自动化标签页中的跨域 iframe 持续呈现 about:blank，直达 Flight/table 页面可加载；本轮未完成公网嵌入流程或原生 fullscreen API 的浏览器验收，不能用 HTTP 200 或本地视口展开结果代替。未新增真实双设备、手机触摸、扬声器主观听感或完整三维旋转验证。旧29格已结束球局的渲染保护继续保留。
+- 回滚资料：镜像 joyflock-backend:before-pool-ui2-20261106；/opt/joyflock/releases/pool-ui2-20261106 下保留 static.before.tgz、nginx.before.conf、deploy.log、existing-files.txt 及发布脚本。需要回滚时应成套恢复后端镜像、静态资源和 nginx 配置，原文件写回配置以保留 inode，验证 nginx -t 后重载；本次无迁移，不应倒退数据库。新旧两端物理须配套，不能只回滚其中一端。
+
+Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?game=pool loaded the deployed version and account avatar correctly; local two-player session visibly rendered `大卫：你好` and `大卫：🎉` in the same chat stream, inactive opponent dimmed. Screenshot: `docs/verification/pool-ui2-chat-public-20261106.png`. This is direct-page/single-machine UI evidence, not cross-origin portal/native-fullscreen evidence. Latest explicit user instruction: shut down the local computer after deployment and verification; no remote shutdown requested.
+
+## 2026-11-06 门户与国际象棋本地验收
+
+- 门户用 English／中文下拉替换「进入飞行棋」，英文为首次访问默认，记住手动选择。切换范围为门户外壳与游戏目录。侧栏图标按鼠标距离放大，触屏与减少动态效果下不启用。棋牌入口移除重复的「所有游戏」，封面取消倾斜。
+- 国际象棋对局页使用原创 SVG 棋子、蓝色棋盘、合法落点和吃子提示、最近一步及将军标记。右侧棋谱从实际走法重建，可以回看或翻转，回看期间棋盘禁止落子。现有线上棋规由服务端判定。
+- Node 218/218，Docker Maven 台球 21/21，总计 65 项通过、21 项外部服务集成测试跳过。用内置浏览器实测白兵 e2 选中后有两个合法落点，e4／e5 进入棋谱，回看一步、回最新、棋盘翻转均有效。实测门户初始英文、切换中文并刷新保留，台球入口无重复链接且封面 transform 为 none。侧栏距离衰减、移出复位及触摸不生效由代码测试确认。罚杆弹窗未完成浏览器实测。截图见 verification/chess-board-refresh-20261106.png。本轮为本地预览，尚未部署。
+
+2026-11-07 Pool local QA: Chrome on port 8099 ran a side-spin break and a turn-changing shot. Verified the cue-point caption is absent, side spin is selected before the shot and resets to center afterward. The four pocketed balls triggered return audio. Captured Web Audio buffers for the visible channel measured 2x the previous synthesis amplitude. Verified the shooter stays highlighted throughout replay and the next player is highlighted after it ends. Node tests 218/218 and modified JavaScript syntax checks passed. Audio was checked at the browser output buffer, without a speaker listening test. No production deployment.
+
+2026-11-07 Pool chat QA: local Chrome at 1440 × 900 rendered controlled shot states. Verified equal 15px sizes for player names and chat text, numbered icons for pocketed balls, no entry for zero pocketed balls, and red opponent / green own extra-shot badges. Node suite 218/218 and modified JavaScript syntax checks passed. Browser verification used controlled board states. No production deployment.
+
+2026-11-07 Pool feedback QA: local Chrome with controlled board states verified the two player views show their respective group prompts, the chat identifies the shooter and next shot number, and an 8-ball plus cue-ball scratch names the loser, reason, and winner. Canvas checks verified a two-second target-ring cycle on the six remaining solids and no rings when the player cannot shoot. Node tests 218/218 passed. No production deployment.
+
+2026-11-07 Pool local Chrome QA: controlled shot states verified the 4s target-ring cycle with 0.9 peak opacity, shot 4 shown in the pot message and omitted from the turn message, and gray loss confetti still active after 3.9s. Closing removed all particles and reopening restarted them. Node tests 218/218 and JS syntax checks passed. No production deployment.
+
+2026-11-07 Pool idle hints and cue spin QA: local Chrome controlled replay verified no target ring before 10s, 0.8 peak opacity after fade-in, and immediate removal and timer reset on pointer movement. A fixed-center replay of a side-spin command showed changing cue-ball orientation, then settled. Node tests 218/218 and JS syntax checks passed. Docker Maven verify reported 65 passes and 21 skipped external integration tests. Online replay now carries the accepted shot command in server state; no live two-device check or production deployment.
+
+2026-11-07 Pool presentation QA: controlled local Chrome states verified the 10s idle gate, repeating 5s pulse with a 0.8 peak and a hidden interval, and timer reset on pointer movement. Both win and loss started their respective confetti colors before the result dialog, opened the dialog after 3s, carried the same looping particles into the dialog, and removed them on close. Node tests 218/218 and modified JS syntax checks passed. No production deployment.
+
+2026-11-07 Pool ball size QA: local Chrome canvas measurements verified the table ball, pocket animation and return channel use the same visual radius, giving a 2 CSS px diameter reduction at the measured scale. Node tests 218/218 and JS syntax checks passed. No production deployment.
+
+2026-11-07 Pool ball size follow-up: local Chrome measured a 4 CSS px reduction from the original rendered diameter on the table, during pocket animation, and in the return channel. Node tests 218/218 and JS syntax checks passed. No production deployment.

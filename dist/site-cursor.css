@@ -1,0 +1,26 @@
+/* JoyFlock site pointer — a small paper-plane arrow.
+   Festival skins swap the palette through html[data-theme]; the click state
+   keeps a gold ring so buttons still read as clickable. */
+:root{
+  --joy-cursor:url('/assets/cursor/plane.svg') 2 2, auto;
+  --joy-cursor-hover:url('/assets/cursor/plane-hover.svg') 2 2, pointer;
+}
+html[data-theme="halloween"]{--joy-cursor:url('/assets/cursor/halloween.svg') 2 2, auto}
+html[data-theme="christmas"]{--joy-cursor:url('/assets/cursor/christmas.svg') 2 2, auto}
+html[data-theme="spring"]{--joy-cursor:url('/assets/cursor/spring.svg') 2 2, auto}
+html[data-theme="midautumn"]{--joy-cursor:url('/assets/cursor/midautumn.svg') 2 2, auto}
+html[data-theme="independence"]{--joy-cursor:url('/assets/cursor/independence.svg') 2 2, auto}
+html[data-theme="thanksgiving"]{--joy-cursor:url('/assets/cursor/thanksgiving.svg') 2 2, auto}
+html[data-theme="valentine"]{--joy-cursor:url('/assets/cursor/valentine.svg') 2 2, auto}
+html[data-theme="stpatricks"]{--joy-cursor:url('/assets/cursor/stpatricks.svg') 2 2, auto}
+html[data-theme="easter"]{--joy-cursor:url('/assets/cursor/easter.svg') 2 2, auto}
+
+@media(hover:hover) and (pointer:fine){
+  html,body{cursor:var(--joy-cursor)}
+  a,button,summary,select,label,[role="button"],[data-control],
+  .game-card,.rail-game,input[type="button"],input[type="submit"],input[type="checkbox"],input[type="radio"]{
+    cursor:var(--joy-cursor-hover)!important;
+  }
+  input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+  textarea,[contenteditable="true"]{cursor:text!important}
+}

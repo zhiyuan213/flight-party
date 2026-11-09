@@ -1,0 +1,101 @@
+/* Room dialog — compact, factual, same blue-violet surfaces as the game intro.
+   Loaded last so it wins over table.css / table-home-theme.css / four-theme.css. */
+
+body.table-home-theme dialog#waiting{
+  width:360px;max-width:calc(100vw - 24px);
+  max-height:calc(100dvh - 32px);overflow-y:auto;
+  padding:16px 18px 18px;border-radius:12px;
+  border:1px solid #2c3a5e;background:#141b30;color:#eef2ff;
+  box-shadow:0 18px 50px #0009;
+  scrollbar-width:thin;scrollbar-color:#3b4d7a transparent;
+}
+body.table-home-theme dialog#waiting::backdrop{background:#050a18b8;backdrop-filter:blur(4px)}
+body.table-home-theme dialog#waiting .eyebrow{display:none}
+body.table-home-theme dialog#waiting h2{
+  margin:0 0 4px;padding-right:28px;
+  font-size:17px;line-height:1.35;letter-spacing:0;font-weight:700;color:#f2f5ff;
+}
+body.table-home-theme dialog#waiting #waiting-status{
+  margin:0 0 12px;font-size:11px;line-height:1.5;color:#94a3c6;
+}
+body.table-home-theme dialog#waiting .close{
+  top:12px;right:12px;width:24px;height:24px;min-width:24px;min-height:24px;
+  padding:0;margin:0;border:0;border-radius:50%;background:transparent;
+  color:#9aa9cc;font-size:19px;line-height:1;box-shadow:none;
+}
+body.table-home-theme dialog#waiting .close:hover{background:#26324f;color:#fff}
+
+/* Two seats in one compact row instead of two tall stacked cards. */
+body.table-home-theme dialog#waiting #waiting-seats{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 10px;
+}
+body.table-home-theme dialog#waiting #waiting-seats .seat{
+  min-height:0;margin:0;padding:8px;gap:8px;border-radius:9px;
+  border:1px solid #33456e;background:#1b2540;box-shadow:none;color:#e4eaff;
+}
+body.table-home-theme dialog#waiting #waiting-seats .seat:before{display:none}
+body.table-home-theme dialog#waiting .avatar-shell{width:30px;height:30px;flex:0 0 30px}
+body.table-home-theme dialog#waiting .seat-avatar{border-width:1px}
+body.table-home-theme dialog#waiting .avatar-frame,
+body.table-home-theme dialog#waiting .member-label{display:none}
+body.table-home-theme dialog#waiting .empty-seat .avatar-shell{
+  display:grid;place-items:center;border:1px dashed #4a5c85;border-radius:50%;
+  background:#131d33;color:#8e9fc5;font-size:15px;line-height:1;
+}
+body.table-home-theme dialog#waiting .seat-name strong{font-size:12px;font-weight:700}
+body.table-home-theme dialog#waiting .seat-status{font-size:10px;color:#8fa0c4}
+
+/* Controls: room id on one quiet line, primary full width, secondary pair. */
+body.table-home-theme dialog#waiting #room-tools{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;
+}
+body.table-home-theme dialog#waiting #room-tools>#room-status{
+  grid-column:1/-1;margin:0 0 2px;padding:0;
+  border:0;background:none;border-radius:0;
+  font-size:10px;line-height:1.4;color:#7f8fb4;overflow-wrap:anywhere;
+}
+body.table-home-theme dialog#waiting #room-tools>.four-room-theme{grid-column:1/-1}
+body.table-home-theme dialog#waiting #room-tools button{
+  min-height:34px;padding:7px 8px;border-radius:8px;
+  border:1px solid #3d4f7d;background:#1c2a4b;color:#dbe4ff;
+  box-shadow:none;font-size:12px;line-height:1.2;
+}
+body.table-home-theme dialog#waiting #room-tools button:hover:not(:disabled){
+  background:#27375d;border-color:#6f8bff;
+}
+body.table-home-theme dialog#waiting #room-tools button.primary{
+  grid-column:1/-1;background:#4159c8;border-color:#6f8bff;color:#fff;font-weight:700;
+}
+body.table-home-theme dialog#waiting #room-tools button[hidden]{display:none!important}
+
+/* One line: current theme + a button that reuses the full theme picker. */
+body.table-home-theme dialog#waiting .four-room-theme{
+  display:flex;align-items:center;gap:8px;
+  margin:0 0 2px;padding:7px 9px;border-radius:8px;
+  border:1px solid #2c3a5e;background:#111a2e;
+}
+body.table-home-theme dialog#waiting .four-room-theme-label{
+  margin:0;font-size:10px;color:#8f9fc2;white-space:nowrap;
+}
+body.table-home-theme dialog#waiting .four-room-theme-current{
+  display:flex;align-items:center;gap:6px;min-width:0;flex:1;
+}
+body.table-home-theme dialog#waiting .four-room-theme-icon{font-size:12px;line-height:1}
+body.table-home-theme dialog#waiting .four-room-theme-name{
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:11px;font-weight:700;color:#e6edff;
+}
+body.table-home-theme dialog#waiting .four-room-theme-change{
+  width:auto!important;min-width:0!important;min-height:26px!important;margin:0!important;
+  padding:4px 10px!important;border-radius:6px!important;
+  border:1px solid #47598e!important;background:#1c2a4b!important;color:#c9d8f5!important;
+  box-shadow:none!important;font-size:11px!important;line-height:1.4!important;cursor:pointer;
+}
+body.table-home-theme dialog#waiting .four-room-theme-change:hover{
+  background:#27375d!important;border-color:#8fb0ff!important;
+}
+
+@media(max-width:480px){
+  body.table-home-theme dialog#waiting{padding:14px}
+  body.table-home-theme dialog#waiting #waiting-seats{gap:6px}
+}

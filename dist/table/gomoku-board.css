@@ -1,0 +1,105 @@
+/* ==========================================================================
+   Five-in-a-row: intersection grid, refined stones, and a dark side card.
+   Loaded last so it also wins over the legacy light-theme !important rules.
+   ========================================================================== */
+
+/* Five-in-a-row is played on LINE CROSSINGS, never inside the squares.
+   Each .cell stands for one intersection: the grid lines run through the
+   cell centre, so the centred stones sit exactly on a crossing and the
+   click target is centred on that crossing too. */
+.board.gomoku{
+  --gomoku-line:#6f4f3085;
+  --gomoku-grid:
+    linear-gradient(90deg,transparent 0 calc(50% - .5px),var(--gomoku-line) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px) 100%),
+    linear-gradient(transparent 0 calc(50% - .5px),var(--gomoku-line) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px) 100%);
+  --gomoku-black:radial-gradient(circle at 32% 24%,#6d788a 0%,#242c3a 40%,#080d16 100%);
+  --gomoku-white:radial-gradient(circle at 32% 24%,#ffffff 0%,#f1f4f8 42%,#aeb9c9 100%);
+  position:relative;
+  border-radius:8px;
+  border:9px solid #8c6238;
+  /* Half a cell of breathing room: the outermost grid line sits half a cell
+     inside the content box, so the frame-to-line margin becomes one full cell
+     on all four sides instead of a clipped-looking half square. */
+  padding:clamp(10px,1.8vw,30px);
+  background-color:#dcb681;
+  background-image:
+    repeating-linear-gradient(91deg,#ffffff0b 0 2px,transparent 2px 12px),
+    linear-gradient(155deg,#eed4a4 0%,#dfb982 44%,#cfa068 100%);
+  box-shadow:
+    inset 0 0 0 1px #ffe6b880,
+    inset 0 2px 3px #fff8,
+    inset 0 -4px 8px #6b45204d,
+    0 20px 38px #0007,
+    0 3px 0 #573a20;
+}
+/* No synthetic right/bottom closing lines any more: they belonged to the
+   edge-drawn grid and would add a 16th row/column with no intersections. */
+.board.gomoku::after{content:none}
+.board.gomoku .cell{position:relative}
+
+/* Standard star points (4-4, 4-12, 8-8, 12-4, 12-12) on line crossings. */
+.board.gomoku .cell:nth-child(49)::after,
+.board.gomoku .cell:nth-child(57)::after,
+.board.gomoku .cell:nth-child(113)::after,
+.board.gomoku .cell:nth-child(169)::after,
+.board.gomoku .cell:nth-child(177)::after{
+  content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);z-index:0;
+  width:7px;height:7px;border-radius:50%;pointer-events:none;
+  background:#5b3b20c4;box-shadow:0 0 0 1px #ffe4b455;
+}
+
+/* Dimensional stones; the latest move gets a thin gold ring. */
+.board.gomoku .cell[data-value="1"]::before,
+.board.gomoku .cell[data-value="2"]::before{
+  inset:9%;z-index:1;
+  box-shadow:0 3px 6px #0006,inset -2px -3px 5px #0004,inset 1px 2px 2px #fff3;
+}
+.board.gomoku .cell.last[data-value]:not([data-value="0"])::before{
+  box-shadow:0 0 0 2px #f0c46a,0 3px 6px #0007,inset -2px -3px 5px #0004;
+}
+.board.gomoku .cell[data-value="0"]:hover:not(:disabled){
+  box-shadow:inset 0 0 0 999px #fff2c924;
+}
+/* The hover ghost is a stone too, so keep it above the star-point dots. */
+.board.gomoku .cell[data-value="0"]:hover:not(:disabled)::before{z-index:1}
+
+/* The turn card is still forced light by table.css (!important). Keep it on
+   the same dark surface as the rest of the in-game sidebar. Four-in-a-row has
+   its own themed card, so leave that game alone. */
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel{
+  background:linear-gradient(160deg,#1d2c4b,#141e35)!important;
+  border-color:#35486e!important;
+  color:#e6edf8;
+  box-shadow:none!important;
+}
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel h2,
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel #status{
+  color:#eef3ff!important;
+}
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel .eyebrow,
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel #turn-instruction,
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel p,
+body:not(.connect-four-game) .table-chat-layout .play-sidebar .turn-panel span{
+  color:#a9badd!important;
+}
+body:not(.connect-four-game) .table-chat-layout .play-sidebar>section{border-radius:11px}
+
+/* The status toast is another light-theme leftover (cream paper on a dark
+   play surface). Keep it in the same navy family as the sidebar cards. */
+body:not(.connect-four-game) #message:not(:empty){
+  background:linear-gradient(160deg,#22324f,#16213a);
+  border-color:#3a4d73;color:#d6e3f8;
+  box-shadow:0 10px 26px #0008;
+}
+@media(max-width:760px){
+  body:not(.connect-four-game) #message:not(:empty){
+    bottom:12px;padding:8px 13px;font-size:11px;
+    max-width:min(300px,84vw);white-space:normal;text-align:center;
+  }
+}
+
+/* A soft pool of light behind the wooden board so it reads as a raised object. */
+.table-home-theme[data-screen="play"]:not(.pool-game) .game-panel:has(>.board.gomoku){
+  background:radial-gradient(ellipse at 50% 42%,#1c2a47 0%,#0d1528 76%);
+}

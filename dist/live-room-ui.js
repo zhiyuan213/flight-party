@@ -3,7 +3,7 @@ import {roomInvitationUrl,isChineseMobile,shareRoomInvitation} from './room-shar
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roomCode=value=>{try{const input=value.trim();const code=input.includes('://')?new URL(input).searchParams.get('room'):input;return /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(code||'')?code:null;}catch{return null;}};
 export function bindLiveRooms(social,session) {
- let mode='invite',notice='',snapshot=null,starting=false,joinCode='',sharing=false,sharingRoomId=null,shareFallback='',sharedPageRoomId=null,shareGeneration=0;
+ let mode='invite',notice='',snapshot=null,starting=false,joinCode='',sharing=false,sharingRoomId=null,shareFallback='',sharedPageRoomId=null,shareGeneration=0,lastMarkup='';
  const t=(en,zh)=>social.t(en,zh),dialog=social.roomDialog;
  const language=()=>social.getLanguage?.()||t('en','zh');
  function invitation(id){return roomInvitationUrl(id,location.origin,language());}
@@ -14,16 +14,31 @@ export function bindLiveRooms(social,session) {
   dialog.setAttribute('aria-label',t('Online room','在线房间'));
   const room=session.room,matching=room?.phase==='MATCHING',waiting=room?.phase==='WAITING_FRIENDS',mobileShare=isChineseMobile({language:language()});
   const phase=room?({WAITING_FRIENDS:t('Waiting for friends','等待好友'),MATCHING:t('Matching','匹配中'),STARTING:t('Starting','正在开始'),PLAYING:t('In flight','对局中'),SETTLED:t('Finished','已结束')})[room.phase]||room.phase:'';
-  dialog.innerHTML=`<button type="button" class="close" data-live="close" aria-label="${t('Close room','关闭房间')}">×</button>
+  const countdown=matching?Math.max(0,Math.ceil((Date.parse(room.matchingDeadline)-Date.now())/1000))+'s':'';
+  /* Room snapshots arrive several times a second. Rebuilding the whole dialog
+     on each one replaced the button under the pointer, which replayed its
+     :hover transform and re-fired the hover blip continuously. Keep the markup
+     stable and update only the ticking clock (and the join-code field). */
+  const markup=`<button type="button" class="close" data-live="close" aria-label="${t('Close room','关闭房间')}">×</button>
    <span class="sample-pill">${t('ONLINE ROOM','在线房间')}</span><h2>${mode==='join'&&!room?t('Join your friends','加入好友房间'):t('Your flight crew','飞行伙伴')}</h2>
-   ${!room?mode==='join'?`<form id="live-room-join-form" class="account-auth-form"><label>${t('Room code or invitation link','房间码或邀请链接')}<input id="live-room-code" value="${esc(joinCode)}" required maxlength="200" autocomplete="off" spellcheck="false" placeholder="${t('Paste a code or link','粘贴房间码或邀请链接')}"></label><button type="submit" class="primary room-preview-action">${t('Join room','加入房间')}</button></form>`:`<p>${t('Connecting…','连接中…')}</p>`:`
+   ${!room?mode==='join'?`<form id="live-room-join-form" class="account-auth-form"><label>${t('Room code or invitation link','房间码或邀请链接')}<input id="live-room-code" value="" required maxlength="200" autocomplete="off" spellcheck="false" placeholder="${t('Paste a code or link','粘贴房间码或邀请链接')}"></label><button type="submit" class="primary room-preview-action">${t('Join room','加入房间')}</button></form>`:`<p>${t('Connecting…','连接中…')}</p>`:`
    <div class="simple-room-meta"><span>${t('CLASSIC · 4 SEATS','经典模式 · 4 个席位')}</span><span>${esc(phase)}</span></div>
    <ol class="simple-room-seats">${Array.from({length:4},(_,i)=>{const seat=room.seats.find(s=>s.index===i);return `<li class="room-seat ${seat?'occupied':'empty'}"><span class="room-seat-avatar avatar-${i}" ${avatarStyle(seat?.avatarUrl)} data-frame="${esc(seat?.avatarFrame||'none')}"></span><div><b data-member="${seat?.member===true}" data-annual-member="${seat?.member===true&&seat?.annualMember===true}">${seat?(seat.bot?'BOT':seat.displayName?esc(seat.displayName):i===room.yourSeat?t('You','你'):t('Pilot','飞行员')+' '+(i+1)):t('Open seat','空闲席位')}</b><span>${seat?.ready?t('Ready','已准备'):t('Waiting','等待')}</span></div></li>`;}).join('')}</ol>
-   ${matching?`<div class="room-countdown-panel"><div><b>${t('Taking off soon','即将起飞')}</b><button type="button" class="secondary room-start-now" data-live="start-now" ${starting?'disabled':''}>${starting?t('Starting…','正在开始…'):t('Start now','快速开始')}</button></div><strong>${Math.max(0,Math.ceil((Date.parse(room.matchingDeadline)-Date.now())/1000))}s</strong></div><p class="room-flow-note">${t('Start with the current players. Empty seats become computer pilots.','与当前玩家直接开局，空闲席位由电脑控制。')}</p>`:''}
+   ${matching?`<div class="room-countdown-panel"><div><b>${t('Taking off soon','即将起飞')}</b><button type="button" class="secondary room-start-now" data-live="start-now" ${starting?'disabled':''}>${starting?t('Starting…','正在开始…'):t('Start now','快速开始')}</button></div><strong data-countdown></strong></div><p class="room-flow-note">${t('Start with the current players. Empty seats become computer pilots.','与当前玩家直接开局，空闲席位由电脑控制。')}</p>`:''}
    ${(waiting||matching)&&room.origin==='FRIENDS'?`<div class="room-invite-strip live-room-invitation"><div><span>${t('ROOM CODE','房间码')}</span><b>${esc(room.roomId)}</b></div>${mobileShare?`<button type="button" class="primary room-share-wechat" data-live="share-wechat" ${sharing?'disabled':''}>${sharing?'正在打开分享…':'邀请好友'}</button>`:''}<div class="room-invite-actions"><button type="button" class="secondary" data-live="copy-link">${t('Copy invitation link','复制邀请链接')}</button><button type="button" class="secondary" data-live="copy-code">${t('Copy room code','复制房间码')}</button></div></div><p class="room-flow-note">${mobileShare?'选择微信分享给朋友；朋友打开链接即可加入。':t('Send the link to a friend. They can open it to join this room.','把邀请链接发给朋友，对方打开即可加入房间。')}</p>`:''}
    ${waiting?`<button type="button" class="primary room-preview-action" data-live="ready">${room.seats.find(s=>s.index===room.yourSeat)?.ready?t('Ready · Waiting for friends','已准备 · 等待好友'):t('Ready for takeoff','准备起飞')}</button>`:''}
    ${waiting||matching?`<button type="button" class="secondary room-leave-button" data-live="leave">${t('Leave room','退出房间')}</button>`:''}`}
    <p class="social-action-notice" role="status" ${notice?'':'hidden'}>${esc(notice)}</p>${shareFallback?`<label class="room-share-manual">邀请链接<input readonly value="${esc(shareFallback)}" aria-label="邀请链接，长按复制"></label>`:''}`;
+  // dialog.innerHTML is also rewritten by the legacy preview renderer when the
+  // dialog is closed, so verify our own structure before trusting the cache.
+  // The dialog is a real element in the browser; lightweight unit-test doubles
+  // only expose innerHTML, so keep the lookups optional.
+  const find=selector=>typeof dialog.querySelector==='function'?dialog.querySelector(selector):null;
+  if(!find('[data-live="close"]')||markup!==lastMarkup){dialog.innerHTML=markup;lastMarkup=markup;}
+  const clock=find('[data-countdown]');
+  if(clock&&clock.textContent!==countdown)clock.textContent=countdown;
+  const codeInput=find('#live-room-code');
+  if(codeInput&&document.activeElement!==codeInput&&codeInput.value!==joinCode)codeInput.value=joinCode;
  }
  function errorMessage(error){return error.status===404?t('This room was not found. Check the invitation.','未找到房间，请检查邀请链接或房间码。'):error.status===409?t('The room has started, is full, or you are already in another room.','房间已开始、已满，或你已在其他房间中。'):t('Connection failed. Please retry.','连接失败，请重试。');}
  async function action(work) {try{notice='';await work();render();}catch(error){notice=errorMessage(error);render();}}

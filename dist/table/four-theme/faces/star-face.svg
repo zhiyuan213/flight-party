@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+ <defs>
+  <radialGradient id="badge" cx="40%" cy="28%" r="74%"><stop stop-color="#4169c2"/><stop offset=".62" stop-color="#1e3d88"/><stop offset="1" stop-color="#10255a"/></radialGradient>
+  <linearGradient id="starFill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffdf2"/><stop offset=".42" stop-color="#ffe6a0"/><stop offset="1" stop-color="#d59a2c"/></linearGradient>
+  <linearGradient id="starRing" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3c4"/><stop offset=".5" stop-color="#d8a43a"/><stop offset="1" stop-color="#8a5a12"/></linearGradient>
+ </defs>
+ <circle cx="32" cy="32" r="29" fill="url(#badge)" stroke="url(#starRing)" stroke-width="3"/>
+ <circle cx="32" cy="32" r="24.5" fill="none" stroke="#ffffff2e" stroke-width="1"/>
+ <g fill="#ffe9a8" opacity=".9">
+  <path d="M32 4l1.5 3.8L37.3 9.3l-3.8 1.5L32 14.6l-1.5-3.8-3.8-1.5 3.8-1.5z"/>
+  <path d="M32 49.4l1.5 3.8 3.8 1.5-3.8 1.5-1.5 3.8-1.5-3.8-3.8-1.5 3.8-1.5z" opacity=".65"/>
+  <circle cx="5" cy="32" r="1.5"/><circle cx="59" cy="32" r="1.5"/>
+ </g>
+ <path d="M32 13 37.8 25.9 51.8 26.7 40.9 36.2 44.5 49.9 32 42.6 19.5 49.9 23.1 36.2 12.2 26.7 26.2 25.9Z" fill="#5c3405" opacity=".5" transform="translate(0 1.8)"/>
+ <path d="M32 13 37.8 25.9 51.8 26.7 40.9 36.2 44.5 49.9 32 42.6 19.5 49.9 23.1 36.2 12.2 26.7 26.2 25.9Z" fill="url(#starFill)" stroke="#fff6d8" stroke-width="1.5" stroke-linejoin="round"/>
+ <path d="M32 15 36.2 25.9 26.2 25.9Z" fill="#ffffffb0"/>
+ <circle cx="32" cy="31.5" r="2.6" fill="#fffaf0" opacity=".92"/>
+</svg>

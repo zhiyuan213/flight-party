@@ -69,3 +69,18 @@
 
 ## 2026-11-05 Pool control and hit-point extension
 Existing casual pool target/win/scoring rules are retained. Added selectable center or eight directional cue hit points, with bounded first-contact follow/draw and side deflection plus speed-preserving cushion side influence. Server and local implementations share golden trajectory fixtures. Online first turn has a server-enforced three-second opening before normal30-second control; guests, memberships and cumulative-score eligibility unchanged.
+
+## 2026-11-05 台球：15 球分组玩法（用户确认）
+
+本节取代此前 1–7 号共用目标的休闲台球规则。首次有效落袋的全色（1–7）或花色（9–15）决定击球者组别，对手分配另一组。有效指先碰合法目标且白球未落袋；同杆进多球时按物理模拟落袋顺序确定。未分组时 8 号不是合法首碰目标。
+
+打进本组球且未犯规继续击球；未碰目标、误先碰对方球或白球落袋换手。白球落袋自动复位。顶部显示本组仍在台面的目标球，全部清空后显示 8 号。必须在开杆时已清空本组，合法打进 8 号才获胜；提前进 8 号或同杆白球落袋判负。200 杆上限保留，按本组已清空数量比较。该版本仍为休闲分组玩法，未实现指定袋、自由球摆放或完整赛事开球犯规规则。
+
+
+2026-11-05 台球用户力度调整：相同1–100力度指令对应的初速度翻倍（power×0.40/原8ms速度单位），旋转冲量同比；使用2ms子步保持高速碰撞稳定，每秒阻尼和回放采样周期不变。全色/花色、犯规、8号球判胜规则不变。
+
+2026-11-05 最新台球物理修正（取代上文历史力度）：后续按用户要求减20%，当前初速度为power×0.32，旋转冲量同比，2ms子步和16ms回放保留。落袋依据球心进入实际可见洞内轮廓；经过袋前或停在袋前不会吸入。直库、斜口和圆角袋颚按相同胶垫接触模型反弹。JS与Java同步实现；全色/花色、犯规及8号判胜规则不变。袋内回弹、桌下输送与对手出杆均为结果表现，不重新决定比分或击球指令。
+
+## 2026-11-06 台球犯规与额外一杆
+
+白球落袋或未先碰合法目标均判犯规，换手并给对方一次额外出杆机会。合法打进本组球可继续且保留机会。第一次合法击球未进本组球后，仍由同一人出杆，画面标示「本杆为额外罚杆」。额外一杆打出后即消耗，合法进本组球仍按普通规则连杆。犯规弹出提示，写明犯规方和原因。同杆同时触发两项犯规时只给一次额外机会。提前进黑八、黑八杆犯规和 200 杆结算仍直接结束。新状态尾部增加一个罚杆字段，既有 52 格状态以无罚杆读取。

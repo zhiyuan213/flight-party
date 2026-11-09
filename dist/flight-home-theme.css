@@ -1,0 +1,112 @@
+/* Match the portal on entry screens only. The play board keeps its calibrated palette. */
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) {
+  --ink:#edf1ff;
+  --muted:#a1aecb;
+  --line:#303c5c;
+  --paper:#151e32;
+  --blue:#9aaaff;
+  color:var(--ink);
+  color-scheme:dark;
+  background:radial-gradient(ellipse at 30% 25%,#1d2a474d,transparent 58%),#0b1020;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) header {
+  color:#edf1ff;
+  background:#0b1020;
+  border-bottom:1px solid #ffffff14;
+  box-shadow:none;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.brand,.brand-icon) {color:#edf1ff;text-shadow:none}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.brand small,.top-center,.account-button-mode) {color:#a3b0d1}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .live-dot {box-shadow:0 0 0 4px #78c8b315}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(#mode-label,nav .icon-btn) {
+  color:#d5ddf4;
+  background:#192239;
+  border-color:#35415f;
+  box-shadow:inset 0 1px #ffffff08,0 2px 5px #0002;
+  text-shadow:none;
+}
+#welcome {background:transparent}
+#welcome :is(.eyebrow,.hero-notes),#lobby .eyebrow {color:#a4b2d6}
+#welcome .hero-copy h1,#welcome .leaderboard-heading h2,#lobby .section-title h1 {color:#f1f4ff;text-shadow:none}
+#welcome .hero-copy em {color:#a6b4ff}
+#welcome :is(.hero-copy p,.local-note,#social-preview-note,.leaderboard-meta,.leaderboard-columns,.leaderboard-rate,.leaderboard-foot),
+#lobby :is(.section-title p,.seat-card label,.seat-card small,.mode-option span,.boarding>span,.boarding p) {color:#a1aecb}
+#welcome :is(.legal-links a,.legal-links a:visited) {color:#b5c2e3}
+#welcome .legal-links a:hover {color:#fff}
+#welcome .leaderboard-shell,#welcome .home-access,#lobby .seat-card {
+  color:#edf1ff;
+  background:linear-gradient(145deg,#19243b,#131c30);
+  border-color:#303e5c;
+  box-shadow:inset 0 1px #ffffff06,0 16px 38px #0003;
+}
+#lobby .seat-card {border-top-color:var(--seat)}
+#welcome :is(.home-access b,.leaderboard-row b) {color:#e5ebff}
+#welcome .home-access>div>span {color:#a1aecb}
+#welcome .access-symbol {color:#b5c2ff;background:#273658;box-shadow:inset 0 1px #ffffff0a}
+#welcome .leaderboard-tabs {background:#10192c;border-color:#2d3b58}
+#welcome .leaderboard-tabs button {color:#a5b2d2}
+#welcome .leaderboard-tabs button[aria-selected=true] {
+  color:#f3f5ff;background:#344472;border-color:#4d608e;box-shadow:inset 0 1px #ffffff0a,0 2px 5px #0002;
+}
+#welcome .leaderboard-row {background:#1b2842;border-color:#2c3a57;color:#c3cfea}
+#welcome .leaderboard-row:nth-child(even) {background:#172239}
+#welcome .leaderboard-row.podium {background:linear-gradient(100deg,#263554,#1b2944);border-color:#405377}
+#welcome .leaderboard-row.podium-0 {background:linear-gradient(110deg,#3c352a,#1e2b45 70%);border-color:#5e553e}
+#welcome .leaderboard-row strong {color:#9bacce}
+#welcome .leaderboard-row strong.ranking-value-active {color:#c2ccff}
+#welcome .leaderboard-row:not(.podium) .leaderboard-rank {color:#a4b3d1}
+#lobby :is(.pill,.mode-option) {color:#d6e0f5;background:#18243b;border-color:#33435f;box-shadow:none}
+#lobby .mode-option.selected {background:#28385b;border-color:#8a9bee;box-shadow:inset 0 0 0 1px #8a9bee30}
+/* Entry actions keep their existing sizes, layout and keyboard behavior. */
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .primary {
+  color:#fff;background:linear-gradient(#788df5,#5866d7);border-color:#96a5ff;
+  box-shadow:inset 0 1px #ffffff20,0 4px 0 #35439d,0 10px 23px #0003;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .primary:hover:not(:disabled) {
+  background:linear-gradient(#8b9dfb,#6979e5);box-shadow:inset 0 1px #ffffff20,0 4px 0 #35439d,0 12px 25px #0004;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.secondary,.invite-preview-button,.oauth-preview-buttons button,.analytics-choice button,.home-access button) {
+  color:#d5dff7;background:#202d48;border-color:#3c4c6b;box-shadow:inset 0 1px #ffffff08,0 2px 0 #0a1224;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.secondary,.invite-preview-button,.oauth-preview-buttons button):hover:not(:disabled) {background:#2b3b5c;border-color:#6577a0}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .text-button {color:#b8c6f2}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .text-button:hover:not(:disabled) {color:#fff}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(button,a,input,select):focus-visible {outline-color:#adbbff}
+/* Waiting, sign-in and settings belong to the same entry surface, without changing their content. */
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) dialog {
+  color:#edf1ff;background:linear-gradient(145deg,#1a253d,#121b2e);border-color:#3a4968;
+  box-shadow:inset 0 1px #ffffff08,0 26px 80px #0008;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) dialog::backdrop {background:#040814ad}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.close,.muted,.analytics-choice,.account-dialog-heading p,.room-preview-intro,.simple-room-meta,.room-flow-note,.room-preview-foot,.auth-preview-disclosure,.account-oauth-note,.account-auth-form label,.account-membership>p:first-child,.account-quota p,.account-sample-stats span,.room-seat>div>span,.room-countdown-panel div>span,.room-invite-strip div>span,.join-preview-panel>label) {color:#aab7d2}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.setting-row,#room-preview-states,#account-preview-states) {border-color:#303f5c}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.account-quota,.account-sample-stats>div,.room-seat,.room-countdown-panel,.room-invite-strip,.social-action-notice) {
+  color:#d4dff5;background:#1c2943;border-color:#354766;box-shadow:inset 0 1px #ffffff05;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.account-quota b,.room-countdown-panel b) {color:#d5dfff}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.account-sample-stats strong,.room-countdown-panel>strong,.room-invite-strip b,.room-seat:first-child .room-seat-marker) {color:#b8c6ff}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .room-seat:first-child {background:#29385b;border-color:#6377ad}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .room-seat.empty {color:#97a8c9;background:#111c30;border-color:#3b4b68;box-shadow:none}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.room-ready-note,.bot-seat .room-seat-marker) {color:#b6e3ce;background:#173930;border-color:#345d4f}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .sample-pill {color:#ead195;background:#3a3021;border-color:#625137}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .auth-tabs {background:#10192c;border-color:#2d3b58}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .auth-tabs button {color:#a5b2d2}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .auth-tabs button[aria-selected=true] {color:#f3f5ff;background:#344472;border-color:#4d608e;box-shadow:inset 0 1px #ffffff0a}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.auth-divider:before,.auth-divider:after) {background:#354360}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.seat-card input,.seat-card select,.account-auth-form input,#room-code-input,#account-preview-form input,.room-share-manual input) {
+  color:#edf2ff;background:#0e182a;border-color:#3b4e70;box-shadow:inset 0 1px 3px #0002;
+}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) input::placeholder {color:#899bbd}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) #match-wait-progress {background:#10192c;accent-color:#91a3ff}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) #match-wait-progress::-webkit-progress-bar {background:#10192c}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) #match-wait-progress::-webkit-progress-value {background:linear-gradient(90deg,#b6c1ff,#7b91ee)}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.account-appearance,.appearance-option,.appearance-preview-row,.account-plan-card:disabled) {color:#dbe4f9;background:#1b2842;border-color:#354766;box-shadow:none}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.account-appearance h3,.effect-settings label) {color:#dae4fc}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.account-appearance p,.appearance-option small,.appearance-preview-row small,.account-member-summary,.hangar-hint,.hangar-notice,.room-share-manual) {color:#aab7d2}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .effect-settings {border-color:#354766}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .effect-settings select {color:#e2e9ff;background:#101b30;border-color:#3b4e70}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.effect-preview-host,.hangar-stage) {background:radial-gradient(ellipse at 50% 65%,#2b3e61,#17233b 75%)}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .account-section-tabs {background:#10192c;border-color:#2d3b58}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .account-section-tabs button {color:#a5b2d2}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) .account-section-tabs button[aria-selected=true] {color:#f3f5ff;background:#344472;box-shadow:inset 0 1px #ffffff0a}
+body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(.appearance-option,.hangar-choices button)[aria-pressed=true] {color:#f3f5ff;background:#2a3b60;border-color:#95a7ee;box-shadow:0 0 0 1px #95a7ee}

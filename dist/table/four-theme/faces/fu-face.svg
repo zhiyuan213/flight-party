@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+ <circle cx="32" cy="32" r="23" fill="none" stroke="#7a1512" stroke-width="2" opacity=".6"/>
+ <circle cx="32" cy="32" r="18" fill="none" stroke="#7a1512" stroke-width="1" opacity=".35"/>
+ <text x="32" y="45" font-family="'Songti SC','SimSun','Microsoft YaHei',serif" font-size="34" font-weight="700" text-anchor="middle" fill="#7a1512">福</text>
+</svg>

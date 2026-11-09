@@ -96,3 +96,54 @@ v0.6历史预览：`verification/dice-3d-preview.mp4`，640×480、约7.39秒，
 v0.5历史浏览器检查覆盖1366×768、1920×1080、2048×960和390×844；桌面无页面溢出，手机视口保留纵向滚动。详细记录见 `QA.md`。
 
 历次参考 `annotated-detail-reference.png`、`collision-detail-reference.png`、`v04-detail-feedback.png` 均保留。v0.4的自适应pitch/背景拉伸和v0.5的depth=1正交边缘都已是历史，不能作为当前地面标定说明。
+
+## 台球15球本地参考（2026-11-05，待用户验收）
+
+![花色分组及衔接回球槽](verification/pool-15-stripe-20261105.png)
+
+球体统一为16半径；独立PNG和运行时球面渲染共享设计。顶部显示剩余目标，右侧槽为与桌沿相接的同尺度管道。当前图片为固定场景的实际Chrome截图。
+
+最新球桌/回球槽本地截图（2026-11-05，待用户视觉验收）：
+![嵌入式袋口与桌下回球槽](verification/pool-refined-20261105.png)
+
+## 台球布料与袋口细节（2026-11-05，待用户验收）
+用户已认可当前碰球声音，本轮只改球桌材质和袋口。全桌与四边采用同源细布纹、透明斜面阴影；袋口置于库边下层，去除原梯形凸块外观。右侧为同一绘制结果的中袋和角袋放大图。
+![台呢与凹口细节](verification/pool-cloth-pockets-20261105.png)
+
+### 2026-11-05 最新台球参考与证据
+用户追加关注：袋口缓冲边等厚、深色外框加宽、袋颚不挡桌上球、白球完整入袋、GO与同步跳动声。最终本地截图：verification/pool-corner-rim-20261105.png（统一布料/袋边细节）、verification/pool-latest-table-20261105.png（正式页开球后）、verification/pool-white-middle-20261105.png（白球仍在袋内）、verification/pool-go-20261105.png（GO）。这些是实现证据，不能视为用户已最终批准。
+
+## 2026-11-05 尖端护口、分离双轨及结算参考
+当前本地截图：verification/pool-pearl-pockets-20261105.png；verification/pool-double-return-20261105.png；verification/pool-expanded-table-20261105.png；verification/pool-result-dialog-20261105.png。
+以用户本轮参考为准：护口两端收尖，袋口斜切布面连贯；袋内中央浅、外围深；外金色高轨与暗低轨隔开，底部双U并有圆弯；球杆加长、桌面扩大。胜负结果移至弹窗，按钮“再玩一局”，撒花覆盖视口。截图只代表已实现本地效果，不代表用户最终视觉批准。音频、回球及真实终局可在QA所列验收页复现。
+
+
+2026-11-05 袋口连续性：入口布面与台面使用同坐标纹理，阴影沿库边及两侧斜角连续；进袋球不再出现矩形裁切缺口。固定时间截图docs/verification/pool-pocket-continuity-20261105.png，场景为正式渲染函数验收，仍待用户视觉确认。
+
+
+2026-11-05 角袋护口与直边衔接：将角部灰色面板/直边接缝从32调整到护口尖端18，使护口、蓝色斜口与黑色直边共享接点，去掉护口下方多余灰块。四角镜像一致；不改洞形、球路及物理规则。Chrome正式绘制函数放大截图检查，证据docs/verification/pool-corner-junction-20261105.png。npm test 164/164通过，pool-table.js语法通过。
+
+
+2026-11-05 护口末端延伸：浅灰护口外缘继续沿斜向伸至黑色直边接缝，末端保留11单位接触宽度，避免提前收成悬空尖点。四角共用轮廓；不改袋口裁切与物理。Chrome放大检查截图docs/verification/pool-guard-extension-20261105.png；语法检查通过，npm test 164/164通过。
+
+
+2026-11-05 护口两端对称：右上端同样延伸至横向黑框，接触宽度与下端均为11单位。四个角袋共享此护口轮廓。Chrome放大视觉检查，截图docs/verification/pool-guard-symmetric-20261105.png；语法检查与164项测试通过。
+
+
+2026-11-05 库边外侧投影：删除中袋/角袋垫子内部的深色斜块，减弱鼻口内渐变；阴影改由完整库边轮廓投到外侧桌布，通过evenodd扣除六块库边本体，连续覆盖斜口到直边。仅静态绘制变更。Chrome全桌及中袋/角袋放大截图确认外侧投影：docs/verification/pool-cushion-cast-shadow-20261105.png。JS语法通过，npm test 164/164通过。
+
+
+2026-11-05 护口宽度微调：两个斜向末端接触宽度由11减至9单位（约18%），保持对称和贴合黑框。Chrome细节检查截图docs/verification/pool-guard-width-20261105.png；JS语法和164项测试通过。
+
+
+2026-11-05 顶灯明暗对比加强，白色贝壳定位点+16%，中袋视觉宽度约-9%。Chrome正式页满力开球后截图docs/verification/pool-overhead-light-power-20261105.png。亮度与尺寸仍以用户视觉验收为准。
+
+2026-11-05 顶灯再次增强：中央蓝色光区提高亮度、四边和四角进一步压暗，同一台呢连续渐变。Chrome正式单机页实图：docs/verification/pool-strong-light-celebration-20261105.png。截图是本地当前源码渲染；未宣称用户已批准最终美术。
+
+## 2026-11-05 最新球杆、织纹与袋内动作证据
+
+本地正式对局：左拉杆及桌面杆均采用弧形皮头、先角、渐细木纹、握把和连接环；四角及护口阴影、同源细台呢织纹已更新。用户最近要求的球心捕获、袋内实际碰壁、朝管道滚动后由边缘遮挡，以及电脑瞄准后拉出杆，分别在正式模块场景核验。以下是实现截图，仍待用户视觉批准。
+
+![正式对局与新版球杆](verification/pool-live-cue-weave-20261105.png)
+
+细节图：verification/pool-pocket-shadows-weave-20261105.png；逐帧图：verification/pool-directional-pocket-20261105.png；电脑出杆前奏：verification/pool-opponent-cue-20261105.png。逐帧图为实际物理捕获数据驱动的固定时刻渲染，不是整局录像。

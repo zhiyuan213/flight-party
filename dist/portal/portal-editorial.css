@@ -1,0 +1,280 @@
+/* JoyFlock home — simple blue/violet skin.
+   Loaded after portal.css. Rules are scoped to #home or body:not(.playing)
+   so the in-game #play view keeps its original layout and sizing. */
+
+:root{
+  /* Three-step blue/violet depth, like a classic game lobby:
+     near-black chrome, a clearly lifted content layer, brighter cards. */
+  --home-bg:#1a2342;
+  --home-bg-top:#202b52;
+  --home-bg-bottom:#131a33;
+  --home-surface:#283357;
+  --home-line:#ffffff1f;
+  --home-text:#f6f7ff;
+  --home-muted:#b6c2de;
+  --home-dim:#9dabd0;
+  --home-accent:#bccaff;
+}
+
+/* Shared chrome height comes from --chrome-height in site-chrome.css;
+   #play subtracts the same variable so the game stage always fills the shell. */
+/* Viewport shell: header stays put, #home scrolls, footer is always visible. */
+html,body{height:100%}
+body{
+  height:100dvh;min-height:0;margin:0;
+  display:flex;flex-direction:column;overflow:hidden;
+  /* The footer fade must end on this page's own background, not the dark one
+     used by the info pages. */
+  --chrome-fade:var(--home-bg-bottom);
+  /* The lobby is already a lighter blue/violet, so the ambient layer
+     is toned down here compared with the dark info pages. */
+  --ambient-nebula-opacity:.62;
+  --ambient-star-opacity:.75;
+  background:linear-gradient(180deg,var(--home-bg-top) 0%,var(--home-bg) 38%,var(--home-bg-bottom) 100%);
+  color:var(--home-text);
+}
+.topbar{
+  flex:0 0 auto;position:static;
+  border-bottom:1px solid #ffffff0c;background:#0b1020;gap:52px;
+}
+.brand{font:900 29px Nunito,system-ui;letter-spacing:-1px}
+.brand-mark{color:#a8b8ff;margin-right:9px;font-size:inherit}
+.topbar nav a{
+  padding:0 14px;border-radius:9px;
+  color:#94a0be;font-size:14px;font-weight:700;
+}
+.topbar nav a:hover{color:#e7eeff;background:#ffffff0a}
+.topbar nav .active,.topbar nav a.active{
+  color:#fff;border-bottom:0;background:#1b254a;
+}
+.top-note{color:#8390b0;font-size:13px;font-family:inherit;letter-spacing:normal;text-transform:none}
+body:not(.playing) .top-note{display:none}
+body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96px;max-width:none}
+.portal-language{
+  font:inherit;font-size:13px;font-weight:700;color:#e3eaff;
+  background:#1b254a;border:1px solid #46518a;border-radius:10px;padding:8px 10px;
+}
+.portal-language:focus-visible{outline:2px solid #a8b8ff;outline-offset:3px}
+.portal-controls button{
+  border:1px solid #465580;border-radius:11px;
+  background:linear-gradient(#293659,#1b2542);box-shadow:0 3px 0 #080d20;
+  color:#e7eeff;font-weight:700;min-height:38px;padding:7px 14px;
+}
+.account{border:1px solid #46518a;border-radius:11px;padding:10px 17px;background:#1b254a;font-size:13px;font-weight:700}
+
+#home{
+  flex:1 1 auto;min-height:0;width:100%;
+  max-width:1180px;padding:0 32px 28px;margin:0 auto;
+  overflow-y:auto;overscroll-behavior:contain;position:static;
+  scrollbar-width:thin;scrollbar-color:#3b4878 transparent;
+}
+#home::-webkit-scrollbar{width:10px}
+#home::-webkit-scrollbar-track{background:transparent}
+#home::-webkit-scrollbar-thumb{background:#3b4878;border:3px solid var(--home-bg);border-radius:10px}
+
+/* Hero: one line of type, one line of explanation, one status pill. */
+#home .intro{padding:40px 0 22px;border:0}
+#home .intro h1{
+  margin:0 0 14px;font-size:clamp(28px,3.1vw,42px);
+  line-height:1.28;letter-spacing:-1px;font-weight:800;color:var(--home-text);
+}
+#home .intro h1>span{display:inline;color:var(--home-text);font-family:inherit;font-weight:inherit;letter-spacing:inherit}
+#home .intro h1>span:last-child{color:var(--home-accent)}
+#home .intro p{
+  max-width:40em;margin:0;color:#b3c0de;font-size:14px;line-height:1.8;
+}
+.hero-status{
+  display:inline-flex;align-items:center;gap:8px;margin-top:18px;
+  padding:7px 14px;border:1px solid #6a7ccc;border-radius:20px;
+  background:#2c3a72;color:#e2e9ff;font-size:12px;font-weight:700;
+}
+.hero-status i{
+  width:7px;height:7px;border-radius:50%;background:#81e3b1;
+  box-shadow:0 0 10px #81e3b160;flex:0 0 auto;
+}
+
+/* Section heading: plain and factual, no eyebrow or capsule. */
+#home .home-layout{display:block;margin:0;padding:0}
+#home .library{margin:0;padding:14px 0 0}
+#home .section-heading{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin:0 0 16px;padding:0;border:0;
+}
+#home .section-heading h2{margin:0;font-size:18px;font-weight:800;color:var(--home-text)}
+#home .section-heading p{margin:6px 0 0;font-size:12px;color:var(--home-dim)}
+#home .section-heading .count{
+  margin-left:auto;border:0;padding:0;border-radius:0;background:none;
+  font-size:12px;color:var(--home-dim);letter-spacing:normal;text-transform:none;font-family:inherit;
+}
+
+/* Dense square-cover grid, like a straightforward game lobby. */
+#home .cards{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;
+  background:none;border:0;counter-reset:none;
+}
+#home .cards .game-card{
+  position:relative;display:flex;flex-direction:column;aspect-ratio:1/1;
+  overflow:hidden;counter-increment:none;
+  border:1px solid var(--home-line);border-radius:12px;background:var(--home-surface);
+  transition:transform .18s,border-color .18s,background .18s;
+}
+#home .cards .game-card.live:hover{
+  transform:translateY(-3px);z-index:1;border-color:#9db0ff;background:#323e6d;
+}
+/* The whole card stays square: the cover gives up a little height to the
+   caption row instead of pushing the second row below the fold. */
+#home .cards .card-art{
+  position:relative;aspect-ratio:auto;flex:1 1 auto;min-height:0;
+  display:grid;place-items:center;
+  overflow:hidden;border-radius:0;isolation:isolate;
+}
+#home .cards .card-art:before,#home .cards .card-art:after{display:none}
+#home .cards .card-art img{
+  width:100%;height:100%;object-fit:cover;border-radius:0;
+  filter:none;transform:none;transition:transform .25s;
+}
+#home .cards .game-card.blue .card-art img{
+  width:94%;height:94%;object-fit:contain;filter:drop-shadow(0 10px 8px #1d51854d);
+}
+#home .cards .game-card.live:hover .card-art img{transform:scale(1.05)}
+#home .cards .game-card.blue.live:hover .card-art img{transform:scale(1.03)}
+#home .card-label{display:none}
+/* Keep ONE caption row per card: the game name (big text) plus a quiet arrow.
+   The small grey description line ("2人 · 休闲台球") is intentionally gone —
+   the cover and the name are enough. The p guard also neutralises an older
+   cached script that might still inject the descriptive line. */
+#home .card-copy{
+  display:flex;align-items:center;flex:0 0 auto;
+  padding:7px 11px 8px;border-top:1px solid #ffffff12;
+  background:var(--home-surface);
+}
+/* Card captions start at the same muted blue-grey as the header links
+   (--chrome-muted), then brighten to full white on hover/focus. Only colour,
+   glow and a 1px sweep animate: no letter-spacing / font-size changes, so
+   switching locale or hovering never shifts the text. */
+#home .card-copy h3{
+  position:relative;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  width:100%;min-width:0;margin:0;
+  color:var(--chrome-muted,#94a0be);font-size:15px;font-weight:800;letter-spacing:.1px;
+  transition:color .22s ease,text-shadow .22s ease;
+}
+#home .card-copy h3::after{
+  content:'';position:absolute;left:0;right:0;bottom:-3px;height:1px;
+  background:linear-gradient(90deg,#aab9ff 0%,#c9d6ff 45%,transparent 100%);
+  transform:scaleX(0);transform-origin:left center;opacity:0;
+  transition:transform .28s ease,opacity .28s ease;pointer-events:none;
+}
+#home .card-copy .game-card-title{
+  min-width:0;color:inherit;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+/* portal.css colours every span inside h3 muted; the two locale spans must
+   inherit the caption colour instead of the old grey. */
+#home .card-copy .game-card-title>span{color:inherit}
+#home .card-copy .card-arrow{
+  flex:0 0 auto;color:#8f9dc4;font-size:14px;font-weight:400;
+  transition:transform .18s,color .18s;
+}
+#home .cards .game-card.live:hover .card-arrow,
+#home .cards .game-card.live:focus-visible .card-arrow{color:#c9d6ff;transform:translate(2px,-2px)}
+#home .cards .game-card.live:hover .card-copy h3,
+#home .cards .game-card.live:focus-visible .card-copy h3{
+  color:var(--home-text);text-shadow:0 0 14px #bccaff66;
+}
+#home .cards .game-card.live:hover .card-copy h3::after,
+#home .cards .game-card.live:focus-visible .card-copy h3::after{transform:scaleX(1);opacity:.8}
+#home .card-copy p{display:none!important}
+
+/* Colophon: pinned to the bottom of the viewport, never in the scroll area. */
+body>footer{
+  position:relative;z-index:2;
+  flex:0 0 auto;display:flex;align-items:center;gap:14px;
+  width:min(1180px,100%);margin:0 auto;padding:7px 32px;
+  border-top:1px solid #ffffff1a;background:#0e1428;
+  box-shadow:0 -10px 30px #00000055;
+  color:#6f7d9c;font-family:inherit;font-size:10px;
+  letter-spacing:normal;text-transform:none;
+}
+/* Content slides softly under the fixed bar instead of being cut abruptly. */
+body>footer::before{
+  content:'';position:absolute;left:0;right:0;bottom:100%;height:16px;
+  background:linear-gradient(transparent,var(--home-bg-bottom));
+  pointer-events:none;
+}
+body>footer .brand{font:900 15px Nunito,system-ui;letter-spacing:-1px;color:#a4b1d4}
+body>footer span{margin-left:6px}
+body>footer div{margin-left:auto;gap:14px}
+body>footer div a:hover{color:var(--home-accent)}
+body.playing>footer{display:none}
+
+@media(max-width:1050px){
+  #home{padding:0 24px 24px}
+  body>footer{padding:7px 24px}
+  #home .intro{padding:34px 0 22px}
+  #home .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #home .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #home .intro h1{font-size:30px;letter-spacing:-.5px}
+}
+@media(max-width:600px){
+  .topbar nav a,.topbar nav a:last-child{display:inline-flex;padding:0 9px}
+  body:not(.playing) .topbar{gap:10px;padding:0 12px}
+  body:not(.playing) .portal-language{min-width:84px;font-size:11px;padding:6px}
+}
+@media(max-width:520px){
+  #home{padding:0 16px 20px}
+  body>footer{padding:8px 16px;flex-wrap:wrap;gap:8px}
+  body>footer span{margin-left:0;width:100%}
+  body>footer div{margin-left:0;width:100%}
+  #home .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #home .card-copy{padding:8px 9px 9px}
+  #home .card-copy h3{font-size:13px}
+  #home .section-heading p{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  #home .cards .game-card,#home .cards .card-art img,
+  #home .card-copy h3,#home .card-copy h3::after,
+  #home .card-copy .game-card-title{transition:none}
+}
+
+/* Matchmaking notice: owned by the portal, so it can sit at the very top of
+   the viewport (above the header). State comes from joyflock:match messages. */
+body>.portal-match-box{
+  position:fixed!important;top:0!important;left:50%;transform:translateX(-50%);
+  z-index:2147483000;display:flex;align-items:center;gap:9px;
+  width:max-content;max-width:calc(100% - 24px);min-width:230px;
+  padding:8px 11px 9px;border-radius:0 0 10px 10px;
+  background:linear-gradient(135deg,#3b5bd9,#263f9e);
+  border:1px solid #6f8bff;border-top:0;color:#fff;
+  box-shadow:0 10px 26px #0008,inset 0 -1px 0 #ffffff24;
+  font:600 12px/1.25 system-ui,sans-serif;
+  animation:pm-in .25s ease-out;
+}
+body>.portal-match-box[hidden]{display:none!important}
+.pm-spinner{
+  flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#0d1b3d;
+  border:1px solid #91a9ff55;display:grid;place-items:center;
+}
+.pm-spinner svg{width:15px;height:15px;animation:pm-spin 1.5s linear infinite}
+.pm-copy{flex:1;min-width:0}
+.pm-title{font-size:13px;font-weight:700;line-height:1.25;white-space:nowrap}
+.pm-meta{font-size:10px;color:#c9d8ff;margin-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pm-close{
+  flex:0 0 auto;width:22px;height:22px;min-width:22px;min-height:0;
+  aspect-ratio:1;border-radius:50%;border:1px solid #ffffff44;
+  background:#ffffff14;color:#fff;font-size:13px;line-height:1;
+  padding:0;box-shadow:none;box-sizing:border-box;cursor:pointer;
+}
+.pm-close:hover{background:#ffffff2e}
+@keyframes pm-in{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes pm-spin{to{transform:rotate(360deg)}}
+@media(max-width:760px){
+  body>.portal-match-box{min-width:0;padding:5px 8px 6px;gap:7px}
+  .pm-title{font-size:11px}
+  .pm-meta{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  body>.portal-match-box,body>.portal-match-box *{animation:none!important}
+}

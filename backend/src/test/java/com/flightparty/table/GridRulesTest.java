@@ -9,4 +9,8 @@ class GridRulesTest {
  @Test void botBlocksImmediateLoss(){var s=GridRules.start("four");for(int p:new int[]{0,6,1,6,2})s=GridRules.move(s,s.turn(),p);assertEquals(3,GridRules.bot(s));}
  @Test void gomokuFiveAndNoWrap(){var s=GridRules.start("gomoku");for(int p:new int[]{0,30,1,31,2,32,3,33,4})s=GridRules.move(s,s.turn(),p);assertTrue(s.over());assertEquals(1,s.winner());var empty=GridRules.start("gomoku");assertEquals(225,GridRules.legal(empty).size());assertEquals(112,GridRules.bot(empty));}
  @Test void puzzleIsAPermutationAndBotSolvesWithoutClientScores(){var s=GridRules.start("puzzle");assertEquals(16,java.util.Arrays.stream(s.cells()).distinct().count());int count=0;while(!s.over()&&count++<16)s=GridRules.move(s,s.turn(),GridRules.bot(s));assertTrue(s.over());assertEquals(1,s.winner());}
+ @Test void xoHasNineCellsAndCentreOpening(){var s=GridRules.start("xo");assertEquals(9,s.cells().length);assertEquals(9,GridRules.legal(s).size());assertEquals(4,GridRules.bot(s));assertThrows(IllegalArgumentException.class,()->GridRules.move(s,1,9));}
+ @Test void xoRowWinsWithoutWrappingAcrossRows(){var s=GridRules.start("xo");for(int p:new int[]{0,3,1,4,2})s=GridRules.move(s,s.turn(),p);assertTrue(s.over());assertEquals(1,s.winner());
+  var spread=GridRules.start("xo");for(int p:new int[]{2,0,3,1})spread=GridRules.move(spread,spread.turn(),p);spread=GridRules.move(spread,spread.turn(),4);assertFalse(spread.over());}
+ @Test void xoDrawAfterNineMoves(){var s=GridRules.start("xo");int[] sequence={0,1,2,4,3,5,7,6,8};for(int i=0;i<sequence.length;i++){s=GridRules.move(s,s.turn(),sequence[i]);if(i<sequence.length-1)assertFalse(s.over());}assertTrue(s.over());assertEquals(0,s.winner());assertEquals(9,s.moves());}
 }

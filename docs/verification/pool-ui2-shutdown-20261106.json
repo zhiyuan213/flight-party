@@ -1,0 +1,10 @@
+{
+  "release": "pool-ui2-20261106",
+  "deployed": "2026-11-05T18:28:36Z",
+  "verified": true,
+  "shutdownRequestedByUser": true,
+  "shutdownTarget": "local Windows computer",
+  "shutdownAt": "2026-11-06T02:53:52.4981841+08:00",
+  "helperPid": 32864,
+  "forceCloseApps": false
+}

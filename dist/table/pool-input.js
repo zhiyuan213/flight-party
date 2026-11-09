@@ -1,5 +1,8 @@
 // Input geometry is separate from rendering and never determines a match result.
 export const SPIN_STRIDE = 363600;
+export function meterPower(clientY, top, height) {
+  return Math.round(Math.max(0,Math.min(1,(clientY-top)/Math.max(1,height)))*100);
+}
 export function pullPower(start, current, angle, scale=1) {
   const radians=angle*Math.PI/1800;
   const distance=-((current.x-start.x)*Math.cos(radians)+(current.y-start.y)*Math.sin(radians))*scale;

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+ <circle cx="32" cy="32" r="23" fill="none" stroke="#6b3a12" stroke-width="2.2"/>
+ <path d="M32 9v46M9 32h46M16 16l32 32M48 16L16 48" stroke="#6b3a12" stroke-width="1.2" opacity=".45"/>
+ <circle cx="32" cy="32" r="12" fill="#f6d998" stroke="#6b3a12" stroke-width="1.8"/>
+ <text x="32" y="39" font-family="'Songti SC','SimSun',serif" font-size="16" font-weight="700" text-anchor="middle" fill="#6b3a12">月</text>
+</svg>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JoyFlock</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
+  <link rel="stylesheet" href="/site-cursor.css?v=20261108-usa6">
+  <link rel="stylesheet" href="./arcade.css?v=20261109-glass1">
+</head>
+<body>
+  <header hidden><button id="back" type="button" aria-label="Back">←</button><span id="game-title"></span><output id="status" aria-live="polite"></output></header>
+  <main>
+    <canvas tabindex="0" hidden></canvas>
+    <section id="intro" aria-labelledby="intro-title">
+      <img id="cover" alt="">
+      <div>
+        <p id="kicker"></p>
+        <h1 id="intro-title"></h1>
+        <p id="instructions"></p>
+        <div class="intro-actions"><button id="start" type="button"></button><button id="two" type="button" hidden></button><button id="online" type="button" hidden></button></div>
+        <a id="lobby" href="/portal/index.html" target="_top"></a>
+      </div>
+    </section>
+  </main>
+  <footer hidden><label id="nomination-label" hidden><span></span><select id="nomination"></select></label><label id="power-label" hidden><span></span><input id="power" type="range" min="5" max="100" value="55"></label><button id="action" type="button" hidden></button></footer>
+  <dialog><h2></h2><button id="again" type="button"></button></dialog>
+  <script type="module" src="./arcade.js?v=20261109-result1"></script>
+<script defer src="/site-hover-sfx.js?v=20261109-zoom1"></script><script defer src="/site-result-sfx.js?v=20261109-result1"></script><script defer src="/site-pointer-relay.js?v=20261109-ambfull1"></script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script></body>
+</html>

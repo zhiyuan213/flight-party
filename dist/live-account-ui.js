@@ -63,12 +63,12 @@ export function bindLiveAccount(social,session){
  dialog.addEventListener('keydown',event=>{if(event.target.matches('[data-avatar-picker]')&&['Enter',' '].includes(event.key)){event.preventDefault();if(identity?.account)openAvatarPicker();}});
  dialog.addEventListener('submit',async event=>{
   if(event.target.id!=='live-account-form')return;event.preventDefault();event.stopImmediatePropagation();if(busy)return;
-  const values=new FormData(event.target),password=values.get('password');
-  if(social.authTab==='register'&&password!==values.get('confirmation')){notice=t('Passwords must match.','两次密码需要一致。');social.renderDialog();return;}
-  busy=true;notice='';const input={email:values.get('email'),password,displayName:values.get('displayName')};event.target.reset();
+  const form=event.target; const values=new FormData(form),password=values.get('password'); if(!form.reportValidity())return; if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(values.get('email')||''))){form.elements.email.setCustomValidity('Please enter a valid email address / 请输入正确的邮箱地址');form.elements.email.reportValidity();form.elements.email.oninput=()=>form.elements.email.setCustomValidity('');return;}
+  if(social.authTab==='register'&&password!==values.get('confirmation')){form.elements.confirmation.setCustomValidity('Passwords must match / 两次密码需要一致');form.elements.confirmation.reportValidity();form.elements.confirmation.oninput=()=>form.elements.confirmation.setCustomValidity('');return;}
+  busy=true;notice='';const input={email:values.get('email'),password,displayName:values.get('displayName')};
   try{if(!session.csrf)await session.initialize();await session.request(`/api/auth/${social.authTab==='register'?'register':'login'}`,input);update(await session.request('/api/me'));if(session.room)session.connect();}
   catch(error){notice=t('Unable to sign in or register. Check your details and try again.','登录或注册未成功，请检查信息后重试。');}
-  finally{busy=false;social.renderDialog();}
+  finally{busy=false;if(!identity?.account){let node=dialog.querySelector('.social-action-notice');if(!node){node=document.createElement('p');node.className='social-action-notice';node.setAttribute('role','alert');form.before(node);}node.textContent=notice;}else{form.reset();social.renderDialog();}}
  },true);
  dialog.addEventListener('change',async event=>{
 
