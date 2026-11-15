@@ -107,7 +107,7 @@ function head({title, description, keywords, canonical, zhUrl, enUrl, image, ima
   const alternate = lang === 'zh' ? 'en_US' : 'zh_CN';
   return `<!doctype html>
 <html lang="${lang === 'zh' ? 'zh-CN' : 'en'}" data-locale="${lang}">
-<head>
+<head><script src="/site-audio.js?v=20261115-levels1"></script><link rel="stylesheet" href="/site-audio.css?v=20261115-levels1">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>

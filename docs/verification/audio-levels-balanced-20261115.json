@@ -1,0 +1,96 @@
+{
+  "sampleRate": 48000,
+  "measurement": "digital output; peak and loudest sliding 50ms RMS, not LUFS or physical SPL",
+  "rows": [
+    {
+      "name": "UI grow",
+      "peakDbFS": -24.1,
+      "max50msRmsDbFS": -30.7,
+      "rmsDbFS": -47.2
+    },
+    {
+      "name": "UI hover (current default 0.8)",
+      "peakDbFS": -19.1,
+      "max50msRmsDbFS": -35.8,
+      "rmsDbFS": -53.6
+    },
+    {
+      "name": "Victory jingle (current default 0.9)",
+      "peakDbFS": -14.6,
+      "max50msRmsDbFS": -24.6,
+      "rmsDbFS": -35.2
+    },
+    {
+      "name": "Coin final tick",
+      "peakDbFS": -22.9,
+      "max50msRmsDbFS": -36.5,
+      "rmsDbFS": -54.3
+    },
+    {
+      "name": "Flight click (45% default)",
+      "peakDbFS": -24.9,
+      "max50msRmsDbFS": -29.7,
+      "rmsDbFS": -47.3
+    },
+    {
+      "name": "Flight roll (45% default)",
+      "peakDbFS": -21.9,
+      "max50msRmsDbFS": -35.4,
+      "rmsDbFS": -45.9
+    },
+    {
+      "name": "Flight bump-1 (45% default)",
+      "peakDbFS": -18.1,
+      "max50msRmsDbFS": -21.9,
+      "rmsDbFS": -33.3
+    },
+    {
+      "name": "Flight win (45% default)",
+      "peakDbFS": -20.3,
+      "max50msRmsDbFS": -27.3,
+      "rmsDbFS": -35.7
+    },
+    {
+      "name": "Pool ball strength 0.5",
+      "peakDbFS": -20,
+      "max50msRmsDbFS": -30.4,
+      "rmsDbFS": -48.2
+    },
+    {
+      "name": "Pool countdown 3",
+      "peakDbFS": -17,
+      "max50msRmsDbFS": -23.9,
+      "rmsDbFS": -41.5
+    },
+    {
+      "name": "Pool countdown GO",
+      "peakDbFS": -16.4,
+      "max50msRmsDbFS": -20.4,
+      "rmsDbFS": -34.1
+    },
+    {
+      "name": "Pool cue strength 0.5",
+      "peakDbFS": -16.2,
+      "max50msRmsDbFS": -30.5,
+      "rmsDbFS": -48.3
+    },
+    {
+      "name": "Pool rail strength 0.5",
+      "peakDbFS": -9.9,
+      "max50msRmsDbFS": -22.9,
+      "rmsDbFS": -40.6
+    },
+    {
+      "name": "Pool wood-knock strength 0.5",
+      "peakDbFS": -6.8,
+      "max50msRmsDbFS": -23,
+      "rmsDbFS": -40.8
+    },
+    {
+      "name": "Muted UI output",
+      "peakDbFS": -240,
+      "max50msRmsDbFS": -240,
+      "rmsDbFS": -240
+    }
+  ]
+}

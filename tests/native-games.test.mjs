@@ -13,7 +13,7 @@ for(const [kind,input] of [['table','dist/table/index.html'],['flight','dist/ind
  assert.doesNotMatch(html,/<iframe\b/i);
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
  assert.equal(ids.length,new Set(ids).size,'no duplicate game/chrome IDs');
- assert.ok(ids.includes('account-open')&&ids.includes('native-account'));
+ assert.ok(ids.includes('account-open')&&ids.includes('chrome-account'));
  assert.equal([...html.matchAll(/data-native-link=/g)].length,9);
  for(const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)){
   const value=match[1];if(/^(https?:|data:)/.test(value))continue;
@@ -32,6 +32,19 @@ test('native language uses direct callbacks without any parent window',()=>{
  assert.deepEqual(locales,['zh']);
  events['joyflock:native-locale']({detail:'en'});events['joyflock:native-locale']({detail:'invalid'});
  assert.deepEqual(locales,['zh','en']);assert.equal(events.message,undefined);
+});
+
+test('restored dock enlarges the nearest icon and resets on pointer leave',()=>{
+ const listeners={},values=[new Map(),new Map(),new Map()];
+ const icons=values.map((style,i)=>({offsetTop:i*66,offsetHeight:54,style:{setProperty:(k,v)=>style.set(k,v),removeProperty:k=>style.delete(k)}}));
+ const rail={children:icons,getBoundingClientRect:()=>({top:0}),addEventListener:(name,fn)=>listeners[name]=fn};
+ const code=read('dist/portal/native-game.js').split('function bindRailMagnification(')[1].split('\nbindRailMagnification(')[0];
+ const scope=vm.createContext({matchMedia:()=>({matches:true,addEventListener(){}})});
+ vm.runInContext('function bindRailMagnification('+code,scope);scope.bindRailMagnification(rail);
+ listeners.pointermove({pointerType:'mouse',clientY:93});
+ assert.equal(values[1].get('--dock-scale'),2);assert.ok(values[0].get('--dock-scale')>1);
+ listeners.pointerleave();assert.ok(values.every(v=>v.size===0));
+ const html=read('dist/portal/native-table.html');assert.match(html,/native-brand brand/);assert.match(html,/site-pointer-fx\.js/);assert.match(html,/site-shooting-star\.js/);
 });
 
 test('root and legacy portal routes serve a direct document for every game',async()=>{

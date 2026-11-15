@@ -7,8 +7,8 @@ import {showMatchBox,hideMatchBox,updateMatchBox} from './match-box.js?v=2026111
 import {mountArcade} from './arcade-table.js?v=20261112-natural1&release=20261115-polishrelease1';
 import {mountSnookerShell} from './snooker-shell.js?v=20261111-targetballs1&release=20261115-polishrelease1';
 import {renderChess} from './chess-view.js?v=20261110-glove2';
-import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
-import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2';
+import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
+import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
 import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';

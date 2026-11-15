@@ -94,6 +94,7 @@
 
  function muted(){
   if(!enabled)return true;
+  if(window.__joyflockAudio)return window.__joyflockAudio.muted||document.hidden;
   try{
    if(localStorage.getItem('joyflock.hoverSfx')==='0')return true;
    if(localStorage.getItem('joyflock.pool.muted')==='1')return true;
@@ -115,7 +116,7 @@
   // 5.2 kHz low-pass did.
   var hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=760;
   var lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=14000;
-  master.connect(hp);hp.connect(lp);lp.connect(c.destination);
+  master.connect(hp);hp.connect(lp);lp.connect(window.__joyflockAudio?window.__joyflockAudio.output(c,'ui'):c.destination);
   return master;
  }
  function probe(){
@@ -165,7 +166,7 @@
    var g=c.createGain();g.gain.value=volume;
    var hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=140;
    var lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=7000;
-   g.connect(hp);hp.connect(lp);lp.connect(c.destination);
+   g.connect(hp);hp.connect(lp);lp.connect(window.__joyflockAudio?window.__joyflockAudio.output(c,'ui'):c.destination);
    out=g;zoomOutputs.set(c,out);zoomGains.push(g);
   }
   return out;

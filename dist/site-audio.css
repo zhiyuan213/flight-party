@@ -1,0 +1,6 @@
+body>.topbar .top-actions .site-mute{order:-1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;min-width:32px;height:24px;padding:0;border:1px solid #46518a;border-radius:var(--chrome-radius,12px);background:#1b254a;color:#eaf0ff;font:14px/1 system-ui;box-shadow:none;transform:none}
+body>.topbar .top-actions .site-mute:hover{background:#2c3a72;border-color:#a8b8ff}
+body>.topbar .top-actions .site-mute[aria-pressed="true"]{background:#30364b;border-color:#8290ad}
+body>.topbar .top-actions:has(.site-mute){width:max-content}
+@media(max-width:600px){body>.topbar .top-actions:has(.site-mute){width:auto;gap:4px}body>.topbar .top-actions .site-mute{flex-basis:26px;width:26px;min-width:26px}}
+@media(max-width:600px){body>.topbar:has(.site-mute) nav{display:none}}

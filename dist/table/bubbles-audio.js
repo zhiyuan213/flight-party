@@ -15,7 +15,7 @@ function ensure(){
     master=ctx.createGain();master.gain.value=.5;
     const comp=ctx.createDynamicsCompressor();
     comp.threshold.value=-16;comp.ratio.value=3;
-    master.connect(comp);comp.connect(ctx.destination);
+    master.connect(comp);comp.connect(globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(ctx,'bubbles'):ctx.destination);
     return true;
   }catch{return false;}
 }
@@ -23,11 +23,11 @@ export function unlockBubblesAudio(){
   if(!ensure())return;
   if(ctx.state==='suspended')ctx.resume().catch(()=>{});
 }
-export function setBubblesMuted(on){muted=!!on;}
-export function bubblesMuted(){return muted;}
+export function setBubblesMuted(on){muted=!!on;globalThis.__joyflockAudio?.setMuted(muted);}
+export function bubblesMuted(){return globalThis.__joyflockAudio?.muted??muted;}
 
 function tone({freq,end=null,dur=.12,type='sine',delay=0,gain=.12,curve='exp'}){
-  if(muted||!ensure()||ctx.state!=='running')return;
+  if(bubblesMuted()||!ensure()||ctx.state!=='running')return;
   const t=ctx.currentTime+delay;
   const osc=ctx.createOscillator(),g=ctx.createGain();
   osc.type=type;osc.frequency.setValueAtTime(freq,t);
@@ -41,7 +41,7 @@ function tone({freq,end=null,dur=.12,type='sine',delay=0,gain=.12,curve='exp'}){
 }
 /* A short filtered-noise burst for the "pop" transient. */
 function noise({dur=.06,gain=.18,freq=1200,delay=0}){
-  if(muted||!ensure()||ctx.state!=='running')return;
+  if(bubblesMuted()||!ensure()||ctx.state!=='running')return;
   const t=ctx.currentTime+delay;
   const len=Math.max(1,Math.floor(ctx.sampleRate*dur));
   const buf=ctx.createBuffer(1,len,ctx.sampleRate);

@@ -29,6 +29,7 @@
 
  function muted(){
   if(!enabled)return true;
+  if(window.__joyflockAudio)return window.__joyflockAudio.muted||document.hidden;
   try{
    var hover=window.__joyflockHoverSfx;
    if(hover&&'muted'in hover)return !!hover.muted;
@@ -79,7 +80,7 @@
    var comp=c.createDynamicsCompressor();
    comp.threshold.value=-16;comp.knee.value=18;comp.ratio.value=3;
    comp.attack.value=.003;comp.release.value=.18;
-   out.connect(comp);comp.connect(c.destination);
+   out.connect(comp);comp.connect(window.__joyflockAudio?window.__joyflockAudio.output(c,'result'):c.destination);
    outputs.set(c,out);
   }
   return out;
@@ -177,6 +178,7 @@
     a run of them read as coins cascading into a counter instead of a steady
     beep. Kept high and quick so each clink reads as crisp, not dull. */
  function coin(c,out,at,peak,final){
+  peak*=2.5;
   var f=2800+Math.random()*1000;
   var d=(final?1.6:1)*(.045+Math.random()*.03);
   voice(c,out,at,{freq:f,to:f*.9,peak:peak,dur:d,type:'triangle',attack:.0006});

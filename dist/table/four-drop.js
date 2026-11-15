@@ -1,5 +1,5 @@
 import {decoratePiece} from './game-cosmetics.js?v=20261112-gamelanes1';
-import {prepareFourAudio,createFourDropSound} from './four-audio.js?v=20261113-fourfeedback1';
+import {prepareFourAudio,createFourDropSound} from './four-audio.js?v=20261113-fourfeedback1&audio=20261115-levels1';
 
 // A poll may skip several moves or replace a game. Only a single new counter
 // on an otherwise identical board represents a new, observable drop.

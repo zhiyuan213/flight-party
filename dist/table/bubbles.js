@@ -13,7 +13,7 @@ import {W,H,R,ROW,LAUNCH_Y,LIMIT,GRID,N,ANGLE_MAX,decodeAngle,encodeAngle,
   S_SLOT,S_ANGLE,S_COLOUR,S_MATCH,S_FLOAT,S_POINTS,S_ATTACK,S_LIMIT,S_SEAT,MAX_MOVES}
   from './bubbles-duel.js?v=20261112-gamelanes1';
 import {bubbleLaunch,bubbleBounce,bubblePop,bubbleCombo,bubbleFall,bubbleClear,bubbleAttack}
-  from './bubbles-audio.js?v=20261113-bubbles2';
+  from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 
 const TAU=Math.PI*2;
 const WW=W*2;                 /* two boards side by side */

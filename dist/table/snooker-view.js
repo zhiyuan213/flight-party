@@ -25,8 +25,8 @@ import {ballSkin,cueSkin,tableSkin} from './billiard-cosmetics.js?v=20261112-gam
 import {drawCue} from './snooker-cue.js?v=20261112-natural1';
 import {drawSnookerPocketDrops,snookerPocketMotion,SNOOKER_POCKET_DURATION as POCKET_DURATION} from './snooker-pocket-motion.js?v=20261113-wellmotion1&release=20261115-polishrelease1';
 import {syncSnookerCollection,collectionActive,drawSnookerCollectionTrack,drawSnookerCollectedBalls} from './snooker-collection.js?v=20261113-wellmotion1&release=20261115-polishrelease1';
-import {chainLevels,poolImpact,poolImpactBurst,pocketSoundStages,replayImpacts,unlockPoolAudio,poolMuted,setPoolMuted,setImpactVoice} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
-import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2';
+import {chainLevels,poolImpact,poolImpactBurst,pocketSoundStages,replayImpacts,unlockPoolAudio,poolMuted,setPoolMuted,setImpactVoice} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
+import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2&audio=20261115-levels1';
 
 const W=TABLE_WIDTH,H=TABLE_HEIGHT,PAD=TABLE_PAD,SCALE=2,R=radius,BALLS=22;
 // Reserve the same 88-unit outer strip as Pool, without changing table units.

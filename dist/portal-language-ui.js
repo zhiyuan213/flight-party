@@ -15,6 +15,8 @@
 (function () {
   var select = document.getElementById('portal-language');
   if (!select || select.getAttribute('data-lang-picker') === '1') return;
+  var initialLocale=document.documentElement.getAttribute('data-locale');
+  if(initialLocale==='en'||initialLocale==='zh')select.value=initialLocale;
   select.setAttribute('data-lang-picker', '1');
 
   var LABELS = {en: 'English', zh: '中文'};

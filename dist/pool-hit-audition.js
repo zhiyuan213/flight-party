@@ -1,6 +1,6 @@
 // A was selected by the user. Candidates remain as a historical comparison;
 // the merged A example uses the exact production mixer and real rack events.
-import {mixImpactSamples,impactBurstSchedule} from './table/pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
+import {mixImpactSamples,impactBurstSchedule} from './table/pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
 import {poolStart,poolMove} from './table/pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
 const ROOT='./assets/audio/pool/audition/';
 const choices=[

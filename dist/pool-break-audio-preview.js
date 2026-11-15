@@ -1,7 +1,7 @@
 // Local audition only. The old voice below freezes the pre-2026-11-12 chain;
 // the new buttons call the same module used by actual pool/snooker playback.
 import {poolStart,poolMove} from './table/pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
-import {replayImpacts,poolImpactBurst,chainLevels,impactBurstSchedule,unlockPoolAudio,poolRecordingStatus,poolMuted} from './table/pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
+import {replayImpacts,poolImpactBurst,chainLevels,impactBurstSchedule,unlockPoolAudio,poolRecordingStatus,poolMuted} from './table/pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
 const state=poolStart(),result=poolMove(state,1,100*3600);
 const frames=[state.cells.slice(0,48),...result.history.map(h=>h.split(',').map(Number))];
 const exact=result.audioEvents.filter(e=>e.kind==='ball'&&e.time<=100);

@@ -1,13 +1,14 @@
 // One document: share the game's existing account UI, language, wallet and audio.
 const root=document.documentElement,stage=document.getElementById('native-game-stage');
-const language=document.getElementById('native-language'),account=document.getElementById('native-account');
-const fullscreen=document.getElementById('native-fullscreen');
+const language=document.getElementById('portal-language'),account=document.getElementById('chrome-account');
+const fullscreen=document.getElementById('fullscreen');
 const kind=root.dataset.nativeGame,game=kind==='flight'?'flight':new URLSearchParams(location.search).get('game')||'four';
 for(const link of document.querySelectorAll('[data-native-link]'))if(link.dataset.nativeLink===game)link.setAttribute('aria-current','page');
 function sync(){
  const locale=root.dataset.locale==='zh'?'zh':'en';language.value=locale;
  language.setAttribute('aria-label',locale==='zh'?'语言':'Language');
- account.textContent=document.getElementById('account-open')?.textContent.trim()||'—';
+ const name=document.getElementById('account-open')?.textContent.trim()||'—';
+ account.textContent=name;document.body.classList.toggle('chrome-signed',!['—','登录','登录 / 注册','Sign in','Sign in / Register'].includes(name));
  document.querySelector('.native-rail').setAttribute('aria-label',locale==='zh'?'游戏列表':'Game list');
  for(const link of document.querySelectorAll('[data-native-link]'))link.setAttribute('aria-label',link.querySelector(locale==='zh'?'.native-zh':'.native-en').textContent);
  const current=document.querySelector('[data-native-link][aria-current="page"]');
@@ -50,3 +51,33 @@ function syncScreen(){
 new MutationObserver(syncScreen).observe(kind==='flight'?document.getElementById('play'):document.body,{attributes:true,attributeFilter:kind==='flight'?['class']:['data-screen']});
 new MutationObserver(syncFullscreen).observe(root,{attributes:true,attributeFilter:['data-locale']});
 sync();syncScreen();syncFullscreen();
+
+function bindRailMagnification(rail) {
+ const desktop=matchMedia('(min-width: 601px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+ const icons=Array.from(rail.children);
+ const reset=()=>icons.forEach(icon=>{
+  icon.style.removeProperty('--dock-scale');
+  icon.style.removeProperty('--dock-shift');
+  icon.style.removeProperty('--dock-layer');
+ });
+ rail.addEventListener('pointermove',event=>{
+  if(!desktop.matches||event.pointerType==='touch')return;
+  const y=event.clientY-rail.getBoundingClientRect().top;
+  const centers=icons.map(icon=>icon.offsetTop+icon.offsetHeight/2);
+  const scales=centers.map(center=>1+Math.max(0,1-Math.abs(y-center)/130)**2);
+  const expansion=scales.map((scale,i)=>(scale-1)*icons[i].offsetHeight);
+  const anchor=centers.reduce((nearest,center,i)=>Math.abs(center-y)<Math.abs(centers[nearest]-y)?i:nearest,0);
+  let shift=-expansion.slice(0,anchor).reduce((sum,height)=>sum+height,0)-expansion[anchor]/2;
+  icons.forEach((icon,i)=>{
+   icon.style.setProperty('--dock-scale',scales[i]);
+   icon.style.setProperty('--dock-shift',(shift+expansion[i]/2)+'px');
+   icon.style.setProperty('--dock-layer',Math.round(scales[i]*100));
+   shift+=expansion[i];
+  });
+ });
+ rail.addEventListener('pointerleave',reset);
+ rail.addEventListener('pointercancel',reset);
+ desktop.addEventListener('change',reset);
+}
+
+bindRailMagnification(document.getElementById('rail-items'));

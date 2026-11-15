@@ -23,8 +23,8 @@ const BURST_TONE_CUTOFF=4200;
 const BURST_CONTACT_DURATION=.038;
 const RECORDED_TAIL=.11;
 try{muted=localStorage.getItem('joyflock.pool.muted')==='1';}catch{}
-export const poolMuted=()=>muted;
-export function setPoolMuted(value){muted=value;if(value)for(const v of voices){try{v.stop();}catch{}}try{localStorage.setItem('joyflock.pool.muted',value?'1':'0');}catch{}}
+export const poolMuted=()=>globalThis.__joyflockAudio?.muted??muted;
+export function setPoolMuted(value){value=!!value;muted=value;globalThis.__joyflockAudio?.setMuted(value);if(value)for(const v of voices){try{v.stop();}catch{}}try{localStorage.setItem('joyflock.pool.muted',value?'1':'0');}catch{}}
 export function unlockPoolAudio(){try{
  const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;if(!Audio)return;
  context||=new Audio();loadRecording();
@@ -33,7 +33,7 @@ export function unlockPoolAudio(){try{
  // countdown beep. A zero-gain voice warms the path without an extra sound.
  if(!audioPrimed&&context.createOscillator&&context.createGain){
   const tone=context.createOscillator(),silent=context.createGain();silent.gain.value=0;
-  tone.connect(silent);silent.connect(context.destination);
+  tone.connect(silent);silent.connect((globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'pool'):context.destination));
   tone.onended=()=>{tone.disconnect();silent.disconnect();};
   tone.start(context.currentTime);tone.stop(context.currentTime+.03);audioPrimed=true;
  }
@@ -44,7 +44,7 @@ async function loadRecording(){
 }
 const ballLevel=strength=>.1+.9*Math.pow(Math.max(0,Math.min(1,strength)),.75);
 function ballOutput(){
- if(!master){master=context.createDynamicsCompressor();master.threshold.value=-10;master.knee.value=6;master.ratio.value=12;master.attack.value=.002;master.release.value=.055;master.connect(context.destination);}
+ if(!master){master=context.createDynamicsCompressor();master.threshold.value=-10;master.knee.value=6;master.ratio.value=12;master.attack.value=.002;master.release.value=.055;master.connect((globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'pool'):context.destination));}
  return master;
 }
 // The CC0 mp3 opens with silence and has a longer tail than the 90 ms A WAVs.
@@ -341,11 +341,11 @@ export function impactSamples(kind,strength=.5,tangent=0,sampleRate=48000,random
   data[data.length-1]=0;return data;
 }
 export function poolImpact(kind,strength=.5,tangent=0,playbackGain=1,delay=0,variant=-1,echo=1,toneLock=false){
-  if(muted||!context||context.state!=='running'||globalThis.document?.hidden||voices.size>=32)return false;
+  if(poolMuted()||!context||context.state!=='running'||globalThis.document?.hidden||voices.size>=32)return false;
   const lock=toneLock&&kind==='ball';
   if(kind==='ball'&&recordedImpact(strength,delay,playbackGain,variant,lock))return true;
   const samples=(kind==='rail'&&snookerVoice()?snookerCushionSamples(strength,context.sampleRate,Math.random):impactSamples(kind,strength,tangent,context.sampleRate,Math.random,echo,lock)),buffer=context.createBuffer(1,samples.length,context.sampleRate);
-  buffer.getChannelData(0).set(playbackGain===1?samples:samples.map(sample=>sample*playbackGain));const source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);
+  buffer.getChannelData(0).set(playbackGain===1?samples:samples.map(sample=>sample*playbackGain));const source=context.createBufferSource();source.buffer=buffer;source.connect((globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'pool'):context.destination));
   // No jitter at all: scheduled stages must land on their exact visual
   // contact times, and a 12 ms volley would smear with even 4 ms of drift.
   const start=context.currentTime+delay;voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect?.();};source.start(start);source.stop(start+samples.length/context.sampleRate);return true;
@@ -388,7 +388,7 @@ export function mixImpactSamples(sample,sampleRate,events){
   mixed[0]=0;mixed[mixed.length-1]=0;return mixed;
 }
 export function poolImpactBurst(events){
-  if(muted||!context||context.state!=='running'||globalThis.document?.hidden)return 0;
+  if(poolMuted()||!context||context.state!=='running'||globalThis.document?.hidden)return 0;
   const plan=impactBurstSchedule(events),balls=plan.filter(e=>e.kind==='ball'&&e.toneLock);
   let played=0;
   if(balls.length&&voices.size<32){
@@ -396,7 +396,7 @@ export function poolImpactBurst(events){
     const slice=recordedSlice();
     const sample=slice?.data||impactSamples('ball',1,0,rate,Math.random,1,true);
     const samples=mixImpactSamples(sample,rate,events),buffer=context.createBuffer(1,samples.length,rate),source=context.createBufferSource();
-    buffer.getChannelData(0).set(samples);source.buffer=buffer;if(source.playbackRate)source.playbackRate.value=1;source.connect(recorded?ballOutput():context.destination);
+    buffer.getChannelData(0).set(samples);source.buffer=buffer;if(source.playbackRate)source.playbackRate.value=1;source.connect(recorded?ballOutput():(globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'pool'):context.destination));
     voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect?.();};
     source.start(context.currentTime);source.stop(context.currentTime+samples.length/rate);played=balls.length;
   }
@@ -455,9 +455,9 @@ export function countdownSamples(stage,sampleRate=48000){
   data[data.length-1]=0;return data;
 }
 export function poolCountdownSound(stage){
-  if(!['3','2','1','GO'].includes(String(stage))||muted||!context||context.state!=='running'||globalThis.document?.hidden)return false;
+  if(!['3','2','1','GO'].includes(String(stage))||poolMuted()||!context||context.state!=='running'||globalThis.document?.hidden)return false;
   const samples=countdownSamples(String(stage),context.sampleRate),buffer=context.createBuffer(1,samples.length,context.sampleRate),source=context.createBufferSource();
-  buffer.getChannelData(0).set(samples);source.buffer=buffer;source.connect(context.destination);
+  buffer.getChannelData(0).set(samples);source.buffer=buffer;source.connect((globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'pool'):context.destination));
   const start=context.currentTime;voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect?.();};source.start(start);source.stop(start+samples.length/context.sampleRate);return true;
 }
 
@@ -474,9 +474,9 @@ export function victorySamples(sampleRate=48000){
   data[data.length-1]=0;return data;
 }
 export function poolVictorySound(){
-  if(muted||!context||context.state!=='running'||globalThis.document?.hidden)return false;
+  if(poolMuted()||!context||context.state!=='running'||globalThis.document?.hidden)return false;
   const samples=victorySamples(context.sampleRate),buffer=context.createBuffer(1,samples.length,context.sampleRate),source=context.createBufferSource();
-  buffer.getChannelData(0).set(samples);source.buffer=buffer;source.connect(context.destination);
+  buffer.getChannelData(0).set(samples);source.buffer=buffer;source.connect((globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'pool'):context.destination));
   voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect?.();};
   source.start(context.currentTime);source.stop(context.currentTime+samples.length/context.sampleRate);return true;
 }

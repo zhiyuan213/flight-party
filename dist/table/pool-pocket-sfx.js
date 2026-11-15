@@ -20,6 +20,7 @@ let ctx = null, lastAt = 0, lastKey = '', pending = 0;
 const stats = {played: 0, blocked: 0, throttled: 0};
 
 function muted() {
+  if(globalThis.__joyflockAudio)return globalThis.__joyflockAudio.muted||document.hidden;
   try {
     if (localStorage.getItem('joyflock.pool.muted') === '1') return true;
     const prefs = JSON.parse(localStorage.getItem('flight-party-prefs') || 'null');
@@ -91,7 +92,7 @@ function chime(c, count) {
   buffer.getChannelData(0).set(data);
   const src = c.createBufferSource();
   src.buffer = buffer;
-  src.connect(c.destination);
+  src.connect(globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(c,'pocket'):c.destination);
   const at = c.currentTime;
   src.start(at); src.stop(at + duration);
   src.onended = function () { try { src.disconnect(); } catch (e) {} };

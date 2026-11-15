@@ -22,6 +22,7 @@ function sharedContext(running=true){
 }
 function muted(){
   if(!enabled||document.hidden)return true;
+  if(globalThis.__joyflockAudio)return globalThis.__joyflockAudio.muted;
   try{if(window.__joyflockHoverSfx?.muted)return true;}catch{}
   try{
     if(localStorage.getItem('joyflock.hoverSfx')==='0'||localStorage.getItem('joyflock.pool.muted')==='1')return true;
@@ -77,7 +78,7 @@ export function createFourDropSound(){
   function connect(context,source,nodes,duration){
     let previous=source;
     for(const node of nodes){previous.connect(node);previous=node;}
-    previous.connect(context.destination);
+    previous.connect(globalThis.__joyflockAudio?globalThis.__joyflockAudio.output(context,'four'):context.destination);
     const voice={source,clean(){
       for(const node of [source,...nodes])try{node.disconnect();}catch{}
       voices.delete(voice);if(!voices.size)liveSounds.delete(sound);

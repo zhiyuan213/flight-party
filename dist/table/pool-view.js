@@ -2,7 +2,7 @@ import {makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './pool-table.js?v=20
 import {drawReturnChannel,returnTiming,pocketMotion,POCKET_DURATION,RETURN_SPEED} from './pool-return.js?v=20261110-glove2';
 import {pullPower,meterPower,spotCode,encodePoolShot,SPIN_STRIDE} from './pool-input.js?v=20261110-glove2';
 import {updatePoolCountdown,cancelPoolCountdown} from './pool-countdown.js?release=20261115-polishrelease1';
-import {replayImpacts,poolImpact,poolImpactBurst,chainLevels,pocketSoundStages, poolMuted, setPoolMuted, unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
+import {replayImpacts,poolImpact,poolImpactBurst,chainLevels,pocketSoundStages, poolMuted, setPoolMuted, unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
 import {drawPoolBall,rollSphere,rotateSphere,sphereIdentity} from './pool-ball.js?v=20261112-gamelanes1';
 import {ballSkin,cueSkin,tableSkin} from './billiard-cosmetics.js?v=20261112-gamelanes1';
 import {drawCue as cue} from './pool-cue.js';
