@@ -1,0 +1,84 @@
+{
+  "sampleRate": 48000,
+  "measurement": "digital output; peak and loudest sliding 50ms RMS, not LUFS or physical SPL",
+  "rows": [
+    {
+      "name": "UI hover (current default 0.8)",
+      "peakDbFS": -25.9,
+      "max50msRmsDbFS": -42.6,
+      "rmsDbFS": -60.4
+    },
+    {
+      "name": "Victory jingle (current default 0.9)",
+      "peakDbFS": -14.6,
+      "max50msRmsDbFS": -24.6,
+      "rmsDbFS": -35.2
+    },
+    {
+      "name": "Coin final tick",
+      "peakDbFS": -30.7,
+      "max50msRmsDbFS": -43.4,
+      "rmsDbFS": -61.1
+    },
+    {
+      "name": "Flight click (45% default)",
+      "peakDbFS": -46.4,
+      "max50msRmsDbFS": -51.3,
+      "rmsDbFS": -68.9
+    },
+    {
+      "name": "Flight roll (45% default)",
+      "peakDbFS": -30.9,
+      "max50msRmsDbFS": -44.3,
+      "rmsDbFS": -54.8
+    },
+    {
+      "name": "Flight bump-1 (45% default)",
+      "peakDbFS": -18.1,
+      "max50msRmsDbFS": -21.9,
+      "rmsDbFS": -33.3
+    },
+    {
+      "name": "Flight win (45% default)",
+      "peakDbFS": -20.3,
+      "max50msRmsDbFS": -27.3,
+      "rmsDbFS": -35.7
+    },
+    {
+      "name": "Pool ball strength 0.5",
+      "peakDbFS": -20.2,
+      "max50msRmsDbFS": -30.7,
+      "rmsDbFS": -48.5
+    },
+    {
+      "name": "Pool countdown 3",
+      "peakDbFS": -17,
+      "max50msRmsDbFS": -23.9,
+      "rmsDbFS": -27
+    },
+    {
+      "name": "Pool countdown GO",
+      "peakDbFS": -16.4,
+      "max50msRmsDbFS": -20.4,
+      "rmsDbFS": -26.5
+    },
+    {
+      "name": "Pool cue strength 0.5",
+      "peakDbFS": -16.2,
+      "max50msRmsDbFS": -30.5,
+      "rmsDbFS": -29.5
+    },
+    {
+      "name": "Pool rail strength 0.5",
+      "peakDbFS": -9.9,
+      "max50msRmsDbFS": -22.9,
+      "rmsDbFS": -23.9
+    },
+    {
+      "name": "Pool wood-knock strength 0.5",
+      "peakDbFS": -6.8,
+      "max50msRmsDbFS": -23,
+      "rmsDbFS": -24.7
+    }
+  ]
+}
