@@ -21,7 +21,7 @@ test('the Membership link is in the footer and gone from the nav; the nav holds 
     const html=read(file);
     const nav=part(html,'nav'),footer=part(html,'footer');
     assert.ok(!nav.includes('/membership.html'),`${file}: nav still links to membership`);
-    assert.ok(nav.includes('/portal/index.html'),`${file}: the Games link survives`);
+    assert.ok(nav.includes('href="/"'),`${file}: the Games link survives`);
     assert.ok(nav.includes('/shop.html'),`${file}: the Shop link sits beside Games`);
     assert.equal((nav.match(/<a /g)||[]).length,2,`${file}: nav holds exactly two links`);
     assert.ok(footerLink.test(footer),`${file}: footer has the bilingual Membership & support link`);

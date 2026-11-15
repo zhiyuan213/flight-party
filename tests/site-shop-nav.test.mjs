@@ -20,10 +20,10 @@ test('every shell page has a bilingual Shop link right after Games', () => {
   for (const p of shell) {
     const nav = navOf(p);
     assert.equal((nav.match(/<a /g) || []).length, 2, `${p}: exactly two nav links`);
-    assert.match(nav, /href="\/portal\/index\.html"[^>]*>[\s\S]*?lang-en">Games<[\s\S]*?lang-cn">游戏/, `${p}: Games first`);
+    assert.match(nav, /href="\/"[^>]*>[\s\S]*?lang-en">Games<[\s\S]*?lang-cn">游戏/, `${p}: Games first`);
     assert.match(nav, /<a href="\/shop\.html" class="nav-shop[^"]*"><span class="lang-en">Shop<\/span><span class="lang-cn">商城<\/span><\/a>/,
       `${p}: the second link opens the shop and is bilingual`);
-    assert.ok(nav.indexOf('href="/portal/index.html"') < nav.indexOf('href="/shop.html"'),
+    assert.ok(nav.indexOf('href="/"') < nav.indexOf('href="/shop.html"'),
       `${p}: Shop sits immediately to the right of Games`);
     assert.ok(!/href="\/shop\.html"[^>]*target=/.test(nav), `${p}: same-tab navigation`);
   }
@@ -31,7 +31,7 @@ test('every shell page has a bilingual Shop link right after Games', () => {
 
 test('the active pill follows the current section', () => {
   const portal = navOf('dist/portal/index.html');
-  assert.match(portal, /href="\/portal\/index\.html" class="active"/, 'portal highlights Games');
+  assert.match(portal, /href="\/" class="active"/, 'portal highlights Games');
   assert.ok(!/nav-shop active/.test(portal), 'Shop is not active on the portal');
   const shop = navOf('dist/shop.html');
   assert.match(shop, /class="nav-shop active"/, 'the shop highlights Shop');

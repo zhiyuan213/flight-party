@@ -61,3 +61,6 @@ dialog{position:relative}dialog .close,.waiting-dialog .close{position:absolute;
 .board.xo .cell[data-value="1"]::before{color:#73caff;clip-path:polygon(0 12%,12% 0,50% 38%,88% 0,100% 12%,62% 50%,100% 88%,88% 100%,50% 62%,12% 100%,0 88%,38% 50%)}
 .board.xo .cell[data-value="2"]::before{color:#ff9aaa;border-radius:50%;mask:radial-gradient(circle closest-side,transparent 72%,#000 73%)}
 .board.gomoku button.cell[data-value]:is(:hover,:focus-visible):not(:disabled){background:var(--gomoku-grid)}
+
+/* Annual badges use artwork everywhere, including cloned waiting-room seats. */
+.member-label.annual{background:url('/assets/member/annual-vip-laurel-v3.png') center/contain no-repeat;box-shadow:none}

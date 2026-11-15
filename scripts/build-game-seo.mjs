@@ -154,8 +154,8 @@ function shell(lang, {title, description, keywords, canonical, zhUrl, enUrl, ima
   return `${head({title, description, keywords, canonical, zhUrl, enUrl, image, imageAlt, lang, jsonld})}
 <body>
 <header class="topbar">
-  <a class="brand" href="/portal/index.html"><span class="brand-mark">✦</span>JoyFlock</a>
-  <nav><a href="/portal/index.html">${esc(t(lang, '游戏大厅', 'Game lobby'))}</a><a href="${esc(dirPath(lang))}" class="active">${esc(gamesLabel)}</a><a href="/shop.html">${esc(t(lang, '商城', 'Shop'))}</a></nav>
+  <a class="brand" href="/"><span class="brand-mark">✦</span>JoyFlock</a>
+  <nav><a href="/">${esc(t(lang, '游戏大厅', 'Game lobby'))}</a><a href="${esc(dirPath(lang))}" class="active">${esc(gamesLabel)}</a><a href="/shop.html">${esc(t(lang, '商城', 'Shop'))}</a></nav>
   <span class="spacer"></span>
   <a class="lang-switch" href="${esc(altUrl)}" hreflang="${zh ? 'en' : 'zh-CN'}">${altLabel}</a>
   <button type="button" id="fullscreen" class="site-fullscreen" aria-pressed="false" aria-label="${zh ? '进入全屏' : 'Enter fullscreen'}">${zh ? '全屏' : 'Fullscreen'}</button>
@@ -165,7 +165,7 @@ ${body}
 </main>
 <footer>
   <span>© 2026 JoyFlock · ${esc(SITE.tagline[lang])}</span>
-  <span class="links"><a href="/portal/index.html">${esc(t(lang, '游戏大厅', 'Game lobby'))}</a><a href="/membership.html">${esc(t(lang, '会员与支持', 'Membership'))}</a><a href="/terms.html">${esc(t(lang, '服务条款', 'Terms'))}</a><a href="/privacy.html">${esc(t(lang, '隐私政策', 'Privacy'))}</a><a href="/contact.html">${esc(t(lang, '联系我们', 'Contact'))}</a></span>
+  <span class="links"><a href="/">${esc(t(lang, '游戏大厅', 'Game lobby'))}</a><a href="/membership.html">${esc(t(lang, '会员与支持', 'Membership'))}</a><a href="/terms.html">${esc(t(lang, '服务条款', 'Terms'))}</a><a href="/privacy.html">${esc(t(lang, '隐私政策', 'Privacy'))}</a><a href="/contact.html">${esc(t(lang, '联系我们', 'Contact'))}</a></span>
 </footer>
 <script defer src="/site-fullscreen.js?v=${FULLSCREEN_KEY}&d=${FULLSCREEN_REFRESH}"></script>
 </body>
@@ -284,7 +284,7 @@ function directoryPage(lang) {
     }
   ];
   const body = `<nav class="crumbs" aria-label="${esc(t(lang, '面包屑导航', 'Breadcrumb'))}"><ol><li><a href="/">${esc(t(lang, '首页', 'Home'))}</a></li><li aria-current="page">${esc(t(lang, '全部游戏', 'All games'))}</li></ol></nav>
-<section class="hero"><div class="hero-copy"><span class="eyebrow">JoyFlock · 9 games</span><h1>${esc(t(lang, '九款游戏，打开就能玩', 'Nine games, just open one'))}</h1><p class="lead">${esc(description)}</p><div class="actions"><a class="cta" href="/portal/index.html">${esc(t(lang, '进入游戏大厅 ↗', 'Open the game lobby ↗'))}</a></div></div><img class="hero-art" src="/assets/covers/gomoku.jpg" alt="${esc(imageAlt)}" width="600" height="600"></section>
+<section class="hero"><div class="hero-copy"><span class="eyebrow">JoyFlock · 9 games</span><h1>${esc(t(lang, '九款游戏，打开就能玩', 'Nine games, just open one'))}</h1><p class="lead">${esc(description)}</p><div class="actions"><a class="cta" href="/">${esc(t(lang, '进入游戏大厅 ↗', 'Open the game lobby ↗'))}</a></div></div><img class="hero-art" src="/assets/covers/gomoku.jpg" alt="${esc(imageAlt)}" width="600" height="600"></section>
 <section class="related"><h2>${esc(t(lang, '选择一款游戏', 'Pick a game'))}</h2><ul>${GAMES.map(g => `<li><a href="${esc(gamePath(g, lang))}"><b>${esc(L(g.name, lang))}</b><small>${esc(L(g.players.label, lang))} · ${esc(L(g.lead, lang))}</small></a></li>`).join('')}</ul></section>`;
   return shell(lang, {title, description, keywords, canonical, zhUrl, enUrl, image: ogUrl(GAMES[0]), imageAlt, jsonld, body});
 }

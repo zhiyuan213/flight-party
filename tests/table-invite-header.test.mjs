@@ -71,7 +71,7 @@ test('dark chrome uses the shared site values', () => {
 
 test('the breadcrumb is replaced by the same two navigation pills', () => {
   assert.match(page, /<span id="game-name"><\/span><nav class="invite-nav">/);
-  assert.match(page, /href="\/portal\/index\.html" class="active"/);
+  assert.match(page, /href="\/" class="active"/);
   assert.match(page, /href="\/shop\.html" class="nav-shop"/);
   assert.match(page, />游戏<\/span>/);
   assert.match(page, />商城<\/span>/);
