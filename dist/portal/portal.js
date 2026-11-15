@@ -76,7 +76,7 @@ if(active){
  const sharedTheme=new URLSearchParams(location.search).get('theme');
  const themeSuffix=sharedTheme?'&theme='+encodeURIComponent(sharedTheme):'';
  const localeSuffix='&locale='+language;
- document.querySelector('#game-frame').src=active.id==='flight'?gameOrigin+'/?embed=joyflock'+themeSuffix+localeSuffix:gameOrigin+'/table/index.html?game='+active.id+'&embed=joyflock'+themeSuffix+localeSuffix;
+ document.querySelector('#game-frame').src=active.id==='flight'?gameOrigin+'/index.html?embed=joyflock'+themeSuffix+localeSuffix:gameOrigin+'/table/index.html?game='+active.id+'&embed=joyflock'+themeSuffix+localeSuffix;
 }
 if(active){
  syncFullscreen=bindPoolFullscreen({document,window,stage:document.querySelector('.game-stage'),button:document.querySelector('#fullscreen'),frame:document.querySelector('#game-frame'),gameOrigin,game:active.id,labels:fullscreenLabels});

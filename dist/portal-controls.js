@@ -1,7 +1,7 @@
 /** Narrow, origin-checked bridge. Authentication stays inside the game. */
 export function bindPortalControls({onLocale}={}){
  if(window.parent===window||new URLSearchParams(location.search).get('embed')!=='joyflock')return;
- const allowed=new Set(['https://joyflock.com','https://www.joyflock.com']);
+ const allowed=new Set(['https://joyflock.com','https://www.joyflock.com','https://flight.joyflock.com']);
  let parentOrigin;try{parentOrigin=new URL(document.referrer).origin;}catch{return;}
  if(['localhost','127.0.0.1'].includes(location.hostname)&&parentOrigin===location.origin)allowed.add(location.origin);
  if(!allowed.has(parentOrigin))return;

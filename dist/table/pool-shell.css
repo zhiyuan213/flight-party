@@ -231,11 +231,11 @@ body>.pool-result-confetti{position:fixed;z-index:100}
 .pool-matchup .seat-name strong{max-width:260px}
 .pool-matchup .avatar-shell{width:clamp(26px,5.55cqw,60px);height:clamp(26px,5.55cqw,60px);flex-basis:clamp(26px,5.55cqw,60px)}
 .pool-matchup .avatar-frame{inset:-17%;width:134%;height:134%}
-.pool-matchup .pool-pocketed{flex-wrap:nowrap;gap:clamp(0px,.37cqw,4px);min-height:0}
+.pool-matchup .pool-pocketed{flex-wrap:nowrap;gap:clamp(0px,.37cqw,4px);min-height:clamp(16px,5cqw,54px)}
 .pool-matchup .seat:first-child .pool-pocketed{justify-content:flex-end}
 .pool-matchup .seat:nth-child(2) .pool-pocketed{justify-content:flex-start}
 .pool-matchup .pool-pocketed canvas.pool-target-ball{width:clamp(16px,5cqw,54px);height:clamp(16px,5cqw,54px);flex:none}
-.pool-matchup .pool-pocketed:empty{display:none}
+.pool-matchup .pool-pocketed:empty{display:flex}
 /* Defensive: an older cached script may still create placeholder recesses. */
 .pool-target-empty{display:none!important}
 .pool-match-clock{top:50%;transform:translate(-50%,-50%)}

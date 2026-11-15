@@ -1,4 +1,10 @@
 const labels = new Map(Object.entries({
+  '颜色数字接龙：两人各7张，轮流打出与桌面同色或同数字的牌，也可摸一张并结束回合。先出完手牌获胜。没有功能牌、不下注；牌库耗尽时重洗弃牌。':'Each player starts with seven cards. Play a card matching the current colour or number, or draw a card and end your turn. The first player to empty their hand wins. There are no action cards or wagers. When the draw pile runs out, the discard pile is reshuffled.',
+  '玩家排行':'Player rankings',
+  '会员与支持':'Membership & support',
+  '登录联机可记录 · UTC时间 · 前10':'Signed-in online results · UTC · Top 10',
+  '两人对局：胜者 200 Joy Coins、败者 100 Joy Coins，平局双方各 100；四人飞行按名次 200 / 100 / 50 / 50。完成对局即更新排行榜与统计；匿名仅显示不保存，登录账号自动累计。':'Two-player games: 200 Joy Coins for a win, 100 for a loss, or 100 each for a draw. Four-player Flight Party awards 200 / 100 / 50 / 50 by rank. Completed games update standings and statistics. Guest results are displayed for this session only; signed-in accounts save eligible results automatically.',
+  '会员装饰可改变头像、头像框和外挂，不改变骰子规则、牌序、击球或胜负。联机成绩按各游戏独立记录。':'Membership cosmetics change avatars, frames and visual effects. They do not change dice rules, card order, shots or match outcomes. Online results are tracked separately for each game.',
   '台球桌，移动鼠标瞄准，按住左键后拉蓄力，松开击球':'Pool table. Aim with the mouse, hold and pull back to set power, then release to shoot.',
   '排行榜周期':'Leaderboard period',
   '从第一步兵，到最后一次将军。与好友对弈，也可以挑战电脑练习棋艺。':'Play chess with a friend or practice against the computer.',
@@ -165,6 +171,7 @@ export function bindTableLocale(){
   document.documentElement.removeAttribute('data-translating');
   return value=>{
     locale=value;
+    document.documentElement.setAttribute('data-locale',locale);
     document.documentElement.lang=locale==='en'?'en':'zh-CN';
     apply();
   };

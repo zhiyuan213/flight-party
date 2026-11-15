@@ -68,6 +68,30 @@
  var stats={hover:0,played:0,throttled:0,blocked:0,unlocks:0,firstTouch:0,zoom:0};
  var lastProbe=0,unlocked=false;
 
+ // The public portal and its game iframe live on different trusted origins.
+ // Share the already-unlocked portal output without accessing its JS realm.
+ var PORTAL_ORIGINS=['https://joyflock.com','https://www.joyflock.com','https://flight.joyflock.com'];
+ function relayHover(voice,el){
+  try{
+   if(ctx&&ctx.state==='running')return false;
+   if(window.parent===window)return false;
+   var origin=new URL(document.referrer).origin;
+   if(origin===location.origin||PORTAL_ORIGINS.indexOf(origin)<0)return false;
+   var zone=el.classList&&el.classList.contains('rail-game')?'dock':el.classList&&el.classList.contains('shop-card')?'shop':'home';
+   window.parent.postMessage({type:'joyflock:hover-sfx',voice:voice,zone:zone},origin);
+   return true;
+  }catch(e){return false;}
+ }
+ window.addEventListener('message',function(event){
+  var frame=document.getElementById('game-frame'),data=event.data;
+  if(!frame||event.source!==frame.contentWindow||!data||data.type!=='joyflock:hover-sfx')return;
+  try{if(event.origin!==new URL(frame.src,location.href).origin||PORTAL_ORIGINS.indexOf(event.origin)<0)return;}catch(e){return;}
+  if(data.voice!=='tick'&&data.voice!=='grow')return;
+  if(['home','shop','dock'].indexOf(data.zone)<0||muted())return;
+  var ok=data.voice==='grow'?playZoom(frame,data.zone):play(frame);
+  if(ok)stats.played++;else stats.blocked++;
+ });
+
  function muted(){
   if(!enabled)return true;
   try{
@@ -157,12 +181,13 @@
   osc.connect(gain);gain.connect(out);
   osc.start(at);osc.stop(at+duration+.015);
  }
- function playZoom(el){
+ function playZoom(el,zone){
   if(muted())return false;
+  if(relayHover('grow',el))return true;
   var c=context();if(!c)return false;
   var at=c.currentTime+.004,out=zoomOutputFor(c),lift=1,scale=1;
-  var dock=el.classList&&el.classList.contains('rail-game');
-  var shop=el.classList&&el.classList.contains('shop-card');
+  var dock=zone==='dock'||el.classList&&el.classList.contains('rail-game');
+  var shop=zone==='shop'||el.classList&&el.classList.contains('shop-card');
   // The dock is crossed continuously, so it gets a shorter, quieter grow.
   // Shop cards keep the home timbre but sit a little lower in the mix.
   var level=dock?.68:shop?.82:1,duration=dock?.18:shop?.19:.22;
@@ -211,6 +236,7 @@
  }
  function play(el){
   if(muted())return false;
+  if(relayHover('tick',el))return true;
   var c=context();if(!c)return false;
   var at=c.currentTime+.004,detune=.982+Math.random()*.036,big=false;
   try{var r=el.getBoundingClientRect();big=r.width*r.height>16000;}catch(e){}

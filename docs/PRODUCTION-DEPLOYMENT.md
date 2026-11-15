@@ -26,6 +26,8 @@ ssh -o BatchMode=yes -o ConnectTimeout=8 -i $env:USERPROFILE\.ssh\joyflock_deplo
 
 ## 确定发布范围
 
+下一批待发布的根入口路由：`/` 内部提供 `/portal/index.html`，地址栏可保持根路径；飞行棋明确使用 `/index.html`。旧 `/?embed=joyflock`、非空 `/?room=...` 继续进入飞行棋。此项已在本地 8080 nginx 验证，但尚不属于上文已部署的 `9e7ba59`。发布时需一起更新 portal.js 的飞行棋 iframe 地址及 nginx 配置，并保留生产原有的其他 location；只上传静态文件不足以修改 nginx 根路由。
+
 - 纯 UI、音频、样式改动：发布相应静态文件及缓存引用；通常无需重启后端、数据库或 nginx。
 - Java、服务端协议、物理参数变更：构建并验证后端 JAR，与对应前端同一窗口发布。台球前后端物理必须一致，发布前检查正在进行的对局及旧状态兼容性。
 - Flyway 迁移：先备份，核对所有已应用迁移校验和，再运行新版本。不要修改旧迁移、执行 `repair` 掩盖差异、删除迁移历史或因应用回滚直接恢复旧数据库。
