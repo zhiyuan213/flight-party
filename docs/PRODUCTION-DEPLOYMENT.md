@@ -2,14 +2,14 @@
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
-当前最近一次静态发布为 `9e7ba59`，已完成 47/47 文件校验；后端仍为 `deploy-backend:9cc07b8`，数据库 V25。静态回滚包位于 `/opt/joyflock/releases/polish-9e7ba59/static.before.tgz`；数据备份位于 `/opt/joyflock/backups/20261115T113506Z`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
+当前最近一次应用发布为 `599991e`，静态资源和 nginx 根路由已上线，两个域名各完成 18/18 文件校验；后端仍为 `deploy-backend:9cc07b8`，数据库 V25。静态回滚包和 nginx.before.conf 位于 `/opt/joyflock/releases/root-locale-599991e/`；数据备份位于 `/opt/joyflock/backups/20261115T115808Z`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
 
 ## 环境与连接
 
 | 项目 | 当前配置 |
 | --- | --- |
 | GitHub | `https://github.com/zhiyuan213/flight-party`，私有仓库 |
-| 生产入口 | `https://flight.joyflock.com/portal/index.html` |
+| 生产入口 | `https://joyflock.com/`；`https://flight.joyflock.com/` 也提供首页 |
 | 主机、用户 | `43.153.70.181`，`ubuntu` |
 | 应用目录 | `/opt/joyflock/flight-party` |
 | 发布与备份 | `/opt/joyflock/releases/`、`/opt/joyflock/backups/` |
@@ -26,7 +26,7 @@ ssh -o BatchMode=yes -o ConnectTimeout=8 -i $env:USERPROFILE\.ssh\joyflock_deplo
 
 ## 确定发布范围
 
-下一批待发布的根入口路由：`/` 内部提供 `/portal/index.html`，地址栏可保持根路径；飞行棋明确使用 `/index.html`。旧 `/?embed=joyflock`、非空 `/?room=...` 继续进入飞行棋。此项已在本地 8080 nginx 验证，但尚不属于上文已部署的 `9e7ba59`。发布时需一起更新 portal.js 的飞行棋 iframe 地址及 nginx 配置，并保留生产原有的其他 location；只上传静态文件不足以修改 nginx 根路由。
+当前已发布的根入口路由：`/` 内部提供 `/portal/index.html`，地址栏可保持根路径；飞行棋明确使用 `/index.html`。本地及 `flight.joyflock.com` 上的旧 `/?embed=joyflock`、非空 `/?room=...` 继续进入飞行棋。主域名的 Caddy 原本已经将根路径内部重写到 portal。此项已在生产验证。发布时需一起更新 portal.js 的飞行棋 iframe 地址及 nginx 配置，并保留生产原有的其他 location；只上传静态文件不足以修改 nginx 根路由。
 
 - 纯 UI、音频、样式改动：发布相应静态文件及缓存引用；通常无需重启后端、数据库或 nginx。
 - Java、服务端协议、物理参数变更：构建并验证后端 JAR，与对应前端同一窗口发布。台球前后端物理必须一致，发布前检查正在进行的对局及旧状态兼容性。
