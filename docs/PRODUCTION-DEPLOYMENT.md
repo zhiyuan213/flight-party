@@ -2,7 +2,7 @@
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
-当前最近一次应用发布为 `599991e`，静态资源和 nginx 根路由已上线，两个域名各完成 18/18 文件校验；后端仍为 `deploy-backend:9cc07b8`，数据库 V25。静态回滚包和 nginx.before.conf 位于 `/opt/joyflock/releases/root-locale-599991e/`；数据备份位于 `/opt/joyflock/backups/20261115T115808Z`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
+当前最近一次应用发布为 `8f3e6fe`：首页链接、统一指针和等待房间会员徽章静态修正已上线，两个域名各完成 32/32 文件校验。后端仍为 `deploy-backend:9cc07b8`，数据库 V25。本次静态回滚包位于 `/opt/joyflock/releases/home-pointer-8f3e6fe/static.before.tgz`；数据备份位于 `/opt/joyflock/backups/20261115T120652Z`。根路由配置沿用 `599991e`，其 nginx 备份仍在 `/opt/joyflock/releases/root-locale-599991e/nginx.before.conf`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
 
 ## 环境与连接
 
@@ -164,3 +164,4 @@ sudo -n docker compose --env-file "$LIVE/deploy/.env" \
 ## 已知验证边界
 
 正式支付能力依赖已验证的 Creem live 配置与事件；配置文件或 UI 文案不是付款成功证据。浏览器必须获得用户手势才能启动声音，音量、静音、蓝牙设备缓冲也会影响试听。自动化和无头截图不证明真实 GPU、实体手机、音箱听感、容量或灾备恢复能力。
+
