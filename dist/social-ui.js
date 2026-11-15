@@ -1,5 +1,11 @@
 import {avatarStyle} from './avatar.js';
-// v0.7.2 presentation prototype. No network, account storage, password storage, or real quotas.
+// Fallback presentation layer (2026-10-31 preview scope). The shipped app
+// overrides renderRoom / renderDialog / renderAccountButton / openRoom through
+// app.js's bindLiveRooms / bindLiveAccount / bindQuickMatch (live-room-ui.js,
+// live-account-ui.js, quick-match.js). This markup only appears when those
+// live modules are absent: it creates no
+// account, joins no room and uploads no score. Leaderboard data IS fetched
+// from /api/leaderboards. See AGENTS.md "Current scope" for shipped behaviour.
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MODES=['guest','free'];
 export class SocialUI{

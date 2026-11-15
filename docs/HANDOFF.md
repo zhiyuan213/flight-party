@@ -1221,3 +1221,9 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 列头中文是「局数」；`table-locale.js` 已有 `'局数':'Games'`，所以英文态不用改字典。旧的 `'胜/局':'Wins/Games'` 条目故意保留，兼容仍带旧列头的缓存页面。
 - 缓存链：`intro-boot.js` 追加 `&g=20261115-gamesonly1`（只此一处，改的是行内容）；冻结 `v=20261115-joincoin1`、`&d=20261115-winrate1` 与其它 `&r/&t/&w/&s/&h` 不动。以后再改行构建器继续 bump `&g=`。
 - 验收 `npm test` **948/948**、CDP 月/周/英文三态；截图 `docs/verification/games-column-20261115.png`。未提交、未部署生产。
+
+## 18:25 — 约束文档已更新：当前范围 vs 历史预览范围
+- `AGENTS.md` 顶部 `Current scope (2026-11-15)` 才是现在的约束；2026-10-31 的 `UI preview only` / `Remove wins/win-rate UI` / `No payment/deployment work` 已标注 **superseded**，保留仅作设计历史。**不要**再据此拦截发布或要求回滚胜率榜。`docs/V07-CONTRACT.md` 顶部也有同义的中文状态说明。
+- `dist/social-ui.js` 的 `UI PREVIEW` / `DEMO-7K2` / `尚未联网` 文案是 `bindLiveRooms` / `bindLiveAccount` 未接管时的降级路径，看到它们**不代表**产品仍是预览；但删掉会变成虚假声明（该路径确实不建账号、不入房、不上传成绩）。文件头注释已写明这层关系。
+- 详情页脚注「示例数据」现在由 `dist/table/table.js` 的 `usedDemo` 控制：混入 demo 行才显示，服务端给满 10 行则隐藏。缓存键 `table.js?...&u=20261115-scope1`；以后改 `refreshLeaderboard()` 继续 bump `&u=`。全真实数据下的隐藏行为待线上复核。
+- 验收 `npm test` **952/952**、CDP 回归通过；改动已推送 GitHub，生产部署未执行（SSH 私钥仍需解锁）。

@@ -4,6 +4,12 @@ Latest user override: no game-count quotas for anyone. Do not calculate or debit
 
 Latest score-recording override: the first completed signed-in game per day is recorded automatically, including negative points; later games are playable but unrecorded unless membership is active. Members have unlimited score records. Creem is the payment provider; monthly 9 USD, annual 59 USD. Keep all gameplay unlimited. Do not accept client-provided scores or claim real payments/entitlements without verified Creem configuration and events.
 
+## Current scope (2026-11-15; supersedes the 2026-10-31 preview section below)
+- Live features are implemented and running: email/password accounts, server-authoritative online rooms (WebSocket + Redis), match settlement, signed-in score and completed-game persistence, leaderboards, Joy Coins wallet/shop, membership configuration, anti-tamper rate limits and production deployment. The "UI preview only" / "Remove wins/win-rate UI" / "No payment/deployment work" lines in the historical section below are NOT active constraints.
+- `dist/app.js` calls `bindLiveRooms`, `bindLiveAccount` and `bindQuickMatch`; those modules override `SocialUI`'s `renderRoom`, `renderDialog`, `renderAccountButton` and `openRoom`. The `UI PREVIEW` strings left in `dist/social-ui.js` belong to the fallback path that appears only when those live modules are absent; they never create accounts, join rooms or upload scores, and they do not describe the shipped product. The homepage leaderboard does fetch `/api/leaderboards`.
+- The table-game detail board is a win-rate board: left column `局数` prints completed games only, right column `胜率` prints a one-decimal percentage; server wins come from `TableService.leaderboard`. The homepage Pilot leaderboard keeps the Joy Coins / games columns. Wins are still required for win-rate ordering even though they are not printed.
+- Deployment is in scope. Static assets, the backend JAR and Flyway migrations must ship together: the win-rate board needs the backend `wins` field (older backends degrade real rows to 0.0%), and V25 adds `match_participants.hosted_at_end`. Take PostgreSQL/Redis backups and keep a rollback bundle before releasing.
+
 Read README.md, docs/RULES.md, docs/V07-CONTRACT.md, docs/HANDOFF.md, docs/QA.md, docs/VISUAL_ACCEPTANCE.md and inspect docs/design/gameplay-reference.png before changing the app.
 
 - The current v0.7.2 scope is UI preview on the v0.6.2 visual/local-game baseline, with the calibrated illustrated board and independent 3D die. Keep the experimental Three.js path, but do not claim it matches the design before asset and screenshot verification.
@@ -30,7 +36,8 @@ Read README.md, docs/RULES.md, docs/V07-CONTRACT.md, docs/HANDOFF.md, docs/QA.md
 
 - The 1.2-world-unit curb chamfer and 1.15 floor clipping contour protect the road corners. Keep tiles, planes, shadows, particles and pointer hit checks on the same project() mapping.
 
-## Current UI scope and future functionality (latest user request 2026-10-31)
+## Historical UI scope and future functionality (2026-10-31 — superseded; see "Current scope" above)
+> Status: superseded by the 2026-11 user overrides recorded at the top of this file. Kept for design history only; the preview-only and "remove win-rate UI" lines below are not active requirements.
 - This pass is UI preview plus handoff documentation for later Codex. Do not implement or claim real accounts, rankings, quotas, membership, network rooms, score persistence or shared reactions. Mark simulated states Preview / 示例数据. Preserve current engine and all road/dice/plane visuals.
 - Homepage has two primary online actions: Quick match and Create room. Remove the matching configuration form. Online preview defaults to four seats in classic mode; this is an implementation default, not a permanent product rule. Local practice retains 2–4 faction configuration and separate party mode.
 - Quick match immediately joins an eligible public waiting room with space or automatically creates one. A room starts a single server-owned 30-second deadline on entering public matching. Full human room starts early; deadline fills every empty seat with bots and starts. Later joins/leaves/reconnects never reset it. No optional bot-fill confirmation.

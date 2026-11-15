@@ -123,9 +123,10 @@ async function init(){if(!csrf){csrf=await request('/api/csrf');await request('/
   return {name:row.name||row.displayName||'玩家',points:Number(row.points)||0,games,wins,
   winRate:games?wins/games*100:0,
   avatarUrl:row.avatarUrl,avatarId:row.avatarId,member:!!row.member,annualMember:!!row.annualMember,frame:row.frame};});
- const demo=globalThis.__joyflockDemoRows?globalThis.__joyflockDemoRows(period,game):[];
+  const demo=globalThis.__joyflockDemoRows?globalThis.__joyflockDemoRows(period,game):[];
   const merged=real.slice();
-  for(const entry of demo){if(merged.length>=10)break;merged.push(entry);}
+  let usedDemo=false;
+  for(const entry of demo){if(merged.length>=10)break;merged.push(entry);usedDemo=true;}
   /* The visitor's own finished-game points are dynamic data, not demo data. */  const self=globalThis.__joyflockGamePoints?.leaderboardRow?.();
   if(self)merged.push(self);
   merged.sort((a,b)=>rate(b)-rate(a)||(Number(b.games)||0)-(Number(a.games)||0)||(Number(b.points)||0)-(Number(a.points)||0));
@@ -139,6 +140,11 @@ async function init(){if(!csrf){csrf=await request('/api/csrf');await request('/
      so a reload (when only table.js refreshes the board) stays identifiable. */ if(entry&&entry.self===true)li.dataset.self='1';
   return li;
  }));
+ /* The footnote's "示例数据" tag is honest only while demo rows are on the
+    board. Once the server supplies every standing, hide it instead of
+    labelling live results as samples. */
+ const demoTag=document.querySelector('.ranking-footnote .demo-tag');
+ if(demoTag)demoTag.hidden=!usedDemo;
 }
 /* The four "会员与计分 figures used to be hard-coded sample values
    (Annual VIP / 278 / 66 / 68%). They now describe the current account:

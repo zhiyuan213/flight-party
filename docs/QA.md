@@ -3082,3 +3082,11 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 缓存：`intro-boot.js` 引用追加 `&g=20261115-gamesonly1`；冻结 `v=` 与 `&d=20261115-winrate1` 及其它 `&r/&t/&w/&s/&h` 全部不动，普通刷新生效。
 - 验收：`tests/winrate-leaderboard.test.mjs` 更新列头、行格式（2/9 → 9，仍断言 22.2%）、英文映射与新缓存链断言，`npm test` **948/948**。Chrome CDP（1280×900）实测：中文列头 `玩家/局数/胜率`，月榜 10 行左列 `96/91/88/82…` 且全部无斜杠、右列 `64.6%/59.3%/54.5%…` 全为百分比；切周榜为 `27/24/22/20…` + `66.7%/62.5%…`（对应用户红框的 18/27 现为 27）；英文 `Player / Games / Win rate` + `Monthly/Weekly/Daily win rate`；无错位或溢出。
 - 截图 `docs/verification/games-column-20261115.png`。未提交、未部署生产。
+
+## 18:25 — 约束文档与预览文案对齐当前实现
+- 起因：外部会话依据 `AGENTS.md` 的 2026-10-31 段落判断「胜率榜 / 真实联机 / 部署违规」。核查后确认**代码运行层面没有冲突**，冲突来自文档未标注作废 + 少量残留文案。
+- 核实结论：`dist/app.js:400` 通过 `bindLiveRooms` / `bindLiveAccount` / `bindQuickMatch` 覆盖 `SocialUI` 的 `renderRoom` / `renderDialog` / `renderAccountButton` / `openRoom`（见 `dist/live-room-ui.js:64-70`、`dist/live-account-ui.js:30-36`）；`dist/social-ui.js` 里的 `UI PREVIEW`、`DEMO-7K2`、`未联网` 等属于**live 模块缺席时的降级预览路径**，当前产品不展示，但 `loadLeaderboard()` 确实 `fetch('/api/leaderboards')`。因此保留这些字符串（删掉会变成虚假声明），只把误导性的文件头注释改成降级说明。
+- 文档：`AGENTS.md` 新增 `Current scope (2026-11-15)` 段（真实账号/联机/结算/排行榜/部署、live 覆盖关系、胜率榜口径、静态+后端+V25 必须同版发布），旧节标题改为 `Historical UI scope ... (superseded)` 并加状态行；`docs/V07-CONTRACT.md` 顶部加中文状态说明，明确「必须标注本地预览 / Preview」只适用于降级路径。
+- 文案：`dist/index.html` 两处 `aria-label="Account interface preview"` → `aria-label="Account"`；`dist/table/table.js` 的 `refreshLeaderboard()` 用 `usedDemo` 记录是否补过 demo 行，仅此时显示脚注「示例数据」（服务端给满 10 行时 `demoTag.hidden=true`）；首帧无后端数据仍显示。`dist/table/index.html` 的 `table.js` 引用加 `&u=20261115-scope1`。仅注释变更的 `social-ui.js` 未 bump 缓存键（无运行时差异）。
+- 验证：两个 JS `node --input-type=module --check` 通过；新增 `tests/scope-copy-sync.test.mjs` 4 条守卫（文档状态、降级标注、demo 标签逻辑、缓存链），`npm test` **952/952**；CDP 1280×900 回归列头 `玩家/局数/胜率`、月榜 `96/64.6%`、周榜 `27/66.7%`、英文 `Games / Win rate`、10 行左列无斜杠、右列全百分比、首帧 `.demo-tag` 存在且 `hidden=false`。
+- **验证限制**：本地无真实 `/api/table/leaderboards` 数据，「全真实行时隐藏示例标注」仅由源码与单测保证，需线上联机成绩到位后复核。改动已推送 GitHub；生产部署仍未执行。
