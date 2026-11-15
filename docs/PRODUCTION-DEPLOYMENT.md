@@ -1,3 +1,5 @@
+2026-11-15 最新应用发布：8726970。账号弹窗 VIP 双套餐已上线，后端 deploy-backend:vip-8726970；显式 CREEM_TEST_ACCOUNTS=* 开放所有登录账号沙盒支付，CREEM_LIVE=false 保持不变。数据库仍 V25。发布/回滚目录 /opt/joyflock/releases/vip-8726970，数据备份 /opt/joyflock/backups/20261115T134805Z。Chrome 已确认线上已登录账号两个按钮启用，未提交支付。JAR SHA256 a73a629a9cc26a2b5e7308ce768e90bb475f7e9897ba826b71903ba6b33eaee2。
+
 # JoyFlock 生产部署手册
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。

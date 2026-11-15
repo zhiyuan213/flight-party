@@ -3226,3 +3226,9 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - Final npm test: 977/977 passed; JS syntax and git diff whitespace checks passed.
 - Local Chrome signed-in homepage dialog: monthly $9 / annual $59 visible, sandbox notice and disabled checkout agree with server account availability. Reference: design/account-vip-plans-20261115.jpg.
 - Production config inspected read-only: test mode, checkout enabled, required key/products/webhook secret/allowlist present. No payment, entitlement change, mode change or deployment performed. Enabled checkout, live webhook delivery and mobile layout not verified in this pass.
+
+## 2026-11-15 — VIP sandbox restriction removed
+- Application 8726970 deployed, `CREEM_TEST_ACCOUNTS=*` explicit; live mode unchanged false. Production Chrome signed-in account shows both VIP cards enabled. Actual reference: verification/vip-open-production-20261115.jpg.
+- Backend Maven verify succeeded: 148 tests, 0 failures/errors, 21 skipped. Production /api/csrf healthy, restart count 0, Flyway V25. Six frontend resources on both domains match source with newline normalization. Backups and rollback details in HANDOFF.
+- No payment order submitted; successful Creem checkout creation/payment/webhook delivery not exercised. Local has no payment credentials, therefore local buttons remain disabled even with wildcard policy.
+- Final frontend npm test after publishing policy and membership copy: 977/977 passed; JS syntax check passed.
