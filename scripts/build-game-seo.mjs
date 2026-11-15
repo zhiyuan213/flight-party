@@ -139,7 +139,7 @@ function head({title, description, keywords, canonical, zhUrl, enUrl, image, ima
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
 <link rel="stylesheet" href="/games/games.css?v=${SITE.cacheKey}">
-<link rel="stylesheet" href="/ambient.css?v=20261115-nebula1">
+<link rel="stylesheet" href="/ambient.css?v=20261115-nebula1&d=20261115-staticnebula1">
 <link rel="stylesheet" href="/site-fullscreen.css?v=${FULLSCREEN_KEY}&d=${FULLSCREEN_REFRESH}">
 ${jsonld.map(node => `<script type="application/ld+json">\n${ld(node)}\n</script>`).join('\n')}
 </head>`;
