@@ -21,3 +21,23 @@ body.table-home-theme .players-panel .empty-seat .avatar-shell{
 body.table-home-theme .players-panel .seat:has(.avatar-frame) .seat-avatar{
   border-radius:50%;
 }
+
+/* Match portraits are unframed; waiting rooms and shop previews keep their
+   own presentation. #seats moves into the pool/snooker header during play. */
+body.table-home-theme[data-screen="play"] #seats .avatar-frame{display:none}
+body.table-home-theme[data-screen="play"] #seats .seat-avatar{
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:22%!important;
+}
+/* The legacy .member-label.annual gradient otherwise beats table.css's
+   generic image rule and renders an empty gold rectangle. */
+body.table-home-theme[data-screen="play"] #seats .member-label{
+  display:inline-block!important;
+  width:40px;height:20px;flex-shrink:0;
+  padding:0;border:0;box-shadow:none;font-size:0;color:transparent;
+  background:url('/assets/member/vip-laurel-v3.png') center/contain no-repeat;
+}
+body.table-home-theme[data-screen="play"] #seats .member-label.annual{
+  background-image:url('/assets/member/annual-vip-laurel-v3.png');
+}
