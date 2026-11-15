@@ -2,6 +2,8 @@
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
+当前最近一次静态发布为 `9e7ba59`，已完成 47/47 文件校验；后端仍为 `deploy-backend:9cc07b8`，数据库 V25。静态回滚包位于 `/opt/joyflock/releases/polish-9e7ba59/static.before.tgz`；数据备份位于 `/opt/joyflock/backups/20261115T113506Z`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
+
 ## 环境与连接
 
 | 项目 | 当前配置 |
@@ -79,6 +81,8 @@ scp -i $env:USERPROFILE\.ssh\joyflock_deploy .workbuddy/tmp/static-release.tar.g
 ```
 
 也可用明确的已提交变更清单生成增量包，但必须包含所有入口、共享资源及缓存父链。归档路径统一相对仓库根目录（含 `dist/`），校验 SHA256，先解压到发布目录检查，不从未知归档直接覆盖线上。
+
+Windows Git 的导出属性／换行配置可能使归档文件为 CRLF，而 `git show` 显示 LF。线上响应的字节哈希应与**实际上传归档解出的文件**比对，同时确认其规范化文本与提交一致；不要把这种换行差异误报为 CDN 旧内容，也不要为通过校验而忽略真正的内容差异。
 
 在生产执行：
 

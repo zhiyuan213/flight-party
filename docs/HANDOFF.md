@@ -1241,3 +1241,8 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - Prepared user's combined UI/audio fixes and full cache parent chain using release=20261115-polishrelease1. Final Node tests 960/960; 17 changed JS syntax checks passed. No physical rules, backend, schema or Bluetooth timing correction.
 - Independent operator guide: docs/PRODUCTION-DEPLOYMENT.md; entry link in deploy/README.md. It covers actual SSH/Compose paths, static vs backend releases, secrets, backups, JAR permissions, cache/ESM identity, verification and rollback boundaries.
 - Application release commit and final production validation follow in QA after publication.
+
+## 2026-11-15 — Static polish production release confirmed
+- Live app commit 9e7ba59; 47/47 HTTPS artifact hashes + no-cache headers verified, three API probes 200, actual browser pool intro -> computer-game modal -> rendered opening table observed. Final Node 960/960 and 17 changed JS syntax checks passed. Backend unchanged at deploy-backend:9cc07b8 with zero restarts; no new migration.
+- Static rollback /opt/joyflock/releases/polish-9e7ba59/static.before.tgz; PG/Redis backup /opt/joyflock/backups/20261115T113506Z. Actual upload artifact hash and validation limits are in QA latest section.
+- Deployment operator guide docs/PRODUCTION-DEPLOYMENT.md is the standalone entry for future operators (also linked in deploy/README.md). Compare HTTP bytes with extracted release artifact because Windows Git export can convert LF to CRLF. Documentation commit follows runtime commit; no extra runtime change implied.
