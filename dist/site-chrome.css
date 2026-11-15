@@ -266,6 +266,18 @@ body.playing>.topbar #portal-controls{display:none!important}
   background:#ffffff08;color:#c8d3ff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;
 }
 .chrome-auth-signout:hover{background:#ffffff14;border-color:#8d9dff}
+.chrome-vip{width:100%;text-align:left;border-top:1px solid #ffffff14;padding-top:14px}
+.chrome-vip h3{margin:0;color:#f3d891;font-size:17px}
+.chrome-vip p{margin:6px 0 12px;color:#9dabd0;font-size:12px;line-height:1.5}
+.chrome-vip-plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chrome-vip-plans button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;padding:14px;border:1px solid #6676b7;border-radius:10px;background:#263354;color:#eaf0ff;font:inherit;cursor:pointer;text-align:left;transition:background .18s,border-color .18s}
+.chrome-vip-plans button:hover:enabled{background:#34466e;border-color:#e9cd85}
+.chrome-vip-plans button:disabled{opacity:.65;cursor:default}
+.chrome-vip-plans strong{font-size:26px;color:#f3d891;line-height:1.4}
+.chrome-vip-plans small,.chrome-vip-plans span{font-size:11px;font-weight:400;color:#b7c4df}
+.chrome-vip-plans em{margin-top:6px;font-size:12px;font-weight:700;font-style:normal}
+.chrome-vip>small{display:block;font-size:11px;color:#8d9dbf;line-height:1.6}
+.chrome-vip a{color:#bdcaff}
 @media(max-width:760px){
   .account-extra{display:none}
   /* Narrow header keeps one entry; registration is reachable from the

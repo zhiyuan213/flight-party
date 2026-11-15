@@ -7,7 +7,7 @@
  var signin=document.getElementById('chrome-account');
  var signup=document.getElementById('chrome-register');
  if(!signin)return;
- var dialogs={},csrf=null;
+ var dialogs={},csrf=null,billingState=null,billingBusy=false;
  var zh=function(){return document.documentElement.getAttribute('data-locale')==='zh';};
  var t=function(en,cn){return zh()?cn:en;};
  var SIGNIN_LABEL='<span class="lang-en">Sign in</span><span class="lang-cn">登录</span>';
@@ -123,7 +123,9 @@
     ?L('A free account saves your nickname and scores.','注册完全免费，可保存昵称与对局成绩。')
     :L('Sign in to keep your scores. Playing stays free — no account needed.','登录后可累计对局成绩；不登录也能免费畅玩。'))+'</p>'+
    (reg?'':'<div class="chrome-auth-signed" hidden><div class="chrome-auth-avatar" style="background:url(/assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5) center/cover no-repeat"></div>'+
-     '<p class="chrome-auth-who"></p><button type="button" class="chrome-auth-signout">'+
+     '<p class="chrome-auth-who"></p><section class="chrome-vip"><h3>'+L('Open VIP','开通 VIP')+'</h3><p>'+L('Cosmetic membership. All games stay free and unlimited.','会员装扮权益，所有游戏仍可免费无限畅玩。')+'</p><div class="chrome-vip-plans">'+
+     ['MONTHLY','ANNUAL'].map(function(plan){return '<button type="button" data-vip-plan="'+plan+'" disabled><b>'+ (plan==='MONTHLY'?L('Monthly VIP','月度 VIP'):L('Annual VIP','年度 VIP'))+'</b><strong>'+(plan==='MONTHLY'?'$9':'$59')+' <small>USD</small></strong><span>'+(plan==='MONTHLY'?L('/ month','/ 月'):L('/ year','/ 年'))+'</span><em>'+L('Subscribe','开通')+'</em></button>';}).join('')+
+     '</div><p class="chrome-vip-status" role="status">'+L('Checking availability…','正在确认开通状态…')+'</p><small>'+L('Renews automatically until canceled. Taxes shown at checkout. ','自动续订，可取消续订；税费以结账页为准。')+'<a href="/membership.html">'+L('Plan terms','套餐条款')+'</a></small></section><button type="button" class="chrome-auth-signout">'+
      L('Sign out','退出登录')+'</button></div>')+
    '<form class="chrome-auth-form" novalidate>'+
     (reg?field('displayName',L('Nickname','昵称'),'text','maxlength="64" autocomplete="nickname"'):'')+
@@ -147,7 +149,29 @@
   });
   var so=d.querySelector('.chrome-auth-signout');
   if(so)so.addEventListener('click',signout);
+  d.querySelectorAll('[data-vip-plan]').forEach(function(button){button.addEventListener('click',function(){checkout(d,button.dataset.vipPlan);});});
   return d;
+ }
+
+ function renderBilling(d){
+  var r=billingState;
+  d.querySelectorAll('[data-vip-plan]').forEach(function(b){b.disabled=billingBusy||!r||!r.paymentConfigured;b.querySelector('em').textContent=r&&r.testMode?t('Test checkout','测试开通'):t('Subscribe','开通');});
+  var status=d.querySelector('.chrome-vip-status');
+  status.textContent=billingBusy?t('Opening Creem checkout…','正在打开 Creem 收银台…'):!r?t('Unable to confirm availability. Reopen to retry.','暂时无法确认开通状态，请重新打开重试。'):r.testMode?t('Sandbox testing only. No real paid membership is granted.','当前为沙盒测试，不授予真实付费会员。'):r.member?t('Your VIP membership is active.','你的 VIP 会员已生效。'):t('Secure checkout with Creem.','通过 Creem 安全结账。');
+  if(r&&!r.paymentConfigured)status.textContent+=t(' Checkout is not available for this account yet.',' 当前账号暂未开放支付。');
+ }
+ function checkout(d,plan){
+  if(billingBusy||!billingState||!billingState.paymentConfigured)return;
+  billingBusy=true;renderBilling(d);
+  session().then(function(me){
+   billingState=me.recording;
+   if(!me.account||!billingState||!billingState.paymentConfigured)throw new Error('unavailable');
+   return api('/api/billing/checkout',{requestId:crypto.randomUUID(),plan:plan});
+  }).then(function(result){
+   var target=new URL(result.checkoutUrl);
+   if(target.protocol!=='https:'||!(target.hostname==='creem.io'||target.hostname.endsWith('.creem.io')))throw new Error('invalid checkout');
+   location.assign(target.href);
+  }).catch(function(){billingBusy=false;renderBilling(d);d.querySelector('.chrome-vip-status').textContent=t('Checkout could not be opened. No membership was granted. Please retry later.','暂时无法打开支付订单，尚未授予会员，请稍后重试。');});
  }
 
  function closeAll(){
@@ -159,6 +183,8 @@
    if(me.account){
     d.querySelector('.chrome-auth-form').hidden=true;
     var s=d.querySelector('.chrome-auth-signed');s.hidden=false;
+    billingState=me.recording;renderBilling(d);
+    d.querySelector('.chrome-auth-switch').hidden=true;
     s.querySelector('.chrome-auth-who').textContent=t('Signed in as ','已登录：')+me.account.displayName;
     var portrait=s.querySelector('.chrome-auth-avatar');portrait.textContent='';
     // This shell is a classic script; load the same resolver used by rooms.
@@ -168,8 +194,8 @@
       module.applyAvatar(portrait,Object.assign({},me.appearance,{isSelf:true,signedIn:true}));
     }).catch(function(){});
     setLabel(me.account.displayName);
-   }else resetLabel();
-  }).catch(function(){});
+   }else{resetLabel();billingState=null;d.querySelector('.chrome-auth-form').hidden=false;d.querySelector('.chrome-auth-signed').hidden=true;d.querySelector('.chrome-auth-switch').hidden=false;}
+  }).catch(function(){if(d.open)renderBilling(d);});
  }
  function open(kind){
   kind=kind==='register'?'register':'login';
@@ -180,6 +206,8 @@
   d.querySelector('.chrome-auth-error').textContent='';
   if(kind==='login'){
    var signed=d.querySelector('.chrome-auth-signed');
+   billingState=null;renderBilling(d);
+   d.querySelector('.chrome-auth-switch').hidden=document.body.classList.contains('chrome-signed');
    // An existing session opens straight into the account card, no form flash.
    form.hidden=document.body.classList.contains('chrome-signed');
    signed.hidden=!form.hidden;
