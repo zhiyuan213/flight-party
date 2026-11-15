@@ -2,7 +2,7 @@
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
-当前最近一次应用发布为 `e2a1086`：游戏首屏语言就绪后显示，会员加载状态使用占位。两个域名各完成 4/4 文件校验，完整测试 968/968。后端仍为 `deploy-backend:9cc07b8`，数据库 V25。本次静态回滚包位于 `/opt/joyflock/releases/firstpaint-e2a1086/static.before.tgz`；数据备份位于 `/opt/joyflock/backups/20261115T123319Z`。根路由配置沿用 `599991e`，其 nginx 备份仍在 `/opt/joyflock/releases/root-locale-599991e/nginx.before.conf`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
+当前最近一次应用发布为 `42c9f5b`：同页游戏入口、原导航悬停效果、音效调平、布尔静音和登录后滚动条修复均已上线。两个域名各完成 62/62 静态文件校验、18 个游戏入口及公开 API 检查；完整测试 977/977。后端仍为 `deploy-backend:9cc07b8`，数据库 V25。本次静态/config 回滚包位于 `/opt/joyflock/releases/native-42c9f5b/`，包含 static.before.tgz 与 nginx.before.conf；数据备份位于 `/opt/joyflock/backups/20261115T131752Z`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
 
 ## 环境与连接
 
@@ -165,4 +165,4 @@ sudo -n docker compose --env-file "$LIVE/deploy/.env" \
 
 正式支付能力依赖已验证的 Creem live 配置与事件；配置文件或 UI 文案不是付款成功证据。浏览器必须获得用户手势才能启动声音，音量、静音、蓝牙设备缓冲也会影响试听。自动化和无头截图不证明真实 GPU、实体手机、音箱听感、容量或灾备恢复能力。
 
-待验收的同页游戏改造见 [NATIVE-GAME-PAGES.md](NATIVE-GAME-PAGES.md)。此项尚未发布；发布时需同时合并根路径与 portal 路由，保留生产原有 location。
+已发布的同页游戏结构见 [NATIVE-GAME-PAGES.md](NATIVE-GAME-PAGES.md)。根路径与 portal 精确路由均已合并，并保留生产原有静态正则、API/WSS location。回滚应恢复本次静态包与 nginx.before.conf，检查并重载 nginx；不能只恢复页面或只恢复路由。
