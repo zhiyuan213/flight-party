@@ -1,10 +1,11 @@
-2026-11-15 最新应用发布：8726970。账号弹窗 VIP 双套餐已上线，后端 deploy-backend:vip-8726970；显式 CREEM_TEST_ACCOUNTS=* 开放所有登录账号沙盒支付，CREEM_LIVE=false 保持不变。数据库仍 V25。发布/回滚目录 /opt/joyflock/releases/vip-8726970，数据备份 /opt/joyflock/backups/20261115T134805Z。Chrome 已确认线上已登录账号两个按钮启用，未提交支付。JAR SHA256 a73a629a9cc26a2b5e7308ce768e90bb475f7e9897ba826b71903ba6b33eaee2。
+2026-11-16 最新应用发布：`18691ef`。后端 `deploy-backend:vip-18691ef` 增加防重复订阅（账号行锁、拒绝已生效会员、复用未完成 checkout），`/api/me` 返回 `billing_plan`；前端账号弹窗展示会员状态、支付返回刷新，VIP 周期文字并入价格行且斜杠周围无空格。缓存 `&p=20261116-nospace1`。数据库仍 V25（无新迁移）。发布/回滚目录 `/opt/joyflock/releases/vip-18691ef`，数据备份 `/opt/joyflock/backups/20261115T162023Z`，JAR SHA256 `12ade40c13ddcb330a6e520cb33792132baafba7b6cbf33baf2913d05c09ab0f`，静态增量包 SHA256 `f23c7b174bbad72710c48f4be33656538c7728d65c3e71a82086c167934f73a6`。前端 980/980、后端 148 项（0 失败/错误、21 跳过）。两个域名 10 个变更资源响应体哈希与制品一致；生产 Chrome 首页 9 张卡、弹窗结构正确、无控制台错误。未提交任何支付，未验证已登录会话的 WSS 101 与跨设备同步。
+上一版（历史）：`8726970`，`deploy-backend:vip-8726970`，VIP 双套餐与 `CREEM_TEST_ACCOUNTS=*` 沙盒策略；备份 `/opt/joyflock/backups/20261115T134805Z`，JAR SHA256 `a73a629a9cc26a2b5e7308ce768e90bb475f7e9897ba826b71903ba6b33eaee2`。
 
 # JoyFlock 生产部署手册
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
-当前最近一次应用发布为 `42c9f5b`：同页游戏入口、原导航悬停效果、音效调平、布尔静音和登录后滚动条修复均已上线。两个域名各完成 62/62 静态文件校验、18 个游戏入口及公开 API 检查；完整测试 977/977。后端仍为 `deploy-backend:9cc07b8`，数据库 V25。本次静态/config 回滚包位于 `/opt/joyflock/releases/native-42c9f5b/`，包含 static.before.tgz 与 nginx.before.conf；数据备份位于 `/opt/joyflock/backups/20261115T131752Z`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
+历史发布记录（已被 `18691ef` 取代，不是当前版本）：`42c9f5b` 上线同页游戏入口、原导航悬停效果、音效调平、布尔静音和登录后滚动条修复；当时两个域名各完成 62/62 静态文件校验、18 个游戏入口及公开 API 检查，完整测试 977/977，后端 `deploy-backend:9cc07b8`，数据库 V25。其静态/config 回滚包位于 `/opt/joyflock/releases/native-42c9f5b/`，数据备份 `/opt/joyflock/backups/20261115T131752Z`。这些是当时的发布事实，不是当前版本号或未来发布应复用的目录。
 
 ## 环境与连接
 
