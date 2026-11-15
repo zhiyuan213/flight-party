@@ -123,8 +123,9 @@
     ?L('A free account saves your nickname and scores.','注册完全免费，可保存昵称与对局成绩。')
     :L('Sign in to keep your scores. Playing stays free — no account needed.','登录后可累计对局成绩；不登录也能免费畅玩。'))+'</p>'+
    (reg?'':'<div class="chrome-auth-signed" hidden><div class="chrome-auth-avatar" style="background:url(/assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5) center/cover no-repeat"></div>'+
-     '<p class="chrome-auth-who"></p><section class="chrome-vip"><h3>'+L('Open VIP','开通 VIP')+'</h3><p>'+L('Cosmetic membership. All games stay free and unlimited.','会员装扮权益，所有游戏仍可免费无限畅玩。')+'</p><div class="chrome-vip-plans">'+
-     ['MONTHLY','ANNUAL'].map(function(plan){return '<button type="button" data-vip-plan="'+plan+'" disabled><b>'+ (plan==='MONTHLY'?L('Monthly VIP','月度 VIP'):L('Annual VIP','年度 VIP'))+'</b><strong>'+(plan==='MONTHLY'?'$9':'$59')+' <small>USD</small></strong><span>'+(plan==='MONTHLY'?L('/ month','/ 月'):L('/ year','/ 年'))+'</span><em>'+L('Subscribe','开通')+'</em></button>';}).join('')+
+     '<p class="chrome-auth-who"></p><section class="chrome-vip"><h3>'+L('VIP membership','VIP 会员')+'</h3><div class="chrome-vip-membership" role="status"></div><p>'+L('Cosmetic membership. All games stay free and unlimited.','会员装扮权益，所有游戏仍可免费无限畅玩。')+'</p><div class="chrome-vip-plans">'+
+     /* The billing period belongs to the price, not to its own flex row:
+        keep "$9 USD/月" on one line, with no space around the slash. */     ['MONTHLY','ANNUAL'].map(function(plan){return '<button type="button" data-vip-plan="'+plan+'" disabled><b>'+ (plan==='MONTHLY'?L('Monthly VIP','月度 VIP'):L('Annual VIP','年度 VIP'))+'</b><strong>'+(plan==='MONTHLY'?'$9':'$59')+' <small>USD</small><span class="vip-period">'+(plan==='MONTHLY'?L('/month','/月'):L('/year','/年'))+'</span></strong><em>'+L('Subscribe','开通')+'</em></button>';}).join('')+
      '</div><p class="chrome-vip-status" role="status">'+L('Checking availability…','正在确认开通状态…')+'</p><small>'+L('Renews automatically until canceled. Taxes shown at checkout. ','自动续订，可取消续订；税费以结账页为准。')+'<a href="/membership.html">'+L('Plan terms','套餐条款')+'</a></small></section><button type="button" class="chrome-auth-signout">'+
      L('Sign out','退出登录')+'</button></div>')+
    '<form class="chrome-auth-form" novalidate>'+
@@ -155,23 +156,35 @@
 
  function renderBilling(d){
   var r=billingState;
-  d.querySelectorAll('[data-vip-plan]').forEach(function(b){b.disabled=billingBusy||!r||!r.paymentConfigured;b.querySelector('em').textContent=r&&r.testMode?t('Test checkout','测试开通'):t('Subscribe','开通');});
+  var active=currentSubscription(r),box=d.querySelector('.chrome-vip-membership');box.textContent='';
+  var heading=document.createElement('strong');
+  heading.textContent=!r?t('Checking membership…','正在确认会员状态…'):active?(active.testMode?t('Test VIP active','测试 VIP 已开通'):t('VIP active','VIP 已开通')):r.member?t('VIP active','VIP 已开通'):t('VIP not active','尚未开通 VIP');box.append(heading);
+  if(active){
+   var details=document.createElement('span');
+   var until=new Date(active.validUntil).toLocaleString(zh()?'zh-CN':'en-US',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',timeZoneName:'short'});
+   details.textContent=(active.plan==='ANNUAL'?t('Annual VIP','年度 VIP'):active.plan==='MONTHLY'?t('Monthly VIP','月度 VIP'):t('VIP','VIP'))+' · '+t('Valid until: ','有效期至：')+until;box.append(details);
+   var renewal=document.createElement('span');renewal.textContent=active.cancelScheduled?t('Auto-renewal canceled. Access remains until expiry.','已取消自动续订，到期前仍有效。'):t('Auto-renewal is on. Do not purchase another subscription.','自动续订已开启，无需重复开通。');box.append(renewal);
+  }else if(r&&r.complimentaryUntil&&r.member){var grant=document.createElement('span');grant.textContent=t('Valid until: ','有效期至：')+new Date(r.complimentaryUntil).toLocaleString();box.append(grant);}
+  d.querySelectorAll('[data-vip-plan]').forEach(function(b){b.disabled=billingBusy||!r||!r.paymentConfigured||!!active;b.querySelector('em').textContent=active?t('Already subscribed','已开通，无需重复购买'):r&&r.testMode?t('Test checkout','测试开通'):t('Subscribe','开通');});
   var status=d.querySelector('.chrome-vip-status');
   status.textContent=billingBusy?t('Opening Creem checkout…','正在打开 Creem 收银台…'):!r?t('Unable to confirm availability. Reopen to retry.','暂时无法确认开通状态，请重新打开重试。'):r.testMode?t('Sandbox testing only. No real paid membership is granted.','当前为沙盒测试，不授予真实付费会员。'):r.member?t('Your VIP membership is active.','你的 VIP 会员已生效。'):t('Secure checkout with Creem.','通过 Creem 安全结账。');
   if(r&&!r.paymentConfigured)status.textContent+=t(' Checkout is not available for this account yet.',' 当前账号暂未开放支付。');
  }
+ function currentSubscription(r){
+  return r&&(r.subscriptions||[]).find(function(s){return s.testMode===r.testMode&&(s.status==='ACTIVE'||s.status==='TEST_ACTIVE')&&Date.parse(s.validUntil)>Date.now();});
+ }
  function checkout(d,plan){
-  if(billingBusy||!billingState||!billingState.paymentConfigured)return;
+  if(billingBusy||!billingState||!billingState.paymentConfigured||currentSubscription(billingState))return;
   billingBusy=true;renderBilling(d);
   session().then(function(me){
    billingState=me.recording;
-   if(!me.account||!billingState||!billingState.paymentConfigured)throw new Error('unavailable');
+   if(!me.account||!billingState||!billingState.paymentConfigured||currentSubscription(billingState))throw new Error('unavailable');
    return api('/api/billing/checkout',{requestId:crypto.randomUUID(),plan:plan});
   }).then(function(result){
    var target=new URL(result.checkoutUrl);
    if(target.protocol!=='https:'||!(target.hostname==='creem.io'||target.hostname.endsWith('.creem.io')))throw new Error('invalid checkout');
    location.assign(target.href);
-  }).catch(function(){billingBusy=false;renderBilling(d);d.querySelector('.chrome-vip-status').textContent=t('Checkout could not be opened. No membership was granted. Please retry later.','暂时无法打开支付订单，尚未授予会员，请稍后重试。');});
+  }).catch(function(){billingBusy=false;session().then(function(me){billingState=me.recording;renderBilling(d);if(!currentSubscription(billingState))d.querySelector('.chrome-vip-status').textContent=t('Checkout could not be opened. Reopen to refresh your membership status.','暂时无法打开支付订单，请重新打开弹窗刷新会员状态。');}).catch(function(){renderBilling(d);});});
  }
 
  function closeAll(){
@@ -313,4 +326,12 @@
   // to the guest label when the first frame is still a neutral placeholder.
   if(signin.classList.contains('chrome-account-pending'))renderGuest();
  });
+ // Return parameters trigger a server status refresh, never grant membership.
+ if(new URLSearchParams(location.search).has('checkout_id')){
+  open('login');
+  var retries=0,timer=setInterval(function(){
+   var d=dialogs.login;if(!d||!d.open||++retries>10){clearInterval(timer);return;}
+   checkSession(d);if(currentSubscription(billingState))clearInterval(timer);
+  },3000);
+ }
 })();

@@ -37,7 +37,7 @@ public class GuestSessionController {
         return Map.of("kind","guest");
     }
     public record Statistics(long points,long completedGames) {}
-    public record Subscription(String id,String status,String validUntil,boolean testMode,boolean cancelScheduled) {}
+    public record Subscription(String id,String status,String validUntil,boolean testMode,boolean cancelScheduled,String plan) {}
     public record Recording(boolean member,Integer freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions,String complimentaryUntil) {}
     public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording,AppearanceService.Appearance appearance) {}
     @GetMapping("/me")
@@ -54,7 +54,7 @@ public class GuestSessionController {
             boolean member=appearances.get(profile.id()).member();
             var complimentary=db.sql("select valid_until from complimentary_memberships where account_id=:id and revoked_at is null and valid_until>now()").param("id",profile.id()).query((rs,n)->rs.getTimestamp(1).toInstant().toString()).optional().orElse(null);
             boolean testMember=db.sql("select count(*) from membership_entitlements where account_id=:id and status='TEST_ACTIVE' and valid_until>now()").param("id",profile.id()).query(Long.class).single()>0;
-            var subscriptions=db.sql("select subscription_id,status,valid_until,test_mode,cancel_scheduled from membership_entitlements where account_id=:id order by valid_until desc").param("id",profile.id()).query((rs,row)->new Subscription(rs.getString(1),rs.getString(2),rs.getTimestamp(3).toInstant().toString(),rs.getBoolean(4),rs.getBoolean(5))).list();
+            var subscriptions=db.sql("select subscription_id,status,valid_until,test_mode,cancel_scheduled,billing_plan from membership_entitlements where account_id=:id order by valid_until desc").param("id",profile.id()).query((rs,row)->new Subscription(rs.getString(1),rs.getString(2),rs.getTimestamp(3).toInstant().toString(),rs.getBoolean(4),rs.getBoolean(5),rs.getString(6))).list();
             recording=new Recording(member,null,null,9,59,billing.allowed(profile.id()),billing.testMode(),testMember,subscriptions,complimentary);
         }
         return new Me(principal==null?"none":profile==null?"guest":"account",principal==null?null:rooms.active(UUID.fromString(principal.toString())).orElse(null),profile,statistics,recording,profile==null?null:appearances.get(profile.id()));

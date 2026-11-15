@@ -23,6 +23,7 @@ public class CreemCheckoutController {
     public record Input(UUID requestId,String plan) {}
     public record Checkout(String checkoutUrl) {}
     @PostMapping("/api/billing/checkout")
+    @org.springframework.transaction.annotation.Transactional
     public synchronized Checkout create(@RequestBody Input input,HttpServletRequest request)throws Exception{
         var session=request.getSession(false);Object account=session==null?null:session.getAttribute("flightparty.account");
         if(account==null)throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -31,11 +32,32 @@ public class CreemCheckoutController {
         if(key.isBlank()||product.isBlank()||!success.startsWith("https://"))throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"billing not configured");
         var owner=UUID.fromString(account.toString());
         if(!access.allowed(owner))throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"billing not enabled for this account");
+        // Serialize checkout creation across application instances for this account.
+        db.sql("select id from accounts where id=:id for update").param("id",owner).query(UUID.class).single();
+        boolean subscribed=db.sql("select exists(select 1 from membership_entitlements where account_id=:id and status in ('ACTIVE','TEST_ACTIVE') and test_mode=:test and valid_until>now())")
+                .param("id",owner).param("test",!live).query(Boolean.class).single();
+        if(subscribed)throw new ResponseStatusException(HttpStatus.CONFLICT,"membership already active; duplicate subscriptions are not allowed");
         var existing=db.sql("select account_id,plan,checkout_url from billing_checkout_requests where id=:id").param("id",input.requestId()).query((rs,row)->new Existing(rs.getObject(1,UUID.class),rs.getString(2),rs.getString(3))).optional();
         if(existing.isPresent()){
             var old=existing.get();if(!old.account().equals(owner)||!old.plan().equals(input.plan()))throw new ResponseStatusException(HttpStatus.CONFLICT);
             if(old.url()==null)throw new ResponseStatusException(HttpStatus.CONFLICT,"checkout awaiting reconciliation");
             return new Checkout(old.url());
+        }
+        // A second tab must reuse a still-pending checkout, not create another subscription.
+        var pending=db.sql("select id,plan,checkout_id,checkout_url from billing_checkout_requests b where account_id=:account and product_id in (:monthly,:annual) and not exists(select 1 from membership_entitlements e where e.account_id=b.account_id and e.product_id=b.product_id) order by created_at desc limit 1")
+                .param("account",owner).param("monthly",monthly).param("annual",annual)
+                .query((rs,row)->new Pending(rs.getObject(1,UUID.class),rs.getString(2),rs.getString(3),rs.getString(4))).optional();
+        if(pending.isPresent()){
+            var p=pending.get();
+            if(p.checkout()==null)throw new ResponseStatusException(HttpStatus.CONFLICT,"previous checkout awaiting reconciliation");
+            var check=http.send(HttpRequest.newBuilder(URI.create((live?"https://api.creem.io":"https://test-api.creem.io")+"/v1/checkouts?checkout_id="+java.net.URLEncoder.encode(p.checkout(),java.nio.charset.StandardCharsets.UTF_8))).timeout(Duration.ofSeconds(20)).header("x-api-key",key).GET().build(),HttpResponse.BodyHandlers.ofString());
+            if(check.statusCode()!=200)throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"previous checkout status unavailable");
+            String state=json.readTree(check.body()).path("status").asText();
+            if(state.equals("pending")){
+                if(!p.plan().equals(input.plan()))throw new ResponseStatusException(HttpStatus.CONFLICT,"another plan has a pending checkout");
+                return new Checkout(p.url());
+            }
+            if(!java.util.Set.of("expired","canceled","cancelled").contains(state))throw new ResponseStatusException(HttpStatus.CONFLICT,"payment awaiting membership confirmation");
         }
         db.sql("insert into billing_checkout_requests(id,account_id,plan,product_id) values (:id,:account,:plan,:product)").param("id",input.requestId()).param("account",owner).param("plan",input.plan()).param("product",product).update();
         String body=json.writeValueAsString(Map.of("product_id",product,"request_id",input.requestId().toString(),"success_url",success,"metadata",Map.of("joyflock_request_id",input.requestId().toString())));
@@ -48,4 +70,5 @@ public class CreemCheckoutController {
         return new Checkout(url);
     }
     private record Existing(UUID account,String plan,String url) {}
+    private record Pending(UUID id,String plan,String checkout,String url) {}
 }
