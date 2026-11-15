@@ -1227,3 +1227,8 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - `dist/social-ui.js` 的 `UI PREVIEW` / `DEMO-7K2` / `尚未联网` 文案是 `bindLiveRooms` / `bindLiveAccount` 未接管时的降级路径，看到它们**不代表**产品仍是预览；但删掉会变成虚假声明（该路径确实不建账号、不入房、不上传成绩）。文件头注释已写明这层关系。
 - 详情页脚注「示例数据」现在由 `dist/table/table.js` 的 `usedDemo` 控制：混入 demo 行才显示，服务端给满 10 行则隐藏。缓存键 `table.js?...&u=20261115-scope1`；以后改 `refreshLeaderboard()` 继续 bump `&u=`。全真实数据下的隐藏行为待线上复核。
 - 验收 `npm test` **952/952**、CDP 回归通过；改动已推送 GitHub，生产部署未执行。连接状态（用户 18:36 确认）：`43.153.70.181` 可用 `ubuntu` 账号 + 现有密钥直连，`sudo` 可用；本非交互 shell 未继承已解锁的 `ssh-agent`，`BatchMode` 直连会因 `joyflock_deploy` 私钥带 passphrase 被拒，部署命令需在凭据已解锁的环境执行。
+
+## 2026-11-15 18:55 CST — Production deployment completed
+- Production source is 9cc07b8; static assets, deploy-backend:9cc07b8 and Flyway V25 are live. Prior preview-only restrictions are historical. SSH ubuntu + current agent/key succeeded in this session.
+- Actual checks: Node 953/953; JS syntax 117 files; Maven verify 147 tests with 21 skipped external integration cases; public six-file hashes, two-guest complete xo game, zero guest statistics, WSS 101 and browser portal/detail-page verification passed. Backend zero restarts after final successful deployment. Full evidence and startup-permission retry are in QA latest entry.
+- Data backup /opt/joyflock/backups/20261115T104810Z; private release/rollback bundle /opt/joyflock/releases/release-9cc07b8; old image joyflock-backend:before-9cc07b8. Preserve environment secrets and V25 migration history during any rollback. Latest documentation commit may follow the deployed application commit without changing runtime files.
