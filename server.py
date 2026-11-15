@@ -8,10 +8,12 @@ class HomeHandler(SimpleHTTPRequestHandler):
     def send_head(self):
         original = self.path
         url = urlsplit(original)
-        if url.path == '/':
+        if url.path in ('/', '/portal/index.html'):
             query = parse_qs(url.query, keep_blank_values=True)
             flight = query.get('embed') == ['joyflock'] or 'room' in query
-            self.path = urlunsplit(('', '', '/index.html' if flight else '/portal/index.html', url.query, ''))
+            game = query.get('game', [''])[0]
+            page = '/portal/native-flight.html' if game == 'flight' else '/portal/native-table.html' if game in ('pool','four','gomoku','chess','xo','cards','snooker','bubbles') else '/portal/index.html'
+            self.path = urlunsplit(('', '', '/index.html' if url.path == '/' and (query.get('embed') == ['joyflock'] or flight and page == '/portal/index.html') else page, url.query, ''))
         try:
             return super().send_head()
         finally:

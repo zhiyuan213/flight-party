@@ -10,7 +10,7 @@ import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
 import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
 import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
@@ -550,7 +550,7 @@ function syncRoomCosmetics(){cosmeticSync.sync(room,game,localSelection(game,roo
 window.addEventListener('joyflock:cosmetics-changed',()=>{render();syncRoomCosmetics();});
 render();init().then(()=>{if(params.get('room'))enter('FRIENDS',params.get('room'));}).catch(()=>{$('message').textContent='联机服务暂不可用，仍可单机游玩。';});
 
-import {bindPortalControls} from '../portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1';
+import {bindPortalControls} from '../portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1&native=20261115-native1';
 import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-firstpaint1';
 const applyTableLocale=bindTableLocale();
 arcade?.refresh?.();

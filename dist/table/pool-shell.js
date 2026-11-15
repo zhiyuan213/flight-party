@@ -63,6 +63,10 @@ function chatEmbedded(){
   return window.parent!==window&&new URLSearchParams(location.search).get('embed')==='joyflock';
 }
 function toggleChatFullscreen(){
+  if(document.documentElement.hasAttribute?.('data-native-game')){
+    window.dispatchEvent(new CustomEvent('joyflock:native-toggle-fullscreen'));
+    return;
+  }
   if(chatEmbedded()){
     try{window.parent.postMessage({type:'joyflock:toggle-fullscreen'},chatParentOrigin());}catch(error){}
     return;
@@ -106,6 +110,7 @@ function createChat() {
   document.addEventListener('fullscreenchange',function(){
     if(!chatEmbedded())syncChatFullscreen(Boolean(document.fullscreenElement));
   });
+  window.addEventListener('joyflock:native-fullscreen',event=>syncChatFullscreen(event.detail===true));
   if(typeof MutationObserver!=='undefined'){
     new MutationObserver(function(){syncChatFullscreen(chatFullscreenState);})
       .observe(document.documentElement,{attributes:true,attributeFilter:['lang','data-locale']});

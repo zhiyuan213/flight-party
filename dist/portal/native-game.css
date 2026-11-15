@@ -1,0 +1,30 @@
+/* Shared chrome around the original game DOM; no game board/rule styling. */
+html[data-native-game]{--native-header:58px;--native-rail:114px;--header-h:0px;background:#0b1020;color-scheme:dark}
+html[data-native-game] body{margin:0;min-height:100dvh}
+.native-game-header{display:none!important}
+.native-topbar.native-topbar{position:sticky;top:0;z-index:100;height:var(--native-header);min-height:var(--native-header);width:100%;padding:0 3%;display:flex;align-items:center;gap:42px;background:#0b1020;border:0;border-bottom:1px solid #ffffff10;box-shadow:none;color:#edf1ff;font-size:16px;letter-spacing:0}
+.native-topbar .native-brand{padding:0;color:#edf1ff;text-decoration:none;font-size:25px;font-weight:900;white-space:nowrap;letter-spacing:-.7px}
+.native-topbar.native-topbar::before,.native-topbar.native-topbar::after{display:none!important}
+.native-topbar nav{display:flex;gap:20px;align-items:center;margin:0}
+.native-topbar nav a{color:#a7b4d2;text-decoration:none;font-size:14px;font-weight:800;padding:8px 24px;border:0;border-radius:30px}
+.native-topbar nav a:first-child{background:#1c284e;color:#fff}
+.native-topbar .top-actions{display:flex;align-items:center;gap:14px;margin-left:auto}
+.native-topbar button,.native-topbar select{font:inherit;font-size:13px;font-weight:800;border:1px solid #465580;border-radius:30px;padding:7px 18px;min-height:34px;height:auto;background:#1b2542;box-shadow:none;color:#edf1ff;transform:none;white-space:nowrap}
+.native-topbar #native-account{background:#2e3a6c;border-color:#8492ef;min-width:100px;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.native-topbar #native-fullscreen{order:4}
+.native-topbar #jp-pill{order:3}
+html[data-locale="en"] .native-zh,html[data-locale="zh"] .native-en{display:none!important}
+.native-rail{position:fixed;z-index:90;left:0;top:var(--native-header);bottom:0;width:var(--native-rail);display:flex;flex-direction:column;align-items:center;gap:18px;padding:32px 12px;overflow:auto;background:#0b10205c}
+.native-rail-game{position:relative;display:block;flex:none;width:78px;height:78px;padding:0;border-radius:19px;text-decoration:none;transition:transform .15s}
+.native-rail-game:hover{transform:scale(1.08)}
+.native-rail-game img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.native-rail-game[aria-current="page"]{outline:3px solid #b5c2ff;outline-offset:4px}
+.native-rail-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#native-game-stage{position:relative;margin-left:var(--native-rail);width:calc(100% - var(--native-rail));min-height:calc(100dvh - var(--native-header));isolation:isolate}
+html[data-native-game="flight"] #native-game-stage>.welcome{min-height:calc(100dvh - var(--native-header))}
+#native-game-stage.native-expanded{position:fixed;inset:0;z-index:200;width:100vw;height:100dvh;min-height:0;margin:0;overflow:auto;background:#0b1020}
+#native-game-stage:fullscreen{width:100vw;height:100dvh;margin:0;overflow:auto;background:#0b1020}
+html[data-native-game] #native-game-stage>.screen{min-height:calc(100dvh - var(--native-header))}
+html[data-native-game] .native-expanded>.screen{min-height:100dvh!important}
+html[data-native-game] .native-expanded>#play,html[data-native-game] #native-game-stage:fullscreen>#play{height:100dvh!important;min-height:100dvh!important}
+@media(max-width:768px){html[data-native-game]{--native-header:58px;--native-rail:0px}.native-topbar.native-topbar{padding:0 12px;gap:12px}.native-topbar .native-brand{font-size:20px}.native-topbar nav{gap:4px}.native-topbar nav a{padding:6px;font-size:12px}.native-topbar .top-actions{gap:5px}.native-topbar button,.native-topbar select{font-size:11px;padding:6px 8px}.native-topbar #native-account{min-width:45px;max-width:85px}.native-rail{position:relative;top:auto;bottom:auto;width:100%;height:62px;flex-direction:row;padding:8px 15px;gap:15px}.native-rail-game{width:42px;height:42px;border-radius:11px}.native-topbar #native-fullscreen{display:none}.native-topbar nav a:last-child{display:none}}

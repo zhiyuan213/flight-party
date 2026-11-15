@@ -164,3 +164,5 @@ sudo -n docker compose --env-file "$LIVE/deploy/.env" \
 ## 已知验证边界
 
 正式支付能力依赖已验证的 Creem live 配置与事件；配置文件或 UI 文案不是付款成功证据。浏览器必须获得用户手势才能启动声音，音量、静音、蓝牙设备缓冲也会影响试听。自动化和无头截图不证明真实 GPU、实体手机、音箱听感、容量或灾备恢复能力。
+
+待验收的同页游戏改造见 [NATIVE-GAME-PAGES.md](NATIVE-GAME-PAGES.md)。此项尚未发布；发布时需同时合并根路径与 portal 路由，保留生产原有 location。

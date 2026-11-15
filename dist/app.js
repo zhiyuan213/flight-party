@@ -29,7 +29,7 @@ $('play').addEventListener('contextmenu',event=>event.preventDefault());
 let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
 let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,...prefs,visual:'illustrated'};
 const inviteLanguage=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(inviteLanguage))prefs.lang=inviteLanguage;
-const embeddedLocale=new URL(location.href).searchParams.get('embed')==='joyflock'?new URL(location.href).searchParams.get('locale'):null;
+const embeddedLocale=document.documentElement.hasAttribute('data-native-game')?document.documentElement.getAttribute('data-locale'):new URL(location.href).searchParams.get('embed')==='joyflock'?new URL(location.href).searchParams.get('locale'):null;
 if(['zh','en'].includes(embeddedLocale))prefs.lang=embeddedLocale;
 /* Flight keeps its own saved computer difficulty, separate from the table games. */
 const difficultyControl=bindBotDifficultyDialog($('bot-difficulty'),{lang:prefs.lang,game:'flight',onChange:()=>{syncHomeDifficulty();if(screen==='lobby')renderSeats();}});
@@ -456,7 +456,7 @@ window.addEventListener('online',refreshLogin);window.addEventListener('focus',r
 
 
 
-import {bindPortalControls} from './portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1';
+import {bindPortalControls} from './portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1&native=20261115-native1';
 bindPortalControls({onLocale:locale=>{
  if(!['en','zh'].includes(locale)||prefs.lang===locale)return;
  prefs.lang=locale;savePrefs();translate();quickMatch.relabel();

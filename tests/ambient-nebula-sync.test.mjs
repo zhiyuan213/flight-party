@@ -60,7 +60,7 @@ test('every host pulls the phase-synchronised script without bumping its key', (
   const pages = htmlPages(path.join(ROOT, 'dist'))
     .map(p => [p, readFileSync(p, 'utf8')])
     .filter(([, html]) => html.includes('site-floating-dots.js'));
-  assert.equal(pages.length, 19, `${pages.length} pages load the mote script`);
+  assert.equal(pages.length, 21, `${pages.length} pages load the mote script, including two composed game documents`);
   for (const [p, html] of pages) {
     assert.match(html, /site-floating-dots\.js\?v=20261110-glove2&d=20261115-staticnebula1/, p);
     assert.ok(!html.includes('site-floating-dots.js?v=20261110-glove2"'), `${p}: no stale ref`);

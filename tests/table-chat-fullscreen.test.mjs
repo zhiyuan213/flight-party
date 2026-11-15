@@ -24,7 +24,7 @@ const helperEnd = shell.indexOf('export function poolSeatSummary');
 assert.ok(helperStart > 0 && helperEnd > helperStart, 'helper block is extractable');
 const helpers = shell.slice(helperStart, helperEnd);
 
-function chatHarness({lang = 'zh-CN', embedded = false, search = '?game=pool&embed=joyflock', started = false} = {}) {
+function chatHarness({lang = 'zh-CN', embedded = false, native = false, search = '?game=pool&embed=joyflock', started = false} = {}) {
   const button = {
     textContent: '', dataset: {}, title: '', attrs: {},
     setAttribute(k, v) { this.attrs[k] = v; },
@@ -33,7 +33,7 @@ function chatHarness({lang = 'zh-CN', embedded = false, search = '?game=pool&emb
   };
   const calls = [];
   const document = {
-    documentElement: {lang},
+    documentElement: {lang, hasAttribute:k=>native&&k==='data-native-game'},
     body: {dataset: {}},
     referrer: 'http://127.0.0.1:8080/portal/index.html',
     fullscreenElement: started ? {} : null,
@@ -42,10 +42,10 @@ function chatHarness({lang = 'zh-CN', embedded = false, search = '?game=pool&emb
   };
   document.documentElement.requestFullscreen = () => calls.push('requestFullscreen');
   const parent = {postMessage: (...args) => calls.push(['postMessage', ...args])};
-  const window = {parent: embedded ? parent : null, addEventListener() {}};
+  const window = {parent: embedded ? parent : null, addEventListener() {},dispatchEvent:event=>calls.push(['event',event.type])};
   window.parent = embedded ? parent : window;
   const location = {origin: 'http://127.0.0.1:8080', search};
-  const context = vm.createContext({document, window, location, URL, URLSearchParams,
+  const context = vm.createContext({document, window, location, URL, URLSearchParams,CustomEvent:class{constructor(type){this.type=type;}},
     shell: {chatFullscreen: button}, console});
   vm.runInContext('var shell = globalThis.shell;\n' + helpers +
     '\nglobalThis.api = {syncChatFullscreen, toggleChatFullscreen, chatFullscreenCopy, chatEmbedded};', context);
@@ -139,6 +139,11 @@ test('embedded clicks forward ONE toggle message; standalone uses native fullscr
   standalone.document.fullscreenElement = {};
   standalone.api.toggleChatFullscreen();
   assert.deepEqual(standalone.calls, ['requestFullscreen', 'exitFullscreen']);
+});
+
+test('direct composition sends one in-document fullscreen event without postMessage',()=>{
+ const direct=chatHarness({native:true,embedded:false});direct.api.toggleChatFullscreen();
+ assert.deepEqual(direct.calls,[['event','joyflock:native-toggle-fullscreen']]);
 });
 
 test('every changed asset is cache-busted without forking the shared keys', () => {

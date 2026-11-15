@@ -1,8 +1,9 @@
 ## 当前本地入口（2026-11-15）
 
 打开 `http://127.0.0.1:8080/` 直接显示九宫格游戏首页；原 `/portal/index.html` 仍可用。
-飞行棋独立页面保留在 `/index.html`，首页会用此明确地址内嵌飞行棋。
-旧的根地址 `?embed=joyflock` 和 `?room=...` 链接继续进入飞行棋。
+本地 `/?game=pool` 等九款游戏入口已改为同一个 HTML 内直接引用游戏模块，不使用 iframe；`/portal/index.html?game=...` 同样进入直接页面。切换游戏使用普通页面导航，离开时浏览器释放原文档的连接和计时器。
+飞行棋独立页面 `/index.html` 和桌游独立页面 `/table/index.html?game=...` 保留。旧根地址 `?embed=joyflock` 和不带 game 的 `?room=...` 链接继续进入飞行棋。
+游戏源模板更新后运行 `node scripts/build-native-games.mjs` 同步 `dist/portal/native-table.html` 和 `native-flight.html`；启动仍无需安装或构建。公共导航来自该脚本，样式与事件入口位于 `dist/portal/native-game.css/js`。旧 iframe 页面和桥接只保留作独立兼容入口，本地正常游戏路由不会使用它。
 Node／Python 启动脚本与 nginx 都按此路由；正在运行的静态服务改完脚本后需重启，nginx 配置更新后需检查并重载。
 生产发布步骤见 [生产部署手册](docs/PRODUCTION-DEPLOYMENT.md)，本段说明本地改动，不表示生产已发布。
 

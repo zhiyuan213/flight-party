@@ -1,5 +1,13 @@
 /** Narrow, origin-checked bridge. Authentication stays inside the game. */
 export function bindPortalControls({onLocale}={}){
+ if(document.documentElement?.hasAttribute?.('data-native-game')){
+  // Direct composition has no parent window or cross-origin bridge.
+  window.addEventListener('joyflock:native-locale',event=>{
+   if(['en','zh'].includes(event.detail))onLocale?.(event.detail);
+  });
+  onLocale?.(document.documentElement.getAttribute('data-locale')==='zh'?'zh':'en');
+  return;
+ }
  if(window.parent===window||new URLSearchParams(location.search).get('embed')!=='joyflock')return;
  const allowed=new Set(['https://joyflock.com','https://www.joyflock.com','https://flight.joyflock.com']);
  let parentOrigin;try{parentOrigin=new URL(document.referrer).origin;}catch{return;}
