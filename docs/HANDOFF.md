@@ -1226,4 +1226,4 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - `AGENTS.md` 顶部 `Current scope (2026-11-15)` 才是现在的约束；2026-10-31 的 `UI preview only` / `Remove wins/win-rate UI` / `No payment/deployment work` 已标注 **superseded**，保留仅作设计历史。**不要**再据此拦截发布或要求回滚胜率榜。`docs/V07-CONTRACT.md` 顶部也有同义的中文状态说明。
 - `dist/social-ui.js` 的 `UI PREVIEW` / `DEMO-7K2` / `尚未联网` 文案是 `bindLiveRooms` / `bindLiveAccount` 未接管时的降级路径，看到它们**不代表**产品仍是预览；但删掉会变成虚假声明（该路径确实不建账号、不入房、不上传成绩）。文件头注释已写明这层关系。
 - 详情页脚注「示例数据」现在由 `dist/table/table.js` 的 `usedDemo` 控制：混入 demo 行才显示，服务端给满 10 行则隐藏。缓存键 `table.js?...&u=20261115-scope1`；以后改 `refreshLeaderboard()` 继续 bump `&u=`。全真实数据下的隐藏行为待线上复核。
-- 验收 `npm test` **952/952**、CDP 回归通过；改动已推送 GitHub，生产部署未执行（SSH 私钥仍需解锁）。
+- 验收 `npm test` **952/952**、CDP 回归通过；改动已推送 GitHub，生产部署未执行。连接状态（用户 18:36 确认）：`43.153.70.181` 可用 `ubuntu` 账号 + 现有密钥直连，`sudo` 可用；本非交互 shell 未继承已解锁的 `ssh-agent`，`BatchMode` 直连会因 `joyflock_deploy` 私钥带 passphrase 被拒，部署命令需在凭据已解锁的环境执行。

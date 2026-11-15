@@ -3090,3 +3090,9 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 文案：`dist/index.html` 两处 `aria-label="Account interface preview"` → `aria-label="Account"`；`dist/table/table.js` 的 `refreshLeaderboard()` 用 `usedDemo` 记录是否补过 demo 行，仅此时显示脚注「示例数据」（服务端给满 10 行时 `demoTag.hidden=true`）；首帧无后端数据仍显示。`dist/table/index.html` 的 `table.js` 引用加 `&u=20261115-scope1`。仅注释变更的 `social-ui.js` 未 bump 缓存键（无运行时差异）。
 - 验证：两个 JS `node --input-type=module --check` 通过；新增 `tests/scope-copy-sync.test.mjs` 4 条守卫（文档状态、降级标注、demo 标签逻辑、缓存链），`npm test` **952/952**；CDP 1280×900 回归列头 `玩家/局数/胜率`、月榜 `96/64.6%`、周榜 `27/66.7%`、英文 `Games / Win rate`、10 行左列无斜杠、右列全百分比、首帧 `.demo-tag` 存在且 `hidden=false`。
 - **验证限制**：本地无真实 `/api/table/leaderboards` 数据，「全真实行时隐藏示例标注」仅由源码与单测保证，需线上联机成绩到位后复核。改动已推送 GitHub；生产部署仍未执行。
+
+## 18:36 — 三处文档校正（依据 7b06ed8 复核）
+- `AGENTS.md` 通用约束列表里残留的 "The current v0.7.2 scope is UI preview" 改为 `Historical visual baseline (v0.7.2)`，明确只描述美术/棋盘基线，不描述当前产品范围；Three.js 实验路径的约束保留。
+- 计分规则歧义：`AGENTS.md` 的 `Latest score-recording override`（每日首局记录、会员无限）与 `V07-CONTRACT.md` 11-01 段「取消每日一次及会员无限记录的差异」相反。核查 `backend/.../SettlementService.settle()`：对每个非托管、有账号的席位每局都写 `score_recording_decisions` / `account_match_results` / `account_statistics`，无每日/会员分支 → **每局记录**才是当前实现。已在 `AGENTS.md` 给该覆盖加 historical 标注、在 `Current scope` 写明当前规则，并在 `V07-CONTRACT.md` 顶部新增「当前计分规则」段（含 `DAILY_CAP=5000` 只是钱包积分上限、与战绩记录无关的澄清）。
+- SSH 状态：用户确认 `ubuntu` 账号 + 现有密钥可直连且 `sudo` 可用；`HANDOFF.md` 18:25 段的「SSH 私钥仍需解锁」改为已连通，并保留「本非交互 shell 未继承已解锁 agent」这一操作限制。本轮只读复核（无 `SSH_AUTH_SOCK`）确实仍返回 `Permission denied (publickey)`，与用户已解锁环境并不矛盾。
+- 新增 `tests/scope-copy-sync.test.mjs` 一组守卫，防止三处旧表述回归。未改任何运行时代码，无需 bump 缓存键。

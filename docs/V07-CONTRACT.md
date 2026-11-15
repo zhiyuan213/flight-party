@@ -1,4 +1,6 @@
 > **状态说明（2026-11-15）**：本文件记录 2026-10-31 的 UI 预览阶段规格，已被后续用户指令覆盖，仅作历史归档。当前真实范围（账号、服务端联机、结算、成绩持久化、排行榜／胜率榜、部署）见 `AGENTS.md` 顶部 "Current scope"。文中「必须标注本地预览 / Preview」只适用于 `dist/social-ui.js` 的降级预览路径；`dist/app.js` 的 `bindLiveRooms` / `bindLiveAccount` / `bindQuickMatch` 才是对外行为，真实服务不需要「预览」标注。
+>
+> **当前计分规则（2026-11-15，以服务端实现为准）**：所有在开局时已绑定账号的完整对局，**每局自动记录一次**积分与完成局数，正负分都计入；匿名对局与 `hosted_at_end` 托管席位不写任何结果。**没有「每日首局才记录」，也没有「会员才无限记录」的差异** —— `AGENTS.md` 中那条 `Latest score-recording override` 是阶段性历史覆盖，已被本文件 2026-11-01「取消每日一次及会员无限记录的差异」取代（见下文第 12 行）。客户端不接受分数提交，服务端权威、结算幂等；`dist/game-points.js` 的 `DAILY_CAP=5000` 只是客户端 Joy Coins 钱包的每日积分上限，与战绩记录次数是两套机制。依据：`backend/src/main/java/com/flightparty/stats/SettlementService.java` 的 `settle()` 对每个非托管、有账号的席位无条件写 `score_recording_decisions` / `account_match_results` / `account_statistics`。
 
 ## 2026-11-01 UI38 当前覆盖：可对局的金翼领航
 用户批准一款2D会员飞机，替换并删除UI37的三款3D飞机。主页、机库和默认插画对局使用同一张透明PNG，保留动态螺旋桨、机身1/2编号、镜像、跳格、碰撞和投影阴影。房间公开planeStyle由服务端真实会员资格与账号选择产生；旧gold/sapphire/night选择对外兼容到gold2d，到期回到经典飞机，原选择保留。原三款模型、GLB、导出脚本与专用测试页已删除；下方UI37文字仅为历史。

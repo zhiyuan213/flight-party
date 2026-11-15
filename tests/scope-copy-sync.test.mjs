@@ -49,3 +49,19 @@ test('the demo footnote only shows while sample rows are actually on the board',
     'the rebuilt refresh logic is cache-busted');
   assert.match(tableHtml, /月胜率榜/, 'the win-rate board itself is unchanged');
 });
+
+/* 18:36 review of 7b06ed8: three stale statements were still able to make a
+   reader block a release (UI preview scope, daily-first-game recording, and
+   "SSH key still locked"). Guard the corrected wording. */
+test('the 18:36 corrections remove the last stale scope claims', () => {
+  assert.ok(!agents.includes('The current v0.7.2 scope is UI preview'));
+  assert.match(agents, /Historical visual baseline \(v0\.7\.2\)/);
+  assert.match(agents, /Historical score-recording override/);
+  assert.match(agents, /no "first game per day" limit/);
+  assert.match(contract, /当前计分规则（2026-11-15/);
+  assert.match(contract, /SettlementService\.java/);
+  const handoff = read('docs/HANDOFF.md');
+  assert.ok(!handoff.includes('SSH 私钥仍需解锁'));
+  assert.match(handoff, /ubuntu` 账号 \+ 现有密钥直连/);
+  assert.match(handoff, /sudo` 可用/);
+});
