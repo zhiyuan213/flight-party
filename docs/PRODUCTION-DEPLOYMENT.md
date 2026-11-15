@@ -2,7 +2,7 @@
 
 更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
-当前最近一次应用发布为 `8f3e6fe`：首页链接、统一指针和等待房间会员徽章静态修正已上线，两个域名各完成 32/32 文件校验。后端仍为 `deploy-backend:9cc07b8`，数据库 V25。本次静态回滚包位于 `/opt/joyflock/releases/home-pointer-8f3e6fe/static.before.tgz`；数据备份位于 `/opt/joyflock/backups/20261115T120652Z`。根路由配置沿用 `599991e`，其 nginx 备份仍在 `/opt/joyflock/releases/root-locale-599991e/nginx.before.conf`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
+当前最近一次应用发布为 `e2a1086`：游戏首屏语言就绪后显示，会员加载状态使用占位。两个域名各完成 4/4 文件校验，完整测试 968/968。后端仍为 `deploy-backend:9cc07b8`，数据库 V25。本次静态回滚包位于 `/opt/joyflock/releases/firstpaint-e2a1086/static.before.tgz`；数据备份位于 `/opt/joyflock/backups/20261115T123319Z`。根路由配置沿用 `599991e`，其 nginx 备份仍在 `/opt/joyflock/releases/root-locale-599991e/nginx.before.conf`。这些是本次发布事实，不是未来发布应复用的版本号或目录。
 
 ## 环境与连接
 
