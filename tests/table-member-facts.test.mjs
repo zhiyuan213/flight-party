@@ -43,7 +43,7 @@ test('the first frame no longer ships sample account figures', () => {
   for (const key of ['tier', 'points', 'games', 'winrate']) {
     assert.match(facts, new RegExp(`data-member-fact="${key}"`), `${key} must be addressable`);
   }
-  assert.match(facts, /data-member-fact="tier"[^>]*>未开通</);
+  assert.match(facts, /data-member-fact="tier"[^>]*>—</);
   assert.match(facts, /data-member-fact="points"[^>]*>0</);
   assert.match(facts, /data-member-fact="games"[^>]*>0</);
   assert.match(facts, /data-member-fact="winrate"[^>]*>0%</);
@@ -52,14 +52,14 @@ test('the first frame no longer ships sample account figures', () => {
   }
 });
 
-test('the painter defaults to zeros for a guest with no session', () => {
+test('the painter keeps membership neutral until the session is resolved', () => {
   const {api, nodes} = loadPainter(null);
   api.paint();
-  assert.equal(nodes.tier.textContent, '未开通');
+  assert.equal(nodes.tier.textContent, '—');
   assert.equal(nodes.points.textContent, '0');
   assert.equal(nodes.games.textContent, '0');
   assert.equal(nodes.winrate.textContent, '0%');
-  assert.equal(nodes.tier.dataset.systemEnglish, '未开通');
+  assert.equal(nodes.tier.dataset.systemEnglish, '—');
 });
 
 test('a signed-in annual member sees the real per-game statistics', () => {

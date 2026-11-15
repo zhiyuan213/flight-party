@@ -131,7 +131,9 @@ function english(value) {
 // Translate interface nodes only. Keep account names and chat messages as entered.
 export function tableLabel(text){return document.documentElement.lang==='en'?english(text):text;}
 
+let boundLocale;
 export function bindTableLocale(){
+  if(boundLocale)return boundLocale;
   const originals=new WeakMap();
   let locale=document.documentElement.getAttribute('data-locale')==='en'?'en':'zh';
   const apply=()=>{
@@ -169,7 +171,7 @@ export function bindTableLocale(){
   apply();
   observer.observe(document.body,{subtree:true,childList:true,characterData:true});
   document.documentElement.removeAttribute('data-translating');
-  return value=>{
+  return boundLocale=value=>{
     locale=value;
     document.documentElement.setAttribute('data-locale',locale);
     document.documentElement.lang=locale==='en'?'en':'zh-CN';

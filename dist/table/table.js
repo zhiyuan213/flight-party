@@ -159,7 +159,7 @@ function paintMemberFacts(){
     that have not loaded it. */const local=globalThis.__joyflockGamePoints?.get?.();
  if(local&&local.games)memberStats={points:local.points,completedGames:local.games,winRate:local.winRate};
  const en=document.documentElement.lang==='en';
- const tier=me?.appearance?.annualMember?(en?'Annual VIP':'年度 VIP')
+ const tier=me===null?'—':me?.appearance?.annualMember?(en?'Annual VIP':'年度 VIP')
   :me?.appearance?.member?(en?'VIP':'会员'):(en?'Not a member':'未开通');
  const set=(key,text)=>{const node=box.querySelector('[data-member-fact="'+key+'"]');if(!node)return;node.textContent=text;node.dataset.systemEnglish=text;};
  set('tier',tier);
@@ -551,7 +551,7 @@ window.addEventListener('joyflock:cosmetics-changed',()=>{render();syncRoomCosme
 render();init().then(()=>{if(params.get('room'))enter('FRIENDS',params.get('room'));}).catch(()=>{$('message').textContent='联机服务暂不可用，仍可单机游玩。';});
 
 import {bindPortalControls} from '../portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1';
-import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-localefix1';
+import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-firstpaint1';
 const applyTableLocale=bindTableLocale();
 arcade?.refresh?.();
 bindPortalControls({onLocale:locale=>{applyTableLocale(locale);paintMemberFacts();if($('stats').dataset.demo==='1')$('stats').textContent=globalThis.__joyflockDemoStats?globalThis.__joyflockDemoStats(locale):'';else refreshStats();arcade?.refresh?.();render();}});
