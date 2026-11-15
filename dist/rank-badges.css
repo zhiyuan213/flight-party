@@ -64,3 +64,68 @@ body.table-home-theme #leaderboard .member-label.annual,
 [data-member="true"][data-annual-member="true"]::after{
   background-image:url('/assets/member/annual-vip-laurel-v3.png');
 }
+
+/* Portrait frames follow the artwork, not the medal.
+   Every shipped avatar is a rounded-SQUARE peach face on a transparent 256px
+   canvas (rect x=16 y=16 w=224 h=224 rx=27 fill=#F3D2AD). The old 50% ring
+   left four dark crescents around that face, so both standings now use the
+   same soft-square frame as the shop cards: the transparent margin is filled
+   with the artwork's peach and the white / VIP gold border follows a square
+   with rounded corners. A percentage radius keeps the shape at every size
+   (29px mobile -> 45px desktop) without another breakpoint. */
+body.table-home-theme #leaderboard .seat-avatar,
+.leaderboard-avatar{
+  border-radius:22%;
+  background-color:#F3D2AD;
+}
+/* The gold / cloud / night crest is a circular VIP ornament that surrounds
+   the portrait. Keep its inner portrait round so the crest still fits;
+   ordinary rows all share the square frame above. */
+.leaderboard-avatar[data-frame="gold"],
+.leaderboard-avatar[data-frame="cloud"],
+.leaderboard-avatar[data-frame="night"]{
+  border-radius:50%;
+}
+
+/* Flight Party play screen and lobby (2026-11-15).
+   visual-v2.css still gives .player-avatar / .seat-avatar a 50% circle, which
+   clips the rounded-SQUARE peach artwork and exposes --seat as four coloured
+   crescents. Use the same 22% soft square + peach fill as both standings
+   boards. The #players / #seat-grid IDs are unique to this page, so the table
+   games' own seat frames and round VIP crests stay untouched. */
+#players .player-avatar,
+#seat-grid .seat-avatar{
+  border-radius:22%;
+  background-color:#F3D2AD;
+}
+#players .player-avatar[data-frame="gold"],
+#players .player-avatar[data-frame="cloud"],
+#players .player-avatar[data-frame="night"]{
+  border-radius:50%;
+}
+
+/* ---------------------------------------------------------------------------
+   No circular portrait frames anywhere (2026-11-15 13:48).
+   Every shipped avatar is a rounded-SQUARE peach face on a transparent 256px
+   canvas, so a 50% ring always clipped the corners into four dark crescents.
+   The room "ready" dialog, the in-game player panel, the standings, the
+   account / appearance previews and the Flight Party portraits all share
+   this one 22% soft square. Purely circular UI (close buttons, counters,
+   medals, status dots) is deliberately untouched. The circular VIP crest
+   keeps its round inner portrait below so the ornament still fits.
+   --------------------------------------------------------------------------- */
+.seat-avatar,
+.account-button-avatar,
+.account-dialog-avatar,
+.room-seat-avatar,
+.appearance-preview,
+.result-avatar,
+.victory-portrait,
+.header-account-avatar,
+.system-avatar-image,
+.reaction-avatar,
+.pool-matchup .seat-avatar,
+.snooker-matchup .seat-avatar{
+  border-radius:22%;
+  background-color:#F3D2AD;
+}

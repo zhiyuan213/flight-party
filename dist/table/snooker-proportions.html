@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>斯诺克球桌比例 · 袋口 / 球 / 台面</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1">
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 28px 44px;background:radial-gradient(1200px 620px at 50% -10%,#1c2942,#080e1a 70%);color:#dbe7f7;font:14px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+  h1{font-size:21px;margin:0 0 6px}
+  h2{font-size:15px;margin:22px 0 8px;color:#cfe0f8}
+  p.lead{max-width:1100px;color:#93a9c6;margin:0 0 18px}
+  .panel{max-width:1500px;background:#0e192bd0;border:1px solid #263b5c;border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card{background:#0b1424;border:1px solid #243653;border-radius:12px;padding:12px}
+  .card h3{margin:0 0 4px;font-size:14px;color:#f0cf88}
+  .card p{margin:0 0 10px;font-size:12px;color:#8fa5c2}
+  canvas{display:block;width:100%;height:auto;border-radius:8px;background:#05090f}
+  .zoom{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin:4px 0 14px}
+  label{display:inline-flex;align-items:center;gap:9px;color:#b9cbe3}
+  input[type=range]{width:260px;accent-color:#e0b56c}
+  output{font-variant-numeric:tabular-nums;color:#f0cf88;font-weight:700;min-width:52px}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{padding:7px 10px;border-bottom:1px solid #22334e;text-align:left}
+  th{color:#8fa5c2;font-weight:600}
+  td.num{font-variant-numeric:tabular-nums}
+  .good{color:#9fe1b4}.bad{color:#ff9a8a}.muted{color:#7f94b2}
+  code{color:#e5c98c}
+  footer{max-width:1100px;margin-top:16px;color:#7f94b2;font-size:12px}
+  @media(max-width:900px){.grid,.zoom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>斯诺克球桌比例</h1>
+<p class="lead">把台面 / 球直径 / 袋口宽度换算到同一比例：台面固定 1000 × 500（真实斯诺克 3569 × 1778 mm，2:1），球半径 <b>11</b>（直径 <b>22</b>）。2026-11-13 按「球有点小了，增加 4px」把屏幕球径从约 12px 放大到约 16px，半径由 8 改为 11 单位，红球堆间距等比摊开。台面按参考样式绘制：暖色木纹框、带弧形收口与立体内壁的袋口、有阴影的绿库边；下方左图放大袋口作对照，右图是当前值，拖动滑块测试中间袋口。</p>
+
+<div class="panel">
+  <div class="toolbar">
+    <label>袋口比例 <input id="scale" type="range" min="0.35" max="1" step="0.01" value="0.5"><output id="scaleValue">0.50</output></label>
+    <span class="muted">1.00 = 放大对照 · 0.50 = 当前斯诺克</span>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>对照：大袋口</h3><p>袋口 约 68 单位，球直径 22 单位</p><canvas id="before"></canvas></div>
+    <div class="card"><h3>当前：参考样式</h3><p id="afterNote">袋口 约 34 单位，球直径 22 单位</p><canvas id="after"></canvas></div>
+  </div>
+  <h2>袋口特写（同一颗红球靠近袋口）</h2>
+  <div class="zoom">
+    <div class="card"><h3>大袋口</h3><canvas id="beforeZoom"></canvas></div>
+    <div class="card"><h3>当前</h3><canvas id="afterZoom"></canvas></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>真实规格与当前渲染</h2>
+  <table>
+    <thead><tr><th>项目</th><th>斯诺克（真实）</th><th>美式九球（真实）</th><th>当前斯诺克渲染</th><th>建议渲染</th></tr></thead>
+    <tbody>
+      <tr><td>台面（库边内沿）</td><td class="num">3569 × 1778 mm（2.01:1）</td><td class="num">2540 × 1270 mm（2:1）</td><td class="num">1000 × 500</td><td class="num good">不变</td></tr>
+      <tr><td>球直径</td><td class="num">52.5 mm</td><td class="num">57.15 mm</td><td class="num">22 单位</td><td class="num good">11-13 放大 +4px</td></tr>
+      <tr><td>球径 / 台面</td><td class="num">2.95%</td><td class="num">4.50%</td><td class="num good">4.40%</td><td class="num good">11-13 放大</td></tr>
+      <tr><td>袋口直径</td><td class="num">85 mm / 约 100 mm</td><td class="num">约 114 mm / 约 127 mm</td><td class="num good" id="currentMouth">约 34 单位</td><td class="num good" id="targetMouth">约 34 单位</td></tr>
+      <tr><td>袋口 / 台面</td><td class="num">4.8% / 5.6%</td><td class="num">9.0% / 10.0%</td><td class="num good" id="currentPercent">6.8%</td><td class="num good" id="targetPercent">6.8%</td></tr>
+      <tr><td>袋口 / 球径</td><td class="num">1.62× / 1.90×</td><td class="num">2.00× / 2.22×</td><td class="num good" id="currentRatio">1.55×</td><td class="num good" id="targetRatio">1.55×</td></tr>
+      <tr><td>木质宽度 / 台面</td><td class="num">约 5.0%</td><td class="num">约 14%</td><td class="num">约 9.8%（69 单位，木纹）</td><td class="num good">不变</td></tr>
+    </tbody>
+  </table>
+  <p class="muted" style="margin-top:12px">原结论（11-10）：2:1 台面与球的大小按真实比例缩小就是对的，袋口按参考图改成纯黑圆形（直径 34 单位），去掉护角、袋井与珍珠瞄点。<b>11-13 更新</b>：用户觉得球偏小，按屏幕球径 +4px 把半径 8 改为 11 单位、球堆间距等比摊开；袋口保持 34 单位不变，因此袋口 / 球径从 2.13× 变为 1.55×，入口净空实测约 14.8 单位仍大于新半径 11，进球判定与库边几何不变。</p>
+</div>
+
+<footer>此页为表现层参照：<code>makeSnookerTable(ctx,{pocketScale:q})</code>。物理判定 <code>pocketIndex()</code>、Java 镜像 <code>PoolGeometry</code>、击球指令与回放帧格式均不变，因此单机与房间模式的进球判定保持一致。斯诺克与娱乐台球的其他区别还包括：绿呢 + 木纹框、开球线/D 区与六个彩球点、22 颗纯色球、无号码、纯黑圆形袋口与无珍珠瞄点；美式九球则是蓝呢 + 金属框、菱形瞄点、带号码的条纹/全色球和带护角的宽袋口。</footer>
+
+<script type="module">
+import {TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './pool-table.js?v=20261112-gamelanes1';
+import {makeSnookerTable} from './snooker-table.js?v=20261114-pocketdepth1';
+import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
+import {startSnooker,colours,radius} from './snooker.js?v=20261110-dotblack1';
+
+const W=TABLE_WIDTH,H=TABLE_HEIGHT,PAD=TABLE_PAD,S=2;
+const source=startSnooker().cells.slice();
+// One demo red just below the top middle pocket, so the crop shows ball vs mouth.
+source[7*3]=5000;source[7*3+1]=260;source[7*3+2]=1;
+const colourOf=id=>id===0?0:id<=6?id+1:1;
+
+function build(q){
+  const off=document.createElement('canvas');off.width=W*S;off.height=H*S;
+  const c=off.getContext('2d');c.scale(S,S);
+  makeSnookerTable(c,{pocketScale:q});
+  c.save();c.translate(PAD,PAD);
+  for(let i=0;i<22;i++)if(source[i*3+2])
+    drawPoolBall(c,colourOf(i),source[i*3]/10,source[i*3+1]/10,radius,0,0,null,
+      {x:500,y:240},{plain:true,palette:colours});
+  c.restore();
+  return off;
+}
+function show(canvas,off,crop){
+  // The crop keeps its own 2x oversampling so the enlarged pocket stays sharp.
+  canvas.width=crop?crop.w*S*2:W*S;canvas.height=crop?crop.h*S*2:H*S;
+  const c=canvas.getContext('2d');
+  if(!crop){c.drawImage(off,0,0);return;}
+  c.imageSmoothingEnabled=true;
+  c.drawImage(off,crop.x*S,crop.y*S,crop.w*S,crop.h*S,0,0,canvas.width,canvas.height);
+}
+const crop={x:PAD+420,y:PAD-72,w:160,h:150};
+const before=build(1),beforeFull=document.querySelector('#before'),beforeZoom=document.querySelector('#beforeZoom');
+show(beforeFull,before);show(beforeZoom,before,crop);
+
+const slider=document.querySelector('#scale'),out=document.querySelector('#scaleValue');
+function update(){
+  const q=Number(slider.value);out.textContent=q.toFixed(2);
+  const off=build(q);
+  show(document.querySelector('#after'),off);
+  show(document.querySelector('#afterZoom'),off,crop);
+  const diameter=68*q,ballDiameter=radius*2;
+  document.querySelector('#afterNote').textContent=`袋口 约 ${Math.round(diameter)} 单位，球直径 ${ballDiameter} 单位`;
+  document.querySelector('#targetMouth').textContent=`约 ${Math.round(diameter)} 单位`;
+  document.querySelector('#targetPercent').textContent=`${(diameter/500*100).toFixed(1)}%`;
+  document.querySelector('#targetRatio').textContent=`${(diameter/ballDiameter).toFixed(2)}×`;
+}
+slider.oninput=update;update();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" data-cursor-tier="legend"><style>
+.badge-motion{transform-box:fill-box;transform-origin:center;animation:badge-gem 3.2s ease-in-out infinite}
+
+.arrow-shift{animation:arrow-colour 5s ease-in-out infinite}.arrow-glint{animation:arrow-glint 4.8s ease-in-out infinite}.badge-spark{animation:spark 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes badge-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+@keyframes badge-turn{to{transform:rotate(360deg)}}
+@keyframes badge-gem{0%,100%{transform:rotate(-8deg) scale(.95)}50%{transform:rotate(8deg) scale(1.05)}}
+@keyframes badge-orbit{to{transform:rotate(360deg)}}
+@keyframes badge-beat{0%,100%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}40%{transform:scale(1.08)}}
+@keyframes badge-flap{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.72)}}
+@keyframes badge-nova{0%,100%{transform:rotate(0) scale(.82)}50%{transform:rotate(22deg) scale(1.12)}}
+@keyframes arrow-colour{0%,100%{stop-color:#d9c8f7}50%{stop-color:#f2e9ff}}
+@keyframes arrow-glint{0%,15%{transform:translate(-22px,0);opacity:0}25%{opacity:.95}62%{transform:translate(22px,0);opacity:0}100%{transform:translate(22px,0);opacity:0}}
+@keyframes spark{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.arrow-glint{display:none}}
+</style><defs><linearGradient id="arrowGradient" x1="0" y1="0" x2="1" y2="1"><stop class="arrow-shift" offset="0" stop-color="#d9c8f7"/><stop offset="1" stop-color="#ab8be8"/></linearGradient><clipPath id="arrowClip"><path d="M3 2 L3 24 L9.3 18.6 L13.4 28.2 L17.6 26.4 L13.6 17.4 L22.2 17.5 Z" fill="#fff" /></clipPath></defs><path d="M3 2 L3 24 L9.3 18.6 L13.4 28.2 L17.6 26.4 L13.6 17.4 L22.2 17.5 Z" fill="url(#arrowGradient)" stroke="#17283e" stroke-width="1.35" stroke-linejoin="round" class="cursor-arrow" data-base-fill="#ab8be8"/></svg>

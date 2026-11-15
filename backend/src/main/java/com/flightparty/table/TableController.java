@@ -15,6 +15,8 @@ public class TableController {
  public record Sketch(UUID commandId,long version,String action,String text,java.util.List<Integer> points){}
  @PostMapping("/rooms/{id}/sketch") public TableService.View sketch(@PathVariable UUID id,@RequestBody Sketch input,HttpServletRequest r){return service.sketch(id,input.commandId(),input.version(),input.action(),input.text(),input.points(),r);}
  public record Create(String game,String mode){} public record Move(UUID commandId,long version,int position){}
+ public record Cosmetics(String pieceId,String boardId){}
+ @PostMapping("/rooms/{id}/cosmetics") public TableService.View cosmetics(@PathVariable UUID id,@RequestBody Cosmetics input,HttpServletRequest r){return service.cosmetics(id,input.pieceId(),input.boardId(),r);}
  @GetMapping("/leaderboards/{game}") public java.util.List<TableService.Ranking> board(@PathVariable String game,@RequestParam(defaultValue="month") String period){return service.leaderboard(game,period);}
  @GetMapping("/stats/{game}") public TableService.Statistics stats(@PathVariable String game,HttpServletRequest r){return service.statistics(game,r);}
  @PostMapping("/rooms") public TableService.View create(@RequestBody Create input,HttpServletRequest r){return service.create(input.game(),input.mode(),r);}
@@ -24,4 +26,9 @@ public class TableController {
  @PostMapping("/rooms/{id}/ready") public TableService.View ready(@PathVariable UUID id,HttpServletRequest r){return service.ready(id,r);}
  @PostMapping("/rooms/{id}/rematch") public TableService.View rematch(@PathVariable UUID id,HttpServletRequest r){return service.rematch(id,r);}
  @PostMapping("/rooms/{id}/leave") public void leave(@PathVariable UUID id,HttpServletRequest r){service.leave(id,r);}
+ /* Explicit presence: a fresh page load / "在线对决" click / pointer or key
+    event. Polling GET /rooms/{id} is deliberately not presence. `reason=resume`
+    also grants a fresh 30s turn clock to an already-active returning player. */
+ public record Activity(String reason){}
+ @PostMapping("/rooms/{id}/activity") public TableService.View activity(@PathVariable UUID id,@RequestBody(required=false) Activity input,HttpServletRequest r){return service.activity(id,input!=null&&"resume".equals(input.reason()),r);}
 }

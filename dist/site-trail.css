@@ -1,0 +1,39 @@
+/* JoyFlock flight-trail shop — three standalone trail products.
+   The canvas is drawn by site-trail-fx.js. Aircraft cards and the hangar
+   keep their own renderer and NEVER show a bundled trail. */
+
+.trail-fx-canvas{display:block;width:100%;height:100%}
+.shop-trail-stage{position:relative;display:block;width:100%;height:100%;overflow:hidden;pointer-events:none}
+
+/* Trail cards use the SAME six-column shared grid and the same 98px artwork
+   box as every other section; three products simply fill the first three
+   cells of their row instead of stretching to a narrower custom grid. */
+.shop-card--trail{padding:30px 6px 10px}
+.shop-card--trail .shop-trail-stage{height:98px;flex:none}
+.shop-buy-art .shop-trail-stage--dialog{height:146px;flex:none}
+
+/* The current-loadout strip shows a small swatch of the equipped trail. */
+.shop-current-trail{
+  display:inline-block;width:36px;height:12px;flex:none;border-radius:6px;
+  background:linear-gradient(90deg,rgba(255,207,54,.05),#ffcf36);
+}
+.shop-current-trail[data-trail-dot="rainbow"]{
+  background:linear-gradient(90deg,rgba(255,54,93,.08),#ff8a24,#ffd633,#23d990,#25baf5,#426bff,#9950f5);
+}
+.shop-current-trail[data-trail-dot="cloud"]{
+  background:linear-gradient(90deg,rgba(168,205,231,.05),#e8f6ff,#fff);
+}
+/* Free 默认 baseline: no trail at all. A dashed placeholder stands in for
+   the effect in the card preview, and the loadout swatch is an empty outline. */
+.shop-trail-stage[data-trail-style="none"]::after{
+  content:"";position:absolute;left:7%;right:30%;top:52%;
+  border-top:2px dashed #7f92b866;pointer-events:none;
+}
+.shop-current-trail[data-trail-dot=""]{
+  background:none;border:1px dashed #7f92b888;
+}
+
+@media(max-width:520px){
+  .shop-card--trail .shop-trail-stage{height:84px}
+  .shop-buy-art .shop-trail-stage--dialog{height:112px}
+}

@@ -1,6 +1,9 @@
-export const safeAvatar=url=>typeof url==='string'&&/^\/api\/avatars\/(?:system\/[0-3]|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(url)?url:null;
-export const avatarStyle=url=>safeAvatar(url)?`style="background-image:url('${url}');background-size:cover;background-position:center"`:'';
-export function applyAvatar(node,url){if(!node?.style)return;const valid=safeAvatar(url);node.style.backgroundImage=valid?`url('${valid}')`:'';node.style.backgroundSize=valid?'cover':'';node.style.backgroundPosition=valid?'center':'';}
+import './avatar-display.js?v=20261114-avatar5';
+export const safeAvatar=url=>globalThis.__joyflockAvatarDisplay.safe(url);
+export const resolveAvatar=profile=>globalThis.__joyflockAvatarDisplay.resolve(profile);
+export const createAvatar=(doc,profile)=>globalThis.__joyflockAvatarDisplay.create(doc,profile);
+export const avatarStyle=profile=>`style="background-image:url('${resolveAvatar(profile)}');background-size:cover;background-position:center"`;
+export function applyAvatar(node,profile){if(!node?.style)return;node.style.backgroundImage=`url('${resolveAvatar(profile)}')`;node.style.backgroundSize='cover';node.style.backgroundPosition='center';}
 export async function prepareAvatar(file){
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)throw new Error('format');
  const image=await createImageBitmap(file);try{if(image.width>4096||image.height>4096||image.width*image.height>16000000)throw new Error('dimensions');

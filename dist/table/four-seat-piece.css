@@ -1,0 +1,77 @@
+body.connect-four-game .seat .seat-copy{flex:1;min-width:0}
+body.connect-four-game .four-seat-piece{
+  position:relative;display:block;flex:0 0 42px;width:42px;height:42px;
+  border-radius:50%;margin-left:auto;
+  box-shadow:var(--fp-coin-shadow,var(--four-coin-shadow));
+}
+body.connect-four-game .four-seat-piece[data-player="1"]{background:var(--four-one)}
+body.connect-four-game .four-seat-piece[data-player="2"]{background:var(--four-two)}
+body.connect-four-game:not(.four-themed) .four-seat-piece[data-cosmetic-piece]::before{
+  content:'';position:absolute;inset:22%;border-radius:50%;
+  background:var(--personal-emblem) center/contain no-repeat;
+  box-shadow:0 1px 2px #0008;
+}
+body.connect-four-game.four-themed .four-seat-piece::before{
+  content:'';position:absolute;inset:12%;background:center/76% 76% no-repeat;
+}
+body.connect-four-game.four-themed .four-seat-piece[data-player="1"]::before{
+  background-image:var(--fp-face-1);opacity:var(--fp-face-op1,.8);
+}
+body.connect-four-game.four-themed .four-seat-piece[data-player="2"]::before{
+  background-image:var(--fp-face-2);opacity:var(--fp-face-op2,.8);
+}
+
+/* ---------------------------------------------------------------------------
+   Tic-tac-toe uses the same seat-badge slot, but with the X / O silhouettes
+   the board actually draws. Seat 1 is the blue X, seat 2 the pink O; an
+   equipped themed piece replaces the silhouette with --personal-mark, exactly
+   as game-cosmetics.css does for the cells of #board.xo. The badge sits on the
+   RIGHT of the card; the smiley avatar stays on the left.
+   --------------------------------------------------------------------------- */
+body.xo-game .seat .seat-copy{flex:1;min-width:0}
+body.xo-game .four-seat-piece{
+  position:relative;display:block;flex:0 0 42px;width:42px;height:42px;
+  margin-left:auto;
+}
+body.xo-game .four-seat-piece::before{
+  content:'';position:absolute;inset:8%;
+  background:#73caff;
+  clip-path:polygon(0 12%,12% 0,50% 38%,88% 0,100% 12%,62% 50%,100% 88%,88% 100%,50% 62%,12% 100%,0 88%,38% 50%);
+  filter:drop-shadow(0 2px 3px #0008);
+}
+body.xo-game .four-seat-piece[data-player="2"]::before{
+  background:#ff9aaa;clip-path:none;border-radius:50%;
+  mask:radial-gradient(circle closest-side,transparent 72%,#000 73%);
+  -webkit-mask:radial-gradient(circle closest-side,transparent 72%,#000 73%);
+}
+body.xo-game .four-seat-piece[data-cosmetic-piece]::before{
+  background:var(--personal-mark) center/contain no-repeat;
+  clip-path:none;mask:none;-webkit-mask:none;border-radius:0;
+  filter:drop-shadow(0 2px 2px #0007);
+}
+@media(max-width:520px){
+  body.xo-game .four-seat-piece{flex:0 0 34px;width:34px;height:34px}
+}
+
+/* ---------------------------------------------------------------------------
+   Gomoku uses the same right-hand seat badge as Connect Four, but shows each
+   seat's stone: seat 1 is black, seat 2 is white. An equipped themed piece
+   replaces the whole stone body with the shop's themed stone (--personal-stone,
+   set by four-seat-piece.js from the same stoneSvg() the Canvas board draws).
+   --------------------------------------------------------------------------- */
+body.gomoku-game .seat .seat-copy{flex:1;min-width:0}
+body.gomoku-game .four-seat-piece{
+  position:relative;display:block;flex:0 0 42px;width:42px;height:42px;
+  border-radius:50%;margin-left:auto;
+  box-shadow:inset 0 1px 1px #ffffff88,inset 0 -3px 4px #0006,0 2px 4px #0007;
+}
+body.gomoku-game .four-seat-piece[data-player="1"]{
+  background:radial-gradient(circle at 32% 27%,#555653 0%,#30312f 48%,#171918 78%,#0c0e0d 100%);
+}
+body.gomoku-game .four-seat-piece[data-player="2"]{
+  background:radial-gradient(circle at 32% 27%,#ffffff 0%,#f8f4ea 42%,#e4dbc9 76%,#b7ab96 100%);
+}
+body.gomoku-game .four-seat-piece[data-cosmetic-piece]{
+  background-image:var(--personal-stone);
+  background-size:cover;background-position:center;
+}

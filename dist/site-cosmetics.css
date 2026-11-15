@@ -1,0 +1,300 @@
+/* JoyFlock board-game cosmetics — ONE colour source shared by the shop card
+   previews and the four board games. Three purchasable themes: neon (Rare),
+   jade (Epic), aurora (Legendary), plus the neutral `default` palette used
+   ONLY to draw the free baseline card. Equipping a baseline publishes no
+   attribute at all, so the games keep their original artwork. The FOUR board
+   games own INDEPENDENT products and equip slots; a palette is shared but a
+   product never is. Each game draws its OWN silhouette in the shop preview
+   (counters / stones / chessmen / X-O) and arbitrates its OWN shared board.
+   A piece theme changes only the owner's stones in THAT game.
+
+   `data-cosmetic` / `data-cosmetic-piece` = piece palette (shop card / game).
+   `data-cosmetic-board` = winner of the shared-board arbitration.
+   Keeping the variables here means the shop preview is the exact same artwork
+   the match renders; neither page needs a second colour table. */
+
+/* ---------------------------------------------------------- piece themes */
+[data-cosmetic="neon"],[data-cosmetic-piece="neon"]{
+  --cos-p1:#4de2ff;--cos-p1-hi:#dcfbff;--cos-p1-lo:#0b6f9c;
+  --cos-p1-edge:#bff4ff;--cos-p1-deep:#062f4a;--cos-glow:#4de2ff88;
+}
+[data-cosmetic="jade"],[data-cosmetic-piece="jade"]{
+  --cos-p1:#4be3a3;--cos-p1-hi:#e0fff2;--cos-p1-lo:#12664a;
+  --cos-p1-edge:#c6ffe4;--cos-p1-deep:#08382a;--cos-glow:#4be3a388;
+}
+[data-cosmetic="aurora"],[data-cosmetic-piece="aurora"]{
+  --cos-p1:#c79bff;--cos-p1-hi:#f4e8ff;--cos-p1-lo:#5b2f9e;
+  --cos-p1-edge:#e7d2ff;--cos-p1-deep:#2c1452;--cos-glow:#c79bff99;
+}
+/* Free 默认 baseline. These palettes dress ONLY the shop card preview:
+   equipping a default publishes NO skin, so the games keep their original
+   authored artwork. */
+[data-cosmetic="default"],[data-cosmetic-piece="default"]{
+  --cos-p1:#dfe7f7;--cos-p1-hi:#ffffff;--cos-p1-lo:#7285a8;
+  --cos-p1-edge:#ffffff;--cos-p1-deep:#2b3752;--cos-glow:#ffffff33;
+}
+
+/* ---------------------------------------------------------- board themes */
+[data-cosmetic-board="neon"]{
+  --cos-board:#131a3d;--cos-board-2:#243672;--cos-rim:#6f8cff;
+  --cos-line:#4de2ff;--cos-light:#b6d9ec;--cos-dark:#27465f;
+  --cos-wood-a:#243672;--cos-wood-b:#131a3d;--cos-wood-c:#0b1130;
+}
+[data-cosmetic-board="jade"]{
+  --cos-board:#0f332c;--cos-board-2:#1a5545;--cos-rim:#d9b45c;
+  --cos-line:#7fe0b8;--cos-light:#c5dcc6;--cos-dark:#28604e;
+  --cos-wood-a:#2b6a52;--cos-wood-b:#124234;--cos-wood-c:#08251d;
+}
+[data-cosmetic-board="coral"]{
+  --cos-board:#341820;--cos-board-2:#54222e;--cos-rim:#ef9d80;
+  --cos-line:#ffd9c4;--cos-light:#f6d8cd;--cos-dark:#c37e72;
+  --cos-wood-a:#54222e;--cos-wood-b:#341820;--cos-wood-c:#1f0d13;
+}
+[data-cosmetic-board="pearl"]{
+  --cos-board:#141d2c;--cos-board-2:#27354c;--cos-rim:#cdb98f;
+  --cos-line:#fff1d6;--cos-light:#f2ebdd;--cos-dark:#a3b3c8;
+  --cos-wood-a:#27354c;--cos-wood-b:#141d2c;--cos-wood-c:#0c1220;
+}
+[data-cosmetic-board="aurora"]{
+  --cos-board:#241544;--cos-board-2:#432771;--cos-rim:#ffd479;
+  --cos-line:#d3a8ff;--cos-light:#ddd2ec;--cos-dark:#51416f;
+  --cos-wood-a:#4a2b80;--cos-wood-b:#29164f;--cos-wood-c:#160c2c;
+}
+[data-cosmetic-board="default"]{
+  --cos-board:#1b2a3f;--cos-board-2:#334b6b;--cos-rim:#8ea3c7;
+  --cos-line:#ffffff26;--cos-light:#3f5573;--cos-dark:#101a2b;
+  --cos-wood-a:#334b6b;--cos-wood-b:#1b2a3f;--cos-wood-c:#0d1626;
+}
+
+/* ------------------------------------------------------- shop card preview */
+/* The cosmetic preview occupies the same 98px artwork box as every other
+   card, so all six sections keep identical card heights. */
+.shop-cosmetic-art{
+  position:relative;display:block;width:76%;max-width:110px;height:98px;flex:none;
+  border:1px solid var(--cos-rim);border-radius:12px;overflow:hidden;
+  background:linear-gradient(150deg,var(--cos-board-2),var(--cos-board));
+  box-shadow:0 6px 14px #0008,inset 0 1px 0 #ffffff1f;
+}
+.shop-cosmetic-art .cos-board{
+  position:absolute;inset:9px;border-radius:7px;opacity:.42;
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 11px,var(--cos-line) 11px 12px),
+    repeating-linear-gradient(90deg,transparent 0 11px,var(--cos-line) 11px 12px);
+}
+.shop-cosmetic-art .cos-p1,.shop-cosmetic-art .cos-p2{
+  position:absolute;bottom:11px;width:36px;height:36px;border-radius:50%;
+  background:radial-gradient(circle at 32% 26%,var(--cos-p1-hi),var(--cos-p1) 45%,var(--cos-p1-lo));
+  box-shadow:0 0 13px var(--cos-glow),inset 0 2px 3px #ffffff88,0 3px 7px #0009;
+}
+.shop-cosmetic-art .cos-p1{left:14%}
+.shop-cosmetic-art .cos-p2{
+  right:14%;width:27px;height:27px;bottom:15px;opacity:.92;
+  background:radial-gradient(circle at 32% 26%,#ffffff,#c9d6e8 46%,#6c7d96);
+  box-shadow:inset 0 2px 3px #fff8,0 3px 6px #0009;
+}
+/* A piece product foregrounds the stones; a board product foregrounds the
+   grid. Same markup, so the two previews can never drift apart in size. */
+.shop-cosmetic-art[data-cosmetic-role="board"] .cos-board{opacity:.82}
+.shop-cosmetic-art[data-cosmetic-role="board"] .cos-p1,
+.shop-cosmetic-art[data-cosmetic-role="board"] .cos-p2{transform:scale(.72);transform-origin:center bottom}
+.shop-cosmetic-art[data-cosmetic-role="piece"] .cos-board{opacity:.26}
+
+/* Four DIFFERENT silhouettes — one per board game. These are previews of
+   four independent product families, not one shared skin recoloured. The
+   theme still decides the palette; the game decides the SHAPE. */
+/* Connect Four: a rack of round slots with glossy counters. */
+.shop-cosmetic-art[data-cosmetic-game="four"] .cos-board{
+  opacity:.55;
+  background-image:radial-gradient(circle at center,#060d20 0 36%,transparent 38%);
+  background-size:22px 22px;
+}
+/* Gomoku: fine intersecting lines and flat black / white stones. */
+.shop-cosmetic-art[data-cosmetic-game="gomoku"] .cos-board{
+  opacity:.7;
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 13px,var(--cos-line) 13px 14px),
+    repeating-linear-gradient(90deg,transparent 0 13px,var(--cos-line) 13px 14px);
+}
+.shop-cosmetic-art[data-cosmetic-game="gomoku"] .cos-p1,
+.shop-cosmetic-art[data-cosmetic-game="gomoku"] .cos-p2{
+  width:30px;height:30px;bottom:13px;
+  box-shadow:inset 0 2px 3px #ffffff77,0 3px 6px #0009;
+}
+/* Chess: 64 alternating squares with carved pieces. */
+.shop-cosmetic-art[data-cosmetic-game="chess"] .cos-board{
+  opacity:.85;
+  background-image:conic-gradient(var(--cos-light) 25%,var(--cos-dark) 0 50%,var(--cos-light) 0 75%,var(--cos-dark) 0);
+  background-size:24px 24px;
+}
+.shop-cosmetic-art[data-cosmetic-game="chess"] .cos-p1,
+.shop-cosmetic-art[data-cosmetic-game="chess"] .cos-p2{
+  display:flex;align-items:center;justify-content:center;
+  background:none;border-radius:5px;box-shadow:none;
+  color:var(--cos-p1);font:900 30px/1 Georgia,serif;
+  text-shadow:0 0 10px var(--cos-glow),0 2px 3px #000b;
+}
+.shop-cosmetic-art[data-cosmetic-game="chess"] .cos-p2{color:#e8eefb;font-size:26px}
+/* Tic-tac-toe: a nine-square grid with X and O. */
+.shop-cosmetic-art[data-cosmetic-game="xo"] .cos-board{
+  opacity:.8;
+  background-image:
+    linear-gradient(90deg,transparent 32%,var(--cos-line) 32% 34%,transparent 34% 65%,var(--cos-line) 65% 67%,transparent 67%),
+    linear-gradient(0deg,transparent 32%,var(--cos-line) 32% 34%,transparent 34% 65%,var(--cos-line) 65% 67%,transparent 67%);
+}
+.shop-cosmetic-art[data-cosmetic-game="xo"] .cos-p1,
+.shop-cosmetic-art[data-cosmetic-game="xo"] .cos-p2{
+  display:flex;align-items:center;justify-content:center;
+  background:none;border-radius:0;box-shadow:none;
+  color:var(--cos-p1);font:900 32px/1 Arial,sans-serif;
+  text-shadow:0 0 12px var(--cos-glow);
+}
+.shop-cosmetic-art[data-cosmetic-game="xo"] .cos-p2{color:#cddcf2;font-size:28px}
+
+/* ===================================================== billiards cosmetics */
+/* ONE colour table for the shop cards AND the Pool / Snooker canvas painters.
+   The sixteen base colours are per-ball: a theme restyles the MATERIAL of
+   every sphere (highlight, shadow, number patch, signature ring), never the
+   identity of a ball. `data-billiard-*` dresses a shop card; the game page
+   publishes `data-cosmetic-ball/cue/table` on <html> after arbitration. */
+:root{
+  --ball-0:#f8faf6;
+  --ball-1:#efc329;--ball-2:#2568d2;--ball-3:#c93639;--ball-4:#793caa;
+  --ball-5:#e67920;--ball-6:#168669;--ball-7:#8d2d31;--ball-8:#141924;
+  --ball-9:#efc329;--ball-10:#2568d2;--ball-11:#c93639;--ball-12:#793caa;
+  --ball-13:#e67920;--ball-14:#168669;--ball-15:#8d2d31;
+}
+/* Balls ------------------------------------------------------------------ */
+[data-billiard-ball="neon"],[data-cosmetic-ball="neon"]{
+  --ball-hi:#ffffff;--ball-lo:#0b2f52;--ball-patch:#f2fbff;--ball-ink:#10304c;
+  --ball-ring:#4de2ff;--ball-glow:#4de2ff88;--ball-stripe:#f7fbff;--ball-mark:#4de2ff;
+}
+[data-billiard-ball="jade"],[data-cosmetic-ball="jade"]{
+  --ball-hi:#eafff6;--ball-lo:#0d4432;--ball-patch:#f3fff8;--ball-ink:#0b3b2c;
+  --ball-ring:#4be3a3;--ball-glow:#4be3a388;--ball-stripe:#f0fff6;--ball-mark:#d9b45c;
+}
+[data-billiard-ball="aurora"],[data-cosmetic-ball="aurora"]{
+  --ball-hi:#f7ecff;--ball-lo:#2c1452;--ball-patch:#fbf3ff;--ball-ink:#351a5e;
+  --ball-ring:#c79bff;--ball-glow:#c79bff99;--ball-stripe:#f8efff;--ball-mark:#ffd479;
+}
+[data-billiard-ball="crystal"],[data-cosmetic-ball="crystal"]{
+  --ball-hi:#ffffff;--ball-lo:#0a2a3d;--ball-patch:#f4fcff;--ball-ink:#0e3d55;
+  --ball-ring:#aee6f5;--ball-glow:#aee6f588;--ball-stripe:#eefaff;--ball-mark:#5f8ba0;
+}
+[data-billiard-ball="galaxy"],[data-cosmetic-ball="galaxy"]{
+  --ball-hi:#f2ecff;--ball-lo:#160f3e;--ball-patch:#f6f1ff;--ball-ink:#241a52;
+  --ball-ring:#c3a9ff;--ball-glow:#8f7bff88;--ball-stripe:#efeaff;--ball-mark:#9f8bff;
+}
+[data-billiard-ball="default"],[data-cosmetic-ball="default"]{
+  --ball-hi:#ffffff;--ball-lo:#000000;--ball-patch:#fffbed;--ball-ink:#111722;
+  --ball-ring:#ffffff44;--ball-glow:#00000000;--ball-stripe:#f9f7ee;--ball-mark:#d33f35;
+}
+/* Cues ------------------------------------------------------------------- */
+[data-billiard-cue="neon"],[data-cosmetic-cue="neon"]{
+  --cue-a:#0d3b5c;--cue-b:#5fd8ff;--cue-c:#0a2a45;--cue-wrap:#122c4a;
+  --cue-wrap-hi:#69dcff;--cue-ferrule:#e9fbff;--cue-butt:#071d33;--cue-tip:#4de2ff;
+}
+[data-billiard-cue="jade"],[data-cosmetic-cue="jade"]{
+  --cue-a:#1a5138;--cue-b:#8ce6b8;--cue-c:#0d3325;--cue-wrap:#103e30;
+  --cue-wrap-hi:#63d8a8;--cue-ferrule:#e8fff5;--cue-butt:#0b3527;--cue-tip:#7fe6bd;
+}
+[data-billiard-cue="aurora"],[data-cosmetic-cue="aurora"]{
+  --cue-a:#3a2168;--cue-b:#cba4ff;--cue-c:#221148;--cue-wrap:#2a1552;
+  --cue-wrap-hi:#a77cf0;--cue-ferrule:#f4e8ff;--cue-butt:#170d30;--cue-tip:#ffd479;
+}
+[data-billiard-cue="crystal"],[data-cosmetic-cue="crystal"]{
+  --cue-a:#7ba8bc;--cue-b:#eaf9ff;--cue-c:#5f8ba0;--cue-wrap:#123a4e;
+  --cue-wrap-hi:#aee6f5;--cue-ferrule:#f4fcff;--cue-butt:#0c2c3d;--cue-tip:#aee6f5;
+}
+[data-billiard-cue="galaxy"],[data-cosmetic-cue="galaxy"]{
+  --cue-a:#322a5e;--cue-b:#8f7fd0;--cue-c:#161230;--cue-wrap:#0c0920;
+  --cue-wrap-hi:#c3a9ff;--cue-ferrule:#f6f1ff;--cue-butt:#080619;--cue-tip:#c3a9ff;
+}
+[data-billiard-cue="default"],[data-cosmetic-cue="default"]{
+  --cue-a:#6b4a2a;--cue-b:#d8b077;--cue-c:#5a3b21;--cue-wrap:#243b52;
+  --cue-wrap-hi:#6f8fae;--cue-ferrule:#f2ead2;--cue-butt:#2a1d12;--cue-tip:#4a86b8;
+}
+/* Shared cloth ----------------------------------------------------------- */
+[data-billiard-table="neon"],[data-cosmetic-table="neon"]{
+  --cloth:#142a5e;--cloth-wood:#1b2c4e;--cloth-rim:#4de2ff;
+}
+[data-billiard-table="jade"],[data-cosmetic-table="jade"]{
+  --cloth:#12452f;--cloth-wood:#2b5a3c;--cloth-rim:#d9b45c;
+}
+[data-billiard-table="aurora"],[data-cosmetic-table="aurora"]{
+  --cloth:#2c1852;--cloth-wood:#3d2568;--cloth-rim:#ffd479;
+}
+[data-billiard-table="crystal"],[data-cosmetic-table="crystal"]{
+  --cloth:#9fd4e6;--cloth-wood:#b9d2dd;--cloth-rim:#e6f8ff;
+}
+[data-billiard-table="galaxy"],[data-cosmetic-table="galaxy"]{
+  --cloth:#1d1454;--cloth-wood:#1a1a3a;--cloth-rim:#9f8bff;
+}
+[data-billiard-table="default"],[data-cosmetic-table="default"]{
+  --cloth:#163c6a;--cloth-wood:#5a3a22;--cloth-rim:#c9a86a;
+}
+
+/* Card previews. Same 98px artwork box as every other section, so all eleven
+   sections keep identical card heights and the six-column grid stays even. */
+.shop-billiard-art{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  width:76%;max-width:110px;height:98px;flex:none;overflow:hidden;
+  border:1px solid #ffffff2b;border-radius:12px;
+  background:radial-gradient(ellipse at 50% 0%,#ffffff12,transparent 72%),#080e22;
+  box-shadow:0 6px 14px #0008,inset 0 1px 0 #ffffff1f;
+}
+.shop-billiard-art[data-billiard-role="ball"]{flex-wrap:wrap;gap:7px;padding:8px;align-content:center}
+.shop-billiard-art .cos-ball{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  width:27px;height:27px;border-radius:50%;flex:none;
+  background:var(--ball-body,#f8faf6);
+  background-image:radial-gradient(circle at 30% 22%,var(--ball-hi,#fff),transparent 48%),
+    linear-gradient(180deg,transparent 52%,var(--ball-lo,#000));
+  box-shadow:0 0 10px var(--ball-glow,#0000),inset 0 0 0 2px var(--ball-ring,#fff4),0 3px 6px #0009;
+  font:700 9px/1 Arial,sans-serif;color:var(--ball-ink,#111);
+}
+.shop-billiard-art .cos-ball::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(180deg,transparent 0 27%,var(--ball-stripe,#fff) 27% 73%,transparent 73%);
+}
+.shop-billiard-art .cos-ball[data-striped="0"]::before{display:none}
+.shop-billiard-art .cos-ball::after{
+  content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;
+  transform:translate(-50%,-50%);border-radius:50%;background:var(--ball-patch,#fffbed);
+}
+.shop-billiard-art .cos-ball b{position:relative;z-index:1}
+.shop-billiard-art .cos-ball[data-ball-id="0"]::after{width:5px;height:5px;background:var(--ball-mark,#d33f35)}
+
+/* A long tapered cue, seen at the same diagonal as the in-game stick. */
+.shop-billiard-art[data-billiard-role="cue"] .cos-cue{
+  position:absolute;left:-6px;top:46px;width:124px;height:9px;transform:rotate(-22deg);
+  border-radius:6px;background:linear-gradient(180deg,var(--cue-b) 0%,var(--cue-a) 55%,var(--cue-c) 100%);
+  box-shadow:0 3px 8px #000a,0 0 12px var(--cue-tip);
+}
+.shop-billiard-art .cos-cue-tip{
+  position:absolute;left:0;top:0;width:13px;height:100%;border-radius:5px 0 0 5px;
+  background:var(--cue-tip);box-shadow:inset 0 0 0 1px #ffffff55;
+}
+.shop-billiard-art .cos-cue-wrap{
+  position:absolute;right:0;top:0;width:44px;height:100%;border-radius:0 6px 6px 0;
+  background:repeating-linear-gradient(90deg,var(--cue-wrap) 0 3px,var(--cue-wrap-hi) 3px 4px);
+}
+/* A miniature six-pocket table, with three numbered spheres on the baize. */
+.shop-billiard-art[data-billiard-role="table"] .cos-table{
+  position:relative;width:96px;height:60px;border-radius:9px;
+  background:var(--cloth-wood);border:2px solid var(--cloth-rim);
+  box-shadow:inset 0 0 0 4px #0004,0 6px 14px #0008;
+}
+.shop-billiard-art .cos-cloth{
+  position:absolute;inset:6px;border-radius:4px;background:var(--cloth);
+  box-shadow:inset 0 0 18px #0007;
+}
+.shop-billiard-art .cos-table::before,.shop-billiard-art .cos-table::after{
+  content:"";position:absolute;top:-3px;width:9px;height:9px;border-radius:50%;background:#05070d;
+}
+.shop-billiard-art .cos-table::before{left:6px;box-shadow:76px 0 0 #05070d}
+.shop-billiard-art .cos-table::after{left:43px;box-shadow:0 48px 0 #05070d}
+.shop-billiard-art .cos-table .cos-ball{position:absolute;width:13px;height:13px;font-size:6px}
+.shop-billiard-art .cos-table .cos-ball::after{width:7px;height:7px}
+.shop-billiard-art .cos-table .cos-ball[data-ball-id="1"]{left:12px;top:14px}
+.shop-billiard-art .cos-table .cos-ball[data-ball-id="9"]{left:39px;top:24px}
+.shop-billiard-art .cos-table .cos-ball[data-ball-id="8"]{left:63px;top:34px}

@@ -1,4 +1,4 @@
-import {SPIN_STRIDE} from './pool-input.js?v=20261106-ui2';
+import {SPIN_STRIDE} from './pool-input.js?v=20261110-glove2';
 
 export const OPPONENT_CUE_DURATION = 1100;
 export const REPLAY_CUE_DURATION = 650;

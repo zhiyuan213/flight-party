@@ -1,0 +1,31 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>开球连锁撞击音效 · A/B 试听</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1">
+<style>
+body{margin:26px;background:#0b1119;color:#e3edf5;font:15px system-ui;max-width:1180px}
+h1{font-size:22px;margin-bottom:6px}h2{font-size:16px;margin:22px 0 6px}
+p{color:#adbdcc;margin:5px 0 12px;line-height:1.65}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+button{padding:10px 16px;background:#243d56;color:white;border:1px solid #62778b;border-radius:6px;cursor:pointer;font-size:14px}
+button:hover{background:#2f4d6c}button.new{background:#1d4a3f;border-color:#3f8a72}button.new:hover{background:#266350}
+.status{margin:8px 0 16px;color:#8fe4d8;min-height:20px;font-size:14px}
+svg{background:#101a25;border:1px solid #26394a;border-radius:8px;width:100%;height:auto}
+.grid{stroke:#1d2d3c;stroke-width:1}.axis{stroke:#3a536a;stroke-width:1}
+.label{fill:#8fa6ba;font:12px system-ui}.title{fill:#cfe2f2;font:13px system-ui}
+.legend{color:#8fa6ba;font-size:13px;margin-top:8px}
+.stat{display:flex;gap:22px;flex-wrap:wrap;margin:10px 0;padding:10px 14px;background:#111e2a;border:1px solid #26394a;border-radius:8px}
+.stat div{color:#adbdcc;font-size:13px}.stat b{color:#ffd75e;font-size:17px;display:block;margin-top:2px}
+</style>
+<h1>开球连锁撞击 · 音效 A/B 试听</h1>
+<p><a href="./pool-hit-audition.html" style="color:#8fe4d8;font-weight:700">最新：试听 A / B / C / D 四款单次球碰球声音 →</a></p>
+<p>当前使用 A 加厚版，压下尖锐共振、补足中低频主体；多次碰撞叠成一簇：前几下紧密重合，后面逐渐散开。音高与叠加节奏不变。以下使用同一杆真实开球的接触事件，新按钮调用正式多球混音。</p>
+<div class="stat" id="stats"></div>
+<div class="buttons">
+  <button data-play="exact-old">旧版 · 密集连发</button>
+  <button class="new" data-play="exact-new">新版 · 连续硬球撞击</button>
+  <button data-play="frame-old">旧版 · 回放重建</button>
+  <button class="new" data-play="frame-new">新版 · 回放重建</button>
+</div>
+<div class="status" id="status">准备就绪</div>
+<h2>触发时刻对照</h2>
+<svg id="chart" viewBox="0 0 1000 190" preserveAspectRatio="xMidYMid meet"></svg>
+<div class="legend">横轴 = 从第一次接触起的毫秒数；圆点越大代表撞击越强。新版在同一个声音里叠加多次 A 撞击；仅音效适度展开，实际球路与碰撞时刻未修改。</div>
+<script type="module" src="./pool-break-audio-preview.js?v=20261112-breakclack1"></script><script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></html>

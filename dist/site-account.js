@@ -11,6 +11,12 @@
  var zh=function(){return document.documentElement.getAttribute('data-locale')==='zh';};
  var t=function(en,cn){return zh()?cn:en;};
  var SIGNIN_LABEL='<span class="lang-en">Sign in</span><span class="lang-cn">登录</span>';
+ // The embedded game broadcasts its account button text through
+ // joyflock:controls. While /api/me or the live session is unreachable that
+ // button shows a transient connection state, not a nickname. Those labels
+ // used to be accepted as a display name, replacing the server-confirmed name
+ // with "Restoring…" / "Reconnect" and wrongly marking the shell as signed in.
+ var TRANSIENT=/^(?:Restoring…|Restoring\.\.\.|恢复登录中…|Reconnect|重新连接|Connecting…|连接中…)$/;
  // The header is static HTML, so a signed-in visitor used to see "Sign in"
  // on every reload until /api/me came back. Store the last server-confirmed
  // display name (or "0" for a confirmed guest) and let the inline boot script
@@ -26,17 +32,19 @@
    '; path=/; Max-Age=2592000; SameSite=Lax';}catch(e){}
  }
  function renderSigned(name){
+  signin.style.removeProperty('--shop-avatar');
   signin.classList.remove('chrome-account-pending');
   document.body.classList.add('chrome-signed');
   signin.innerHTML='<span class="lang-en"></span><span class="lang-cn"></span>';
   signin.querySelector('.lang-en').textContent=name;
   signin.querySelector('.lang-cn').textContent=name;
   signin.title=name;
-  // Hide the second entry visually, not structurally: its fixed slot keeps
-  // the sign-in button from sliding when a session appears.
+  // Retire the second entry from the layout: the points pill should sit
+  // directly beside the nickname instead of behind a blank reserved slot.
   if(signup){signup.classList.add('chrome-account-gone');signup.tabIndex=-1;}
  }
  function renderGuest(){
+  signin.style.setProperty('--shop-avatar','url("/assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5")');
   signin.classList.remove('chrome-account-pending');
   document.body.classList.remove('chrome-signed');
   signin.innerHTML=SIGNIN_LABEL;
@@ -57,10 +65,21 @@
    headers:headers,body:body===undefined?undefined:JSON.stringify(body)})
    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
  }
+ /* Opening the login dialog calls session() every time, and a static preview
+    has no /api/ backend. A definitive 4xx is remembered for 30s so repeated
+    opens do not emit another csrf + me pair of 404s. Network faults and 5xx
+    are not cached, and a real backend recovers automatically after the window. */
+ var apiDownUntil=0,apiDownError=null;
+ function rememberDown(e){
+  var m=/HTTP (\d{3})/.exec(e&&e.message||'');
+  if(m&&Number(m[1])>=400&&Number(m[1])<500){apiDownUntil=Date.now()+30000;apiDownError=e;}
+ }
  function session(){
-  if(!csrf)return api('/api/csrf').then(function(c){csrf=c;return api('/api/session/guest',{});})
-   .then(function(){return api('/api/me');});
-  return api('/api/me');
+  if(Date.now()<apiDownUntil)return Promise.reject(apiDownError||new Error('HTTP 404'));
+  var p=!csrf?api('/api/csrf').then(function(c){csrf=c;return api('/api/session/guest',{});})
+   .then(function(){return api('/api/me');}):api('/api/me');
+  p.catch(rememberDown);
+  return p;
  }
  function notifyGame(){
   var frame=document.getElementById('game-frame');
@@ -103,7 +122,7 @@
    '<p class="chrome-auth-note">'+(reg
     ?L('A free account saves your nickname and scores.','注册完全免费，可保存昵称与对局成绩。')
     :L('Sign in to keep your scores. Playing stays free — no account needed.','登录后可累计对局成绩；不登录也能免费畅玩。'))+'</p>'+
-   (reg?'':'<div class="chrome-auth-signed" hidden><div class="chrome-auth-avatar">J</div>'+
+   (reg?'':'<div class="chrome-auth-signed" hidden><div class="chrome-auth-avatar" style="background:url(/assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5) center/cover no-repeat"></div>'+
      '<p class="chrome-auth-who"></p><button type="button" class="chrome-auth-signout">'+
      L('Sign out','退出登录')+'</button></div>')+
    '<form class="chrome-auth-form" novalidate>'+
@@ -141,7 +160,13 @@
     d.querySelector('.chrome-auth-form').hidden=true;
     var s=d.querySelector('.chrome-auth-signed');s.hidden=false;
     s.querySelector('.chrome-auth-who').textContent=t('Signed in as ','已登录：')+me.account.displayName;
-    s.querySelector('.chrome-auth-avatar').textContent=(me.account.displayName||'?').trim().charAt(0).toUpperCase()||'?';
+    var portrait=s.querySelector('.chrome-auth-avatar');portrait.textContent='';
+    // This shell is a classic script; load the same resolver used by rooms.
+    portrait.dataset.accountId=String(me.account.id||'');
+    import('/avatar.js?v=20261114-avatar5').then(function(module){
+     if(d.open&&portrait.dataset.accountId===String(me.account.id||''))
+      module.applyAvatar(portrait,Object.assign({},me.appearance,{isSelf:true,signedIn:true}));
+    }).catch(function(){});
     setLabel(me.account.displayName);
    }else resetLabel();
   }).catch(function(){});
@@ -222,6 +247,9 @@
   if(data?.type==='joyflock:auth-request'){open(data.mode==='register'?'register':'login');return;}
  if(data?.type!=='joyflock:controls'||typeof data.account!=='string')return;
  var name=data.account.trim();
+ // Keep the server-confirmed label untouched until the game reports a real
+ // account state; never turn a connection message into a signed-in identity.
+ if(TRANSIENT.test(name))return;
  // The iframe reports its own account state for the floating controls. It is
  // only a display hint: never let a stale "Sign in" from a game overwrite the
  // server-confirmed cache that the first frame depends on.
@@ -247,7 +275,12 @@
  meLookup.then(function(me){
   if(me&&me.account&&me.account.displayName)setLabel(me.account.displayName);
   else resetLabel();
- }).catch(function(){
+ }).catch(function(e){
+  // The <head> probe already proved /api/ is absent. Reuse that verdict for
+  // session() so opening the login dialog does not fire a second csrf 404.
+  // Only a missing endpoint (404) is cached: 401/403 are ordinary auth
+  // responses and must never block a real sign-in.
+  if(/HTTP 404$/.test(e&&e.message||''))rememberDown(e);
   // A failed lookup must not erase a server-confirmed session. Only fall back
   // to the guest label when the first frame is still a neutral placeholder.
   if(signin.classList.contains('chrome-account-pending'))renderGuest();

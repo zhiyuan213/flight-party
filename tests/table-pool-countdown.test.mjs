@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {countdownPhase,updatePoolCountdown,cancelPoolCountdown} from '../dist/table/pool-countdown.js';
-import {unlockPoolAudio,setPoolMuted,countdownSamples} from '../dist/table/pool-audio.js?v=20261106-ui2';
+// Unlock the same module instance the countdown imports, including its cache key.
+const countdownSource=readFileSync(new URL('../dist/table/pool-countdown.js',import.meta.url),'utf8');
+const audioPath=countdownSource.match(/from ['"](.\/pool-audio\.js[^'"]*)['"]/)[1];
+const {unlockPoolAudio,setPoolMuted,countdownSamples}=await import(new URL(audioPath,new URL('../dist/table/pool-countdown.js',import.meta.url)));
+
+const shellCss=readFileSync(new URL('../dist/table/pool-shell.css',import.meta.url),'utf8');
+const snookerCss=readFileSync(new URL('../dist/table/snooker-shell.css',import.meta.url),'utf8');
 
 test('countdown exposes 3,2,1,GO with an exact opening deadline and no late-join GO',()=>{
  assert.equal(countdownPhase(3000,0),'3');assert.equal(countdownPhase(3000,1000),'2');assert.equal(countdownPhase(3000,2000),'1');
@@ -23,6 +30,20 @@ test('stages sound once, repeated renders preserve the deadline, and cancellatio
   updatePoolCountdown(host,element,3000);assert.equal(starts,4);updatePoolCountdown(host,element,6000);assert.equal(frames.size,1);cancelPoolCountdown(host);assert.equal(frames.size,0);assert.equal(element.hidden,true);
   now=7000;updatePoolCountdown(host,element,6900);assert.equal(element.hidden,true);assert.equal(frames.size,0);assert.equal(starts,5);
  }finally{Date.now=originals.now;globalThis.requestAnimationFrame=originals.raf;globalThis.cancelAnimationFrame=originals.caf;globalThis.AudioContext=originals.audio;setPoolMuted(false)}
+});
+test('the back-to-home arrow stays clickable above every opening countdown',()=>{
+  /* The READY / 3-2-1 shield covers the whole game panel with
+     pointer-events:auto. Snooker raises that shield to z-index 9 to sit above
+     its centre shot card, so the shared back-arrow rule has to clear 9 (7 was
+     too low and left the arrow dead until GO). */
+  const shared=shellCss.match(/body\.board-countdown\[data-screen="play"\] \.game-panel>\.board-top\{z-index:(\d+)\}/);
+  const snooker=snookerCss.match(/\.snooker-game\[data-screen="play"\] \.game-panel>\.pool-countdown\{z-index:(\d+)\}/);
+  const generic=shellCss.match(/\.board-countdown \.game-panel>\.pool-countdown\{z-index:(\d+)\}/);
+  assert.ok(shared,'the shared back-arrow layer exists');
+  assert.ok(snooker&&generic,'both countdown shield layers exist');
+  assert.ok(Number(shared[1])>Number(snooker[1]),'back arrow clears the snooker shield');
+  assert.ok(Number(shared[1])>Number(generic[1]),'back arrow clears the generic shield');
+  assert.match(shellCss,/body\.board-countdown\[data-screen="play"\] \.game-panel>\.board-top button\{pointer-events:auto\}/);
 });
 test('countdown audio has separate bounded tick/GO envelopes without a lingering tail',()=>{
  for(const stage of ['3','2','1','GO']){const a=countdownSamples(stage);assert.equal(a[0],0);assert.equal(a.at(-1),0);assert.equal(a.length,Math.ceil((stage==='GO'?.52:.105)*48000));assert.ok(a.every(v=>Number.isFinite(v)&&Math.abs(v)<.2))}

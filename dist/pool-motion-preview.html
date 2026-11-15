@@ -13,10 +13,10 @@
 <details open><summary>本次动作时间与槽位</summary><p id="timing-note">时间来自正式回球条目的计时；按实际到达出口顺序分配槽位。单位毫秒。</p><table><thead><tr><th>球 / 袋位</th><th>桌下路径</th><th>计划出槽</th><th>首次接触</th><th>完全停下</th><th>当前阶段</th></tr></thead><tbody id="timing"></tbody></table></details>
 <script type="module">
 import {poolStart,poolMove,poolBot,renderPool} from '/table/pool.js';
-import {animatePoolOpponentShot,cancelPoolOpponentShot} from '/table/pool-view.js?v=20261105-pool15';
+import {animatePoolOpponentShot,cancelPoolOpponentShot} from '/table/pool-view.js?v=20261112-gamelanes1';
 import {returnTiming,POCKET_DURATION} from '/table/pool-return.js';
-import {TABLE_PAD,TABLE_HOLES} from '/table/pool-table.js';
-import {unlockPoolAudio} from '/table/pool-audio.js?v=20261105-pool15';
+import {TABLE_PAD,TABLE_HOLES} from '/table/pool-table.js?v=20261112-gamelanes1';
+import {unlockPoolAudio} from '/table/pool-audio.js?v=20261113-snookerrail1';
 import {cancelPoolCountdown} from '/table/pool-countdown.js';
 let host,state,watchToken=0,scenario='开局',scratchSeen=false,scratchStart=0;
 const status=document.querySelector('#status'),timing=document.querySelector('#timing'),names=['左上','上中','右上','左下','下中','右下'];
@@ -87,4 +87,4 @@ document.querySelector('#six-pockets').onclick=()=>{
 document.querySelector('#countdown').onclick=()=>{unlockPoolAudio();scenario='开局倒计时';mount();host._openingUntil=Date.now()+3000;renderPool(host,state,true);observe();};
 document.querySelector('#reset').onclick=()=>{scenario='开局';mount();observe();};
 mount();observe();
-</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script><script defer src="/site-floating-dots.js?v=20261109-motes2"></script><script defer src="/site-shooting-star.js?v=20261109-fxgame1"></script></html>
+</script><script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></html>

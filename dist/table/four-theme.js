@@ -387,6 +387,9 @@ export function setTheme(id,{persist=true,silent=false}={}){
   apply();syncUrl();
   if(changed){
     rebuildScene();
+    // Both remote and local choices refresh seat art and shop gating. This
+    // notification never broadcasts the choice back into a room.
+    window.dispatchEvent(new CustomEvent('joyflock:theme-applied',{detail:{theme:id}}));
     // Only an explicit user choice is broadcast; applying a remote choice is
     // silent, which keeps two players from bouncing skins back and forth.
     if(!silent)announce({theme:id,from:instanceId,silent:false});
@@ -405,7 +408,7 @@ function ensurePicker(){
     <div class="four-picker-head">
       <span class="eyebrow">SEASONAL SKINS</span>
       <h2>选择主题</h2>
-      <p>只改变外观，不改变规则。默认是无主题。</p>
+      <p>默认主题可使用商城棋子和棋盘；其他主题使用整套主题外观。</p>
       <button class="four-picker-close" type="button" aria-label="关闭">×</button>
     </div>
     <div class="four-picker-grid"></div>

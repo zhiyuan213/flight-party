@@ -177,7 +177,7 @@ header nav .icon-btn{height:40px;min-width:40px;border-radius:14px;background:li
 }
 @media(prefers-reduced-motion:reduce){.dice.rolling{animation:none}}
 /* Match the reference's simple toy portraits without changing avatar ordering. */
-.player-avatar,.seat-avatar{background-image:url('assets/avatars-v5.png')}
+.player-avatar,.seat-avatar{background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center}
 @media(min-width:701px) and (min-height:851px){
  .player-row,.player-row.active{min-height:clamp(76px,8.4vh,92px)}
  .player-avatar{width:54px;height:54px}

@@ -9,7 +9,7 @@ const handler=app.slice(app.indexOf('async function roll(auto=false)'),app.index
 function fixture(legal){
  const moves=[];let settle;let timers=0;
  const game={phase:'roll',current:{type:'human'},roll(){this.phase='choose';return 4;},legal(){return legal;}};
- const context=vm.createContext({onlineMode:false,game,screen:'play',diceBusy:false,epoch:1,clock:null,seconds:0,fx:{unlock(){},roll(){}},die:{rollTo:()=>new Promise(resolve=>settle=resolve)},clearInterval(){},setInterval(){timers++;return 1;},syncDieLabel(){},render(){},updateClock(){},drawDie(){},chooseLocal:async piece=>{moves.push(piece);game.phase='animating';}});
+ const context=vm.createContext({onlineMode:false,game,screen:'play',diceBusy:false,epoch:1,clock:null,seconds:0,fx:{unlock(){},roll(){}},die:{rollTo:()=>new Promise(resolve=>settle=resolve)},clearInterval(){},setInterval(){timers++;return 1;},syncDieLabel(){},render(){},updateClock(){},drawDie(){},chooseLocal:async piece=>{moves.push(piece);game.phase='animating';},botLevelFor:()=>null,getBotLevel:()=>'normal',botDie:()=>4,bestMove:()=>0,later(){}});
  return {context,moves,roll:vm.runInContext('('+handler+')',context),settle:()=>settle(),timers:()=>timers};
 }
 test('sole remaining plane moves after the die settles without opening another choice timer',async()=>{

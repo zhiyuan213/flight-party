@@ -127,8 +127,10 @@ export function pocketSfxDiagnose() {
   return {version: '20261109-pocketscore2', state: ctx ? ctx.state : 'none', muted: muted(), stats: Object.assign({}, stats)};
 }
 
+// globalThis keeps the module importable under `node --test` (no window),
+// while remaining the same object in a browser.
 try {
-  Object.defineProperty(window, '__joyflockPocketSfx', {
+  Object.defineProperty(globalThis, '__joyflockPocketSfx', {
     value: {play: playPocketChime, diagnose: pocketSfxDiagnose}, configurable: false
   });
-} catch (e) { window.__joyflockPocketSfx = {play: playPocketChime, diagnose: pocketSfxDiagnose}; }
+} catch (e) { globalThis.__joyflockPocketSfx = {play: playPocketChime, diagnose: pocketSfxDiagnose}; }

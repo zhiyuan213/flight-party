@@ -1,0 +1,114 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>白球落袋 · 白手套摆球预览</title>
+<style>
+body{background:#141a20;color:#e7eef5;font:14px/1.65 system-ui,sans-serif;margin:22px 28px;max-width:1080px}
+h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:22px 0 8px;color:#cfe0ef}
+p{margin:0 0 12px;color:#9fb0c0}code{color:#ffd88a}
+canvas{display:block;border:1px solid #2f3d49;border-radius:8px;background:#0d1318}
+#stage{width:100%;height:auto;touch-action:none;cursor:grab}
+#stage.dragging{cursor:grabbing}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+button{background:#22303c;color:#e7eef5;border:1px solid #3d5364;border-radius:7px;padding:9px 16px;font:600 13px system-ui;cursor:pointer}
+button:hover{background:#2e4252;border-color:#5d7e94}
+.stats{display:flex;gap:26px;flex-wrap:wrap;background:#1b242c;border:1px solid #2f3d49;border-radius:8px;padding:12px 16px;margin-bottom:10px}
+.stat b{display:block;font-size:18px;color:#ffd44d;font-weight:700}.stat span{color:#93a7b8;font-size:12px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.trio figure{margin:0}.trio figcaption{color:#a9bccb;font-size:12px;margin-top:6px}
+.note{color:#7f93a4;font-size:12px;margin-top:16px}
+</style></head><body>
+<h1>白球落袋 · 白手套摆球预览</h1>
+<p>正式绘制模块 <code>dist/table/pool-glove.js</code> 与正式规则 <code>dist/table/pool-place.js</code>。下面是真实的一杆白球落袋后的球位（白球已复位到原点）。<b>按住白球拖动</b>：静止时手 85% 不透明，拖动中 100%，松手回到 85%，可反复拖动；越界或撞到其他球会停在最后一个合法点。</p>
+<div class="stats" id="stats"></div>
+<h2>可拖动台面</h2>
+<canvas id="stage" width="1064" height="564"></canvas>
+<div class="row"><button id="reset">恢复到复位点</button><span id="hint" style="color:#9fb0c0;font-size:12px"></span></div>
+<h2>三种状态对照</h2>
+<div class="trio">
+ <figure><canvas class="tri" width="330" height="190"></canvas><figcaption>① 停在原点：手 85% 不透明</figcaption></figure>
+ <figure><canvas class="tri" width="330" height="190"></canvas><figcaption>② 拖动中：手 100% 不透明</figcaption></figure>
+ <figure><canvas class="tri" width="330" height="190"></canvas><figcaption>③ 放下后：手回到 85%，球留在新位置</figcaption></figure>
+</div>
+<p class="note">摆球位置通过整数命令 <code>PLACE_BASE + cueX*10000 + cueY</code> 走和击球一样的提交通道，前后端权威状态一致；摆球不消耗回合、不增加杆数，因此对手可以继续摆好再击打。</p>
+<script type="module">
+import {drawGlovedHand,GLOVE_IDLE_ALPHA,GLOVE_DRAG_ALPHA} from './table/pool-glove.js?v=20261110-handref1';
+import {legalCueSpot,clampCueSpot,encodePoolPlace} from './table/pool-place.js?v=20261110-glove2';
+const W=1000,H=500,PAD=32,R=16;
+const cells=Array(53).fill(0);cells[0]=1800;cells[1]=800;cells[2]=1;cells[52]=1;
+const rack=[1,9,2,10,8,3,4,11,5,12,6,13,7,14,15];let k=0;
+for(let col=0;col<5;col++)for(let row=0;row<=col;row++){
+  const n=rack[k++];cells[n*3]=6500+col*282;cells[n*3+1]=2500+Math.round((row-col*.5)*326);cells[n*3+2]=1;
+}
+const colors=['#f8faf6','#efc329','#2568d2','#c93639','#793caa','#e67920','#168669','#8d2d31','#141924'];
+const $=id=>document.getElementById(id);
+let spot={x:cells[0],y:cells[1]},dragging=false,grab={dx:0,dy:0},alpha=GLOVE_IDLE_ALPHA,command=null;
+function table(ctx,scale){
+  ctx.save();ctx.scale(scale,scale);
+  ctx.fillStyle='#123a2c';ctx.fillRect(0,0,W+PAD*2,H+PAD*2);
+  ctx.fillStyle='#0e5638';ctx.fillRect(PAD-6,PAD-6,W+12,H+12);
+  ctx.fillStyle='#13764a';ctx.fillRect(PAD,PAD,W,H);
+  ctx.fillStyle='#0b1a14';
+  for(const [hx,hy] of [[0,0],[500,0],[1000,0],[0,500],[500,500],[1000,500]]){
+    ctx.beginPath();ctx.arc(PAD+hx,PAD+hy,22,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+function ballAt(ctx,scale,x,y,fill,label=''){
+  ctx.save();ctx.scale(scale,scale);
+  ctx.beginPath();ctx.arc(PAD+x,PAD+y,R,0,Math.PI*2);
+  const g=ctx.createRadialGradient(PAD+x-5,PAD+y-6,1,PAD+x,PAD+y,R);
+  g.addColorStop(0,'#ffffff');g.addColorStop(.65,fill);g.addColorStop(1,'#20303a');
+  ctx.fillStyle=g;ctx.fill();
+  if(label){ctx.fillStyle='#101820';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,PAD+x,PAD+y);}
+  ctx.restore();
+}
+function scene(ctx,scale,cue,opacity){
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  table(ctx,scale);
+  for(let i=1;i<16;i++)if(cells[i*3+2])ballAt(ctx,scale,cells[i*3]/10,cells[i*3+1]/10,colors[i<9?i:i-8],String(i));
+  // The cue ball goes down first; the glove's fingertips lie over it.
+  ballAt(ctx,scale,cue.x/10,cue.y/10,'#f8faf6');
+  ctx.save();ctx.scale(scale,scale);ctx.translate(PAD,PAD);
+  drawGlovedHand(ctx,cue.x/10,cue.y/10,opacity);
+  ctx.restore();
+}
+const stage=$('stage'),sctx=stage.getContext('2d'),scale=stage.width/(W+PAD*2);
+const point=e=>{const r=stage.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*stage.width/scale-PAD,y:(e.clientY-r.top)/r.height*stage.height/scale-PAD};};
+function paint(){scene(sctx,scale,spot,dragging?GLOVE_DRAG_ALPHA:GLOVE_IDLE_ALPHA);}
+function stats(){
+  $('stats').innerHTML=[
+    ['白球位置',(spot.x/10).toFixed(0)+' , '+(spot.y/10).toFixed(0)],
+    ['手不透明度',(alpha*100)+'%'],
+    ['位置合法',legalCueSpot(cells,spot.x,spot.y)?'是':'否'],
+    ['最近一次摆球命令',command??'—'],
+  ].map(([k,v])=>'<div class="stat"><b>'+v+'</b><span>'+k+'</span></div>').join('');
+  $('hint').textContent=dragging?'正在拖动 · 手 100% 不透明':'按住白球拖动 · 手 85% 不透明';
+}
+function setState(next){
+  spot=next;alpha=dragging?GLOVE_DRAG_ALPHA:GLOVE_IDLE_ALPHA;paint();stats();
+}
+stage.addEventListener('pointerdown',e=>{
+  const p=point(e);
+  if(Math.hypot(p.x-spot.x/10,p.y-spot.y/10)>30)return;
+  e.preventDefault();dragging=true;stage.classList.add('dragging');
+  grab={dx:spot.x/10-p.x,dy:spot.y/10-p.y};
+  stage.setPointerCapture?.(e.pointerId);setState(spot);
+});
+stage.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const p=point(e),next=clampCueSpot(cells,(p.x+grab.dx)*10,(p.y+grab.dy)*10,spot);
+  if(next)setState(next);
+});
+const end=e=>{
+  if(!dragging)return;
+  dragging=false;stage.classList.remove('dragging');
+  try{stage.releasePointerCapture?.(e.pointerId);}catch{}
+  command=encodePoolPlace(spot.x,spot.y);setState(spot);
+};
+stage.addEventListener('pointerup',end);
+stage.addEventListener('pointercancel',end);
+$('reset').onclick=()=>{command=null;setState({x:cells[0],y:cells[1]});};
+paint();stats();
+for(const [i,fig] of Array.from(document.querySelectorAll('.tri')).entries()){
+  const c=fig.getContext('2d'),s=fig.width/(W+PAD*2);
+  scene(c,s,i===0?{x:cells[0],y:cells[1]}:{x:3000,y:2000},i===1?GLOVE_DRAG_ALPHA:GLOVE_IDLE_ALPHA);
+}
+</script></body></html>

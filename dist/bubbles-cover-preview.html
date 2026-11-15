@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>泡泡射击 · 封面风格界面预览</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100dvh;background:#0b1020;color:#e8eefb;font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{padding:14px 22px;border-bottom:1px solid #26314c;background:#101830}
+  header h1{margin:0;font-size:16px;font-weight:600}
+  header p{margin:3px 0 0;font-size:12px;color:#8fa2c6}
+  main{display:grid;grid-template-columns:290px minmax(0,1fr);gap:22px;padding:22px;align-items:start}
+  .side{background:#141d36;border:1px solid #2a3859;border-radius:16px;padding:16px}
+  .side h2{margin:0 0 10px;font-size:13px;font-weight:600;color:#c9d8f5}
+  .side img{display:block;width:100%;border-radius:12px;border:1px solid #3a3560}
+  .side p{font-size:12px;color:#93a6c9;margin:10px 0 16px}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#3a2a63;color:#d9c3ff;font-size:11px}
+  .field{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:12px;color:#a8b9d8}
+  .field input{width:100%;accent-color:#b57bff}
+  button{font:inherit;padding:8px 14px;border:1px solid #5b6ea0;border-radius:9px;background:#26365c;color:#eaf1ff;cursor:pointer}
+  button:hover{filter:brightness(1.15)}
+  .demo{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}
+  .stage-frame{width:900px;height:min(1151px,calc(100dvh - 155px));min-height:560px;max-width:100%;transition:width .18s ease}
+  .stage{width:100%;height:100%;position:relative;background:#0a1024}
+  .stage canvas{border:1px solid rgba(126,92,174,.30);border-radius:18px;
+    background:#0c051d;
+    box-shadow:0 0 0 1px rgba(16,7,34,.62),0 18px 48px rgba(20,6,46,.58);
+    outline-offset:4px;touch-action:none}
+  #status{min-height:20px;margin:0;font-size:12px;color:#c6d4ef}
+  .hint{margin:0;font-size:12px;color:#8497ba;text-align:center}
+  .boundary{margin:0;font-size:12px;color:#d9c3ff;text-align:center;font-variant-numeric:tabular-nums}
+  @media(max-width:900px){main{grid-template-columns:1fr}.side{max-width:420px}.stage-frame{width:min(100%,1100px)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>泡泡射击 · 封面风格界面预览 <span class="tag">Preview / 示例界面</span></h1>
+  <p>纯 Canvas 2D 绘制：程序化星云、虹彩玻璃球、金属发射器。底部发射按钮已移除，点击画布即可瞄准并发射。</p>
+</header>
+<main>
+  <section class="side">
+    <h2>封面参考</h2>
+    <img src="./assets/covers/bubbles.jpg" alt="泡泡射击封面插画">
+    <p>对照目标：紫色星云、透明虹彩玻璃球、霓虹描边、机械炮台与粉色珠串瞄准线。此页不使用任何游戏贴图。</p>
+    <h2>边界验证</h2>
+    <p>红框边界为 760×1003（宽/高 = 0.758）。画布始终按宿主高度 × 0.758 取宽并居中；拖动滑块只改变宿主面板宽度，画布不会越界，泡泡与炮台保持原始像素尺寸。</p>
+    <label class="field">宿主面板宽度 <output id="width-value">800px</output>
+      <input id="width" type="range" min="480" max="1280" value="800" step="10">
+    </label>
+    <div class="field"><button id="reset" type="button">重置对局</button></div>
+  </section>
+  <section class="demo">
+    <div class="stage-frame" id="frame">
+      <div class="stage" id="stage">
+        <canvas tabindex="0" aria-label="泡泡射击棋盘，点击发射"></canvas>
+        <button id="fire" type="button" hidden></button>
+      </div>
+    </div>
+    <p id="status" role="status"></p>
+    <p class="hint">点击画布瞄准并发射 · ← → 调整角度 · 空格发射 · 无底部按钮</p>
+    <p id="board-info" class="boundary"></p>
+  </section>
+</main>
+<script type="module">
+import {createBubbles} from './table/bubbles.js?v=20261110-glove2';
+import {bubblesStart,bubblesMove,GRID,N} from './table/bubbles-duel.js?v=20261112-gamelanes1';
+
+const BOUNDARY=760/1003,MAX_SCALE=1.25;
+const canvas=document.querySelector('canvas');
+const frame=document.getElementById('frame');
+const slider=document.getElementById('width');
+const output=document.getElementById('width-value');
+let seed=20261110,board=bubblesStart(seed),controller=null;
+
+const ui={
+  canvas,ctx:canvas.getContext('2d'),
+  label:(en,zh)=>zh,
+  action:document.getElementById('fire'),
+  point(event){
+    const rect=canvas.getBoundingClientRect();
+    return{x:(event.clientX-rect.left)*canvas.width/rect.width,
+      y:(event.clientY-rect.top)*canvas.height/rect.height};
+  },
+  status(text){document.getElementById('status').textContent=text;},
+  finish(){},
+  onShoot(code){
+    if(board.over)return;
+    board=bubblesMove(board,board.turn,code);
+    controller.applyBoard(board);
+  },
+  canPlay:()=>!board.over,
+  board:()=>board
+};
+function info(){
+  const rows=new Set();let count=0;
+  for(let i=0;i<N;i++)if(board.cells[i]){rows.add(GRID[i].r);count++;}
+  const rect=canvas.getBoundingClientRect();
+  const host=frame.getBoundingClientRect();
+  const world=Math.min(MAX_SCALE,rect.width/720,rect.height/765);
+  document.getElementById('board-info').textContent=
+    `棋盘 ${rows.size} 行 × 18 列 / ${count} 球 · 宿主 ${Math.round(host.width)}×${Math.round(host.height)}px · `+
+    `画布 ${Math.round(rect.width)}×${Math.round(rect.height)}px（比 ${(rect.width/rect.height).toFixed(3)}）· `+
+    `世界比例 ${world.toFixed(2)} · 球直径 ${(2*18.6*world).toFixed(1)}px · 左右反射墙 · 封面同款金属炮台`;
+}
+controller=createBubbles(ui);
+controller.applyBoard(board);
+controller.start(false);
+canvas.focus();
+info();
+
+function setWidth(value){
+  slider.value=value;
+  frame.style.width=value+'px';
+  output.textContent=value+'px';
+  requestAnimationFrame(info);
+}
+const query=new URLSearchParams(location.search);
+const preset=Number(query.get('w'));
+if(preset>=480&&preset<=1280)setWidth(preset);
+/* QA only: ?aim=-124 aims the launcher without a mouse, so the guide path
+   can be captured at a repeatable angle (degrees, -179..-1, 0 = right). */
+const qaAim=Number(query.get('aim'));
+if(qaAim<=-1&&qaAim>=-179){
+  const rad=qaAim*Math.PI/180,rect=canvas.getBoundingClientRect();
+  const world=Math.min(MAX_SCALE,rect.width/720,rect.height/765);
+  const ox=rect.left+(rect.width-720*world)/2,oy=rect.top+(rect.height-765*world)/2;
+  const d=260;
+  canvas.dispatchEvent(new PointerEvent('pointermove',{
+    clientX:ox+360*world+Math.cos(rad)*d,
+    clientY:oy+736*world+Math.sin(rad)*d,bubbles:true}));
+}
+/* QA only: ?over=1 fast-forwards to a finished board so the shared result
+   behaviour (no canvas-drawn result card) can be checked in one shot. */
+if(query.get('over')==='1'){
+  let guard=0;
+  while(!board.over&&guard++<40)board=bubblesMove(board,board.turn,74);
+  controller.applyBoard(board);
+  info();
+}
+new ResizeObserver(info).observe(frame);
+slider.oninput=()=>setWidth(slider.value);
+document.getElementById('reset').onclick=()=>{
+  seed++;
+  board=bubblesStart(seed);
+  controller.reset();
+  controller.applyBoard(board);
+  canvas.focus();
+  info();
+};
+</script>
+</body>
+</html>

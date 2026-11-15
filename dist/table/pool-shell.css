@@ -5,6 +5,10 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-game[data-screen="play"] header>a{font-size:20px;color:#e8f4ff}
 .pool-game[data-screen="play"] header button{min-height:30px;padding:5px 11px;background:#26354b;border-color:#42536c;color:#e5edf8;box-shadow:none}
 .pool-game[data-screen="play"] header #game-name,.pool-game[data-screen="play"] header>div>a{color:#9bb0c8}
+/* Rightward offset of the table group only. The chat column and every other
+   element keep their original width and position; the table's right edge stays
+   one sliver away from the sidebar. */
+.pool-game[data-screen="play"]{--pool-shift:28px}
 .pool-game[data-screen="play"] .arena{height:calc(100dvh - 46px);min-height:0;grid-template-columns:minmax(0,1fr) 285px;padding:0;gap:0;align-items:stretch;background:#070c14}
 .pool-game.portal-embedded[data-screen="play"] .arena{height:100dvh}
 .pool-game[data-screen="play"] .game-panel{min-height:0;height:100%;padding:10px 16px 14px;border:0;border-radius:0;background:radial-gradient(ellipse at 50% 55%,#132a3c,#050a11 78%);overflow:hidden}
@@ -40,7 +44,33 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-game[data-screen="play"] .pool-chat-panel{display:flex;flex-direction:column;gap:0;flex:1;min-height:0;padding:16px 12px 12px;background:linear-gradient(#203657,#172844);border:0;border-radius:0;box-shadow:none;overflow:hidden}
 .pool-chat-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:14px;border-bottom:1px solid #ffffff10;flex:none}
 .pool-chat-heading h2{margin:0;font-size:15px;color:#e7f1fb;letter-spacing:0}
-.pool-chat-count{font-size:9px;color:#98b1cf}
+/* The old static 'Room only' badge is now a real fullscreen toggle. Inside
+   the portal it is an EXIT-ONLY control: the shell header owns entering
+   fullscreen, so the chat heading shows the plain-text 退出全屏 label only
+   while fullscreen is active. No pill, fill, border, radius, native tooltip
+   or selectable text: hovering/clicking must never paint a pale square over
+   the white label. The heading uses space-between, so the title never moves.
+   Standalone tabs keep the always-visible toggle (their header has no
+   fullscreen button of its own). */
+.pool-chat-fullscreen{flex:none;appearance:none;cursor:pointer;font:inherit;font-size:10px;font-weight:700;line-height:1.3;
+  min-width:0;text-align:center;color:#cfe0f7;background:transparent;background-image:none;border:0;border-radius:0;box-shadow:none;padding:0;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:none}
+/* table.css paints EVERY button with a pale #eaf2ff hover fill plus a -1px
+   lift; the two home themes add `button:hover` rules at (0,4,1). Scope the
+   flat override to .pool-chat-panel (0,5,0) so it wins on every screen, theme
+   and load order: no fill, underline, colour change or lift in the resting,
+   hover or active state. Height, font size and the plain text label are
+   unchanged; only the keyboard focus ring remains. */
+.pool-chat-panel .pool-chat-heading .pool-chat-fullscreen:not(:disabled),
+.pool-chat-panel .pool-chat-heading .pool-chat-fullscreen:hover:not(:disabled),
+.pool-chat-panel .pool-chat-heading .pool-chat-fullscreen:active:not(:disabled){
+  background:transparent;background-image:none;
+  border:0;box-shadow:none;transform:none;text-decoration:none}
+.pool-chat-fullscreen:focus-visible{outline:2px solid #8fb7ff;outline-offset:2px}
+.pool-chat-fullscreen[aria-pressed="true"]{color:#fff}
+html.embedded-game .pool-chat-fullscreen{display:none}
+html.embedded-game .pool-chat-fullscreen[aria-pressed="true"]{display:inline-block}
 .pool-chat-log{flex:1;min-height:100px;overflow:auto;overscroll-behavior:contain;padding:12px 2px;scrollbar-width:thin;scrollbar-color:#49668b transparent}
 .pool-chat-empty{font-size:11px;color:#7d9bbc;line-height:1.7;margin:6px 0}
 .pool-chat-message{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;word-break:break-word}
@@ -48,7 +78,7 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-chat-line strong{font-size:inherit;color:#a5d5ff}
 .pool-chat-message time{padding-top:3px;font-size:8px;color:#637f9f;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pool-chat-body{white-space:pre-wrap}
-.pool-chat-ball{display:inline-block;width:17px;height:17px;margin-inline-end:2px;vertical-align:middle}
+.pool-chat-ball{display:inline-block;width:14px;height:14px;margin-inline-end:2px;vertical-align:middle}
 .pool-chat-emoji .pool-chat-body{font-size:20px;line-height:1.2;vertical-align:-2px}
 .pool-chat-notice{font-size:9px;line-height:1.5;margin:0 1px 8px;color:#87a4c5;min-height:14px;flex:none}
 .pool-chat-panel .reactions-panel{padding:0;margin:0 0 9px;border:0;border-radius:0;background:none;box-shadow:none;flex:none}
@@ -80,10 +110,12 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-game[data-screen="play"] .pool .pool-spot-reset{font-size:8px;min-height:20px;padding:2px 4px;margin:0;width:62px;background:#1c2c3f;border-color:#34475d;color:#c3d4e3;box-shadow:none}
 .pool-game[data-screen="play"] .pool .pool-sound{font-size:9px;width:62px;min-height:24px;padding:3px 5px;margin:0;background:#1c2c3f;border-color:#34475d;color:#bbcee0;box-shadow:none}
 @media(max-width:1000px) and (min-width:761px){
+ .pool-game[data-screen="play"]{--pool-shift:14px}
  .pool-game[data-screen="play"] .arena{grid-template-columns:minmax(0,1fr) 240px}
  .pool-matchup{width:calc(100% - 70px)}.pool-matchup #seats{gap:80px}.pool-matchup .seat-name strong{max-width:110px;font-size:12px}.pool-player-score{display:none}.pool-matchup .avatar-shell{width:38px;height:38px;flex-basis:38px}.pool-matchup .avatar-frame{width:52px;height:52px;inset:-7px}.pool-match-clock{width:52px;height:47px;top:15px}
 }
 @media(max-width:760px){
+ .pool-game[data-screen="play"]{--pool-shift:0px}
  body.pool-game[data-screen="play"]{overflow:auto}.pool-game[data-screen="play"] header{height:44px;padding:0 12px}.pool-game[data-screen="play"] header>div{gap:8px}.pool-game[data-screen="play"] header>a{font-size:18px}.pool-game[data-screen="play"] #profile{display:none}
  .pool-game[data-screen="play"] .arena,.pool-game.portal-embedded[data-screen="play"] .arena{height:auto;min-height:calc(100dvh - 44px);grid-template-columns:1fr;display:grid;gap:0}
  .pool-game[data-screen="play"] .game-panel{height:auto;padding:5px 6px 10px;min-height:0;overflow:hidden}
@@ -158,7 +190,10 @@ body.pool-game[data-screen="play"]{background:#080e18;color:#deebf7;overflow:hid
 .pool-result-card .pool-result-close:hover{background:#abc6e31a;color:#eff6ff}
 .pool-result-card button:focus-visible,.pool-result-open:focus-visible{outline:2px solid #fff1bc;outline-offset:3px}
 .pool-result-note{margin:15px 0 0;color:#e5d2a0;font-size:12px;line-height:1.65}
-[data-screen="play"] .pool-result-open{flex:none;min-height:34px;width:calc(100% - 24px);margin:0 12px 9px;padding:7px 12px;border:1px solid #8c7852;border-radius:10px;background:#283343;color:#e6ce93;box-shadow:none;font-size:11px}
+/* "View result" is created with the same class list as the "Leave game"
+   button (see createResult()), so it inherits the active theme's sidebar
+   button skin. Do not add size / colour overrides for .pool-result-open:
+   they made the two stacked buttons differ on every non-pool game. */
 .pool-result-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 body>.pool-result-confetti{position:fixed;z-index:100}
 .pool-result-confetti i{position:absolute;left:var(--x);top:-24px;width:var(--width);height:calc(var(--width)*1.6);border-radius:1px;background:var(--color);opacity:0;animation:pool-confetti-fall var(--duration) var(--delay) linear both}
@@ -176,7 +211,7 @@ body>.pool-result-confetti{position:fixed;z-index:100}
 .pool-game[data-screen="play"] .pool-note{display:none}
 @media(min-width:761px){
  .pool-game[data-screen="play"] .game-panel{padding:6px 8px}
- .pool-game[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 118px);width:min(100%,calc(var(--pool-table-height)*1232/644 + 70px));flex:0 1 auto;margin:auto;grid-template-columns:64px minmax(0,1fr);column-gap:6px}
+ .pool-game[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 118px);width:min(100%,calc(var(--pool-table-height)*1232/644 + 70px));flex:0 1 auto;margin:auto 0 auto auto;grid-template-columns:64px minmax(0,1fr);column-gap:6px}
  .pool-game.portal-embedded[data-screen="play"] .game-panel .board.pool{--pool-table-height:calc(100dvh - 72px)}
  .pool-game[data-screen="play"] .pool-table-wrap{place-items:center;align-self:center}
  .pool-game[data-screen="play"] .pool canvas.pool-table-canvas,.pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{width:100%;height:auto;max-width:100%;max-height:none;aspect-ratio:1232/644;margin:0}
@@ -215,6 +250,41 @@ body>.pool-result-confetti{position:fixed;z-index:100}
  .power-cue{width:18px;margin-left:-9px}
  .pool-power-value{font-size:12px}
 }
+/* Move only the table; the chat column keeps its original 285/240px width.
+   With a height-limited canvas the spare room goes to the left; with a
+   width-limited canvas the table gives up that width on its left edge so the
+   right edge still clears the sidebar by a sliver.
+   Second step: the canvas paints a black margin of 15.5/1232 of its width to
+   the right of the yellow return channel, plus 8px of panel padding. Shift the
+   table group by --pool-right-fill (two thirds) of that spare gap so one third
+   remains; the percentage in translateX resolves against the group's own
+   width, keeping the fraction exact at every viewport. Nothing else moves —
+   chat, cue controls, feedback labels and turn toast are outside the group. */
+.pool-game[data-screen="play"]{--pool-right-fill:.6667}
+@media(min-width:761px){
+ .pool-game[data-screen="play"] .game-panel .board.pool{max-width:calc(100% - var(--pool-shift,0px) + 80px * (var(--pool-controls-scale,1) - 1));margin:auto 0 auto auto}
+ .pool-game[data-screen="play"] .pool-table-wrap{transform:translateX(calc(8px * var(--pool-right-fill) + 1.2581% * var(--pool-right-fill)))}
+}
+/* Enlarge the cue-side controls (sound, spin ball, power meter, percentage).
+   The grid column and board width grow by the same amount, so the canvas keeps
+   its exact size and right-hand position — only the control column extends to
+   the left. One --pool-controls-scale drives every dimension. */
+@media(min-width:761px){
+ .pool-game[data-screen="play"]{--pool-controls-scale:1.12}
+ .pool-game[data-screen="play"] .game-panel .board.pool{
+   grid-template-columns:calc(80px * var(--pool-controls-scale)) minmax(0,1fr);
+   width:min(100%,calc(var(--pool-table-height)*1232/644 + 6px + 80px * var(--pool-controls-scale)))}
+ .pool-game[data-screen="play"] .pool-hit{width:calc(80px * var(--pool-controls-scale))}
+ .pool-game[data-screen="play"] .pool canvas.pool-spot{width:calc(78px * var(--pool-controls-scale));height:calc(78px * var(--pool-controls-scale));max-width:none;max-height:none}
+ .pool-game[data-screen="play"] .pool .pool-sound,.pool-game[data-screen="play"] .pool .pool-spot-reset{width:calc(76px * var(--pool-controls-scale));font-size:calc(10px * var(--pool-controls-scale))}
+ .pool-game[data-screen="play"] .pool .pool-sound{min-height:calc(29px * var(--pool-controls-scale));font-size:calc(11px * var(--pool-controls-scale))}
+ .pool-game[data-screen="play"] .pool-power-meter{width:calc(42px * var(--pool-controls-scale))}
+ .pool-game[data-screen="play"] .power-cue{width:calc(18px * var(--pool-controls-scale));margin-left:calc(-9px * var(--pool-controls-scale))}
+ .pool-game[data-screen="play"] .pool-power-value{font-size:calc(12px * var(--pool-controls-scale))}
+}
+@media(min-width:1001px){
+ .pool-game[data-screen="play"]{--pool-controls-scale:1.25}
+}
 @media(max-width:760px){
  .pool-matchup{width:calc(100% - 40px);height:60px;min-height:60px;margin-left:40px}
  .pool-matchup .seat-name{min-height:14px;gap:3px}
@@ -241,8 +311,16 @@ body>.pool-result-confetti{position:fixed;z-index:100}
 
 .pool-chat-system[data-kind="foul"]{--system-color:#ff929d}
 .pool-chat-system[data-kind="reward"]{--system-color:#86e9ab}
-.pool-feedback{position:absolute;top:28%;left:50%;transform:translateX(-50%);z-index:5;display:grid;justify-items:center;gap:8px;pointer-events:none}
-.pool-feedback span{padding:.36em .95em;border:1px solid #ff929d88;border-radius:14px;background:#402330;color:#fff2f5;font-size:clamp(19px,2.4vw,36px);font-weight:800;box-shadow:0 8px 25px #0005}
+/* One caption frame for both the shot feedback and the turn announcement.
+   Feedback always shows first and the turn caption follows after it fades,
+   so both can share the same square shape, type, shadow and place on the cloth. */
+.pool-feedback,.pool-turn-toast{position:absolute;top:22%;left:50%;transform:translateX(-50%);pointer-events:none}
+.pool-feedback{z-index:5;display:grid;justify-items:center;gap:8px}
+.pool-feedback span,.pool-turn-toast{
+  display:block;padding:.36em .95em;border-radius:6px;white-space:nowrap;
+  border:1px solid #ff929d88;background:#402330;color:#fff2f5;
+  font-size:clamp(19px,2.4vw,36px);font-weight:800;
+  box-shadow:0 8px 25px #0005}
 /* Every caption over the cloth now shares one height: the turn toast uses the
    same font-size and em-based padding as the feedback labels, so "该你击球"
    is exactly as tall as "你打全色球 / 犯规 / 奖励一杆" at every viewport. */
@@ -250,23 +328,14 @@ body>.pool-result-confetti{position:fixed;z-index:100}
 .pool-feedback [data-kind="groups"]{background:#172b49;color:#eef5ff;border-color:#8eb5ed99}
 /* Brief turn caption over the table: gold for the local player, cool blue for
    the opponent. Purely decorative (pointer-events:none, aria-hidden) so it can
-   never block aiming, dragging or a click on the cue ball. */
+   never block aiming, dragging or a click on the cue ball. No leading dot. */
 /* Sits inside the blue cloth, clear of the top rail and centre pocket: 15%
    used to pin the caption right on the black cushion, which looked cramped. */
-.pool-turn-toast{position:absolute;top:22%;left:50%;z-index:6;
-  display:flex;align-items:center;gap:10px;
-  padding:.36em .95em;border-radius:999px;white-space:nowrap;pointer-events:none;
-  border:1px solid #f4d78c8a;
-  background:linear-gradient(180deg,#22334eea,#0e1a2cea);
-  box-shadow:0 12px 34px #0009,0 0 22px #f4d78c1f,inset 0 1px #ffffff26;
-  color:#ffe6ad;font-size:clamp(19px,2.4vw,36px);font-weight:800;letter-spacing:.05em;
-  transform:translateX(-50%);
+.pool-turn-toast{z-index:6;
+  border-color:#f4d78c8a;background:#332914;color:#ffe6ad;
   animation:pool-turn-pop 2s cubic-bezier(.22,.7,.25,1) both}
-.pool-turn-toast i{flex:none;width:10px;height:10px;border-radius:50%;
-  background:#f4d78c;box-shadow:0 0 12px 3px #f4d78c99}
-.pool-turn-toast[data-kind="opponent"]{border-color:#8fb6e47a;color:#d8e8ff;
-  background:linear-gradient(180deg,#1b2c46e8,#0d182ae8)}
-.pool-turn-toast[data-kind="opponent"] i{background:#8fb6e4;box-shadow:0 0 12px 3px #8fb6e488}
+.pool-turn-toast[hidden]{display:none!important}
+.pool-turn-toast[data-kind="opponent"]{border-color:#8fb6e47a;color:#d8e8ff;background:#172b49}
 @keyframes pool-turn-pop{
   0%{opacity:0;transform:translate(-50%,14px) scale(.86)}
   13%{opacity:1;transform:translate(-50%,0) scale(1)}
@@ -274,7 +343,7 @@ body>.pool-result-confetti{position:fixed;z-index:100}
   100%{opacity:0;transform:translate(-50%,-10px) scale(.98)}
 }
 @media(prefers-reduced-motion:reduce){.pool-turn-toast{animation:none;transform:translate(-50%,0)}}
-@media(max-width:760px){.pool-turn-toast{top:19%;gap:7px}}
+@media(max-width:760px){.pool-feedback,.pool-turn-toast{top:19%}}
 .table-home-theme[data-screen="play"]{background:#0b1120;color:#e6edf8}
 .table-home-theme[data-screen="play"]:not(.pool-game) .game-panel{background:#111a30;border-color:#263654}
 .table-home-theme[data-screen="play"]:not(.pool-game) .play-sidebar>section{background:#151f37;color:#e6edf8;border-color:#303e60}
@@ -297,8 +366,9 @@ body>.pool-result-confetti{position:fixed;z-index:100}
 /* The READY / 3-2-1 overlay blocks the board, but "back to game home" must be
    clickable from the very first frame of a match, not only after GO clears it.
    Works for every countdown game (pool, snooker, bubbles, chess, four), not
-   just the ones that use the table-chat layout. */
-body.board-countdown[data-screen="play"] .game-panel>.board-top{z-index:7}
+   just the ones that use the table-chat layout. Snooker raises its own overlay
+   to z-index 9 (above the shot card), so the arrow has to clear that too. */
+body.board-countdown[data-screen="play"] .game-panel>.board-top{z-index:10}
 body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-events:auto}
 .table-chat-layout .play-sidebar .seat{background:#1c2945;color:#e6edf8;border-color:#354968}
 .table-chat-layout .play-sidebar .seat.active{background:#253757;border-color:#819ee3}
@@ -314,11 +384,15 @@ body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-e
 .pool-chat-log::before{content:'';flex:1 0 0}
 .pool-chat-log>*{flex-shrink:0}
 .pool-chat-log .pool-chat-message{margin-bottom:4px;line-height:1.4}
-.pool-game{--pool-player-text-size:15px}
-.pool-game .pool-matchup .seat-name strong,
-.pool-game .pool-chat-log .pool-chat-message{font-size:var(--pool-player-text-size)}
-@media(max-width:1000px){.pool-game{--pool-player-text-size:13px}}
-@media(max-width:760px){.pool-game{--pool-player-text-size:12px}}
+/* The seat names and the chat log used to share one size variable, which
+   made the room chat noticeably larger than the rest of the sidebar. Keep
+   the seat names where they were and give the log its own, smaller scale;
+   the inline ball icons follow so a line of text stays balanced. */
+.pool-game{--pool-player-text-size:15px;--pool-chat-text-size:12px}
+.pool-game .pool-matchup .seat-name strong{font-size:var(--pool-player-text-size)}
+.pool-game .pool-chat-log .pool-chat-message{font-size:var(--pool-chat-text-size)}
+@media(max-width:1000px){.pool-game{--pool-player-text-size:13px;--pool-chat-text-size:11px}}
+@media(max-width:760px){.pool-game{--pool-player-text-size:12px;--pool-chat-text-size:11px}}
 .pool-chat-log .pool-chat-message time{padding-top:1px}
 .connect-four-game .table-chat-layout .game-panel{
   container-type:inline-size;
@@ -334,6 +408,7 @@ body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-e
   --four-one:radial-gradient(circle at 32% 24%,#fff8d6 0%,#ffd878 24%,#f2b33c 58%,#c47d1c 88%,#8a4f10 100%);
   --four-two:radial-gradient(circle at 32% 24%,#ffe0e8 0%,#ffa7b8 24%,#e85b79 58%,#a62d54 88%,#6e1837 100%);
   --four-hole:radial-gradient(circle at 50% 34%,#0a1330 0%,#111e42 62%,#1c2d5b 100%);
+  --four-coin-shadow:inset 0 2px 3px #fff9,inset 0 -6px 9px #0004,0 3px 7px #0007;
 }
 .connect-four-game.table-home-theme[data-screen="play"] .game-panel{
   background:radial-gradient(ellipse 70% 55% at 50% 0%,#3b56a055,transparent 70%),radial-gradient(ellipse 65% 45% at 50% 100%,#1d356a4d,transparent 75%),linear-gradient(165deg,#101b33,#0a1122 72%);
@@ -365,8 +440,13 @@ body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-e
   background:radial-gradient(circle at 50% 36%,#242b4c,#101830 70%);
   box-shadow:inset 0 6px 11px #0008,inset 0 0 0 2px #ffd87877,0 0 22px #ffd87844;
 }
-.connect-four-game .board .cell[data-value="1"]{background:var(--four-one);box-shadow:inset 0 2px 3px #fff9,inset 0 -6px 9px #0004,0 3px 7px #0007}
-.connect-four-game .board .cell[data-value="2"]{background:var(--four-two);box-shadow:inset 0 2px 3px #fff9,inset 0 -6px 9px #0004,0 3px 7px #0007}
+.connect-four-game .board .cell[data-value="1"]{background:var(--four-one);box-shadow:var(--four-coin-shadow)}
+.connect-four-game .board .cell[data-value="2"]{background:var(--four-two);box-shadow:var(--four-coin-shadow)}
+/* Classic theme: no content:'' is generated for .cell::before (table.css only
+   generates it for .gomoku), so the ring below is inert and settled counters
+   are plain. The launch coin must match, see the scoped rule at the marker.
+   Reverse switch: add content:'';position:absolute here, then delete the two
+   classic-only marker rules below to ring every counter instead. */
 .connect-four-game .board .cell[data-value="1"]::before,
 .connect-four-game .board .cell[data-value="2"]::before{
   display:block;inset:13%;width:auto;height:auto;background:none;filter:none;
@@ -413,6 +493,11 @@ body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-e
   border:1px solid #ffffff4d;box-shadow:inset 0 1px 2px #0003,0 1px 0 #ffffff2e;
 }
 .four-drop-marker[data-player="2"] i{background:var(--four-two)}
+/* Classic theme: the held/dropping coin is the same object as a settled
+   counter, so it must not gain an inner ring or a larger floating halo.
+   Themed skins keep the face artwork drawn by four-theme.css on ::after. */
+body.connect-four-game:not(.four-themed) .four-drop-marker i{box-shadow:var(--four-coin-shadow)}
+body.connect-four-game:not(.four-themed) .four-drop-marker i::after{content:none}
 .four-drop-marker span{position:absolute;left:23%;top:-27%;width:90%;height:auto}
 .four-drop-marker[data-mode="preview"] span{display:none}
 .four-drop-ghost{
@@ -474,3 +559,77 @@ body.board-countdown[data-screen="play"] .game-panel>.board-top button{pointer-e
 }
 .arcade-controls label[hidden] { display: none; }
 .arcade-controls input { width: min(25vw, 180px); margin: 0; padding: 0; vertical-align: middle; }
+
+/* Grow the table left/up into the clear space on those two edges only. The
+   canvas keeps its right/bottom anchor, so the chat column, cue controls,
+   match header and the yellow return channel stay exactly where they were.
+   The translate() cancels the centred grid's half of the inset, so the whole
+   delta lands on the left/top edge (16px -> 8.4px vertically at 1232/644).
+   --pool-edge-inset < 0 = grow the table into the gap; 0 = old geometry;
+   > 0 = add breathing room instead (table shrinks slightly). Negative values
+   are capped by the fixed cue-control column: ~42px of clear space at 1920px,
+   ~38px at 1440px, ~28px at 900px, so a few px of gap is always preserved. */
+.pool-game[data-screen="play"]{--pool-edge-inset:-16px}
+@media(max-width:1600px) and (min-width:1001px){
+ .pool-game[data-screen="play"]{--pool-edge-inset:-12px}
+}
+@media(max-width:1000px) and (min-width:761px){
+ .pool-game[data-screen="play"]{--pool-edge-inset:-8px}
+}
+@media(max-width:760px){
+ .pool-game[data-screen="play"]{--pool-edge-inset:0px}
+}
+@media(min-width:761px){
+ .pool-game[data-screen="play"] .pool canvas.pool-table-canvas,
+ .pool-game.portal-embedded[data-screen="play"] .pool canvas.pool-table-canvas{
+   width:calc(100% - var(--pool-edge-inset,0px));
+   max-width:none;
+   transform:translate(calc(var(--pool-edge-inset,0px)/2),calc(var(--pool-edge-inset,0px)/3.826));
+ }
+}
+
+/* Portal fullscreen on desktop only: enlarge the two avatar pictures and
+   the centred "Turn" badge by 50%. The pocketed-ball icons
+   (canvas.pool-target-ball) and every ball painted on the table canvas keep
+   their exact size; only the picture holders grow. The body flag is set by
+   portal-controls.js from the portal's joyflock:game-fullscreen message,
+   so the embedded (non-fullscreen) layout is untouched. */
+@media(min-width:1001px){
+body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-matchup .avatar-shell{
+  width:calc(clamp(26px,5.55cqw,60px)*1.5);
+  height:calc(clamp(26px,5.55cqw,60px)*1.5);
+  flex-basis:calc(clamp(26px,5.55cqw,60px)*1.5);
+}
+body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-match-clock{
+  width:99px;height:79.5px;
+}
+body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-clock-label{font-size:12px}
+body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-match-clock #turn-clock{font-size:28.5px}
+/* The badge is absolutely centred, so the two seats need a gap wider than
+   the badge itself: 99px + ~20px on each side. Leave the matchup width alone
+   (all cqw-based sizes, especially the ball icons, stay pixel-identical) and
+   just narrow the seats; the ball rows merely shift a few px outwards. On
+   narrow screens the zoom is disabled entirely, because a 99px badge cannot
+   fit between the seats there without overlapping the avatars. */
+body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-matchup #seats{
+  gap:140px;
+}
+}
+
+/* Countdown scrim must cover the LEFT RAIL too.
+   The 3 · 2 · 1 card is an absolutely positioned child of .pool-table-wrap,
+   so its #020a17b8 scrim only dims the table canvas: the sound button, spin
+   ball, power meter and 0% readout next to it stayed bright and clickable
+   during the whole countdown. Mirror the exact same scrim over the rail while
+   any countdown phase is on screen. :has() watches the [hidden] attribute
+   that pool-countdown.js toggles, so no JS state and no second scrim on the
+   table (which would double-dim it). The GO phase uses the lighter scrim and
+   lets clicks through, exactly like the card itself. */
+.pool-game[data-screen="play"] .pool-left-controls{position:relative}
+.pool-game[data-screen="play"] .board.pool:has(.pool-countdown:not([hidden])) .pool-left-controls::after{
+  content:'';position:absolute;inset:0;z-index:6;background:#020a17b8;
+  border-radius:12px;pointer-events:auto;
+}
+.pool-game[data-screen="play"] .board.pool:has(.pool-countdown[data-phase="GO"]:not([hidden])) .pool-left-controls::after{
+  background:#020a1750;pointer-events:none;
+}

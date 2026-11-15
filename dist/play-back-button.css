@@ -1,0 +1,24 @@
+/* Play-screen back control. The other JoyFlock games put a compact left-arrow
+   at the top-left of the board; Flight Party keeps the same affordance while
+   the round label, tip and camera reset stay in their original row. */
+#play .board-top .board-back-btn{
+ margin-left:0;flex:0 0 auto;
+ display:inline-flex;align-items:center;justify-content:center;
+ width:32px;min-width:32px;height:32px;padding:0;
+ border:2px solid #fff;border-radius:10px;
+ background:#f2fbffdf;color:#245b99;
+ box-shadow:0 3px 8px #13507e22;
+ font-size:19px;font-weight:900;line-height:1;
+ cursor:pointer;transition:background .15s ease,transform .15s ease;
+}
+#play .board-top .board-back-btn:hover{background:#fff;transform:translateY(-1px)}
+#play .board-top .board-back-btn:active{transform:translateY(0)}
+#play .board-top .board-back-btn:focus-visible{outline:3px solid #2f7bd8;outline-offset:2px}
+@media(max-width:600px){
+ #play .board-top{gap:8px}
+ #play .board-top .board-back-btn{width:28px;min-width:28px;height:28px;font-size:17px;border-radius:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ #play .board-top .board-back-btn{transition:none}
+ #play .board-top .board-back-btn:hover{transform:none}
+}

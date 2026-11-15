@@ -2,6 +2,7 @@ package com.flightparty.room;
 
 import com.flightparty.game.GameRules;
 import com.flightparty.game.ServerDie;
+import com.flightparty.online.CustodyPolicy;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,7 +16,10 @@ public class RoomRollService {
     private final StringRedisTemplate redis;
     private final ServerDie die=new ServerDie();
     private final JsonMapper json=JsonMapper.builder().build();
-    private static final DefaultRedisScript<String> COMMIT=new DefaultRedisScript<>("""
+    /* One 30s turn clock for every game: the same CustodyPolicy.IDLE_MS the
+       table rooms use. CHOOSE starts after the animation (ARGV[3]=busyUntil),
+       ROLL starts now (ARGV[7]). */
+    private static final String COMMIT_LUA = """
         local rt=redis.call('TYPE',KEYS[2]).ok
         local et=redis.call('TYPE',KEYS[3]).ok
         if rt~='none' and rt~='string' then return 'CONFLICT' end
@@ -28,13 +32,14 @@ public class RoomRollService {
         version=version+1
         local game=cjson.decode(ARGV[2])
         local deadline=0
-        if game.phase=='CHOOSE' then deadline=tonumber(ARGV[3])+15000 end
-        if game.phase=='ROLL' then deadline=tonumber(ARGV[7])+15000 end
+        if game.phase=='CHOOSE' then deadline=tonumber(ARGV[3])+%d end
+        if game.phase=='ROLL' then deadline=tonumber(ARGV[7])+%d end
         redis.call('HSET',KEYS[1],'game',ARGV[2],'busyUntil',ARGV[3],'gameVersion',version,'actionDeadline',deadline)
         redis.call('SET',KEYS[2],ARGV[4])
         redis.call('XADD',KEYS[3],'*','matchId',ARGV[5],'version',version,'type',ARGV[6],'payload',ARGV[4],'snapshot',ARGV[2])
         return ARGV[4]
-        """,String.class);
+        """.formatted(CustodyPolicy.IDLE_MS,CustodyPolicy.IDLE_MS);
+    private static final DefaultRedisScript<String> COMMIT=new DefaultRedisScript<>(COMMIT_LUA,String.class);
     public record Result(GameRules.State game,long busyUntil) {}
     public RoomRollService(RedisRoomStore rooms,StringRedisTemplate redis) { this.rooms=rooms;this.redis=redis; }
     public synchronized Result roll(UUID roomId,UUID principal,UUID commandId) {
@@ -42,6 +47,7 @@ public class RoomRollService {
         var room=rooms.load(roomId).orElseThrow().room();
         var seat=room.seats().stream().filter(s->principal.equals(s.principal())).findFirst().orElseThrow();
         if(room.phase()!=RoomRules.Phase.PLAYING) throw new IllegalStateException("not playing");
+        if(seat.absent(System.currentTimeMillis())) throw new IllegalStateException("seat is hosted; reconnect first");
         String key="fp:{rooms}:room:"+roomId;
         String receipt="fp:{rooms}:roll:"+roomId+":"+principal+":"+commandId;
         String saved=redis.opsForValue().get(receipt);
@@ -62,6 +68,7 @@ public class RoomRollService {
         var room=rooms.load(roomId).orElseThrow().room();
         var seat=room.seats().stream().filter(s->principal.equals(s.principal())).findFirst().orElseThrow();
         if(room.phase()!=RoomRules.Phase.PLAYING) throw new IllegalStateException("not playing");
+        if(seat.absent(System.currentTimeMillis())) throw new IllegalStateException("seat is hosted; reconnect first");
         String key="fp:{rooms}:room:"+roomId;
         String receipt="fp:{rooms}:move:"+roomId+":"+principal+":"+commandId;
         String saved=redis.opsForValue().get(receipt);
@@ -105,15 +112,32 @@ public class RoomRollService {
         Object busy=redis.opsForHash().get(key,"busyUntil");
         if(busy!=null && now<Long.parseLong(busy.toString())) return;
         var room=rooms.load(roomId).orElseThrow().room();
-        boolean bot=room.seats().stream().anyMatch(s->s.index()==game.turn()&&s.bot());
+        var turnSeat=room.seats().stream().filter(s->s.index()==game.turn()).findFirst().orElse(null);
+        // A seat inside its 30s reconnect window holds its turn entirely.
+        if(turnSeat!=null&&CustodyPolicy.GRACE.equals(turnSeat.resolved(now)))return;
         boolean onlyMove=game.phase()==GameRules.Phase.CHOOSE && GameRules.legal(game).size()==1;
         Object deadline=redis.opsForHash().get(key,"actionDeadline");
+        boolean clockExpired=deadline!=null&&now>=Long.parseLong(deadline.toString());
+        /* An ONLINE but idle real player is hosted the moment their 30s action
+           clock runs out — no second reconnect countdown. WS pongs no longer
+           reclaim custody, so the easy bot keeps playing until /activity. */
+        if(clockExpired&&!onlyMove&&RoomRules.managed(room)&&turnSeat!=null
+           &&CustodyPolicy.ACTIVE.equals(turnSeat.resolved(now))){
+            rooms.mutate(roomId,r->RoomRules.hostIdle(r,game.turn(),now));
+            room=rooms.load(roomId).orElseThrow().room();
+            turnSeat=room.seats().stream().filter(s->s.index()==game.turn()).findFirst().orElse(null);
+        }
+        boolean hosted=turnSeat!=null&&CustodyPolicy.HOSTED.equals(turnSeat.resolved(now));
+        boolean bot=turnSeat!=null&&turnSeat.botControlled(now);
         if(!bot && !onlyMove && (deadline==null || now<Long.parseLong(deadline.toString()))) return;
         GameRules.State next;long until;Object response;String type;
         if(game.phase()==GameRules.Phase.ROLL) {
             next=GameRules.roll(game,die.roll());until=now+1120;response=new Result(next,until);type="DICE_ROLLED";
         } else {
-            int plane=GameRules.botChoice(game);var move=GameRules.move(game,plane);next=move.state();
+            // Hosted real-player seats are played by the easy bot, never by the
+            // normal greedy bot and never by the player's saved difficulty.
+            int plane=hosted?GameRules.easyChoice(game):GameRules.botChoice(game);
+            var move=GameRules.move(game,plane);next=move.state();
             int steps=move.to()-move.from();until=now+(long)Math.ceil(steps*Math.max(100,Math.min(175,1250.0/steps)))+(move.captures().isEmpty()?130:1660);
             response=new MoveResult(plane,move,until);type="MOVE_RESOLVED";
         }

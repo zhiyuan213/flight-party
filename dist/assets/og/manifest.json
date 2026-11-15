@@ -1,0 +1,110 @@
+[
+  {
+    "slug": "pool",
+    "cover": "/assets/covers/pool.jpg",
+    "name": {
+      "zh": "欢乐台球",
+      "en": "Pool"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "flight-party",
+    "cover": "/assets/plane-vip-gold-body.png",
+    "name": {
+      "zh": "飞行棋",
+      "en": "Flight Party"
+    },
+    "players": {
+      "zh": "2–4 人",
+      "en": "2–4 players"
+    }
+  },
+  {
+    "slug": "connect-four",
+    "cover": "/assets/covers/four.jpg",
+    "name": {
+      "zh": "四子连珠",
+      "en": "Connect Four"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "gomoku",
+    "cover": "/assets/covers/gomoku.jpg",
+    "name": {
+      "zh": "五子棋",
+      "en": "Gomoku"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "chess",
+    "cover": "/assets/covers/chess.jpg",
+    "name": {
+      "zh": "国际象棋",
+      "en": "Chess"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "tic-tac-toe",
+    "cover": "/assets/covers/xo.svg",
+    "name": {
+      "zh": "井字棋",
+      "en": "Tic-tac-toe"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "cards",
+    "cover": "/assets/covers/cards.jpg",
+    "name": {
+      "zh": "欢乐纸牌",
+      "en": "Cards"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "snooker",
+    "cover": "/assets/covers/snooker.jpg",
+    "name": {
+      "zh": "斯诺克",
+      "en": "Snooker"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "bubble-shooter",
+    "cover": "/assets/covers/bubbles.jpg",
+    "name": {
+      "zh": "泡泡射击",
+      "en": "Bubble Shooter"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  }
+]

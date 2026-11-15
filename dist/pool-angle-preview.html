@@ -1,0 +1,107 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>六袋角度矩阵 · 逐帧验收</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
+<style>
+body{margin:24px;background:#0b1119;color:#e3edf5;font:15px system-ui;max-width:1500px}
+h1{font-size:22px;margin-bottom:6px}h2{font-size:16px;margin:20px 0 3px}
+p{color:#adbdcc;margin:4px 0 10px;line-height:1.6}
+.bar{display:flex;gap:16px;align-items:center;margin:14px 0 6px}
+button{padding:8px 16px;background:#243d56;color:white;border:1px solid #62778b;border-radius:6px;cursor:pointer}
+label{display:flex;gap:6px;align-items:center;color:#adbdcc;cursor:pointer}
+.row{display:grid;grid-template-columns:repeat(8,168px);gap:10px}
+canvas{width:168px;height:168px;background:#0b1119}
+figure{margin:0}figcaption{margin-bottom:4px;font-size:13px;color:#8fa6ba}
+.tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:12px;margin-left:8px;vertical-align:2px}
+.on{background:#3d2626;color:#ff9b8c;border:1px solid #a4483c}
+.mid{background:#233b3d;color:#8fe4d8;border:1px solid #3d7a72}
+.off{background:#23303b;color:#9ab4c8;border:1px solid #456}
+h3{font-size:17px;margin:26px 0 2px;color:#cfe2f2;border-bottom:1px solid #26394a;padding-bottom:6px}
+</style>
+<h1>六袋角度矩阵 · 全力与力度分级/h1>
+<p>第一组：六个袋用<strong>完全相同的一杆</strong>（局部角度 45°、距离 200、power 100）共 6 个角袋应逐项一致，2 个中袋应逐项一致；两组之间因袋型不同可以不同。第二组：同一斜角下力度从 40% 到 100%，看「轻推一杆：少转点圈 → 满力两圈」的递进。黄线是球心轨迹，红点是袋壁接触点/p>
+<div class="bar"><button id="play">播放整段动作</button><label><input type="checkbox" id="trace" checked>叠加球心轨迹</label><span id="clock" style="color:#8fa6ba"></span></div>
+<main></main>
+<script type="module">
+import{makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES}from './table/pool-table.js?v=20261112-gamelanes1';
+import{drawReturnChannel,pocketMotion,POCKET_DURATION}from './table/pool-return.js?v=20261110-glove2';
+import{poolStart,poolMove}from './table/pool.js?v=20261113-pooldiff1';
+const S=168,times=[0,60,120,180,240,320,420,560],views=[];
+const table=document.createElement('canvas');table.width=TABLE_WIDTH*2;table.height=TABLE_HEIGHT*2;
+const t=table.getContext('2d');t.scale(2,2);makeTable(t);
+function frame(hx,hy){return {sx:hx===1000?-1:1,sy:hy===500?-1:1,middle:hx===500};}
+function fire(gx,gy,angle,power){
+  const s=poolStart();for(let i=1;i<16;i++)s.cells[i*3+2]=0;
+  s.cells[0]=gx*10;s.cells[1]=gy*10;
+  const r=poolMove(s,1,power*3600+angle),cap=r.audioEvents.find(e=>e.kind==='pocket');if(!cap)return null;
+  const f=r.history.map(v=>v.split(',').map(Number)).find(v=>!v[2]);if(!f)return null;
+  return {...cap,id:3,start:0,scratch:true,shotPower:power,x:f[0]/10+TABLE_PAD,y:f[1]/10+TABLE_PAD};
+}
+function shotXY(x,y,angle,power){return fire(x,y,angle,power);}
+function localShot(idx,adeg,e,L,power){
+  const [hx,hy]=TABLE_HOLES[idx],{sx,sy,middle}=frame(hx,hy);
+  const center=middle?[0,-26]:[-17,-17],base=middle?[0,1]:[Math.SQRT1_2,Math.SQRT1_2];
+  const a=adeg*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a);
+  const d=[base[0]*cs-base[1]*sn,base[0]*sn+base[1]*cs],tg=[-d[1],d[0]];
+  const st=[center[0]+d[0]*L+tg[0]*e,center[1]+d[1]*L+tg[1]*e];
+  const tar=[center[0]+tg[0]*e*.35,center[1]+tg[1]*e*.35];
+  let v=[tar[0]-st[0],tar[1]-st[1]],vl=Math.hypot(...v);v=v.map(q=>q/vl);
+  const gx=hx+st[0]*sx,gy=hy+st[1]*sy;
+  const deg=(Math.atan2(v[1]*sy,v[0]*sx)*180/Math.PI+360)%360;
+  return fire(gx,gy,Math.round(deg*10),power);
+}
+const names=['左上角袋','上中袋,'右上角袋','左下角袋','下中袋,'右下角袋'];
+const groups=[
+  ['第一组· 六袋同一杆（power 100，局部角度 45°），,
+    names.map((n,i)=>[n,localShot(i,-15,0,200,100)])],
+  ['第二组· 同一斜角，力度分级,
+    [['斜角 power 40 · 轻推',shotXY(200,400,3069,40)],
+     ['斜角 power 60 · 少转点圈',shotXY(200,400,3069,60)],
+     ['斜角 power 80 · 中等',shotXY(200,400,3069,80)],
+     ['斜角 power 100 · 全力',shotXY(200,400,3069,100)]]]
+];
+for(const [heading,cases] of groups){
+  const h3=document.createElement('h3');h3.textContent=heading;document.querySelector('main').append(h3);
+  for(const [name,item] of cases){
+    if(!item)continue;
+    const m=pocketMotion(item),kind=m.rattle?`绕袋 ${m.rattle.turns.toFixed(2)} 圈`:m.rebound?`往返${m.rebound.bounces} 次`:'直落 1 次;
+    const h2=document.createElement('h2');h2.textContent=`${name} · ${item.holeIndex}`;
+    const tag=document.createElement('span');tag.className='tag '+(m.rattle?'on':m.rebound?'mid':'off');tag.textContent=kind;
+    h2.append(tag);document.querySelector('main').append(h2);
+    const info=document.createElement('p');
+    info.textContent=`入射速度 ${Math.hypot(item.vx,item.vy).toFixed(1)} · 袋壁接触 ${m.contacts.length} 次 · 落袋 ${m.dropAt} ms`;
+    document.querySelector('main').append(info);
+    const row=document.createElement('div');row.className='row';document.querySelector('main').append(row);
+    for(const age of times){
+      const f=document.createElement('figure'),cap=document.createElement('figcaption'),canvas=document.createElement('canvas');
+      cap.textContent=age+' ms';canvas.width=S*2;canvas.height=S*2;
+      f.append(cap,canvas);row.append(f);views.push({item,age,canvas,motion:m});
+    }
+  }
+}
+function paint(v,age){
+  const [hx,hy]=TABLE_HOLES[v.item.holeIndex],c=v.canvas.getContext('2d');
+  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,S*2,S*2);
+  c.scale(S*2/150,S*2/150);c.translate(-(TABLE_PAD+hx-65),-(TABLE_PAD+hy-65));
+  c.drawImage(table,0,0,TABLE_WIDTH,TABLE_HEIGHT);
+  drawReturnChannel(c,[v.item],age,'pockets');
+  if(!document.querySelector('#trace').checked)return;
+  c.save();c.beginPath();let started=false;
+  for(const p of v.motion.samples){if(p.time>age)break;started?c.lineTo(p.x,p.y):(c.moveTo(p.x,p.y),started=true);}
+  c.strokeStyle='#ffd75e';c.lineWidth=1.15;c.globalAlpha=.95;c.stroke();
+  for(const hit of v.motion.contacts){if(hit.time>age)break;c.beginPath();c.arc(hit.x,hit.y,2.1,0,Math.PI*2);c.fillStyle='#ff6b5e';c.fill();}
+  c.restore();
+}
+views.forEach(v=>paint(v,v.age));
+let run=0;
+document.querySelector('#play').onclick=()=>{
+  const token=++run,start=performance.now(),clock=document.querySelector('#clock');
+  function tick(now){
+    if(token!==run)return;
+    const age=Math.min(POCKET_DURATION,(now-start)%880);
+    clock.textContent=`t = ${Math.round(age)} ms`;
+    views.forEach(v=>paint(v,age));
+    if(now-start<4400)requestAnimationFrame(tick);
+    else views.forEach(v=>paint(v,v.age)),clock.textContent='';
+  }
+  requestAnimationFrame(tick);
+};
+document.querySelector('#trace').onchange=()=>views.forEach(v=>paint(v,v.age));
+</script><script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></html>

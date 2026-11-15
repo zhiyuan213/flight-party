@@ -1,4 +1,4 @@
-import {bindPoolFullscreen} from './pool-fullscreen.js?v=20261106-layout';
+import {bindPoolFullscreen} from './pool-fullscreen.js?v=20261110-fullzoom1&d=20261115-chatfs1&r=20261115-fspill1';
 const gameOrigin=['localhost','127.0.0.1'].includes(location.hostname)?location.origin:'https://flight.joyflock.com';
 const games=[
  {id:'pool',image:'/assets/covers/pool.jpg?v=20261109-poolorig1',name:'欢乐台球',en:'Pool',icon:'❽',color:'green',detail:'2人 · 休闲台球',live:true},
@@ -27,12 +27,19 @@ const fullscreenLabels=full=>full
 let syncFullscreen=()=>{
  const button=document.querySelector('#fullscreen');
  const full=Boolean(document.fullscreenElement);
- [button.textContent,button.title]=fullscreenLabels(full);
+ const [label,hint]=fullscreenLabels(full);
+ button.textContent=label;
+ button.setAttribute('aria-label',hint);
+ button.removeAttribute('title');
  button.setAttribute('aria-pressed',String(full));
 };
 // Mirror the header's first-frame account state so the floating in-game
 // control never flashes "Sign in" for a visitor who is already signed in.
 const cachedAccount=()=>{try{const n=localStorage.getItem('joyflock.accountName');return n&&n!=='0'?n:null;}catch{return null;}};
+// The embedded game reports connection states ("Restoring…" / "Reconnect")
+// while its session lookup is offline. They are not account names: fall back
+// to the server-confirmed cached nickname instead of echoing them in the shell.
+const TRANSIENT_ACCOUNT=/^(?:Restoring…|Restoring\.\.\.|恢复登录中…|Reconnect|重新连接|Connecting…|连接中…)$/;
 let accountLabel=cachedAccount()||'';
 function updateLanguage(){
  document.documentElement.lang=translate('en','zh-CN');
@@ -45,11 +52,7 @@ function updateLanguage(){
  document.querySelector('[data-control=sound]').setAttribute('aria-label',translate('Toggle sound','开关音效'));
  if(!active)return;
  document.querySelector('#game-frame').title=gameName(active);
- document.querySelector('.stage-toolbar b').textContent=gameName(active);
- const players=active.id==='flight'?['2–4 players','2–4人']:['2 players','2人'];
- document.querySelector('.stage-caption').textContent=translate(players[0],active.en+' · '+players[1]);
  document.querySelector('.game-rail').setAttribute('aria-label',translate('Game list','游戏列表'));
- document.querySelector('.game-rail .back').title=translate('Back to game lobby','返回游戏大厅');
  Array.from(document.querySelector('#rail-items').children).forEach((item,i)=>{
   item.title=gameName(games[i]);
   item.setAttribute('aria-label',item.title);
@@ -103,7 +106,7 @@ if(active){
     </div>
     <div class="pm-copy">
       <div class="pm-title">正在寻找对局</div>
-      <div class="pm-meta"><span class="pm-timer">0:00</span> · <span>预计等待</span> <b class="pm-eta">-</b></div>
+      <div class="pm-meta"><span class="pm-timer">0:00</span> · <span class="pm-eta-label">预计等待</span> <b class="pm-eta">-</b></div>
     </div>
     <button class="pm-close" type="button" aria-label="取消匹配">×</button>`;
  document.body.append(matchBox);
@@ -117,13 +120,15 @@ if(active){
   if(data?.type!=='joyflock:match')return;
   if(data.visible===false){matchBox.hidden=true;return;}
   if(typeof data.title==='string')matchBox.querySelector('.pm-title').textContent=data.title.slice(0,60);
+  if(typeof data.etaLabel==='string')matchBox.querySelector('.pm-eta-label').textContent=data.etaLabel.slice(0,30);
+  if(typeof data.cancelLabel==='string')matchBox.querySelector('.pm-close').setAttribute('aria-label',data.cancelLabel.slice(0,60));
   matchBox.querySelector('.pm-timer').textContent=String(data.timer??'0:00').slice(0,12);
   matchBox.querySelector('.pm-eta').textContent=String(data.eta??'-').slice(0,12);
   matchBox.hidden=false;
  });
  const hello=()=>{frame.contentWindow?.postMessage({type:'joyflock:hello',locale:language},gameOrigin);frame.contentWindow?.postMessage({type:'joyflock:match-host'},gameOrigin);};frame.addEventListener('load',hello);
  controls.addEventListener('click',event=>{const action=event.target.closest('[data-control]')?.dataset.control;if(action)frame.contentWindow?.postMessage({type:'joyflock:control',action},gameOrigin);});
- window.addEventListener('message',event=>{if(event.origin!==gameOrigin||event.source!==frame.contentWindow||event.data?.type!=='joyflock:controls')return;const data=event.data;if(typeof data.account==='string'&&accountLabel!==data.account.slice(0,80)){accountLabel=data.account.slice(0,80);updateLanguage();}if(typeof data.language==='string')controls.querySelector('[data-control=language]').textContent=data.language.slice(0,80);const sound=controls.querySelector('[data-control="sound"]');sound.textContent=data.sound?'♫':'♩';sound.setAttribute('aria-pressed',String(data.sound===true));});
+ window.addEventListener('message',event=>{if(event.origin!==gameOrigin||event.source!==frame.contentWindow||event.data?.type!=='joyflock:controls')return;const data=event.data;if(typeof data.account==='string'){const raw=data.account.slice(0,80);const next=TRANSIENT_ACCOUNT.test(raw)?(cachedAccount()||'登录'):raw;if(accountLabel!==next){accountLabel=next;updateLanguage();}}if(typeof data.language==='string')controls.querySelector('[data-control=language]').textContent=data.language.slice(0,80);const sound=controls.querySelector('[data-control="sound"]');sound.textContent=data.sound?'♫':'♩';sound.setAttribute('aria-pressed',String(data.sound===true));});
  hello();
  window.addEventListener('message',event=>{
   if(event.origin!==gameOrigin||event.source!==frame.contentWindow)return;

@@ -1,0 +1,85 @@
+/* Bubble Duel presentation polish (bright candy edition). Loaded after the
+   shared arcade/pool styles so it only refines the bubble variant. */
+
+/* Quiet light frame around the pastel stage: no dark chrome. */
+.arcade-board.bubbles canvas,
+.bubbles canvas {
+  border: 1px solid rgba(150, 170, 230, .35);
+  border-radius: 20px;
+  background: #eaf3ff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, .7) inset,
+    0 18px 48px rgba(90, 110, 180, .22);
+}
+
+/* Aiming and shooting happen on the canvas itself (pointer, arrow keys,
+   Space), so the controls stay hidden and the whole host height goes to the
+   stage. The 720x765 rule world keeps a fixed on-screen scale; a larger host
+   only adds background around it. */
+.arcade-board.bubbles .arcade-controls,
+.bubbles footer {
+  display: none !important;
+}
+
+/* layout() sets the exact inline size and centres the board; no CSS width cap
+   may override that. */
+.arcade-board.bubbles canvas,
+.bubbles canvas {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  border-radius: 20px;
+}
+
+/* Structured scoreboard styles are kept for the room shell's turn panel in
+   case the object-form status path is re-enabled; they cannot affect the
+   canvas HUD. */
+.turn-panel #status.bubble-status-host{
+  margin:5px 0 10px;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.35;
+  letter-spacing:0;
+  color:#33415c;
+}
+.bubble-status{display:flex;flex-direction:column;gap:9px}
+.bubble-scoreline{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+  padding:9px 11px;
+  border:1px solid rgba(120,150,210,.3);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(238,246,255,.9));
+}
+.bubble-seat{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:11px;font-weight:600;color:#6d7fa3;
+}
+.bubble-seat-1{text-align:right}
+.bubble-seat-2{text-align:left}
+.bubble-seat.is-active{color:#21314f}
+.bubble-score{
+  display:inline-flex;align-items:baseline;justify-content:center;gap:5px;
+  font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#16233b;
+  white-space:nowrap;
+}
+.bubble-score i{font-style:normal;font-size:14px;font-weight:600;color:#8b9cc0}
+.bubble-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bubble-round,.bubble-turn{
+  display:inline-flex;align-items:center;min-height:24px;padding:3px 10px;
+  border:1px solid rgba(120,150,210,.24);border-radius:999px;
+  background:rgba(255,255,255,.75);font-size:11px;font-weight:600;color:#5b6d92;
+  white-space:nowrap;
+}
+.bubble-turn.is-you{
+  border-color:rgba(58,160,255,.5);
+  background:linear-gradient(180deg,rgba(58,160,255,.16),rgba(58,160,255,.06));
+  color:#0a6ad1;
+}
+@media(max-width:420px){
+  .bubble-scoreline{padding:8px;gap:6px}
+  .bubble-score{font-size:19px}
+  .bubble-seat{font-size:10px}
+}

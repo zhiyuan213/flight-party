@@ -16,3 +16,6 @@ deploy/secrets/
 .m2-cache/
 .workbuddy/
 *.bak
+# Chrome/CDP scratch directories created during browser verification.
+.chrome-rows/
+.chrome-rowsdom/

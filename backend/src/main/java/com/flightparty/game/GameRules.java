@@ -44,6 +44,9 @@ public final class GameRules {
     public static int botChoice(State s) {
         return legal(s).stream().max(Comparator.<Integer>comparingInt(i -> player(s, s.turn()).planes().get(i)).thenComparingInt(i -> -i)).orElseThrow();
     }
+    /** Easy custody bot: no progress heuristic, just the first legal plane.
+        Always legal, so a fully hosted room can still finish the match. */
+    public static int easyChoice(State s) { return legal(s).getFirst(); }
     public static Move move(State s, int plane) {
         if (!legal(s).contains(plane)) throw new IllegalStateException("illegal plane");
         var players = new ArrayList<>(s.players());

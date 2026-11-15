@@ -6,14 +6,23 @@
  * postMessage — an iframe can never paint above its own top edge, which is why
  * a `position:fixed;top:0` box inside the iframe always sat below the header.
  * The parent owns the visible notice; the iframe keeps the state/timer/cancel.
+ *
+ * `labels` is optional: table games keep the original Chinese wording, while
+ * Flight Party localises the same component through its own language switch.
  */
 const embedded=window.parent!==window&&new URLSearchParams(location.search).get('embed')==='joyflock';
 let box=null,ticker=null,startedAt=0,cancel=null,visible=false,eta='-',hostReady=false;
+let title='正在寻找对局',etaLabel='预计等待',cancelLabel='取消匹配';
 
 function post(payload){try{window.parent.postMessage({type:'joyflock:match',...payload},'*');}catch{}}
 function timerText(){
   const seconds=Math.floor((Date.now()-startedAt)/1000);
   return Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');
+}
+function applyLabels(el){
+  el.querySelector('.mb-title').textContent=title;
+  el.querySelector('.mb-eta-label').textContent=etaLabel;
+  el.querySelector('.mb-close').setAttribute('aria-label',cancelLabel);
 }
 function build(){
   const el=document.createElement('div');
@@ -28,10 +37,11 @@ function build(){
       </svg>
     </div>
     <div class="mb-copy">
-      <div class="mb-title">正在寻找对局</div>
-      <div class="mb-meta"><span class="mb-timer">0:00</span> · <span>预计等待</span> <b class="mb-eta">-</b></div>
+      <div class="mb-title"></div>
+      <div class="mb-meta"><span class="mb-timer">0:00</span> · <span class="mb-eta-label"></span> <b class="mb-eta">-</b></div>
     </div>
-    <button class="mb-close" type="button" aria-label="取消匹配">×</button>`;
+    <button class="mb-close" type="button">×</button>`;
+  applyLabels(el);
   el.querySelector('.mb-close').addEventListener('click',()=>{hideMatchBox();if(cancel)cancel();});
   document.body.append(el);
   return el;
@@ -47,12 +57,16 @@ function tick(){
   if(!visible)return;
   const timer=timerText();
   if(embedded){
-    post({visible:true,title:'正在寻找对局',timer,eta});
+    post({visible:true,title,etaLabel,cancelLabel,timer,eta});
     // Fallback for a stale cached parent: still show something locally.
     renderLocal(timer,!hostReady);
   }else renderLocal(timer,true);
 }
-export function showMatchBox({onCancel,room}={}){
+export function showMatchBox({onCancel,room,labels}={}){
+  if(labels){
+    title=labels.title||title;etaLabel=labels.etaLabel||etaLabel;cancelLabel=labels.cancelLabel||cancelLabel;
+    if(box)applyLabels(box);
+  }
   cancel=onCancel||null;
   if(!visible){visible=true;startedAt=Date.now();clearInterval(ticker);ticker=setInterval(tick,500);}
   updateMatchBox(room);

@@ -1,0 +1,41 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>袋口颚部接缝 · 圆角改斜切验收</title>
+<style>
+body{background:#141a20;color:#e7eef5;font:14px/1.6 system-ui,sans-serif;margin:18px 24px;max-width:1180px}
+h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:18px 0 8px;color:#cfe2f2}
+p{color:#9fb0c0;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+section{background:#0f1821;border:1px solid #2b3a48;border-radius:8px;padding:8px 10px 10px}
+h3{font:600 13px system-ui;margin:0 0 6px;color:#ffd44d}h3.old{color:#ff8279}
+canvas{display:block;width:100%;height:auto;background:#080c11;border-radius:4px}
+.note{color:#8fa6ba;font-size:12px;margin-top:6px}
+</style></head><body>
+<h1>袋口颚部接缝 · 圆角改斜切</h1>
+<p>真实台面缓存 <code>makeTable()</code> 的局部放大。旧版库边在袋口端是「先横后竖」的 90° 圆角，看起来像从台呢里凸出一块方形；新版改成一条斜切直线，让白色袋唇与蓝色台呢连成一条顺下来的线。<b>物理落袋判定与库边碰撞面未改</b>。</p>
+<div class="grid" id="normal"></div>
+<h2>右接缝高倍（约 8×，看白色袋唇末端）</h2>
+<div class="grid" id="zoom"></div>
+<p class="note">左列 = 旧（roundedJaws:true，仅用于对照渲染）；右列 = 当前线上效果。上/下中袋几何完全镜像，故两行结论一致。</p>
+<script type="module">
+import {makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './table/pool-table.js?v=20261112-gamelanes1';
+const S=2;
+function renderTable(rounded){
+  const cv=document.createElement('canvas');cv.width=TABLE_WIDTH*S;cv.height=TABLE_HEIGHT*S;
+  const c=cv.getContext('2d');c.scale(S,S);makeTable(c,{roundedJaws:rounded});return cv;
+}
+const before=renderTable(true),after=renderTable(false);
+function view(host,title,src,wx,wy,sw,sh,dw,old){
+  const k=dw/sw,dh=Math.round(sh*k),cv=document.createElement('canvas');cv.width=Math.round(dw);cv.height=dh;
+  const c=cv.getContext('2d');c.drawImage(src,(TABLE_PAD+wx)*S,(TABLE_PAD+wy)*S,sw*S,sh*S,0,0,dw,dh);
+  const sec=document.createElement('section'),h=document.createElement('h3');
+  if(old)h.className='old';h.textContent=title;
+  sec.append(h,cv);host.append(sec);
+}
+const normal=document.getElementById('normal'),zoom=document.getElementById('zoom');
+for(const [name,wy] of [['上中袋',-70],['下中袋',410]]){
+  view(normal,name+' · 旧 · 90° 圆角凸块',before,340,wy,320,160,448,true);
+  view(normal,name+' · 新 · 斜切一条线',after,340,wy,320,160,448,false);
+}
+view(zoom,'旧 · 方形凸台',before,508,-46,56,68,448,true);
+view(zoom,'新 · 斜线顺下来',after,508,-46,56,68,448,false);
+document.body.dataset.ready='1';
+</script></body></html>

@@ -48,7 +48,7 @@ export function translateStaticUI(language,root=document){
   if(kind==='label'){if(node.firstChild?.nodeType===3)node.firstChild.textContent=value+' ';}
   else if(kind==='html')node.innerHTML=value;else node.textContent=value;
  }
- const attrs=[['#settings-dialog .close','aria-label','Close','关闭'],['#leaderboard-shell','aria-label','Pilot leaderboard','飞行员排行榜'],['#settings','aria-label','Settings','设置'],['#sound','aria-label','Toggle sound','开关音效'],['#camera-reset','title','Reset camera','重置视角'],['#language','title','Switch language','切换语言']];
+ const attrs=[['#settings-dialog .close','aria-label','Close','关闭'],['#leaderboard-shell','aria-label','Pilot leaderboard','飞行员排行榜'],['#settings','aria-label','Settings','设置'],['#sound','aria-label','Toggle sound','开关音效'],['#camera-reset','title','Reset camera','重置视角'],['#back-mid','title','Back to game','返回游戏页'],['#back-mid','aria-label','Back to game','返回游戏页'],['#language','title','Switch language','切换语言']];
  for(const [selector,attr,en,zh] of attrs)root.querySelector(selector)?.setAttribute(attr,language==='zh'?zh:en);
 }
 STATIC_COPY.push(

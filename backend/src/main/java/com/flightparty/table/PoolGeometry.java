@@ -71,6 +71,8 @@ final class PoolGeometry {
   }
   return rails;
  }
+ /** Cushion restitution, mirrored by E_RAIL in dist/table/pool-geometry.js. */
+ static final double E_RAIL=.78;
  static Rebound resolveCushion(double x,double y,double vx,double vy){return resolveCushion(x,y,vx,vy,16);}
  /** Snooker balls are half the diameter of pool balls; the cloth-facing rails
   *  sit the same distance from the ball centre as the JS geometry does. */
@@ -91,7 +93,7 @@ final class PoolGeometry {
    x+=ux*overlap;y+=uy*overlap;
    double incoming=-(vx*ux+vy*uy);
    if(incoming>0){
-    vx+=1.92*incoming*ux;vy+=1.92*incoming*uy;hit=true;
+    vx+=(1+E_RAIL)*incoming*ux;vy+=(1+E_RAIL)*incoming*uy;hit=true;
     if(incoming>normalSpeed){normalSpeed=incoming;nx=ux;ny=uy;}
    }
   }

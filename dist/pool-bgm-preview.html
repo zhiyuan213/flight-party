@@ -1,0 +1,69 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>台球背景音乐 · 试听</title>
+<style>
+body{background:#141a20;color:#e7eef5;font:14px/1.65 system-ui,sans-serif;margin:22px 28px;max-width:1080px}
+h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:22px 0 8px;color:#cfe0ef}
+p{margin:0 0 12px;color:#9fb0c0}code{color:#ffd88a}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+button{background:#22303c;color:#e7eef5;border:1px solid #3d5364;border-radius:7px;padding:9px 16px;font:600 13px system-ui;cursor:pointer}
+button:hover{background:#2e4252;border-color:#5d7e94}button.hot{background:#2a4232;border-color:#4d8a5d;color:#d6ffdf}
+.stats{display:flex;gap:26px;flex-wrap:wrap;background:#1b242c;border:1px solid #2f3d49;border-radius:8px;padding:12px 16px;margin-bottom:8px}
+.stat b{display:block;font-size:19px;color:#ffd44d;font-weight:700}.stat span{color:#93a7b8;font-size:12px}
+canvas{background:#0d1318;border:1px solid #2f3d49;border-radius:8px;display:block;width:100%;height:140px}
+.bar{height:8px;background:#22303c;border-radius:5px;overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4d8a5d,#ffd44d);transition:width .08s linear}
+pre{background:#0f161c;border:1px solid #2f3d49;border-radius:8px;padding:12px;color:#a9c8dd;font:12px/1.5 ui-monospace,monospace;overflow:auto}
+label{color:#a9bccb;font-size:12px}input[type=range]{vertical-align:middle;width:160px}a{color:#a9d6f5}
+.note{color:#7f93a4;font-size:12px;margin-top:16px}
+</style></head><body>
+<h1>台球背景音乐 · 试听</h1>
+<p>正式模块 <code>dist/table/pool-bgm.js</code>，曲库共 5 首，<a href="pool-bgm-select.html">去选曲试听 / 设为默认 →</a>。本页展示当前默认曲目的波形、循环接缝与播放器状态。每首都是 8 小节无缝循环，程序合成、无音频文件；尾部余音折回开头并做边缘平滑、按统一 RMS 匹配响度。<b style="color:#ffd44d">注意：游戏详情页与对局页的背景音乐已暂时停用</b>；模块、曲库与选曲页都保留，本页仍可独立试听，恢复游戏页加载后即可重新在打球时播放。</p>
+<div class="stats" id="stats"></div>
+<div class="row">
+  <button id="toggle" class="hot">播放 / 暂停</button>
+  <label>音乐音量 <input id="volume" type="range" min="0" max="100" value="100"></label>
+  <span id="hint" style="color:#9fb0c0;font-size:12px"></span>
+</div>
+<div class="bar"><i id="progress"></i></div>
+<h2>波形包络（一个完整循环，8 小节）</h2>
+<canvas id="wave" width="1000" height="140"></canvas>
+<h2>播放状态</h2>
+<pre id="state"></pre>
+<p class="note">浏览器自动播放策略：若进入页面时音频被挂起，任意一次点击/按键（含「快速开始」）会立即解锁并淡入。游戏对局里的「声音/静音」按钮会同步静音背景音乐；左下角 ♫ 圆钮可单独开关并记忆在本机。</p>
+<script type="module">
+import {POOL_BGM_TRACKS,POOL_BGM_SCORE,buildPoolBgm,startPoolBgm,unlockPoolBgm,setPoolBgmEnabled,setPoolBgmVolume,poolBgmState,poolBgmPosition} from './table/pool-bgm.js?v=20261110-glove2';
+const $=id=>document.getElementById(id);
+const data=buildPoolBgm();
+const n=data.left.length;
+const jump=Math.max(Math.abs(data.left[0]-data.left[n-1]),Math.abs(data.right[0]-data.right[n-1]));
+$('stats').innerHTML=[
+ ['曲目',POOL_BGM_TRACKS.find(t=>t.id===data.track).name],
+ ['BPM',data.bpm],['小节',data.bars],['循环时长',data.duration.toFixed(2)+' s'],['合成采样率',data.sampleRate+' Hz'],
+ ['峰值','< '+data.peak.toFixed(3)],['循环接缝跳变',jump.toFixed(5)]
+].map(([k,v])=>'<div class="stat"><b>'+v+'</b><span>'+k+'</span></div>').join('');
+const canvas=$('wave'),c=canvas.getContext('2d');
+const points=1000,bucket=Math.floor(n/points);
+c.clearRect(0,0,canvas.width,canvas.height);
+c.strokeStyle='#2b3b47';c.lineWidth=1;
+for(let bar=1;bar<data.bars;bar++){const x=bar/data.bars*canvas.width;c.beginPath();c.moveTo(x,0);c.lineTo(x,canvas.height);c.stroke();}
+c.strokeStyle='#ffd44d';c.lineWidth=1.2;c.beginPath();
+for(let p=0;p<points;p++){
+  let sum=0;for(let i=p*bucket;i<(p+1)*bucket;i+=3)sum+=data.left[i]*data.left[i];
+  const rms=Math.sqrt(sum/Math.ceil(bucket/3));
+  const y=canvas.height/2-rms*canvas.height*2.4;
+  if(p===0)c.moveTo(0,y);else c.lineTo(p/points*canvas.width,y);
+}
+c.stroke();c.fillStyle='#7f93a4';c.font='11px system-ui';
+for(let bar=0;bar<data.bars;bar++)c.fillText('第 '+(bar+1)+' 小节',bar/data.bars*canvas.width+5,12);
+startPoolBgm({button:false});
+$('toggle').onclick=()=>{unlockPoolBgm();setPoolBgmEnabled(!poolBgmState().musicOn);};
+$('volume').oninput=event=>setPoolBgmVolume(Number(event.target.value)/100);
+function frame(){
+  const s=poolBgmState();
+  $('progress').style.width=(s.playing?poolBgmPosition()/s.loopSeconds*100:0)+'%';
+  $('toggle').textContent=s.playing?'暂停':'播放';
+  $('hint').textContent=s.unlocked?(s.musicOn?'正在循环播放':'已暂停'):'点击「播放」解锁浏览器音频';
+  $('state').textContent=JSON.stringify({...s,position:+poolBgmPosition().toFixed(2),score:POOL_BGM_SCORE},null,2);
+  requestAnimationFrame(frame);
+}
+frame();
+</script></body></html>

@@ -4,14 +4,20 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {avatarStyle} from '../dist/avatar.js';
 import {isChineseMobile} from '../dist/room-share.js';
+import {CUSTODY_LABELS} from '../dist/online-custody.js';
+import {ensureCustodyStyles,custodyBadgeHTML} from '../dist/online-custody-ui.js';
 
+/* The vm snippets below are stripped of their ESM imports; provide the shared
+   custody helpers exactly as the browser module graph would. */
+const custodyStubs={CUSTODY_LABELS,ensureCustodyStyles,document:{}};
+const flightStubs={prefs:{lang:'zh'},flightCustody:()=>({state:'active',label:''}),custodyBadgeHTML};
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const t=en=>en;
 
 test('game player cards expose verified monthly and annual badge attributes with escaped names',()=>{
  const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
  const fn=source.slice(source.indexOf('function playerCard('),source.indexOf('function render(){'));
- const context=vm.createContext({game:{turn:0},previewTakeoverColor:()=>-1,FINISH:57,PALETTE:[0x477eff],avatarStyle,esc,t,social:{playerStats:()=>''}});vm.runInContext(fn,context);
+ const context=vm.createContext({game:{turn:0},onlineMode:false,onlineSession:{identity:null},previewTakeoverColor:()=>-1,FINISH:57,PALETTE:[0x477eff],avatarStyle,esc,t,social:{playerStats:()=>''},...flightStubs});vm.runInContext(fn,context);
  const player={color:0,type:'human',name:'Annual <pilot>',pieces:[-1,2],member:true,annualMember:true};
  const annual=context.playerCard(player);assert.match(annual,/data-member="true" data-annual-member="true"/);assert.ok(annual.includes('Annual &lt;pilot&gt;'));
  player.annualMember=false;assert.match(context.playerCard(player),/data-member="true" data-annual-member="false"/);
@@ -36,7 +42,7 @@ test('friend-room names expose annual badges while empty seats remain unbadged',
  const source=readFileSync(new URL('../dist/live-room-ui.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export function','function');
  const dialog={open:true,innerHTML:'',setAttribute(){},addEventListener(){}},social={roomDialog:dialog,t,renderRoom(){}};
  const session={room:{origin:'FRIENDS',phase:'WAITING_FRIENDS',roomId:'test',yourSeat:0,seats:[{index:0,displayName:'Annual <pilot>',member:true,annualMember:true}]},addEventListener(){}};
- const context=vm.createContext({social,session,avatarStyle,isChineseMobile});vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
+ const context=vm.createContext({social,session,avatarStyle,isChineseMobile,...custodyStubs});vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
  assert.match(dialog.innerHTML,/data-member="true" data-annual-member="true">Annual &lt;pilot&gt;/);
  assert.equal((dialog.innerHTML.match(/data-member="false" data-annual-member="false">Open seat/g)||[]).length,3);
 });

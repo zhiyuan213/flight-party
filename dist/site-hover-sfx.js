@@ -12,7 +12,12 @@
  * Zooming cards/dock icons are a separate voice: a soft rising "grow" whose
  * ~0.22s swell matches the .18–.25s scale transition. They stay muted for the
  * button tick (crossing nine covers with a click each is noise), but now get
- * one gentle upward whoosh + pop each time the pointer enters a zooming card.
+ * one gentle upward grow + pop each time the pointer enters a zooming card.
+ * The broadband air hiss was removed: its filtered white noise read as a
+ * crackle ("破音") on the home covers, so the grow keeps only the clean
+ * sine/triangle swell and the sine sparkle.
+ * Shop product cards reuse this exact home-cover voice (slightly softer and
+ * throttled harder, because the shop grid is much denser than nine covers).
  *
  * Browser policy: AudioContext may only start once the document has seen a
  * real user gesture (pointerdown / keydown / touchend). Hover, pointermove
@@ -40,22 +45,27 @@
  ].join(',');
  /* Keep the hover blip on real game/action controls, but not on the
   * high-frequency navigation surfaces the pointer sweeps across:
-  *   .topbar    - brand, Games / Membership, language, sign in / sign up
+  *   .topbar    - brand, Games, language, sign in / sign up
+ *               (Membership & support lives in the footer)
   *   .game-card - the nine covers in the home grid
   *   .game-rail - the game detail view's left-hand dock (incl. its back link)
+  *   .shop-card - every product card in the Joy Coin shop (see ZOOM_ZONES)
   * closest() also matches ancestors, so one selector silences a whole zone.
   * Add [data-sfx="on"] to opt a control back in if a zone ever needs one. */
- var MUTED_ZONES='.topbar,.game-card,.game-rail,.rail-game';
+ var MUTED_ZONES='.topbar,.game-card,.game-rail,.rail-game,.shop-card';
  var SKIP='[disabled],[aria-disabled="true"],.disabled,.unavailable,[data-sfx="off"],[inert]';
  var MIN_GAP=55,SAME_GAP=170,PROBE_GAP=300;
  /* Elements that visibly zoom on hover. Kept out of the tick voice above, but
   * given their own swell; the dock is crossed continuously, so it is throttled
-  * harder than the nine home covers. */
- var ZOOM_ZONES='.game-card.live,.rail-game';
+  * harder than the nine home covers. Product cards use the SAME grow as the
+  * home covers so the shop sounds like the rest of the site. */
+ var ZOOM_ZONES='.game-card.live,.rail-game,.shop-card';
  var ZOOM_GAP=110,ZOOM_DOCK_GAP=170,ZOOM_SAME_GAP=420,ZOOM_UNLOCK_GAP=150;
+ /* Up to six cards per row in the shop: slow the sweep down a touch more. */
+ var SHOP_ZOOM_GAP=150;
 
  var ctx=null,outNode=null,current=null,currentZoom=false,lastAt=0,lastEl=null,enabled=true,noiseCache=null;
- var lastZoomAt=0,zoomNoise=null;
+ var lastZoomAt=0;
  var zoomAt=new WeakMap(),zoomOutputs=new WeakMap(),zoomGains=[];
  var volume=.8;
  var outputs=new WeakMap();
@@ -151,31 +161,15 @@
   osc.connect(gain);gain.connect(out);
   osc.start(at);osc.stop(at+duration+.015);
  }
- function zoomAir(c,out,at,duration,level){
-  if(!zoomNoise||zoomNoise.sampleRate!==c.sampleRate){
-   // Fixed-length buffer: the dock uses a shorter envelope than the covers.
-   var n=Math.ceil(c.sampleRate*.24),buffer=c.createBuffer(1,n,c.sampleRate),data=buffer.getChannelData(0);
-   for(var i=0;i<n;i++)data[i]=Math.random()*2-1;
-   zoomNoise={buffer:buffer,sampleRate:c.sampleRate};
-  }
-  var src=c.createBufferSource(),band=c.createBiquadFilter(),gain=c.createGain();
-  src.buffer=zoomNoise.buffer;
-  band.type='bandpass';band.Q.value=.85;
-  band.frequency.setValueAtTime(1100,at);
-  band.frequency.exponentialRampToValueAtTime(5200,at+duration);
-  gain.gain.setValueAtTime(.0001,at);
-  gain.gain.linearRampToValueAtTime(.013*level,at+duration*.35);
-  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-  src.connect(band);band.connect(gain);gain.connect(out);
-  src.start(at);src.stop(at+duration+.012);
- }
  function playZoom(el){
   if(muted())return false;
   var c=context();if(!c)return false;
   var at=c.currentTime+.004,out=zoomOutputFor(c),lift=1,scale=1;
   var dock=el.classList&&el.classList.contains('rail-game');
+  var shop=el.classList&&el.classList.contains('shop-card');
   // The dock is crossed continuously, so it gets a shorter, quieter grow.
-  var level=dock?.68:1,duration=dock?.18:.22;
+  // Shop cards keep the home timbre but sit a little lower in the mix.
+  var level=dock?.68:shop?.82:1,duration=dock?.18:shop?.19:.22;
   // A dock icon can be scaled anywhere between 1 and 2 by portal.js; the
   // bigger it grows, the higher the voice rises (capped so it stays soft).
   // Home covers use a fixed 1.05 scale.
@@ -184,7 +178,6 @@
   swell(c,out,'sine',300,820*lift,duration,.050*level,at);
   swell(c,out,'triangle',600,1500*lift,duration*.82,.016*level,at+.006);
   tone(c,out,'sine',1180,2100*lift,.046,.021*level,at);
-  zoomAir(c,out,at,duration,level);
   return true;
  }
  function zoomTarget(node){
@@ -300,7 +293,8 @@
   stats.hover++;
   var now=performance.now();
   if(zoom){
-   var gap=zoom.classList.contains('rail-game')?ZOOM_DOCK_GAP:ZOOM_GAP;
+   var gap=zoom.classList.contains('rail-game')?ZOOM_DOCK_GAP
+    :zoom.classList.contains('shop-card')?SHOP_ZOOM_GAP:ZOOM_GAP;
    if(now-lastZoomAt<gap||now-(zoomAt.get(zoom)||0)<ZOOM_SAME_GAP){stats.throttled++;return;}
    if(playZoom(zoom)){
     lastZoomAt=now;zoomAt.set(zoom,now);lastAt=now;lastEl=el;
@@ -333,7 +327,7 @@
  ensure();
 
  var api={
-  version:'20261109-zoom1',
+  version:'20261112-gamelanes1',
   play:function(el){return play(el||document.body);},
   playZoom:function(el){return playZoom(el||document.body);},
   setEnabled:function(value){enabled=!!value;return enabled;},

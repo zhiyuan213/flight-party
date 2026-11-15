@@ -1,7 +1,13 @@
 User-agent: *
 Allow: /
+Allow: /games/
+Allow: /en/games/
 Disallow: /api/
 Disallow: /ws
 Disallow: /*?*room=
+Disallow: /*-preview.html
+Disallow: /__ballcheck.html
+Disallow: /bot-difficulty-preview.html
+Disallow: /assets/shop/avatars-v4/preview.html
 
 Sitemap: https://flight.joyflock.com/sitemap.xml

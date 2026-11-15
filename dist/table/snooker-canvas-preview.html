@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>斯诺克 · Canvas 2D 表现层预览</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1">
+<style>
+  [hidden]{display:none!important}
+  :root{color-scheme:dark}
+  body{margin:0;padding:24px 28px 40px;background:radial-gradient(1200px 600px at 50% -10%,#1c2942,#080e1a 70%);color:#dbe7f7;font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+  h1{font-size:20px;margin:0 0 6px;letter-spacing:.02em}
+  .lead{max-width:1000px;color:#93a9c6;margin:0 0 16px}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;max-width:1400px;margin-bottom:12px}
+  button,select,input[type=range]{font:inherit}
+  button{padding:7px 14px;border:1px solid #3a5480;border-radius:9px;background:linear-gradient(180deg,#263e63,#1a2b46);color:#eaf2ff;cursor:pointer}
+  button:hover{border-color:#6f92c9}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  #pot{border-color:#8b6a37;background:linear-gradient(180deg,#6c4c22,#3d2a12)}
+  label{display:inline-flex;align-items:center;gap:7px;color:#b9cbe3}
+  select{background:#16243a;color:#eaf2ff;border:1px solid #34496b;border-radius:8px;padding:5px 8px}
+  input[type=range]{width:150px;accent-color:#e0b56c}
+  #status,#result{min-height:1.6em;margin:0 0 12px;color:#f0cf88;font-weight:600}
+  #result{color:#9fe1b4}
+  .stage{max-width:1400px;position:relative}
+  canvas{display:block;width:100%;height:auto;max-width:1400px;border-radius:12px;touch-action:none;box-shadow:0 24px 70px #000a;outline-offset:4px}
+  .snooker-shot-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:210px;padding:18px 30px;border:1px solid #d5b87780;border-radius:14px;text-align:center;pointer-events:none;background:linear-gradient(160deg,#14253ce8,#081220f2);box-shadow:0 18px 55px #000b;animation:card-in .28s ease-out both}
+  .snooker-shot-card b{font-size:30px;line-height:1.1;color:#f4cf7b}
+  .snooker-shot-card span{font-size:12px;color:#c6d8ee}
+  .snooker-shot-card[data-kind="foul"] b{color:#ff9a8a}
+  @keyframes card-in{from{opacity:0;transform:translate(-50%,-46%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  footer{max-width:1000px;margin-top:18px;color:#7f94b2;font-size:12px}
+</style>
+</head>
+<body>
+<h1>斯诺克 · Canvas 2D 表现层预览</h1>
+<p class="lead">绿呢木框台面、统一加粗的白色瞄准线与圆圈，以及右侧金色集球槽。落袋后真正离开球桌的球滚入槽内；需要复位的彩球仍回到台面，白球不收集。得分和犯规仍按斯诺克规则计算。本页为本地演示，不提交任何成绩；回合固定为玩家 1。</p>
+<div class="toolbar">
+  <button id="rack" type="button">重新开局</button>
+  <button id="break" type="button">红球堆开球（65%）</button>
+  <button id="pot" type="button">演示进球（红球直落中袋）</button>
+  <label>力度 <input id="power" type="range" min="5" max="100" value="65"></label>
+  <label>指定彩球 <select id="nomination"><option value="0">按瞄准判断</option></select></label>
+  <button id="action" type="button">击球</button>
+</div>
+<p id="status" aria-live="polite"></p>
+<p id="result" aria-live="polite"></p>
+<div class="stage"><canvas tabindex="0" aria-label="斯诺克球桌，移动鼠标瞄准，按住左键后拉蓄力，松开击球"></canvas><div class="snooker-shot-card" hidden aria-live="polite"><b></b><span></span></div></div>
+<footer>画布右上角的小喇叭可切换静音（与欢乐台球共用 joyflock.pool.muted）。浏览器要求先有一次点击才允许播放音频，因此请通过页面按钮触发首次击球。URL 加 <code>?demo=pot</code> 或 <code>?demo=break</code> 可自动演示。</footer>
+<script>
+  // Surface module/runtime failures in the DOM so headless checks can read them.
+  window.addEventListener('error',function(e){document.querySelector('#result').textContent='运行时错误：'+(e.message||e.type);});
+  window.addEventListener('unhandledrejection',function(e){document.querySelector('#result').textContent='未处理的拒绝：'+String(e.reason);});
+</script>
+<script type="module">
+import {createSnooker} from './snooker-view.js?v=20261113-humanring1';
+import {start,move} from './grid-rules.js?v=20261112-gamelanes1';
+import {NOM_BASE} from './snooker-duel.js?v=20261112-gamelanes1';
+import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1';
+
+const canvas=document.querySelector('canvas');
+const power=document.querySelector('#power');
+const nomination=document.querySelector('#nomination');
+const action=document.querySelector('#action');
+const status=document.querySelector('#status');
+const result=document.querySelector('#result');
+let board=start('snooker'),playing=true,pending=false,cardTimer=0;
+const card=document.querySelector('.snooker-shot-card');
+const label=(en,zh)=>zh;
+function showShot(info){
+  const b=card.querySelector('b'),s=card.querySelector('span');
+  const gained=info.gained?.[info.shooter-1]||0,score=info.scores.join(' : ');
+  if(info.penalty){b.textContent='犯规 +'+info.penalty;s.textContent=score+' · 对方加分';card.dataset.kind='foul';}
+  else if(gained>0){b.textContent='+'+gained+' 分';s.textContent=score+' · 单杆 '+info.breakScore;card.dataset.kind='score';}
+  else{b.textContent='未进球';s.textContent=score+' · 换对手击球';card.dataset.kind='miss';}
+  card.hidden=false;card.style.animation='none';void card.offsetWidth;card.style.animation='';
+  clearTimeout(cardTimer);cardTimer=setTimeout(()=>{card.hidden=true;},2000);
+}
+const controller=createSnooker({
+  canvas,ctx:canvas.getContext('2d'),label,action,power,nomination,
+  point(event){const rect=canvas.getBoundingClientRect();
+    return {x:(event.clientX-rect.left)*canvas.width/rect.width,
+      y:(event.clientY-rect.top)*canvas.height/rect.height};},
+  status(value){status.textContent=String(value);},
+  state(){},
+  finish(value){result.textContent=String(value);},
+  onShoot(code){commit(code);},
+  onShotResult:showShot,
+  canPlay:()=>playing&&!pending&&!board.over,
+  board:()=>board
+});
+
+function commit(code){
+  if(pending||board.over)return;
+  unlockPoolAudio();
+  pending=true;result.textContent='';
+  try{
+    const next=move(board,1,code);
+    next.turn=1; // local practice preview: keep the turn with the viewer
+    board=next;
+    controller.applyBoard(board);
+  }catch(error){status.textContent='击球失败：'+error.message;}
+  controller.whenSettled().then(()=>{pending=false;controller.refresh();});
+}
+function command(powerPercent,angleCode){
+  return (Number(nomination.value)||0)*NOM_BASE+powerPercent*3600+((angleCode%3600)+3600)%3600;
+}
+function rack(){board=start('snooker');result.textContent='';controller.start(false);}
+function shoot(powerPercent,angleCode){rack();unlockPoolAudio();setTimeout(()=>commit(command(powerPercent,angleCode)),90);}
+
+document.querySelector('#rack').onclick=()=>{unlockPoolAudio();rack();};
+document.querySelector('#break').onclick=()=>shoot(65,3589); // cue (245,290) -> lower edge of the red rack (790,280)
+document.querySelector('#pot').onclick=()=>{
+  unlockPoolAudio();
+  board=start('snooker');
+  // Cue ball at (500,180), one red at (500,60): a straight 30% shot drops the
+  // red into the top middle pocket without the cue ball following it in
+  // (a stronger follow-through would correctly be ruled a foul).
+  board.cells[0]=5000;board.cells[1]=1800;board.cells[2]=1;
+  board.cells[7*3]=5000;board.cells[7*3+1]=600;board.cells[7*3+2]=1;
+  result.textContent='';
+  controller.start(false);
+  setTimeout(()=>commit(command(30,2700)),90);
+};
+const demo=new URLSearchParams(location.search).get('demo');
+if(demo==='pot')document.querySelector('#pot').click();
+else if(demo==='break')document.querySelector('#break').click();
+else controller.start(false);
+</script>
+</body>
+</html>

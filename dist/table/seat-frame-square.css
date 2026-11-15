@@ -1,0 +1,23 @@
+/* ---------------------------------------------------------------------------
+   Room-player portrait frames (2026-11-13 15:18).
+   The user asked for a SQUARE avatar frame, not for the avatars to be
+   replaced by X / O pieces: the two smiley faces stay, and the right-hand
+   piece badge stays. Only the shape of the portrait's white border changes.
+
+   table.css still declares the circular 50% base (the leaderboard frame test
+   relies on that), so this file is a deliberate override loaded after it.
+   rank-badges.css already gives the leaderboard a 22% soft square — reusing
+   the same radius keeps the two portrait families visually consistent.
+   --------------------------------------------------------------------------- */
+body.table-home-theme .players-panel .seat .seat-avatar{
+  border-radius:22%;
+}
+/* Empty "waiting for player" placeholder has no portrait of its own. */
+body.table-home-theme .players-panel .empty-seat .avatar-shell{
+  border-radius:22%;
+}
+/* The gold / cloud / night VIP crest is a circular ornament wrapped around
+   the portrait; its inner image must stay round for the crest to fit. */
+body.table-home-theme .players-panel .seat:has(.avatar-frame) .seat-avatar{
+  border-radius:50%;
+}

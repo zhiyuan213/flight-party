@@ -45,7 +45,9 @@ public class RoomSocket extends TextWebSocketHandler {
         if(room.isEmpty() || room.get().room().seats().stream().noneMatch(s->principal.equals(s.principal()))) { socket.close(CloseStatus.POLICY_VIOLATION);return; }
         remove(socket.getId());
         subscriptions.put(socket.getId(),new Subscription(new ConcurrentWebSocketSessionDecorator(socket,5000,65536),sessionId,principal,input.roomId()));
-        presence.watch(room.get().room(),Instant.now());
+        /* A fresh SUBSCRIBE is a reconnect: hand a hosted/grace seat back to
+           its owner. Ordinary pongs only refresh the lease (see RoomPresence). */
+        presence.resume(room.get().room(),principal,Instant.now());
         presence.heartbeat(input.roomId(),principal,socket.getId(),Instant.now());
     }
     @Override protected void handlePongMessage(WebSocketSession socket,PongMessage message){

@@ -1,0 +1,124 @@
+/* Result-dialog reward ticker. Kept in its own file so the shared pool-shell.css
+   key (which is tied to the site-points wallet version) stays untouched.
+   The reward row appears first; the daily allowance ABOVE counts up FIRST,
+   THEN 当前 Joy Coins BELOW it, each with the same accent + closing pop. There is
+   NO progress bar and NO caption: the counting figures are the whole effect,
+   and all four text rows share one fixed height and identical spacing. */
+
+/* Pull the flavour line closer once the reward panel is actually visible. */
+.pool-result-description:has(+ .pool-result-points:not([hidden])){margin-bottom:12px}
+
+.pool-result-points{
+  display:grid;gap:14px;margin:0 0 20px;padding:14px 16px;
+  border:1px solid #c9a76255;border-radius:14px;
+  background:linear-gradient(105deg,#a982221a,#ffffff05 72%);
+  text-align:left;overflow:hidden
+}
+/* An author `display:grid` beats the UA [hidden] rule, so hide explicitly. */
+.pool-result-points[hidden]{display:none}
+/* Equal rhythm: the four values have different font sizes (17 / 12 / 12 / 18px),
+   so baseline alignment produced uneven visual gaps. Every row is now the same
+   fixed-height box with centre alignment, giving an even 22px + 14px spacing. */
+.pool-result-points-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;
+  min-height:22px;
+  opacity:0;transform:translateY(5px);
+  transition:opacity .3s ease,transform .3s ease
+}
+.pool-result-points[data-phase="reward"] .pool-result-reward-row,
+.pool-result-points[data-phase="counting"] .pool-result-points-row,
+.pool-result-points[data-phase="daily"] .pool-result-points-row,
+.pool-result-points[data-phase="done"] .pool-result-points-row{opacity:1;transform:none}
+.pool-result-points-label{color:#9db3ca;font-size:11px;font-weight:700;letter-spacing:.6px;white-space:nowrap}
+.pool-result-reward{
+  color:var(--result-accent);font-size:17px;font-weight:900;line-height:1.2;
+  white-space:nowrap;font-variant-numeric:tabular-nums
+}
+.pool-result-total{
+  color:#fff4d4;font-size:18px;font-weight:900;line-height:1.2;
+  white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.2px
+}
+.pool-result-points[data-phase="counting"] .pool-result-total{color:var(--result-accent)}
+.pool-result-points[data-phase="reward"] .pool-result-reward{animation:pool-points-pop .42s cubic-bezier(.2,1.5,.4,1) both}
+.pool-result-points[data-phase="done"] .pool-result-total{animation:pool-points-pop .42s ease-out both}
+.pool-result-breakdown{
+  color:#c9a762;font-size:12px;font-weight:800;line-height:1.25;
+  white-space:nowrap;font-variant-numeric:tabular-nums
+}
+.pool-result-breakdown-row[hidden]{display:none}
+/* Daily allowance, shown ABOVE "当前 Joy Coins" with NO caption and NO bar.
+   The whole block fades in with the total row; a legacy snapshot without
+   `daily` hides it entirely. Its figure counts up BEFORE the total, with the
+   same accent colour and a closing "pop" as it lands; 当前 Joy Coins then counts
+   up and pops in turn. It is one plain 22px text row, so the four rows keep
+   their even rhythm. */
+.pool-result-daily{display:block;position:relative;opacity:0;transition:opacity .3s ease}
+.pool-result-daily[hidden]{display:none}
+.pool-result-points[data-phase="counting"] .pool-result-daily,
+.pool-result-points[data-phase="daily"] .pool-result-daily,
+.pool-result-points[data-phase="done"] .pool-result-daily{opacity:1}
+/* inherits the shared 22px min-height from .pool-result-points-row */
+.pool-result-daily-value{
+  color:#f4d78c;font-size:12px;font-weight:800;line-height:1.2;
+  white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.2px
+}
+.pool-result-points[data-phase="daily"] .pool-result-daily-value{color:var(--result-accent)}
+/* The UPPER figure pops as soon as it lands (daily -> counting); the LOWER
+   figure pops at done. The daily value keeps the same animation shorthand in
+   both phases, so entering done does not replay the upper pop. */
+.pool-result-points[data-phase="counting"] .pool-result-daily-value{animation:pool-points-pop .42s ease-out both}
+.pool-result-points[data-phase="done"] .pool-result-daily-value{animation:pool-points-pop .42s ease-out both}
+@keyframes pool-points-pop{
+  0%{transform:scale(.86);opacity:.3}
+  70%{transform:scale(1.06);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@media(max-width:480px){
+  .pool-result-points{padding:12px 14px;gap:12px;margin-bottom:17px}
+  .pool-result-reward{font-size:15px}
+  .pool-result-total{font-size:16px}
+  .pool-result-points-label{font-size:10px}
+  .pool-result-daily-value{font-size:11px}
+}
+/* ------------------------------------------------------------ player artwork
+   The two result cards used to be text-only. A trophy illustration now fills
+   the empty space on the RIGHT of each card, with name + score grouped on the
+   LEFT. These rules live here (not in pool-shell.css) because that file's
+   cache key is tied to the site-points wallet chain and must never drift. */
+.pool-result-player{
+  flex-direction:row;align-items:center;justify-content:space-between;
+  gap:8px;text-align:left;padding:14px 12px
+}
+.pool-result-player-copy{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1 1 auto}
+/* The original `.pool-result-player>span` rule no longer matches once the
+   score moves into the copy column — restate it here. */
+.pool-result-player-copy>span{color:#91a9c2;font-size:11px}
+.pool-result-player-art{
+  flex:0 0 50px;width:50px;height:58px;object-fit:contain;
+  user-select:none;-webkit-user-drag:none;
+  filter:drop-shadow(0 5px 11px #0008);
+  animation:result-art-in .45s cubic-bezier(.2,1.25,.4,1) backwards
+}
+.pool-result-player:nth-child(2) .pool-result-player-art{animation-delay:.09s}
+.pool-result-player.winner .pool-result-player-art{filter:drop-shadow(0 5px 15px #f4d78c66)}
+.pool-result-player[data-outcome="loser"] .pool-result-player-art,
+.pool-result-player[data-outcome="draw"] .pool-result-player-art{opacity:.86}
+/* `to` leaves opacity undeclared so the animation settles on the element's
+   own value (1 for a winner, .86 for the others) instead of snapping. */
+@keyframes result-art-in{
+  from{opacity:0;transform:translateY(9px) scale(.84)}
+  to{transform:none}
+}
+@media(max-width:480px){
+  .pool-result-player{gap:6px;padding:12px 9px}
+  .pool-result-player-art{flex-basis:42px;width:42px;height:50px}
+  .pool-result-player strong{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .pool-result-points-row{transition:none;opacity:1;transform:none}
+  .pool-result-daily{transition:none;opacity:1}
+  .pool-result-player-art{animation:none}
+  .pool-result-points .pool-result-reward,
+  .pool-result-points .pool-result-total,
+  .pool-result-points .pool-result-daily-value{animation:none}
+}

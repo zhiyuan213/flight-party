@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {bindPoolFullscreen} from '../dist/portal/pool-fullscreen.js';
 
 function setup({blocked=false}={}){
- const events={},attrs={},classes=new Set(),styles=[],frame={contentWindow:{}},button={setAttribute:(k,v)=>attrs[k]=v,addEventListener:(k,fn)=>events['button:'+k]=fn};
+ const events={},attrs={},classes=new Set(),styles=[],frame={contentWindow:{}},button={setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],addEventListener:(k,fn)=>events['button:'+k]=fn};
  let requests=0,exits=0;
  const document={fullscreenElement:null,head:{append:node=>styles.push(node)},createElement:()=>({}),addEventListener:(k,fn)=>events[k]=fn,exitFullscreen:async()=>{exits++;document.fullscreenElement=null;events.fullscreenchange();}};
  const stage={classList:{toggle:(name,on)=>on?classes.add(name):classes.delete(name)},requestFullscreen:async()=>{requests++;if(blocked)throw Error('activation required');document.fullscreenElement=stage;events.fullscreenchange();}};
@@ -51,7 +51,7 @@ test('screen updates from another game, origin or frame cannot expand the stage'
 });
 
 test('a pending native request does not delay expanded layout or allow duplicate requests',async()=>{
- const events={},classes=new Set(),button={setAttribute(){},addEventListener:(k,fn)=>events[k]=fn},frame={contentWindow:{}};
+ const events={},classes=new Set(),button={setAttribute(){},removeAttribute(){},addEventListener:(k,fn)=>events[k]=fn},frame={contentWindow:{}};
  let resolveRequest,requests=0;const document={fullscreenElement:null,head:{append(){}},createElement:()=>({}),addEventListener(){}};
  const stage={classList:{toggle:(name,on)=>on?classes.add(name):classes.delete(name)},requestFullscreen:()=>{requests++;return new Promise(resolve=>{resolveRequest=resolve;});}};
  const window={navigator:{userActivation:{isActive:true}},addEventListener:(k,fn)=>events[k]=fn};

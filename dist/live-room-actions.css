@@ -1,0 +1,9 @@
+/* Friend-room actions (UI pass 2026-11-10): the room-code card is gone, and
+   copy / takeoff / leave now all share the FIRST button's style — one dark,
+   centred, full-width secondary action with identical sizing and rhythm. */
+.room-preview-dialog .room-invite-standalone{
+  display:block;box-sizing:border-box;width:100%;margin:0 0 12px;
+  padding:12px 16px;border-radius:12px;
+  font-size:13px;line-height:1.25;text-align:center;
+}
+.room-preview-dialog .room-invite-standalone.room-invite-last{margin-bottom:0}

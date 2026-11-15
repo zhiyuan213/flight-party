@@ -5,7 +5,7 @@
 .analytics-choice>div{display:flex;gap:8px}
 .analytics-choice button{font-size:10px;padding:7px 10px;border:1px solid #b9cfe6;background:#f6fbff;border-radius:8px;color:#365b85}
 .account-button{display:flex;align-items:center;gap:7px;height:40px;padding:4px 10px 4px 5px;border:1px solid #a5cef5;border-radius:20px;background:linear-gradient(#fff,#e9f5ff);color:#16468f;box-shadow:inset 0 1px white,0 2px 3px #245c9220;max-width:180px}
-.account-button-avatar,.account-dialog-avatar,.leaderboard-avatar{background-image:url('assets/avatars-v5.png');background-size:200% 200%;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px #35629426;flex:none}
+.account-button-avatar,.account-dialog-avatar,.leaderboard-avatar{background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 4px #35629426;flex:none}
 .account-button-avatar{display:flex;align-items:flex-end;justify-content:flex-end;width:29px;height:29px;color:#ffb32b;font-size:16px;text-shadow:0 1px white}
 .account-button-label{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .account-button-mode{font-size:6px;letter-spacing:.3px;color:#6391b8;font-weight:800}
@@ -310,7 +310,7 @@
 .room-seat.empty{border-style:dashed;background:#f3f9ff;color:#7a9ab5;box-shadow:none}
 .room-seat.empty .room-seat-avatar{visibility:hidden}
 .room-leave-button{display:block;width:100%;margin-top:18px;padding:12px;text-align:center}
-.room-seat-avatar{display:block;width:41px;height:41px;flex:none;border-radius:50%;border:2px solid white;background-image:url('assets/avatars-v5.png');background-size:200% 200%;box-shadow:0 2px 4px #42698d22}
+.room-seat-avatar{display:block;width:41px;height:41px;flex:none;border-radius:50%;border:2px solid white;background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center;box-shadow:0 2px 4px #42698d22}
 .room-seat-avatar.empty-seat-avatar{display:grid;place-items:center;background:#e4f1fc;border:1px dashed #b3d2eb;box-shadow:none;color:#8cb4d5;font-size:21px}
 .room-seat>div{flex:1;min-width:0}
 .room-seat b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:900;line-height:1.4}
@@ -414,7 +414,7 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 .appearance-option{min-width:0;padding:19px 4px 12px;border:1px solid #d0e1f7;border-radius:14px;background:linear-gradient(#fff,#edf6ff);color:#285293;display:flex;flex-direction:column;align-items:center;gap:12px}
 .appearance-option[aria-pressed="true"]{border-color:#4e87ff;box-shadow:0 0 0 1px #4e87ff}
 .appearance-option b{font-size:11px}.appearance-option small{font-size:10px;color:#809bb9}
-.appearance-preview,.result-avatar{display:inline-block;flex:none;width:48px;height:48px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%}
+.appearance-preview,.result-avatar{display:inline-block;flex:none;width:48px;height:48px;border-radius:50%;background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center}
 .appearance-preview-row{display:flex;align-items:center;gap:15px;margin:20px 4px 2px;padding:14px;background:white;border:1px solid #d0e1f7;border-radius:14px}
 .appearance-preview-row .appearance-preview{width:38px;height:38px}
 .appearance-preview-row b{font-size:14px}.appearance-preview-row small{margin-left:auto;font-size:10px;color:#8ca2be}
@@ -432,7 +432,7 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 [data-victory-effect="gold"]>.trophy{font-size:inherit;display:flex;flex-direction:column;align-items:center;margin-bottom:14px}
 .victory-crest{display:block;position:relative;width:260px;height:132px;margin:0 auto}
 .victory-wings{position:absolute;inset:0;background:url('assets/member/wing-badge.svg') center/contain no-repeat;filter:drop-shadow(0 4px 4px #b5842524);animation:wing-unfold .75s ease-out both}
-.victory-portrait{position:absolute;left:calc(50% - 41px);top:22px;width:82px;height:82px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%;border:3px solid #fff0ad;box-shadow:0 0 0 3px #eab749}
+.victory-portrait{position:absolute;left:calc(50% - 41px);top:22px;width:82px;height:82px;border-radius:50%;background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center;border:3px solid #fff0ad;box-shadow:0 0 0 3px #eab749}
 .victory-spark{position:absolute;left:5px;top:28px;color:#f0bc40;font-size:30px;animation:victory-glint 1.8s ease-out both}
 .victory-spark.right{left:auto;right:4px;top:77px;animation-delay:.15s;color:#5389ed}
 .victory-caption{font-size:14px;letter-spacing:2px;font-weight:900;color:#a97522}
@@ -471,7 +471,7 @@ header nav .account-button.icon-btn{display:block;width:auto;height:40px;min-wid
 .compact-account .account-plan-card strong{font-size:27px}
 .compact-account .account-membership>p{font-size:11px;line-height:1.5}
 header nav .account-button.signed-in-account{display:inline-flex;align-items:center;gap:10px;overflow:visible;max-width:200px;padding:0 11px 0 8px}
-.header-account-avatar{display:inline-block;position:relative;flex:none;width:28px;height:28px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%;border:1px solid white}
+.header-account-avatar{display:inline-block;position:relative;flex:none;width:28px;height:28px;border-radius:50%;background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center;border:1px solid white}
 .header-account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
 @media(max-width:480px){.compact-account{padding:20px 16px;width:380px}.compact-account .account-dialog-heading{margin-bottom:14px}.compact-account .account-dialog-avatar{width:44px;height:44px}.compact-account .account-dialog-heading h2{font-size:22px}.account-section-tabs{margin-bottom:12px}.account-section-tabs button{font-size:12px;padding:8px 3px}header nav .account-button.signed-in-account{gap:7px;max-width:115px;padding:0 8px;height:36px}.header-account-avatar{width:23px;height:23px}.header-account-name{font-size:12px}}
 @media(max-width:380px){header nav .account-button.signed-in-account{gap:4px;max-width:60px;padding:0 5px;height:32px}.header-account-avatar{width:19px;height:19px}.header-account-name{max-width:24px;font-size:11px}}
@@ -582,7 +582,7 @@ header nav .account-button.signed-in-account{gap:13px}
 .avatar-picker-dialog h2{font-size:23px;margin:0 0 22px}
 .system-avatar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .system-avatar-grid button{display:grid;place-items:center;padding:16px}
-.system-avatar-image{width:80px;height:80px;border-radius:50%;background-image:url('assets/avatars-v5.png');background-size:200% 200%;box-shadow:0 3px 8px #32619c25;border:2px solid #fff}
+.system-avatar-image{width:80px;height:80px;border-radius:50%;background-image:url('assets/shop/avatars-v4/avatar-starling.svg?v=20261114-avatar5');background-size:cover;background-position:center;box-shadow:0 3px 8px #32619c25;border:2px solid #fff}
 .avatar-picker-dialog p{font-size:11px;color:#7893af;margin:16px 0 0;line-height:1.6}
 .avatar-upload-picker{display:block;position:relative;margin-top:20px;text-align:center;padding:12px;border:1px solid #bdd6f5;border-radius:12px;overflow:hidden;cursor:pointer;font-size:13px;font-weight:800}
 .avatar-upload-picker input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
@@ -620,7 +620,10 @@ header nav .account-button.signed-in-account{gap:13px}
 #play[data-online="true"] .demo-actions{display:none}
 
 /* The headings and values share all five tracks, including the measured scrollbar gutter. */
-.leaderboard-shell{--lb-rank:35px;--lb-avatar:53px;--lb-points:56px;--lb-games:56px;--lb-gap:12px;--lb-pad:14px}
+/* The podium accent bar sits at the row edge while the coin starts after
+   --lb-pad; --lb-gap also separates the coin from the pilot portrait. Both
+   values feed the header grid, so the number columns stay aligned. */
+.leaderboard-shell{--lb-rank:35px;--lb-avatar:53px;--lb-points:56px;--lb-games:56px;--lb-gap:15px;--lb-pad:20px}
 .leaderboard-shell .leaderboard-row,.leaderboard-shell .leaderboard-columns{grid-template-columns:var(--lb-rank) var(--lb-avatar) minmax(0,1fr) var(--lb-points) var(--lb-games);column-gap:var(--lb-gap)}
 .leaderboard-shell .leaderboard-row{padding-left:var(--lb-pad);padding-right:var(--lb-pad)}
 .leaderboard-shell .leaderboard-columns{box-sizing:border-box;margin-right:calc(7px + var(--lb-scrollbar,8px));padding:13px calc(var(--lb-pad) + 1px) 8px;font-size:9px;letter-spacing:.2px;text-align:center;line-height:1.3}
@@ -639,7 +642,7 @@ header nav .account-button.signed-in-account{gap:13px}
 .hangar-choices button[data-plane-tier="annual"]{border-color:#d8b19b;background:linear-gradient(135deg,#fff9f4,#edf4ff)}
 .hangar-choices button[data-plane-tier="annual"][aria-pressed="true"]{border-color:#b47d65;box-shadow:0 0 0 1px #c7957a,inset 0 1px 0 #fff}
 @media(max-width:480px){
- .leaderboard-shell{--lb-rank:28px;--lb-avatar:43px;--lb-points:42px;--lb-games:44px;--lb-gap:8px;--lb-pad:9px}
+ .leaderboard-shell{--lb-rank:28px;--lb-avatar:43px;--lb-points:42px;--lb-games:44px;--lb-gap:8px;--lb-pad:11px}
  .leaderboard-shell .leaderboard-columns{font-size:8px;letter-spacing:0}
  .leaderboard-shell .leaderboard-row strong,.leaderboard-shell .leaderboard-row strong.ranking-value-active{font-size:18px}
  .leaderboard-row b{flex-wrap:wrap;gap:2px;align-content:center;white-space:normal;line-height:1.3}
@@ -657,7 +660,7 @@ header nav .account-button.signed-in-account{gap:13px}
  .header-account-name{max-width:42px}
 }
 @media(max-width:360px){
- .leaderboard-shell{--lb-rank:24px;--lb-avatar:34px;--lb-points:36px;--lb-games:36px;--lb-gap:6px;--lb-pad:6px}
+ .leaderboard-shell{--lb-rank:24px;--lb-avatar:34px;--lb-points:36px;--lb-games:36px;--lb-gap:6px;--lb-pad:8px}
  .leaderboard-shell .leaderboard-row strong,.leaderboard-shell .leaderboard-row strong.ranking-value-active{font-size:17px}
  .leaderboard-shell .leaderboard-row b{font-size:11px}
  .leaderboard-shell .leaderboard-columns{font-size:7px}

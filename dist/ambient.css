@@ -1,8 +1,9 @@
 /* JoyFlock ambient backdrop.
-   A slow blue/violet nebula with a handful of stars — not a literal starfield.
-   Pure CSS: the very first frame is already complete (no JS, no image download),
-   only transform/opacity animate, so it stays on the compositor.
-   Tune per page with --ambient-nebula-opacity / --ambient-star-opacity. */
+   A deep-space nebula: soft light-blue clouds over a darker navy base, with a
+   handful of stars — not a literal starfield. Pure CSS: the very first frame is
+   already complete (no JS, no image download), only transform/opacity animate,
+   so it stays on the compositor. Tune per page with --ambient-nebula-opacity /
+   --ambient-star-opacity. */
 :root{
   --ambient-nebula-opacity:1;
   --ambient-star-opacity:.9;
@@ -14,16 +15,34 @@ body::after{
   pointer-events:none;z-index:0;
 }
 
-/* Large, very soft light masses drifting at different speeds of the same
-   slow cycle. No hard edges, no high-saturation colours. */
+/* Large, very soft light masses drifting at different speeds of the same slow
+   cycle: a deep-blue floor, then pale-blue / cyan cloud wisps. No hard edges,
+   no high-saturation colours. */
 body::before{
   background:
-    radial-gradient(38vw 30vw at 15% 8%,  #7184ec33 0%, #4457b81f 44%, transparent 72%),
-    radial-gradient(42vw 34vw at 86% 22%, #6252c433 0%, #354a9c1c 46%, transparent 74%),
-    radial-gradient(48vw 32vw at 48% 102%, #3e76c924 0%, transparent 70%);
+    radial-gradient(72vw 58vw at 50% 126%, #061433 0%, #050e22 42%, transparent 74%),
+    radial-gradient(40vw 36vw at -8% 104%, #07143a 0%, transparent 72%),
+    radial-gradient(40vw 36vw at 108% 104%, #07143a 0%, transparent 72%),
+    radial-gradient(40vw 32vw at 14% 6%,  #8fb6ff42 0%, #4a72cf26 46%, transparent 76%),
+    radial-gradient(44vw 36vw at 86% 20%, #7fa8ff3c 0%, #3a5fbb20 48%, transparent 78%),
+    radial-gradient(50vw 36vw at 46% 106%, #5f96f52e 0%, transparent 74%),
+    radial-gradient(28vw 22vw at 22% 14%, #cfe4ff30 0%, transparent 70%),
+    radial-gradient(30vw 24vw at 78% 30%, #bdd8ff2a 0%, transparent 72%);
   background-repeat:no-repeat;
   opacity:var(--ambient-nebula-opacity);
-  animation:ambient-drift 32s ease-in-out infinite alternate;
+  /* One STATIC frame for the whole site (2026-11-15 14:33).
+     The 26s drift used to start at the first paint of each document, so the
+     lobby and an iframe-heavy game page (and two tabs opened seconds apart)
+     showed different light masses even though they shared the same CSS. The
+     user kept reading that as "the two pages have different backgrounds".
+     Pin the reload-safe `from` frame instead: identical everywhere, at every
+     moment, and no first-paint strip. The keyframes stay below for the
+     reduced-motion / future opt-in path; the JS still writes --nebula-delay. */
+  animation:none;
+  /* Kept as the hook for a future opt-in drift; harmless while animation is
+     none, and every tab still agrees on the same wall-clock phase. */
+  animation-delay:var(--nebula-delay,0s);
+  transform:translate3d(-4%,-2.5%,0) scale(1.12);
 }
 
 /* Sparse, dim pinpoints. Two independent animations give a soft parallax and
@@ -54,9 +73,17 @@ body::after{
     ambient-float 44s ease-in-out infinite alternate;
 }
 
+/* Every frame must still cover the whole viewport. On a reload the animation
+   starts at `from` (site-floating-dots.js only rewinds the phase later via
+   --nebula-delay), and the old 1.05 scale was too small to compensate the
+   -4% X shift: the layer's right edge landed ~1.5% inside the viewport, so a
+   strip of the plain body colour showed on the right until the animation
+   drifted far enough. 1.12 makes even the first frame overshoot both edges:
+     right = 50% + 56% - 4% = 102%, left = 50% - 56% - 4% = -10%
+   and the `to` frame (+5% / 1.16) already covered it. */
 @keyframes ambient-drift{
-  from{transform:translate3d(-1.4%,-1%,0) scale(1.02)}
-  to  {transform:translate3d(2.2%,1.6%,0) scale(1.09)}
+  from{transform:translate3d(-4%,-2.5%,0) scale(1.12)}
+  to  {transform:translate3d(5%,3.5%,0) scale(1.16)}
 }
 @keyframes ambient-twinkle{
   from{opacity:calc(var(--ambient-star-opacity) * .5)}
@@ -84,6 +111,7 @@ body.table-home-theme[data-screen="play"]::after{display:none}
 html.embedded-game{
   --ambient-nebula-opacity:.62;
   --ambient-star-opacity:.55;
+  background:transparent;
 }
 
 /* site-floating-dots.js owns the pinpoints now. Turn the old static field
@@ -95,6 +123,27 @@ html.embedded-game{
 }
 
 @media(prefers-reduced-motion:reduce){
-  body::before,body::after{animation:none}
-  body::after{opacity:var(--ambient-star-opacity)}
+  /* Keep the slow nebula drift (it is a very subtle, non-flashing ambient
+     movement) but drop the star twinkle/float for reduced-motion visitors. */
+  body::after{animation:none;opacity:var(--ambient-star-opacity)}
+}
+
+/* ---------------------------------------------------------------------------
+   Embedded table-game intros are transparent windows (2026-11-15 14:19).
+   The dock already showed the lobby nebula, but the iframe and the intro
+   body still painted their own opaque #0b1020 plus a second, softer nebula.
+   That left a visible vertical seam that read as a coloured border beside
+   the icons. Make the whole embedded intro a window: no opaque html/body
+   layer, no second gradient and no duplicate star field, so the portal's
+   own full-strength nebula is the single backdrop from edge to edge.
+   Scoped to the table-game intro: the Flight Party iframe, the play screen
+   and every standalone page keep their own surfaces.
+   --------------------------------------------------------------------------- */
+html.embedded-game body.table-home-theme:not([data-screen="play"]){
+  background:transparent;
+}
+html.embedded-game body.table-home-theme::before,
+html.embedded-game body.table-home-theme::after,
+html.embedded-game body.table-home-theme i.joymote{
+  display:none;
 }

@@ -33,4 +33,46 @@ public final class GridRules {
   if(s.game.equals("xo")){int best=moves.getFirst(),bestScore=-1;for(int p:moves){int value=p==4?2:p%2==0?1:0;if(value>bestScore){bestScore=value;best=p;}}return best;}
   int best=moves.getFirst(),score=Integer.MIN_VALUE;for(int p:moves){int value=-Math.abs(p%15-7)-Math.abs(p/15-7);for(int i=0;i<s.cells.length;i++)if(s.cells[i]!=0&&Math.abs(i%15-p%15)<=2&&Math.abs(i/15-p/15)<=2)value+=s.cells[i]==s.turn?5:4;if(value>score){score=value;best=p;}}return best;
  }
+ /* ONLINE CUSTODY BOT -----------------------------------------------------
+    When a real player leaves for good, an *easy* bot takes over their seat.
+    This is deliberately weaker than bot(State): no winning/Blocking search,
+    no aim optimisation, low power with a small deterministic miss. It always
+    returns a command the game's move() accepts, so a double-hosted match can
+    always run to a finish. The player's saved single-player difficulty never
+    applies here. See com.flightparty.online.CustodyPolicy. */
+ public static int easyBot(State s){
+  if(s.over)throw new IllegalStateException("over");
+  if(s.game.equals("snooker")){
+   int command=SnookerRules.bot(s);
+   int nomination=command/3600000,shot=command%3600000,angle=shot%3600;
+   return nomination*3600000+32*3600+(angle+96)%3600;
+  }
+  if(s.game.equals("pool")){
+   int command=PoolRules.bot(s);
+   int spin=command/363600,shot=command%363600,angle=shot%3600;
+   return spin*363600+28*3600+(angle+120)%3600;
+  }
+  if(s.game.equals("bubbles"))return 2+Math.floorMod(s.moves*17+s.turn*7,145);
+  // Draw & Guess never uses GridRules.bot/easyBot: TableService drives it with
+  // SketchRules.advance(). Keep a harmless legal fallback for completeness.
+  if(s.game.equals("draw"))return 0;
+  if(s.game.equals("cards")){
+   // legal() always appends the "pass/draw" move (-1). Playing only that would
+   // burn the 1000-move cap; stay legal but prefer an actual card so a fully
+   // hosted match reaches a real finish.
+   var legal=CardRules.legal(s);
+   if(legal.isEmpty())throw new IllegalStateException("over");
+   return legal.size()>1?legal.get(Math.floorMod(s.moves,legal.size()-1)):legal.getFirst();
+  }
+  if(s.game.equals("puzzle")){
+   // A random swap never solves a 15-puzzle. Fix the first wrong tile on each
+   // turn instead: deterministic, legal, and finished within 16 hosted moves.
+   for(int a=0;a<16;a++)if(s.cells[a]!=a+1){
+    for(int b=0;b<16;b++)if(s.cells[b]==a+1&&b!=a)return a*16+b;
+   }
+   return 0;
+  }
+  var moves=legal(s);if(moves.isEmpty())throw new IllegalStateException("over");
+  return moves.get(Math.floorMod(s.moves*7+s.turn*3,moves.size()));
+ }
 }

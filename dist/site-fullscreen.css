@@ -1,0 +1,56 @@
+/* Shared fullscreen control for EVERY site header (six shell pages + portal +
+   all 20 game-guide pages). It wears the SAME deep-blue gradient pill as the
+   language, account and Joy Coins controls next to it, so the right-hand
+   cluster reads as one row of buttons. The fixed 92px slot keeps the cluster
+   anchored when 全屏 swaps to 退出全屏; order:99 keeps it visually last even
+   though site-points.js appends the Joy Coins pill at runtime. */
+header.topbar #fullscreen{
+  box-sizing:border-box;
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;order:99;
+  width:92px;min-width:92px;max-width:92px;
+  height:28px;min-height:28px;padding:0 8px;
+  border:1px solid #ffffff24;border-radius:999px;
+  background:linear-gradient(180deg,#1d2850,#141d3c);
+  -webkit-appearance:none;appearance:none;
+  color:#eaf0ff;font:600 12px/1 Nunito,system-ui,-apple-system,sans-serif;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  user-select:none;-webkit-user-select:none;
+  cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s,background .2s;
+}
+header.topbar #fullscreen:hover{
+  border-color:#a8b8ff70;box-shadow:0 0 0 3px #a8b8ff14;transform:translateY(-1px);
+}
+header.topbar #fullscreen:focus-visible{outline:2px solid #a8b8ff;outline-offset:2px}
+header.topbar #fullscreen[aria-pressed="true"]{
+  background:linear-gradient(180deg,#2a3b76,#1b2a55);
+  border-color:#a8b8ff70;color:#fff;
+}
+/* Phones: one compact ⛶ character inside the very same pill. The 42/38px
+   slots keep the 218px phone cluster intact. */
+@media(max-width:600px){
+  header.topbar #fullscreen{
+    width:42px;min-width:42px;max-width:42px;
+    height:24px;min-height:24px;padding:0;font-size:0;
+  }
+  header.topbar #fullscreen::before{content:"⛶";font-size:15px;line-height:1;color:inherit}
+}
+/* Ultra-narrow phones (<=480px): the header had exactly 218px for its right
+   cluster, and adding another 48px would push the whole bar off-screen. Fold
+   the control INTO that original budget by tightening the four fixed-width
+   pills:
+     44 (language) + 62 (account) + 62 (Joy Coins) + 38 (fullscreen)
+     + 3*4 (gaps) = 218. The header is no wider than before the button existed.
+   These selectors outrank site-chrome.css / site-points.css (body>header...),
+   and the file is loaded after both. */
+@media(max-width:480px){
+  body>header.topbar .top-actions{gap:4px;width:218px}
+  body>header.topbar .top-actions .portal-language,
+  body>header.topbar .top-actions .lang-picker{
+    width:44px;min-width:44px;max-width:44px;
+  }
+  body>header.topbar .top-actions .chrome-account{width:62px;min-width:62px}
+  body>header.topbar .top-actions .jp-pill{width:62px;min-width:62px}
+  header.topbar #fullscreen{width:38px;min-width:38px;max-width:38px}
+}
+@media(prefers-reduced-motion:reduce){header.topbar #fullscreen{transition:none}}

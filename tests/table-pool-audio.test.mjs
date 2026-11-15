@@ -96,25 +96,29 @@ test('ball, cushion and pocket impacts distinguish light, medium and hard contac
  }
 });
 
-test('recorded ball impacts preserve separate loudness levels and avoid repeating the same pitch variant',async()=>{
- const originalAudio=globalThis.AudioContext,originalFetch=globalThis.fetch,levels=[],rates=[];
+test('pre-A CC0 recording keeps three rate variants, a strength-driven low-pass and separate loudness levels',async()=>{
+ const originalAudio=globalThis.AudioContext,originalFetch=globalThis.fetch,levels=[],rates=[],filters=[],urls=[],starts=[];
  const parameter=()=>({value:0,setValueAtTime(v){this.value=v;},exponentialRampToValueAtTime(){}});
- globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
+ globalThis.fetch=async url=>{urls.push(String(url));return{ok:true,arrayBuffer:async()=>new ArrayBuffer(4)};};
  globalThis.AudioContext=class{
   state='running';currentTime=10;sampleRate=48000;destination={};
   async decodeAudioData(){return{duration:.2,sampleRate:48000,getChannelData:()=>new Float32Array(9600).fill(.1)};}
-  createBufferSource(){return{playbackRate:parameter(),connect(){},disconnect(){},start(){rates.push(this.playbackRate.value);},stop(){this.onended?.();}};}
+  createBufferSource(){return{playbackRate:parameter(),connect(){},disconnect(){},start(t,offset,duration){rates.push(this.playbackRate.value);starts.push([t,offset,duration]);},stop(){this.onended?.();}};}
   createGain(){const gain=parameter();gain.setValueAtTime=function(v){if(v>.0001)levels.push(v);this.value=v;};return{gain,connect(){},disconnect(){}};}
-  createBiquadFilter(){return{frequency:parameter(),connect(){},disconnect(){}};}
+  createBiquadFilter(){const node={type:'',frequency:parameter(),connect(){},disconnect(){}};filters.push(node);return node;}
   createDynamicsCompressor(){return{threshold:parameter(),knee:parameter(),ratio:parameter(),attack:parameter(),release:parameter(),connect(){}};}
  };
  try{
   const audio=await import('../dist/table/pool-audio.js?recording-strength-test');audio.setPoolMuted(false);audio.unlockPoolAudio();
   for(let i=0;i<8&&audio.poolRecordingStatus()!=='ready';i++)await Promise.resolve();
   assert.equal(audio.poolRecordingStatus(),'ready');
+  assert.ok(new URL(urls[0]).pathname.endsWith('/assets/audio/pool/ball-clack.mp3'),'production is back on the CC0 recording');
   for(const strength of [.1,.5,1])assert.equal(audio.poolImpact('ball',strength),true);
-  assert.ok(levels[2]>levels[0]*1.8&&levels[4]>levels[2]*1.35);
-  assert.notEqual(rates[0],rates[1]);assert.notEqual(rates[1],rates[2]);
+  assert.ok(levels[2]>levels[0]*1.7&&levels[4]>levels[2]*1.25,'harder contacts stay louder');
+  assert.deepEqual(filters.map(f=>f.frequency.value),[2850,4250,6000],'the low-pass opens with contact strength');
+  assert.ok(rates.every(r=>[.97,1,1.03].includes(r)),'every single hit uses one of the three CC0 rate variants');
+  assert.ok(new Set(rates).size>=2,'the same variant is never used twice in a row');
+  assert.ok(starts.every(([,offset,duration])=>offset===0&&Math.abs(duration-.11)<1e-9),'the recording is trimmed to a 110 ms window');
  }finally{globalThis.AudioContext=originalAudio;globalThis.fetch=originalFetch;}
 });
 

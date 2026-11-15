@@ -1,4 +1,4 @@
-import {poolCountdownSound} from './pool-audio.js?v=20261106-ui2';
+import {poolCountdownSound} from './pool-audio.js?v=20261113-snookerrail1';
 
 export const POOL_GO_DURATION=450;
 export const COUNTDOWN_LEAD_IN=1000;   // one quiet second after entering the game
@@ -16,7 +16,10 @@ export function countdownPhase(deadline,now,observedCountdown=false,readyUntil=0
 export function cancelPoolCountdown(host){
   const state=host._poolCountdown;if(!state)return;
   if(state.frame!==null)cancelAnimationFrame(state.frame);
-  state.animation?.cancel();state.element.hidden=true;state.element.dataset.phase='';state.frame=null;
+  state.animation?.cancel();
+  // Archived-room teardown can run before a real DOM element was attached.
+  if(state.element){state.element.hidden=true;if(state.element.dataset)state.element.dataset.phase='';}
+  state.frame=null;
   host._poolCountdown=null;
 }
 // A deadline is authoritative. Observing its countdown arms GO; arriving after it does not.

@@ -23,17 +23,27 @@
 }
 .snooker-game[data-screen="play"] .board-top button::before{content:'←';font-size:23px;line-height:1}
 
-/* Top matchup: two avatars facing a centred score plaque. */
+/* Top matchup: two avatars facing a centred score plaque.
+   2026-11-13 14:00: the whole bar was too small; every element grew ~1.25x.
+   2026-11-13 15:13: a second ~1.2x pass (user: "上面整体放大些").
+   ONE shared horizontal axis moves the bar and the table together. Moving
+   only the table would break the alignment the user explicitly asked for:
+   the stage grid offsets the table by (rail+gap)/2 ≈ 55px while the canvas's
+   own right-hand collector gutter pulls the cloth back ≈ 53px, so the two
+   centres currently coincide. Shifting both by --snooker-axis-shift keeps
+   them coincident while making the table visibly move right. */
+.snooker-game[data-screen="play"]{--snooker-axis-shift:20px}
 .snooker-matchup{
-  position:relative;flex:none;width:min(780px,calc(100% - 84px));height:58px;min-height:58px;
-  margin:2px auto 2px;
+  position:relative;flex:none;width:min(900px,calc(100% - 84px));height:104px;min-height:104px;
+  margin:4px auto 4px;
+  transform:translateX(var(--snooker-axis-shift,0px));
 }
 .snooker-matchup #seats{
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:150px;height:100%;align-items:center;
+  gap:210px;height:100%;align-items:center;
 }
 .snooker-matchup .seat{
-  display:flex;align-items:center;gap:10px;min-height:0;padding:3px 0;
+  display:flex;align-items:center;gap:14px;min-height:0;padding:3px 0;
   background:none;border:0;border-radius:0;box-shadow:none;color:#dbe8f4;
 }
 .snooker-matchup .seat:first-child{flex-direction:row-reverse;text-align:right}
@@ -41,23 +51,31 @@
 .snooker-matchup .seat:not(.active){opacity:.5;filter:saturate(.75)}
 .snooker-matchup .seat.active{background:none;border:0;box-shadow:none;color:#fff}
 .snooker-matchup .seat.active .seat-avatar{border-color:#fff4d4;box-shadow:0 0 14px #d9b96a60}
-.snooker-matchup .avatar-shell{width:38px;height:38px;flex:0 0 38px}
-.snooker-matchup .seat-avatar{border-radius:10px;border:2px solid #5a6b85;box-shadow:0 3px 8px #0006}
+.snooker-matchup .avatar-shell{width:58px;height:58px;flex:0 0 58px}
+.snooker-matchup .seat-avatar{border-radius:12px;border:2px solid #5a6b85;box-shadow:0 3px 8px #0006}
 .snooker-matchup .avatar-frame{inset:-14%;width:128%;height:128%}
 .snooker-matchup .seat-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
-.snooker-matchup .seat-name{min-height:0;gap:5px}
+.snooker-matchup .seat-name{min-height:0;gap:6px}
 .snooker-matchup .seat:first-child .seat-name{justify-content:flex-end}
-.snooker-matchup .seat-name strong{font-size:13px;max-width:170px;line-height:1.3}
-.snooker-matchup .seat-status{font-size:9px;margin:0;color:#7c96b0}
-.snooker-matchup .member-label{font-size:7px;padding:1px 4px}
+.snooker-matchup .seat-name strong{font-size:19px;max-width:220px;line-height:1.3}
+.snooker-matchup .seat-status{font-size:13px;margin:0;color:#7c96b0}
+.snooker-matchup .member-label{font-size:10px;padding:1px 6px}
 .snooker-centre{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  width:112px;height:48px;border:1px solid #2b3d5a;border-radius:8px;
-  background:linear-gradient(160deg,#16253c,#0d182b);box-shadow:0 6px 18px #0006;
+  width:166px;height:72px;border:1px solid #2b3d5a;border-radius:12px;
+  background:linear-gradient(160deg,#16253c,#0d182b);box-shadow:0 8px 22px #0006;
 }
-.snooker-score{font-size:18px;line-height:1;color:#f4cf7b;font-variant-numeric:tabular-nums;letter-spacing:.04em}
-.snooker-target{font-size:9px;color:#8fa8c6;white-space:nowrap}
+.snooker-score{font-size:28px;line-height:1;color:#f4cf7b;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.snooker-target{font-size:13px;color:#8fa8c6;white-space:nowrap}
+
+/* "Ball on" strip: the legal targets for the current visit, under both seats. */
+.snooker-targets{display:flex;align-items:center;gap:5px;margin-top:3px;min-height:28px;padding:1px 7px;border:1px solid #2b3d5a70;border-radius:10px;background:#0e1c3099}
+.snooker-targets-label{font-size:12px;letter-spacing:.04em;color:#9fb6d2;white-space:nowrap;margin-right:2px}
+.snooker-target-ball{width:25px;height:25px;flex:0 0 25px;display:block}
+.snooker-targets-note{font-size:12px;font-weight:700;color:#f0cf88;margin-left:2px}
+.snooker-matchup .seat:not(.active) .snooker-targets{opacity:.45}
+.snooker-matchup .seat:first-child .snooker-targets{justify-content:flex-end}
 
 /* Board becomes a full-bleed stage: left cue rail + fitted table. */
 .snooker-game[data-screen="play"] .game-panel>.board.arcade-board{
@@ -65,34 +83,111 @@
   display:flex;flex-direction:column;gap:6px;align-content:initial;justify-items:initial;
   background:none;border:0;border-radius:0;box-shadow:none;
 }
-.snooker-stage{flex:1;min-height:0;display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px;align-items:stretch}
-.snooker-table{position:relative;min-width:0;min-height:0;overflow:hidden}
+/* One scale keeps every left-rail control in step with the Pool game's
+   cue-side column (80px at scale 1, 1.12 / 1.25 on wider viewports). */
+.snooker-game[data-screen="play"]{--snooker-rail-scale:.64}
+@media(min-width:761px){.snooker-game[data-screen="play"]{--snooker-rail-scale:1.12}}
+@media(min-width:1001px){.snooker-game[data-screen="play"]{--snooker-rail-scale:1.25}}
+.snooker-stage{
+  flex:1;min-height:0;display:grid;
+  grid-template-columns:calc(80px * var(--snooker-rail-scale)) minmax(0,1fr);
+  gap:10px;align-items:stretch;
+  /* The grid column loses 2S on the right, so its centre moves left by S.
+     Translating the table by 2S therefore yields a NET shift of exactly S —
+     the same S the bar gets — with the canvas still inside the panel edge.
+     Without this reservation a 20px shift clipped 6px off the right rail. */
+  padding-right:calc(var(--snooker-axis-shift,0px) * 2);
+}
+.snooker-table{
+  position:relative;min-width:0;min-height:0;overflow:hidden;
+  transform:translateX(calc(var(--snooker-axis-shift,0px) * 2));
+}
 .snooker-table canvas{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   display:block;max-width:none;max-height:none;width:auto;height:auto;
-  touch-action:none;outline-offset:4px;border-radius:8px;
+  touch-action:none;outline-offset:4px;border-radius:8px;cursor:crosshair;
 }
+/* Left cue rail: exactly Pool's stack — no framed column, sound switch,
+   hit point, dark power track with the wooden cue, percentage. The legacy
+   gold .power-fill is gone; the track stays dark and the full cue is shown
+   at rest, then pulls back while charging just like Pool's cue.
+   Pool's column starts at the table's top edge and the meter takes every
+   leftover pixel. Mirror that: the column is as tall as the fitted canvas
+   (published by the fitter) and is aligned to the canvas, not centred in the
+   whole side rail. Contents start at the top — no centred block — and the
+   100% fallback keeps that true even if the fitter has not measured yet. */
 .snooker-rail{
-  position:relative;display:flex;align-items:center;justify-content:center;
-  border:1px solid #24374f;border-radius:8px;overflow:hidden;
-  background:linear-gradient(180deg,#16283e,#0b1626);
+  position:relative;min-width:0;min-height:0;
+  display:flex;align-items:center;justify-content:center;
+  border:0;border-radius:0;background:none;overflow:visible;
 }
-.snooker-rail::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 18%,#ffffff0d,transparent 62%)}
-.snooker-cue{
-  position:relative;display:block;width:8px;height:82%;border-radius:5px;
-  transform:rotate(-4deg);
-  background:linear-gradient(90deg,#4a2f18,#b8864a 26%,#f3dba9 48%,#c1904f 72%,#3f2814);
-  box-shadow:0 7px 18px #000a,inset 0 1px 0 #fff6;
+.snooker-rail .pool-left-controls{
+  align-self:center;width:100%;padding:0;
+  height:var(--snooker-canvas-height,100%);max-height:100%;
+  gap:calc(10px * var(--snooker-rail-scale));justify-content:flex-start;
 }
-.snooker-cue::before{
-  content:'';position:absolute;left:-1px;right:-1px;top:-10px;height:11px;border-radius:3px;
-  background:linear-gradient(90deg,#6d8079,#f0f8ee,#8fa9a2);box-shadow:0 -2px 5px #0007;
+.snooker-rail .pool-sound{
+  flex:none;width:calc(76px * var(--snooker-rail-scale));
+  min-height:calc(29px * var(--snooker-rail-scale));
+  font-size:clamp(9px,calc(11px * var(--snooker-rail-scale)),14px);
+  background:#1c2c3f;border-color:#34475d;color:#bbcee0;border-radius:12px;
 }
-.snooker-cue::after{
-  content:'';position:absolute;left:-2px;right:-2px;bottom:0;height:27%;border-radius:3px;
-  background:repeating-linear-gradient(0deg,#18212d 0 3px,#334253 3px 5px);
-  box-shadow:inset 0 0 0 1px #0006;
+.snooker-rail .pool-hit{flex:none;width:auto}
+.snooker-rail .pool-spot{
+  width:calc(78px * var(--snooker-rail-scale));
+  height:calc(78px * var(--snooker-rail-scale));
+  max-width:none;max-height:none;
 }
+.snooker-nomination{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  width:calc(76px * var(--snooker-rail-scale));
+  font-size:8px;color:#a6bed5;
+}
+.snooker-nomination[hidden]{display:none!important}
+.snooker-nomination select{
+  width:100%;min-height:22px;padding:1px 2px;font-size:9px;
+  border:1px solid #31465d;border-radius:5px;background:#10213a;color:#eaf4ff;
+}
+.snooker-rail .pool-power-meter{
+  flex:1 1 auto;
+  width:calc(42px * var(--snooker-rail-scale));
+  height:auto;min-height:80px;max-height:600px;
+  margin-top:calc(12px * var(--snooker-rail-scale));
+}
+.snooker-rail .power-cue{
+  width:calc(18px * var(--snooker-rail-scale));
+  margin-left:calc(-9px * var(--snooker-rail-scale));
+}
+.snooker-rail .pool-power-value{
+  flex:none;font-size:clamp(10px,calc(12px * var(--snooker-rail-scale)),15px);
+}
+/* The button stays in the DOM as the controller's fire relay. Pool's rail has
+   no extra button: dragging the cue on the table or the power track shoots. */
+.snooker-shoot{display:none!important}
+
+/* Centre-of-table card shown after every settled shot (snooker scores points). */
+.snooker-shot-card{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  min-width:190px;max-width:70%;padding:16px 26px;border-radius:14px;text-align:center;
+  pointer-events:none;border:1px solid #d5b87780;
+  background:linear-gradient(160deg,#14253ce8,#081220f2);
+  box-shadow:0 18px 55px #000b,inset 0 1px 0 #ffffff1a;
+  animation:snooker-card-in .28s cubic-bezier(.2,.8,.2,1) both;
+}
+.snooker-shot-card b{font-size:28px;line-height:1.1;color:#f4cf7b;font-variant-numeric:tabular-nums}
+.snooker-shot-card span{font-size:11px;color:#c6d8ee;white-space:nowrap}
+.snooker-shot-card[data-kind="foul"] b{color:#ff9a8a}
+.snooker-shot-card[data-kind="end"] b{color:#fff0c0}
+@keyframes snooker-card-in{
+  from{opacity:0;transform:translate(-50%,-46%) scale(.9)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.snooker-shot-card{animation:none}}
+
+/* The old bottom control bar is replaced by the left cue rail. */
+.snooker-game .arcade-controls{display:none!important}
+.snooker-game[data-screen="play"] .game-panel>.pool-countdown{z-index:9}
 /* Controls and live status line. */
 .snooker-game .arcade-controls{
   flex:none;display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;
@@ -139,31 +234,44 @@
   font-size:10px;color:#a0b6cf;background:#15233a;border:1px solid #344b69;box-shadow:none;
 }
 @media(max-width:860px){
+  /* No spare right-hand room on narrow layouts: keep the shared axis at zero. */
+  .snooker-game[data-screen="play"]{--snooker-axis-shift:0px}
   .snooker-game[data-screen="play"] .arena,
   .snooker-game.portal-embedded[data-screen="play"] .arena{
     height:auto;min-height:calc(100dvh - 44px);grid-template-columns:1fr;display:grid;gap:0;
   }
   .snooker-game[data-screen="play"] .game-panel{height:auto;min-height:0;padding:6px 8px 8px}
   .snooker-game[data-screen="play"] .play-sidebar{height:300px;min-height:0;border-left:0;border-top:1px solid #2d405c}
-  .snooker-matchup{width:calc(100% - 56px);height:50px;min-height:50px}
-  .snooker-matchup #seats{gap:80px}
-  .snooker-matchup .avatar-shell{width:30px;height:30px;flex-basis:30px}
-  .snooker-matchup .seat-name strong{font-size:11px;max-width:88px}
+  .snooker-matchup{width:calc(100% - 56px);height:72px;min-height:72px}
+  .snooker-matchup #seats{gap:110px}
+  .snooker-matchup .avatar-shell{width:42px;height:42px;flex-basis:42px}
+  .snooker-matchup .seat-name strong{font-size:15px;max-width:120px}
   .snooker-matchup .member-label,.snooker-matchup .seat-status{display:none}
-  .snooker-centre{width:88px;height:40px}
-  .snooker-score{font-size:15px}
-  /* Narrow layouts have no fixed height: let the table's own ratio drive it so
-     the canvas can use the full available width instead of a collapsed row. */
+  .snooker-centre{width:120px;height:56px}
+  .snooker-score{font-size:21px}
+  /* Narrow layouts use the canvas ratio, including the right collector, so
+     the whole table fits without stretching its playing surface. */
   .snooker-game[data-screen="play"] .game-panel>.board.arcade-board{flex:none}
-  .snooker-stage{grid-template-columns:30px minmax(0,1fr);gap:4px;flex:none;height:auto}
-  .snooker-table{height:auto;min-height:0;aspect-ratio:1116/588}
+  .snooker-stage{
+    grid-template-columns:calc(80px * var(--snooker-rail-scale)) minmax(0,1fr);
+    gap:6px;flex:none;height:auto;align-items:start;
+  }
+  .snooker-table{height:auto;min-height:0;aspect-ratio:1232/644;align-self:start}
+  /* Narrow screens have no fitted column height: keep the compact fixed
+     meter so the controls never overflow the short table. */
+  .snooker-rail .pool-left-controls{gap:6px;height:auto}
+  .snooker-rail .pool-power-meter{flex:0 0 auto;height:clamp(140px,24dvh,260px);min-height:0;max-height:none}
+  .snooker-nomination{width:calc(76px * var(--snooker-rail-scale))}
   .snooker-game .arcade-controls{flex-wrap:wrap;gap:6px 10px;font-size:10px}
 }
 @media(max-width:520px){
-  .snooker-matchup #seats{gap:56px}
-  .snooker-matchup .seat-name strong{max-width:64px;font-size:10px}
-  .snooker-centre{width:72px;height:36px}
-  .snooker-score{font-size:13px}
-  .snooker-target{font-size:8px}
+  .snooker-matchup #seats{gap:72px}
+  .snooker-matchup .seat-name strong{max-width:80px;font-size:12px}
+  .snooker-centre{width:96px;height:48px}
+  .snooker-score{font-size:17px}
+  .snooker-target{font-size:10px}
   .snooker-status-strip{font-size:10px;flex-wrap:wrap;gap:6px}
 }
+
+/* Ash and ebony cue, shared visual direction with the table cue. */
+.snooker-rail .power-cue{background-image:url('../assets/pool/snooker-power-cue.svg?v=20261112-natural1')}

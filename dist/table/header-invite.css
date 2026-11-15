@@ -1,0 +1,71 @@
+/* Invitation links are copied from INSIDE the game iframe, so the shared
+   ?room= URL points at /table/index.html?...&embed=joyflock. A friend opens
+   that URL in a top-level tab: window.parent === window, html.embedded-game
+   is never set, and the game's own light cloud-bank header stays visible.
+   The same game reached from the portal shows the dark shared .topbar, so the
+   two entry points had completely different headers ("列头").
+   Scope the dark chrome to exactly the top-level invitation case. The intro
+   screen, plain direct opens and the embedded game keep their own skins. */
+html.invite-standalone body[data-screen]>header{
+  height:38px;
+  padding:0 2.5vw;
+  gap:30px;
+  border-bottom:1px solid #ffffff0c;
+  background:#0b1020;
+  box-shadow:none;
+  color:#eaf0ff;
+}
+html.invite-standalone body[data-screen]>header>a{
+  font-family:Nunito,system-ui;
+  font-size:19px;
+  font-weight:900;
+  letter-spacing:-1px;
+  color:#eaf0ff;
+}
+html.invite-standalone body[data-screen]>header>a .brand-mark{color:#a8b8ff;margin-right:6px}
+html.invite-standalone body[data-screen]>header>div{margin-left:auto;gap:18px;color:#94a0be}
+html.invite-standalone body[data-screen]>header>div a{color:#e3eaff}
+/* The light header's buttons carry a white gradient, a 42px min-height and
+   a 3px 3D bottom shadow (table.css button{}). All three must be cleared or
+   the "登录 / 注册" pill stays taller than the portal's 24px capsule with a
+   bright curved underline. */
+html.invite-standalone body[data-screen]>header button{
+  box-sizing:border-box;height:24px;min-height:24px;padding:0 12px;font-size:12px;
+  border:1px solid #46518a;border-radius:12px;
+  background:#1b254a;color:#e3eaff;box-shadow:none;
+}
+html.invite-standalone body[data-screen]>header button:hover{border-color:#a8b8ff;background:#25325c}
+/* The portal header carries the Games / Shop pills instead of the game-name
+   breadcrumb. Match its geometry (96px x 24px, 12px radius, muted / active). */
+html.invite-standalone body[data-screen]>header #game-name{display:none}
+.invite-nav{display:none}
+html.invite-standalone body[data-screen]>header .invite-nav{
+  display:flex;align-items:center;gap:8px;flex:0 0 auto;min-width:0;
+}
+html.invite-standalone body[data-screen]>header .invite-nav a,
+html.invite-standalone body[data-screen]>header .invite-nav a:last-child{
+  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+  width:96px;height:24px;padding:0 12px;border-radius:12px;
+  white-space:nowrap;color:#94a0be;font-size:12px;font-weight:700;
+}
+html.invite-standalone body[data-screen]>header .invite-nav a:hover{color:#e7eeff;background:#ffffff0a}
+html.invite-standalone body[data-screen]>header .invite-nav a.active{color:#fff;background:#1b254a}
+.invite-nav .lang-en{display:none}
+html[lang="en"] .invite-nav .lang-cn{display:none}
+html[lang="en"] .invite-nav .lang-en{display:inline}
+/* Same breakpoints as the shared site chrome. */
+@media(max-width:920px){
+  html.invite-standalone body[data-screen]>header{padding:0 16px;gap:18px}
+  html.invite-standalone body[data-screen]>header .invite-nav a,
+  html.invite-standalone body[data-screen]>header .invite-nav a:last-child{width:88px}
+}
+@media(max-width:600px){
+  html.invite-standalone body[data-screen]>header{height:34px;padding:0 12px;gap:10px}
+  html.invite-standalone body[data-screen]>header>a{font-size:17px}
+  html.invite-standalone body[data-screen]>header .invite-nav{gap:2px}
+  html.invite-standalone body[data-screen]>header .invite-nav a,
+  html.invite-standalone body[data-screen]>header .invite-nav a:last-child{
+    height:20px;width:72px;padding:0 6px;font-size:11px;
+  }
+  html.invite-standalone body[data-screen]>header .invite-nav a:nth-child(2){width:60px}
+}

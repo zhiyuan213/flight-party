@@ -1,3 +1,4 @@
+import {applyAvatar} from './avatar.js';
 // Presentation only. Future room events should call show({color,name,emoji}).
 // No network transport, account identity or persistent chat history is implied.
 const ALLOWED = new Set(['😂','👋','🎉','😮','❤️']);
@@ -8,14 +9,14 @@ export class ReactionPreview {
     this.region.setAttribute('role','status'); this.region.setAttribute('aria-live','polite');
     document.getElementById('canvas-wrap').append(this.region);
   }
-  show({color,name,emoji}) {
+  show({color,name,emoji,profile}) {
     if(!ALLOWED.has(emoji)||!Number.isInteger(color)||color<0||color>3)return;
     const old=this.messages.get(color); if(old)clearTimeout(old.timer);
     const entry={emoji,timer:setTimeout(()=>{this.messages.delete(color);this.sync();},3600)};
     this.messages.set(color,entry);
     this.region.replaceChildren();
     const bubble=document.createElement('div'); bubble.className='room-reaction-bubble';
-    const avatar=document.createElement('span'); avatar.className=`reaction-avatar avatar-${color}`;avatar.setAttribute('aria-hidden','true');
+    const avatar=document.createElement('span'); avatar.className=`reaction-avatar avatar-${color}`;avatar.setAttribute('aria-hidden','true');applyAvatar(avatar,profile);
     const copy=document.createElement('span'); copy.className='reaction-copy';
     const who=document.createElement('b');who.textContent=name;
     const note=document.createElement('small');note.textContent=this.getLanguage()==='zh'?'表情预览 · 仅当前屏幕':'REACTION PREVIEW · THIS SCREEN';

@@ -1,0 +1,80 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>机器人难度 · 四档对照</title>
+<style>
+body{background:#141a20;color:#e7eef5;font:14px/1.65 system-ui,sans-serif;margin:22px 28px;max-width:1120px}
+h1{font-size:21px;margin:0 0 6px}h2{font-size:15px;margin:24px 0 8px;color:#cfe0ef}
+p{margin:0 0 12px;color:#9fb0c0}code{color:#ffd88a}
+button{background:#22303c;color:#e7eef5;border:1px solid #3d5364;border-radius:7px;padding:9px 15px;font:600 13px system-ui;cursor:pointer}
+button:hover{background:#2e4252;border-color:#5d7e94}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:8px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #2f3d49}
+th{color:#93a7b8;font-weight:600;font-size:11px;letter-spacing:.04em}
+td b{color:#ffd44d}tr.sel td{background:#26364a}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:10px}
+.card{background:#1b242c;border:1px solid #2f3d49;border-radius:10px;padding:14px 16px}
+.card b{display:block;font-size:15px;color:#ffd44d;margin-bottom:4px}
+.card span{color:#93a7b8;font-size:11.5px}
+.out{background:#0d1318;border:1px solid #2f3d49;border-radius:8px;padding:12px 14px;white-space:pre-wrap;font:12px/1.7 ui-monospace,monospace;color:#b9d1e4;min-height:70px}
+.note{color:#7f93a4;font-size:12px;margin-top:18px}
+</style><link rel="stylesheet" href="bot-difficulty.css?v=20261110-glove2"></head><body>
+<h1>机器人难度 · 简单 / 一般 / 专业 / 地狱</h1>
+<p>四档对所有游戏的<strong>单机电脑对手</strong>生效，默认「简单」。这里的选择与游戏页共用同一个本机设置，改完直接去游戏里生效。</p>
+<div id="bot-difficulty" class="bot-difficulty"></div>
+<h2>① 各档参数</h2>
+<table id="tuning"><thead><tr><th>档位</th><th>随机失误</th><th>瞄准误差</th><th>前瞻深度</th><th>目标扫描步长</th><th>骰运权重</th><th>说明</th></tr></thead><tbody></tbody></table>
+<h2>② 真实规则下的对局模拟（每格 12 局，先手为高档）</h2>
+<div class="cards" id="cards"></div>
+<p><button id="run">重新模拟</button> <span id="running" style="color:#7f93a4;font-size:12px"></span></p>
+<h2>③ 四档在同一局面下的决策</h2>
+<div class="out" id="out">点击「重新模拟」查看各游戏 bot 的输出。</div>
+<p class="note">「一般」刻意保持为原版电脑的行为，方便对比；「专业 / 地狱」在四子棋、五子棋、井字棋、国际象棋用候选裁剪 + alpha-beta 前瞻，在台球 / 斯诺克评估所有目标球与袋口路径，在泡泡射击用更细的角度扫描，在纸牌保留后续可出牌数；飞行棋另有权重的骰子与撞机风险评估。<br>
+边界：在线房间里由服务器补位或托管的电脑走 Java 权威规则，仍保持原强度，不受这里的难度影响；「趣味拼图」「你画我猜」是合作模式，电脑不参与对抗。未改物理 / 协议 / 53 格状态 / parity。</p>
+<script type="module">
+import {BOT_LEVELS,BOT_LABELS,BOT_HINTS,botTuning,getBotLevel,bindBotDifficulty} from './bot-difficulty.js?v=20261112-gamelanes1';
+import {start,move,bot} from './table/grid-rules.js?v=20261112-gamelanes1';
+
+const control=bindBotDifficulty(document.querySelector('#bot-difficulty'),{onChange:()=>renderTuning()});
+function renderTuning(){
+ const current=getBotLevel();
+ document.querySelector('#tuning tbody').innerHTML=BOT_LEVELS.map(key=>{
+  const t=botTuning(key),label=BOT_LABELS[key];
+  return `<tr class="${key===current?'sel':''}"><td><b>${label.zh} ${label.en}</b></td><td>${(t.blunder*100).toFixed(0)}%</td><td>${t.aimDeg}°</td><td>${t.depth} 层</td><td>${t.scan}</td><td>${t.dieBias>0?'+'+t.dieBias:t.dieBias}</td><td>${BOT_HINTS[key].zh}</td></tr>`;
+ }).join('');
+}
+renderTuning();
+const seeded=s=>()=>((s=Math.imul(s,1664525)+1013904223>>>0)/4294967296);
+function duel(game,la,lb,seed){
+ let s=start(game);const ra=seeded(seed),rb=seeded(seed+977);let steps=0;
+ while(!s.over&&steps<200){const mine=s.turn===1;s=move(s,s.turn,bot(s,mine?la:lb,mine?ra:rb));steps++;}
+ return s.winner;
+}
+function measure(game,a,b){
+ let win=0,draw=0;for(let i=0;i<12;i++){const w=duel(game,a,b,i*31+5);if(w===1)win++;else if(!w)draw++;}
+ return {win,draw};
+}
+const scenarios=[['四子棋','four'],['五子棋','gomoku'],['井字棋','xo']];
+function renderCards(results){
+ document.querySelector('#cards').innerHTML=results.map(({label,game,easy,normal})=>`
+  <div class="card"><b>${label}</b>
+   <span>地狱 vs 简单：<b>${easy.win}/12</b> 胜 ${easy.draw} 平</span><br>
+   <span>地狱 vs 一般：<b>${normal.win}/12</b> 胜 ${normal.draw} 平</span>
+  </div>`).join('');
+}
+function renderOut(){
+ const lines=[];
+ for(const game of ['four','gomoku','xo','chess','cards','pool','snooker','bubbles']){
+  const s=start(game);
+  lines.push(game.padEnd(9)+BOT_LEVELS.map(l=>`${BOT_LABELS[l].zh}=${String(bot(s,l,seeded(91))).padStart(9)}`).join('  '));
+ }
+ document.querySelector('#out').textContent=lines.join('\n');
+}
+document.querySelector('#run').onclick=()=>{
+ const label=document.querySelector('#running');label.textContent='模拟中…';
+ setTimeout(()=>{
+  const results=scenarios.map(([label,game])=>({label,game,easy:measure(game,'hell','easy'),normal:measure(game,'hell','normal')}));
+  renderCards(results);renderOut();label.textContent='完成';
+ },20);
+};
+renderCards(scenarios.map(([label,game])=>({label,game,easy:{win:'—',draw:'—'},normal:{win:'—',draw:'—'}})));
+renderOut();
+document.body.dataset.ready='1';
+</script></body></html>

@@ -1,0 +1,91 @@
+/* Connect Four reference pass: peach wood and recessed translucent resin.
+   Material lives in --four-one / --four-two, so a held, falling, settled and
+   50%-opacity hint counter all use the identical artwork. No pseudo-element
+   is consumed: personal medallions and the last-move marker stay available. */
+body.connect-four-game:not(.four-themed){
+  --four-one:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22rim%22%20x2%3D%22.3%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23d7fffa%22%2F%3E%3Cstop%20offset%3D%22.3%22%20stop-color%3D%22%2370f8ed%22%2F%3E%3Cstop%20offset%3D%22.72%22%20stop-color%3D%22%230ec4cc%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2370f8ed%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22recess%22%20x2%3D%22.3%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23098f9e%22%2F%3E%3Cstop%20offset%3D%22.55%22%20stop-color%3D%22%230ec4cc%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2370f8ed%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22lens%22%20cx%3D%22.32%22%20cy%3D%22.18%22%20r%3D%22.9%22%3E%3Cstop%20stop-color%3D%22%23bdfff9%22%20stop-opacity%3D%22.95%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%2344e1e6%22%20stop-opacity%3D%22.9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230ec4cc%22%20stop-opacity%3D%22.96%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2249%22%20fill%3D%22url(%23rim)%22%20stroke%3D%22%23098f9e%22%20stroke-opacity%3D%22.5%22%20stroke-width%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22url(%23recess)%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2233%22%20fill%3D%22url(%23lens)%22%20stroke%3D%22%23d7fffa%22%20stroke-opacity%3D%22.65%22%20stroke-width%3D%22.8%22%2F%3E%3Cpath%20d%3D%22M18%2058C14%2040%2026%2020%2045%2017C63%2014%2079%2026%2082%2042C64%2051%2040%2057%2018%2058Z%22%20fill%3D%22%23fff%22%20fill-opacity%3D%22.24%22%2F%3E%3Cpath%20d%3D%22M15%2027A42%2042%200%200%201%2080%2020%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M24%2072A34%2034%200%200%200%2079%2067%22%20fill%3D%22none%22%20stroke%3D%22%23098f9e%22%20stroke-opacity%3D%22.17%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;
+  --four-two:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22rim%22%20x2%3D%22.3%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23ffe0e7%22%2F%3E%3Cstop%20offset%3D%22.3%22%20stop-color%3D%22%23ff9bb0%22%2F%3E%3Cstop%20offset%3D%22.72%22%20stop-color%3D%22%23f13e6b%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff9bb0%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22recess%22%20x2%3D%22.3%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23bc2451%22%2F%3E%3Cstop%20offset%3D%22.55%22%20stop-color%3D%22%23f13e6b%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ff9bb0%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22lens%22%20cx%3D%22.32%22%20cy%3D%22.18%22%20r%3D%22.9%22%3E%3Cstop%20stop-color%3D%22%23ffd3df%22%20stop-opacity%3D%22.95%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%23ff718e%22%20stop-opacity%3D%22.9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23f13e6b%22%20stop-opacity%3D%22.96%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2249%22%20fill%3D%22url(%23rim)%22%20stroke%3D%22%23bc2451%22%20stroke-opacity%3D%22.5%22%20stroke-width%3D%22.8%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22url(%23recess)%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2233%22%20fill%3D%22url(%23lens)%22%20stroke%3D%22%23ffe0e7%22%20stroke-opacity%3D%22.65%22%20stroke-width%3D%22.8%22%2F%3E%3Cpath%20d%3D%22M18%2058C14%2040%2026%2020%2045%2017C63%2014%2079%2026%2082%2042C64%2051%2040%2057%2018%2058Z%22%20fill%3D%22%23fff%22%20fill-opacity%3D%22.24%22%2F%3E%3Cpath%20d%3D%22M15%2027A42%2042%200%200%201%2080%2020%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.55%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M24%2072A34%2034%200%200%200%2079%2067%22%20fill%3D%22none%22%20stroke%3D%22%23bc2451%22%20stroke-opacity%3D%22.17%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;
+  --four-hole:radial-gradient(ellipse at 24% 10%,#18243c 0%,#101a30 48%,#0b1528 100%);
+  --four-coin-shadow:inset 0 1px 1px #ffffffaa,inset 0 -2px 2px #062a3438,0 1px 2px #653b2c88;
+  --four-feedback-shadow:var(--four-coin-shadow);
+}
+body.connect-four-game:not(.four-themed) #board{
+  position:relative;isolation:isolate;
+  background:radial-gradient(ellipse at 50% 22%,#ffe4bf8c,transparent 72%),
+    repeating-linear-gradient(0deg,#ffffff00 0 4px,#ffffff12 5px,#8d462415 7px,#ffffff00 9px 14px),
+    repeating-linear-gradient(3deg,#76391e00 0 17px,#76391e0a 19px,#ffffff12 23px,#ffffff00 28px 40px),
+    linear-gradient(120deg,#d39279,#edc1a0 42%,#d9947d 88%);
+  border-color:#9d6049;border-bottom-color:#75452f;
+  box-shadow:0 16px 34px #0008,inset 0 2px 1px #ffead8cc,inset 2px 0 1px #ffe1c98a,inset 0 -3px 2px #9f5d3a66;
+}
+body.connect-four-game:not(.four-themed) #board .cell[data-value="0"],
+body.connect-four-game:not(.four-themed) #board .cell.four-drop-hidden[data-value]{
+  background:var(--four-hole);
+  box-shadow:inset 3px 5px 5px #020c1bbb,0 0 0 1.5px #99573f,0 2px 1px 1px #ffe7cecc;
+}
+body.connect-four-game:not(.four-themed) #board .cell:is([data-value="1"],[data-value="2"]):not(.four-drop-hidden),
+body.connect-four-game:not(.four-themed) .four-drop-marker i,
+body.connect-four-game:not(.four-themed) .four-drop-ghost{
+  box-shadow:var(--four-coin-shadow);
+}
+body.connect-four-game:not(.four-themed) .four-drop-ghost:not([data-cosmetic-piece])::after{content:none}
+body.connect-four-game:not(.four-themed) .four-drop-beam{
+  background:linear-gradient(180deg,#32ddd500,#32ddd555 22%,#32ddd522 78%,#32ddd500);
+}
+body.connect-four-game:not(.four-themed) .four-drop-beam[data-player="2"]{
+  background:linear-gradient(180deg,#f75d8400,#f75d8455 22%,#f75d8422 78%,#f75d8400);
+}
+/* Pointer guidance remains separate from connection feedback. */
+body.connect-four-game:not(.four-themed) #board .cell.four-col-hover[data-value="0"]:not(:disabled){
+  box-shadow:inset 3px 5px 5px #020c1bbb,0 0 0 1.5px #c18e70,0 2px 1px 1px #ffe7cecc;
+}
+body.connect-four-game:not(.four-themed) #board .cell.four-landing[data-value="0"]:not(:disabled){
+  box-shadow:inset 3px 5px 5px #020c1bbb,0 0 0 2px #f9e9b7;
+}
+/* The falling counter owns the artwork until it lands. The destination is
+   still an empty hole, including its personal emblem and last-move marker. */
+body.connect-four-game #board .cell.four-drop-hidden::before,
+body.connect-four-game #board .cell.four-drop-hidden::after{visibility:hidden!important}
+/* Seasonal themes retain all their authored colours and face art. Their
+   connection light is a neutral warm glint rather than a replacement fill. */
+body.connect-four-game.four-themed{--four-feedback-shadow:var(--fp-coin-shadow,var(--four-coin-shadow));--four-link-rgb:255,231,174}
+body.connect-four-game:not(.four-themed) #board .cell[data-value="1"]{--four-link-rgb:28,230,219}
+body.connect-four-game:not(.four-themed) #board .cell[data-value="2"]{--four-link-rgb:255,85,132}
+body.connect-four-game #board .cell:is([data-value="1"],[data-value="2"]).four-linked:not(.four-drop-hidden)[data-four-chain="2"]{
+  z-index:2;box-shadow:var(--four-feedback-shadow),0 0 0 1.5px rgba(var(--four-link-rgb),.55),0 0 13px 2px rgba(var(--four-link-rgb),.3);
+}
+body.connect-four-game #board .cell:is([data-value="1"],[data-value="2"]).four-linked:not(.four-drop-hidden)[data-four-chain="3"]{
+  z-index:2;box-shadow:var(--four-feedback-shadow),0 0 0 2px rgba(var(--four-link-rgb),.8),0 0 21px 4px rgba(var(--four-link-rgb),.48);
+  animation:four-three-glow 1.8s ease-in-out infinite;
+}
+body.connect-four-game #board .cell:is([data-value="1"],[data-value="2"]).four-winning:not(.four-drop-hidden)[data-four-chain="4"]{
+  z-index:3;box-shadow:var(--four-feedback-shadow),0 0 0 2px #fff6d9,0 0 0 4px #f2c765cc,0 0 24px 8px #fff0c2b8,0 0 45px 10px #ffcb6566;
+  animation:four-winning-glow 2.2s ease-in-out infinite;
+}
+@keyframes four-three-glow{
+  0%,100%{box-shadow:var(--four-feedback-shadow),0 0 0 2px rgba(var(--four-link-rgb),.65),0 0 16px 3px rgba(var(--four-link-rgb),.34)}
+  50%{box-shadow:var(--four-feedback-shadow),0 0 0 2px rgba(var(--four-link-rgb),.95),0 0 25px 5px rgba(var(--four-link-rgb),.54)}
+}
+@keyframes four-winning-glow{
+  0%,100%{box-shadow:var(--four-feedback-shadow),0 0 0 2px #fff6d9,0 0 0 4px #f2c765cc,0 0 22px 7px #fff0c29e,0 0 40px 10px #ffcb6555}
+  50%{box-shadow:var(--four-feedback-shadow),0 0 0 2px #fffef5,0 0 0 4px #ffe3a0,0 0 29px 10px #fff0c2cc,0 0 48px 13px #ffcb6577}
+}
+/* Optional winning-segment SVG. Only winning cells receive the halo above;
+   this thin connecting stroke never lights an unrelated empty hole. */
+body.connect-four-game #board.four-victory{position:relative;isolation:isolate}
+.four-win-line{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:4}
+.four-win-line :is(line,path){fill:none;stroke:#fff4c7b8;stroke-width:1.3;stroke-linecap:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px #ffcc6688)}
+/* Root creates the finite celebration and removes it after the effect.
+   Coordinates and travel distances are CSS lengths, e.g. --x:42%;--dx:80px. */
+.four-celebration{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:7;contain:layout paint}
+.four-celebration :is(.four-spark,.four-confetti){position:absolute;left:var(--x,50%);top:var(--y,50%);background:var(--color,var(--colour,#ffdb74));pointer-events:none;opacity:0;animation-delay:var(--delay,0ms);animation-duration:var(--duration,1400ms);animation-timing-function:cubic-bezier(.14,.62,.45,1);animation-fill-mode:both}
+.four-celebration .four-spark{width:5px;height:5px;border-radius:50%;box-shadow:0 0 8px 2px #fff3ca99;animation-name:four-spark-flight}
+.four-celebration .four-confetti{width:6px;height:10px;border-radius:1px;animation-name:four-confetti-flight}
+@keyframes four-spark-flight{0%{opacity:0;transform:translate(0,0) scale(.3)}12%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,-80px)) scale(.1)}}
+@keyframes four-confetti-flight{0%{opacity:0;transform:translate(0,0) rotate(0deg)}10%,60%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,180px)) rotate(var(--spin,360deg))}}
+@media(prefers-reduced-motion:reduce){
+  body.connect-four-game #board .cell:is([data-value="1"],[data-value="2"]).four-linked,
+  body.connect-four-game #board .cell:is([data-value="1"],[data-value="2"]).four-winning{animation:none!important}
+  .four-celebration{display:none}
+}
+

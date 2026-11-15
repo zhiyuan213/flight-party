@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>托管警报灯预览</title>
+<style>
+  body{margin:0;min-height:100vh;background:#0b1020;color:#eaf0ff;font:14px/1.6 system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;gap:36px;padding:48px 20px}
+  h1{font-size:20px;margin:0}
+  p{color:#9fb0cc;margin:0;text-align:center;max-width:640px}
+  .row{display:flex;gap:48px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .card{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .avatar{position:relative;width:120px;height:120px;border-radius:50%;
+    background:radial-gradient(circle at 34% 28%,#5f7ef0 0 32%,#31499f 68%,#1c2b66 100%);
+    box-shadow:0 8px 24px #000a,inset 0 0 0 2px #ffffff1a}
+  .avatar.small{width:76px;height:76px}
+  .avatar::after{content:'';position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);
+    width:32%;height:44%;border-radius:46% 46% 22% 22%;pointer-events:none;z-index:3;
+    background:
+      radial-gradient(ellipse 50% 34% at 36% 20%, rgba(255,255,255,.62) 0 24%, transparent 70%),
+      radial-gradient(ellipse 86% 58% at 50% 8%, #ff6a3a 0 28%, #d41c0c 46%, #811006 60%, transparent 73%),
+      linear-gradient(#2c3346, #101420) 50% 88% / 76% 20% no-repeat;
+    box-shadow:inset 0 -2px 4px #000b,inset 0 1px 2px #fff3,0 1px 8px 1px #ff2d0d8c,0 0 18px 6px #ff201055;
+    animation:beacon 1.6s ease-in-out infinite}
+  @keyframes beacon{
+    0%,100%{box-shadow:inset 0 -2px 4px #000b,inset 0 1px 2px #fff3,0 1px 8px 1px #ff2d0d8c,0 0 18px 6px #ff201055}
+    50%{box-shadow:inset 0 -2px 4px #000b,inset 0 1px 2px #fff3,0 1px 11px 3px #ff3f2099,0 0 26px 10px #ff2a0d66}}
+  .label{font-size:12px;color:#9fb0cc}
+</style></head>
+<body>
+  <h1>托管警报灯预览</h1>
+  <p>立起来的红色警示灯：顶部是发光的红色灯罩（带玻璃高光），底部是深色底座，呼吸式红色光晕。小图是头像上的实际比例，大图放大看细节。</p>
+  <div class="row">
+    <div class="card"><div class="avatar small"></div><span class="label">头像上的实际比例（34%）</span></div>
+    <div class="card"><div class="avatar"></div><span class="label">放大查看</span></div>
+  </div>
+</body></html>

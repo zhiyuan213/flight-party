@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>台球 A 加厚版 · 单次与多球叠加试听</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1">
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#e9f0f8;background:#0a1220;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at 20% 0,#142b47 0,transparent 55%);min-height:100vh}
+    main{width:min(1040px,100%);margin:0 auto;padding:44px 24px 32px}
+    .eyebrow{margin:0 0 12px;color:#8fcbd8;font-size:12px;letter-spacing:.12em}
+    h1{font-size:clamp(25px,4vw,36px);line-height:1.25;letter-spacing:-.025em;margin:0 0 14px;font-weight:700}
+    .intro{color:#afc1d4;line-height:1.75;margin:0;max-width:680px;font-size:15px}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;margin:25px 0 12px}
+    button,a{touch-action:manipulation}
+    button{font:inherit;font-size:14px;font-weight:550;border:1px solid #405975;background:#1d324a;color:#edf5ff;border-radius:9px;min-height:42px;padding:10px 15px;cursor:pointer;transition:background .15s,border-color .15s}
+    button:hover{background:#2a435e;border-color:#6b8aa9}
+    button:active{background:#36526f}
+    button:disabled{opacity:.45;cursor:wait}
+    button.primary{background:#d4e8ee;border-color:#d4e8ee;color:#102435}
+    button.primary:hover{background:#e5f3f7;border-color:#e5f3f7}
+    button.quiet{background:transparent;border-color:#334a63;color:#b7c9db}
+    :focus-visible{outline:3px solid #f4cc74;outline-offset:4px}
+    #status{color:#8fd5c5;font-size:14px;min-height:22px;margin:12px 0 24px;line-height:1.6;overflow-wrap:anywhere}
+    .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .selected{background:#142d36;border:1px solid #70c4bc;border-radius:15px;padding:22px;margin-bottom:22px}
+    .selected p{color:#b7d8d7;line-height:1.7}.selected .controls{margin:15px 0}.selected audio{max-width:550px}
+    .choice{padding:23px;background:#111f31;border:1px solid #2a4058;border-radius:15px;min-width:0}
+    .choice[data-audition-active]{border-color:#8bcbd9;box-shadow:0 0 0 1px #8bcbd955}
+    .choice-head{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+    .letter{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:#203b51;color:#a8deeb;font-size:19px;font-weight:750}
+    .choice:nth-child(2) .letter{background:#3b3328;color:#e8cc99}
+    .choice:nth-child(3) .letter{background:#2e2e49;color:#c9bdf0}
+    .choice:nth-child(4) .letter{background:#213e39;color:#a7ddc7}
+    h2{font-size:19px;margin:0;font-weight:650}
+    .description{color:#9eb3c9;font-size:14px;line-height:1.6;margin:0;min-height:23px}
+    .wave{display:block;width:100%;height:64px;margin:17px 0;background:#0c1726;border:1px solid #20344b;border-radius:8px;color:#8bcbd9;overflow:hidden}
+    .card-controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+    .card-controls button{flex:1;min-width:115px}
+    audio{display:block;width:100%;height:36px;margin:0;max-width:100%}
+    .download{display:inline-block;margin-top:12px;font-size:13px}
+    [hidden]{display:none!important}
+    a{color:#9fd1e9;text-underline-offset:3px;overflow-wrap:anywhere}
+    a:hover{color:#d5effc}
+    .reference{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px;padding:18px 20px;border:1px dashed #344961;border-radius:11px}
+    .reference p{font-size:14px;line-height:1.6;margin:0;color:#9eb3c9}
+    .reference strong{display:block;color:#d4e0ed;font-size:15px;font-weight:600;margin-bottom:4px}
+    details{margin-top:26px;color:#91a7be;font-size:13px}
+    summary{cursor:pointer;width:fit-content;padding:8px 0}
+    pre{padding:15px;background:#0c1726;border:1px solid #24384e;border-radius:8px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+    footer{border-top:1px solid #25364c;margin-top:28px;padding-top:18px;color:#839ab2;font-size:12px;line-height:1.8}
+    footer h2{font-size:13px;color:#a9bbcd;margin-bottom:7px}
+    #credits p{margin:4px 0}
+    .back{display:inline-block;margin-top:13px}
+    @media(max-width:620px){main{padding:28px 16px}.choices{grid-template-columns:1fr;gap:13px}.choice{padding:20px}.controls button{flex:1 1 auto}.controls #compare{flex-basis:100%;order:2}.reference{padding:16px}.reference button{width:100%}}
+    @media(prefers-reduced-motion:reduce){button{transition:none}}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">台球音色 · 候选试听</p>
+      <h1>A 加厚版 · 更结实的撞击</h1>
+      <p class="intro">压下尖锐共振，补足短促的中低频主体。保留加厚 A 的音色，多次撞击紧密衔接成一整簇。</p>
+    </header>
+    <div class="controls" aria-label="试听控制">
+      <button id="prepare" class="primary" type="button">加载试听</button>
+      <button id="compare" type="button">依次对比：原版 A → 加厚版 A</button>
+      <button id="stop" class="quiet" type="button">停止</button>
+    </div>
+    <p id="status" role="status" aria-live="polite">点击加载试听</p>
+    <section class="selected" aria-label="已选 A 与多球叠加">
+      <h2>先对比单击，再听多球</h2>
+      <p>下方两个播放器分别把加厚单击、多球叠加重复三次，方便比较。声音没有变调或加长混响。</p>
+      <div class="controls"><button type="button" data-play="original-A">改前 A · 较脆</button><button type="button" class="primary" data-play="selected">新版 A · 结实单击</button><button type="button" data-play="merged">新版 A · 多球叠加</button><button type="button" data-repeat="merged">叠加声连听 3 次</button></div>
+      <p>加厚单击 · 重复三次</p>
+      <audio id="audio-selected" controls preload="none" aria-label="A 加厚单击播放器"></audio>
+      <a id="download-selected" class="download" hidden>下载加厚单击声</a>
+      <p>加厚多球叠加 · 重复三次</p>
+      <audio id="audio-merged" controls preload="none" aria-label="A 多球叠加播放器"></audio>
+      <a id="download-merged" class="download" hidden>下载多球叠加声</a>
+    </section>
+
+    <details><summary>原始四款试听（历史对照）</summary>
+    <section class="choices" aria-label="原始四款单次撞击音">
+      <article class="choice" aria-labelledby="title-A">
+        <div class="choice-head"><span class="letter" aria-hidden="true">A</span><h2 id="title-A">干脆短击</h2></div>
+        <p id="desc-A" class="description">重点听接触瞬间的短促“咔”声。</p>
+        <svg id="wave-A" class="wave" viewBox="0 0 360 64" role="img" aria-label="A 撞击声波形"></svg>
+        <div class="card-controls"><button type="button" data-play="A" aria-label="听 A 干脆短击">听一下</button><button type="button" data-repeat="A" aria-label="A 连听三次">连听 3 次</button></div>
+        <audio id="audio-A" controls preload="none" aria-label="A 音频播放器"></audio>
+        <a id="download-A" class="download" hidden>下载试听</a>
+      </article>
+      <article class="choice" aria-labelledby="title-B">
+        <div class="choice-head"><span class="letter" aria-hidden="true">B</span><h2 id="title-B">紧实短击</h2></div>
+        <p id="desc-B" class="description">重点听撞击的厚度与重量。</p>
+        <svg id="wave-B" class="wave" viewBox="0 0 360 64" role="img" aria-label="B 撞击声波形"></svg>
+        <div class="card-controls"><button type="button" data-play="B" aria-label="听 B 紧实短击">听一下</button><button type="button" data-repeat="B" aria-label="B 连听三次">连听 3 次</button></div>
+        <audio id="audio-B" controls preload="none" aria-label="B 音频播放器"></audio>
+        <a id="download-B" class="download" hidden>下载试听</a>
+      </article>
+      <article class="choice" aria-labelledby="title-C">
+        <div class="choice-head"><span class="letter" aria-hidden="true">C</span><h2 id="title-C">自然碰撞一</h2></div>
+        <p id="desc-C" class="description">重点听硬球接触的清脆感。</p>
+        <svg id="wave-C" class="wave" viewBox="0 0 360 64" role="img" aria-label="C 撞击声波形"></svg>
+        <div class="card-controls"><button type="button" data-play="C" aria-label="听 C 自然碰撞一">听一下</button><button type="button" data-repeat="C" aria-label="C 连听三次">连听 3 次</button></div>
+        <audio id="audio-C" controls preload="none" aria-label="C 音频播放器"></audio>
+        <a id="download-C" class="download" hidden>下载试听</a>
+      </article>
+      <article class="choice" aria-labelledby="title-D">
+        <div class="choice-head"><span class="letter" aria-hidden="true">D</span><h2 id="title-D">自然碰撞二</h2></div>
+        <p id="desc-D" class="description">对照一次球与球相撞的整体质感。</p>
+        <svg id="wave-D" class="wave" viewBox="0 0 360 64" role="img" aria-label="D 撞击声波形"></svg>
+        <div class="card-controls"><button type="button" data-play="D" aria-label="听 D 自然碰撞二">听一下</button><button type="button" data-repeat="D" aria-label="D 连听三次">连听 3 次</button></div>
+        <audio id="audio-D" controls preload="none" aria-label="D 音频播放器"></audio>
+        <a id="download-D" class="download" hidden>下载试听</a>
+      </article>
+    </section>
+    </details>
+
+    <section class="reference" aria-label="当前音色对照">
+      <p><strong>改前游戏音色</strong>保留作对照；当前已选用第一款 A。</p>
+      <button type="button" data-play="current">听改前游戏音色</button>
+    </section>
+    <details><summary>素材与播放检查</summary><pre id="diagnostics">加载后显示。</pre></details>
+    <footer>
+      <h2>录音来源与授权</h2>
+      <div id="credits"></div>
+      <a class="back" href="./pool-break-audio-preview.html">返回开球节奏试听</a>
+    </footer>
+  </main>
+  <script type="module" src="./pool-hit-audition.js?v=20261112-hitbody1"></script>
+</body>
+</html>

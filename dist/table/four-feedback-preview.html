@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN" data-locale="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>四子连珠 · 落子与连线反馈验收</title>
+  <link rel="stylesheet" href="./table.css?v=20261112-gamelanes1">
+  <link rel="stylesheet" href="./pool-shell.css?v=20261112-gamelanes1&d=20261115-chatfs1&r=20261115-chattext1&t=20261115-fspill1&h=20261115-nohover1">
+  <link rel="stylesheet" href="./four-theme.css?v=20261112-gamelanes1">
+  <link rel="stylesheet" href="./game-cosmetics.css?v=20261112-gamelanes1">
+  <link rel="stylesheet" href="./four-feedback.css?v=20261113-fourfeedback1">
+  <style>
+    :root{color-scheme:dark;background:#0b1222;color:#e9efff;font-family:system-ui,"Microsoft YaHei",sans-serif}
+    body{min-width:300px;margin:0;background:radial-gradient(ellipse at 32% 8%,#243a5d55,transparent 65%),#0b1222}
+    .preview-header{display:flex;align-items:center;justify-content:space-between;gap:20px;max-width:1240px;height:auto;margin:auto;padding:18px 20px 10px;border:0;background:#0d172a;background-image:none;color:#e9efff;box-shadow:none}
+    .preview-header>div{display:block;margin:0;min-width:0}
+    .preview-header h1{font-size:23px;letter-spacing:0;margin:0 0 5px;color:#f2f6ff}
+    .preview-header p{font-size:12px;color:#8fa5c8;margin:0;line-height:1.65}
+    .preview-tag{flex:none;font-size:11px;color:#adbfde;border:1px solid #354a6b;border-radius:999px;padding:7px 11px}
+    .preview-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;max-width:1240px;margin:0 auto;padding:10px 20px 20px;min-height:0}
+    .preview-layout .game-panel{min-height:0;height:calc(100dvh - 120px);max-height:800px;min-width:0;justify-content:flex-start;align-items:center;padding:calc(var(--four-launch-height,72px) + 14px) 22px 22px;overflow:hidden;background:radial-gradient(ellipse at 50% 15%,#233d69aa,transparent 72%),#101b30;border-color:#344765}
+    .preview-layout .game-panel .board{width:min(100%,calc((100dvh - 244px)*1.1667));max-width:650px;flex:none;margin:0;gap:clamp(5px,.8vw,9px);padding:clamp(10px,1.5vw,18px)}
+    .preview-panel{display:flex;flex-direction:column;gap:13px;min-width:0}
+    .preview-block{border:1px solid #304462;border-radius:17px;background:#14223a;padding:17px}
+    .preview-block h2{font-size:14px;margin:0 0 13px;letter-spacing:.2px;color:#dfeaff}
+    .preview-turn{display:flex;align-items:center;gap:11px;font-weight:750;font-size:17px;min-height:25px}
+    .preview-dot{width:17px;height:17px;flex:none;border-radius:50%;background:var(--four-one);box-shadow:var(--four-coin-shadow)}
+    .preview-dot[data-player="2"]{background:var(--four-two)}
+    .preview-help{font-size:12px;line-height:1.7;color:#9aafce;margin:10px 0 0}
+    .preview-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .preview-controls button{font-size:12px;padding:10px 5px;border-radius:10px;background:#203451;color:#dae7ff;border-color:#3b567c;min-height:39px}
+    .preview-controls button[data-demo]{border-color:#496c92}
+    .preview-controls .preview-reset{background:#e0ebff;color:#22365b;border-color:#f2f7ff}
+    .preview-controls button[aria-pressed="true"]{border-color:#f3c867;color:#f3d991;background:#3a3325}
+    .preview-demo-status{min-height:19px;color:#b3c7e5;font-size:11px;margin:10px 0 0}
+    .preview-log{margin:0;padding:0;list-style:none;height:190px;overflow:auto;font:11px/1.7 ui-monospace,Consolas,monospace;color:#a5b9d7;scrollbar-width:thin}
+    .preview-log li{display:grid;grid-template-columns:53px 1fr;gap:10px;border-bottom:1px solid #ffffff08;padding:4px 0}
+    .preview-log time{color:#6f94bf;font-variant-numeric:tabular-nums}
+    .preview-log strong{font-weight:600;color:#d9e7fa}
+    .preview-log .event-result strong{color:#f4d785}
+    .preview-log .event-contact strong{color:#95d9c4}
+    .preview-empty{color:#718aaf;font-size:12px;line-height:1.7}
+    .preview-footnote{font-size:10px;line-height:1.65;color:#6f89ad;margin:10px 0 0}
+    @media(max-width:800px){
+      .preview-header{padding:15px 14px 8px;gap:10px}.preview-header h1{font-size:19px}.preview-tag{font-size:10px;padding:6px 9px}
+      .preview-layout{grid-template-columns:1fr;padding:8px 12px 16px;gap:12px}
+      .preview-layout .game-panel{height:auto;min-height:330px;padding:calc(var(--four-launch-height,58px) + 15px) 12px 22px}
+      .preview-layout .game-panel .board{width:min(100%,650px);gap:6px;padding:11px;border-radius:17px}
+      .preview-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px}.preview-block{padding:14px}.preview-block:last-child{grid-column:1/-1}.preview-log{height:145px}
+    }
+    @media(max-width:430px){.preview-panel{grid-template-columns:1fr}.preview-header .preview-tag{display:none}.preview-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.preview-block:last-child{grid-column:auto}}
+  </style>
+</head>
+<body class="connect-four-game" data-screen="play">
+  <header class="preview-header">
+    <div><h1>四子连珠 · 落子与连线反馈</h1><p>点击任意一列，双人轮流落子；也可以播放下面的合法演示。</p></div>
+    <span class="preview-tag">本地验收 · 不记录成绩</span>
+  </header>
+  <main class="preview-layout">
+    <section class="game-panel" id="preview-panel" aria-label="四子连珠演示区">
+      <div class="board" id="board" aria-label="四子连珠棋盘"></div>
+    </section>
+    <aside class="preview-panel">
+      <section class="preview-block">
+        <h2>当前对局</h2>
+        <div class="preview-turn" role="status"><i class="preview-dot" id="turn-dot" aria-hidden="true"></i><span id="turn-readout">青方回合</span></div>
+        <p class="preview-help" id="move-readout">第 0 手 · 落子结束后进入下一回合。</p>
+      </section>
+      <section class="preview-block">
+        <h2>演示控制</h2>
+        <div class="preview-controls">
+          <button type="button" id="reset" class="preview-reset">重置棋盘</button>
+          <button type="button" id="mute" aria-pressed="false">声音：开</button>
+          <button type="button" data-demo="two">两颗相连</button>
+          <button type="button" data-demo="three">三颗相连</button>
+          <button type="button" data-demo="horizontal">横向四连</button>
+          <button type="button" data-demo="vertical">纵向四连</button>
+          <button type="button" data-demo="diagonal">斜向四连</button>
+        </div>
+        <p class="preview-demo-status" id="demo-status" role="status">可直接点列试玩。</p>
+      </section>
+      <section class="preview-block">
+        <h2>实际动画时间线</h2>
+        <ol class="preview-log" id="timeline" aria-live="off"><li class="preview-empty">落子后显示释放、触底、落稳与结果时点。</li></ol>
+        <p class="preview-footnote">声音开关只影响本页，不更改个人设置、钱包或房间。系统“减少动态效果”设置仍会生效。</p>
+      </section>
+    </aside>
+  </main>
+  <script src="/site-result-sfx.js?v=20261114-coin2"></script>
+  <script type="module">
+    import {start,move,legal} from './grid-rules.js?v=20261112-gamelanes1';
+    import {attachFourDrop} from './four-drop.js?v=20261113-fourfeedback1';
+    import {attachFourFeedback} from './four-feedback.js?v=20261113-fourfeedback1';
+    import {setFourAudioEnabled} from './four-audio.js?v=20261113-fourfeedback1';
+    import {applyCosmetics,decoratePieces} from './game-cosmetics.js?v=20261112-gamelanes1';
+
+    const board=document.getElementById('board'),panel=document.getElementById('preview-panel');
+    const timeline=document.getElementById('timeline'),readout=document.getElementById('turn-readout');
+    const moveReadout=document.getElementById('move-readout'),dot=document.getElementById('turn-dot');
+    const demoStatus=document.getElementById('demo-status'),muteButton=document.getElementById('mute');
+    const DEMOS={
+      two:{name:'两颗相连',columns:[0,6,1]},
+      three:{name:'三颗相连',columns:[0,6,1,6,2]},
+      horizontal:{name:'横向四连',columns:[0,6,1,6,2,5,3]},
+      vertical:{name:'纵向四连',columns:[0,1,0,1,0,1,0]},
+      diagonal:{name:'斜向四连',columns:[0,1,1,2,4,2,2,3,4,3,5,3,3]}
+    };
+    let state=start('four'),session=0,operation=0,busy=false,autoRunning=false,muted=false,epoch=performance.now(),last=-1;
+    const seatName=player=>player===1?'青方':'粉方';
+    function log(type,text){
+      if(timeline.firstElementChild?.classList.contains('preview-empty'))timeline.replaceChildren();
+      const row=document.createElement('li'),time=document.createElement('time'),label=document.createElement('strong');
+      row.className='event-'+type;time.textContent=((performance.now()-epoch)/1000).toFixed(2)+'s';label.textContent=text;
+      row.append(time,label);timeline.append(row);
+      while(timeline.children.length>80)timeline.firstElementChild.remove();
+      timeline.scrollTop=timeline.scrollHeight;
+    }
+    for(const [event,type,caption] of [['four:release','release','释放'],['four:land','contact','第一次接触'],['four:settled','settled','回弹落稳']]){
+      board.addEventListener(event,event=>{
+        const detail=event.detail||{};
+        log(type,seatName(detail.player)+' · '+caption+' · 第'+(Number(detail.index)%7+1)+'列');
+      });
+    }
+    const updateDrop=attachFourDrop(board,panel);
+    const updateFeedback=attachFourFeedback(board,panel,{onWin:({state:finished,cells})=>{
+      const played=window.__joyflockResultSfx?.play('win','four-preview:'+session);
+      log('result',seatName(finished.winner)+'获胜 · '+cells.length+'颗高亮 · 结果音'+(played?'已播放':'静音/待解锁'));
+    }});
+    function paintReadout(){
+      const allowed=!busy&&!autoRunning&&!state.over,cols=legal(state);
+      for(const button of board.querySelectorAll('.cell'))button.disabled=!allowed||!cols.includes(Number(button.dataset.position));
+      dot.dataset.player=String(state.over?state.winner||1:state.turn);
+      readout.textContent=state.over?(state.winner?seatName(state.winner)+'获胜':'本局平局'):busy?'棋子落下中…':seatName(state.turn)+'回合';
+      moveReadout.textContent='第 '+state.moves+' 手 · '+(state.over?'重置或选择另一段演示。':autoRunning?'正在按实际规则逐手演示。':'点击任意可落子列。');
+    }
+    function paint(){
+      board.innerHTML=state.cells.map((value,index)=>'<button type="button" class="cell'+(index===last?' last':'')+'" data-position="'+index%7+'" data-value="'+value+'" aria-label="第'+(index%7+1)+'列，第'+(Math.floor(index/7)+1)+'行，'+(value?seatName(value)+'棋子':'空位')+'"></button>').join('');
+      applyCosmetics({mySeat:1,network:true,matchKey:'four-preview:'+session,seatProfiles:[{piece:'four-piece-default'},{piece:'four-piece-default'}]});
+      decoratePieces(board);paintReadout();
+      updateDrop(state,!busy&&!autoRunning&&!state.over,true);
+      updateFeedback(state,true,'four-preview:'+session);
+    }
+    function reset(){
+      operation++;session++;busy=false;autoRunning=false;last=-1;
+      updateDrop.cancel?.();updateFeedback.reset();state=start('four');epoch=performance.now();timeline.replaceChildren();
+      window.__joyflockResultSfx?.reset();paint();log('reset','新对局 · 青方先手');demoStatus.textContent='可直接点列试玩。';
+    }
+    async function drop(column,automated=false){
+      if(document.hidden||busy||state.over||(!automated&&autoRunning)||!legal(state).includes(column))return false;
+      const ticket=operation,previous=state.cells;
+      state=move(state,state.turn,column);last=state.cells.findIndex((value,index)=>value!==previous[index]);busy=true;paint();
+      let result;
+      try{result=await board._fourDropDone;}
+      finally{
+        if(ticket===operation){busy=false;paintReadout();updateDrop(state,!autoRunning&&!state.over,true);}
+      }
+      return ticket===operation&&!document.hidden&&!result?.cancelled;
+    }
+    async function demonstrate(key){
+      const demo=DEMOS[key];if(!demo)return;
+      reset();autoRunning=true;const ticket=operation;demoStatus.textContent='演示：'+demo.name;paintReadout();
+      let completed=false;
+      try{
+        for(let index=0;index<demo.columns.length;index++){
+          if(ticket!==operation||!await drop(demo.columns[index],true))return;
+          if(index<demo.columns.length-1)await new Promise(resolve=>setTimeout(resolve,170));
+        }
+        completed=true;
+      }catch(error){
+        if(ticket===operation)log('cancel','演示已中断，可以重新开始。');
+        console.error(error);
+      }finally{
+        // A reset or a newer demo owns its own flags and caption. Only this
+        // still-current run may release the input lock after cancellation.
+        if(ticket===operation){
+          autoRunning=false;paintReadout();updateDrop(state,!busy&&!state.over,true);
+          demoStatus.textContent=completed?demo.name+'演示完成'+(state.over?'，可重置继续。':'，可以接着落子。')
+            :state.over?'演示已暂停，可重新选择演示。':'演示已暂停，可重试或继续点列。';
+          if(!completed)log('cancel','演示暂停 · 已恢复手动落子');
+        }
+      }
+    }
+    board.addEventListener('click',event=>{const cell=event.target.closest('.cell');if(cell)void drop(Number(cell.dataset.position));});
+    document.getElementById('reset').addEventListener('click',reset);
+    for(const button of document.querySelectorAll('[data-demo]'))button.addEventListener('click',()=>void demonstrate(button.dataset.demo));
+    muteButton.addEventListener('click',()=>{
+      muted=!muted;setFourAudioEnabled(!muted);window.__joyflockResultSfx?.setEnabled(!muted);
+      muteButton.setAttribute('aria-pressed',String(muted));muteButton.textContent='声音：'+(muted?'关':'开');
+      log('audio',muted?'仅本页静音':'仅本页开启声音');
+    });
+    window.addEventListener('pagehide',()=>{operation++;updateDrop.dispose?.();updateFeedback.dispose();},{once:true});
+    reset();
+  </script>
+</body>
+</html>

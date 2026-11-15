@@ -14,6 +14,19 @@
   'use strict';
 
   var doc = document, win = window;
+  /* ambient.css now paints ONE static nebula frame (see the note there), so
+     the home page, a game detail page and separate tabs cannot drift apart.
+     Keep a wall-clock phase available for the reduced-motion star field and a
+     future opt-in drift: unlike the old per-tab sessionStorage epoch, every
+     tab then agrees on the same phase. PERIOD still matches the 26s
+     ease-in-out alternate drift = 52s for a full there-and-back cycle. */
+  (function () {
+    var PERIOD = 52000;
+    var delay = '-' + ((Date.now() % PERIOD) / 1000).toFixed(3) + 's';
+    if (doc.documentElement && doc.documentElement.style) {
+      doc.documentElement.style.setProperty('--nebula-delay', delay);
+    }
+  })();
   var reduced = win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) return;                       // keep the original still star field
   var embedded = win.top !== win;
@@ -43,7 +56,7 @@
 
   if (embedded) return;                      // parent layer already spans the iframe
 
-  var COUNT = 10, KEY = 'joyflock.motes.v1.' + location.pathname;
+  var COUNT = 10, KEY = 'joyflock.motes.v1';
   var recycled = 0;
 
   function rand(lo, hi) { return lo + Math.random() * (hi - lo); }

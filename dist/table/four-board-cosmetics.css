@@ -1,0 +1,59 @@
+/* Shared Four board finishes, Classic only. These paint the existing 7 × 6
+   frame and empty wells; occupied, held and falling counters keep one material.
+   Full IDs stay in the wallet/room; the renderer publishes the suffix here. */
+body.connect-four-game:not(.four-themed) #board[data-cosmetic-board="neon"]{
+  --four-board-top:#e1f2f6;--four-board-mid:#a7c9da;--four-board-bottom:#7398b3;
+  --four-board-edge:#52788e;--four-board-rim:#e5f6fc;--four-board-lip:#f0fbff;
+  --four-board-well:#102a3d;--four-board-deep:#061421;
+  background:radial-gradient(ellipse at 40% 10%,#ffffff6b,transparent 72%),
+    repeating-linear-gradient(0deg,#ffffff00 0 3px,#ffffff24 4px,#3157750d 5px,#ffffff00 7px),
+    linear-gradient(125deg,var(--four-board-top),var(--four-board-mid) 48%,var(--four-board-bottom));
+}
+body.connect-four-game:not(.four-themed) #board[data-cosmetic-board="jade"]{
+  --four-board-top:#487c69;--four-board-mid:#235847;--four-board-bottom:#10372f;
+  --four-board-edge:#82632f;--four-board-rim:#ddbd73;--four-board-lip:#a4c39f;
+  --four-board-well:#102c25;--four-board-deep:#041810;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cpath d='M-30 80Q35 35 73 65T200 20M-25 153Q42 97 83 123T205 81M0 176Q64 136 104 154T200 130' fill='none' stroke='%23bcdbad' stroke-width='1' opacity='.18'/%3E%3Cpath d='M-20 99Q47 43 78 77T200 35M0 169Q58 105 96 136T210 95' fill='none' stroke='%23092018' stroke-width='3' opacity='.16'/%3E%3C/svg%3E") center/180px 180px,
+    radial-gradient(ellipse at 32% 20%,#9fceb626,transparent 68%),
+    linear-gradient(125deg,var(--four-board-top),var(--four-board-mid) 48%,var(--four-board-bottom));
+}
+body.connect-four-game:not(.four-themed) #board[data-cosmetic-board="aurora"]{
+  --four-board-top:#65538f;--four-board-mid:#3e315f;--four-board-bottom:#211e3c;
+  --four-board-edge:#9c7648;--four-board-rim:#ead29c;--four-board-lip:#d2bfe2;
+  --four-board-well:#221d35;--four-board-deep:#0c0e1c;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cg fill='%23f4e3b5' opacity='.43'%3E%3Ccircle cx='15' cy='23' r='.7'/%3E%3Ccircle cx='87' cy='39' r='.6'/%3E%3Ccircle cx='49' cy='95' r='.7'/%3E%3Ccircle cx='112' cy='117' r='.5'/%3E%3C/g%3E%3Cpath d='M105 65v5m-2.5-2.5h5M28 57v3m-1.5-1.5h3' stroke='%23f4e3b5' stroke-width='.65' opacity='.34'/%3E%3C/svg%3E") center/128px 128px,
+    radial-gradient(ellipse at 20% 8%,#b999d238,transparent 55%),
+    radial-gradient(ellipse at 95% 90%,#416b822e,transparent 60%),
+    linear-gradient(125deg,var(--four-board-top),var(--four-board-mid) 48%,var(--four-board-bottom));
+}
+body.connect-four-game:not(.four-themed) #board[data-cosmetic-board="coral"]{
+  --four-board-top:#f7c5b8;--four-board-mid:#dfa598;--four-board-bottom:#bc7c76;
+  --four-board-edge:#975c52;--four-board-rim:#ffe4cd;--four-board-lip:#ffe9db;
+  --four-board-well:#36202a;--four-board-deep:#170f1c;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cpath d='M-15 38Q18 5 46 33T140 27M-12 92Q29 61 64 89T144 81' fill='none' stroke='%23fff3dc' stroke-width='1.4' opacity='.3'/%3E%3Cpath d='M-15 44Q18 11 46 39T140 33M-12 98Q29 67 64 95T144 87' fill='none' stroke='%239b625e' stroke-width='.8' opacity='.16'/%3E%3C/svg%3E") center/128px 128px,
+    radial-gradient(ellipse at 25% 15%,#fff8df55,transparent 65%),
+    linear-gradient(125deg,var(--four-board-top),var(--four-board-mid) 48%,var(--four-board-bottom));
+}
+body.connect-four-game:not(.four-themed) #board[data-cosmetic-board="pearl"]{
+  --four-board-top:#f9f4e6;--four-board-mid:#d6dce7;--four-board-bottom:#a6b6ca;
+  --four-board-edge:#7c899e;--four-board-rim:#fff8e5;--four-board-lip:#faf6ed;
+  --four-board-well:#243244;--four-board-deep:#0f1927;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cpath d='M-20 60Q64-5 148 60M-20 72Q64 7 148 72M-20 84Q64 19 148 84M-20 96Q64 31 148 96M-20 108Q64 43 148 108M-20 120Q64 55 148 120' fill='none' stroke='%23fff9ed' stroke-width='1.2' opacity='.32'/%3E%3C/svg%3E") center/128px 128px,
+    radial-gradient(ellipse at 20% 10%,#fff4df8c,transparent 62%),
+    radial-gradient(ellipse at 85% 90%,#c7b4e64d,transparent 60%),
+    linear-gradient(125deg,var(--four-board-top),var(--four-board-mid) 48%,var(--four-board-bottom));
+}
+body.connect-four-game:not(.four-themed) #board:is([data-cosmetic-board="neon"],[data-cosmetic-board="jade"],[data-cosmetic-board="aurora"],[data-cosmetic-board="coral"],[data-cosmetic-board="pearl"]){
+  border-color:var(--four-board-edge);
+  box-shadow:0 16px 34px #0008,inset 0 2px 1px var(--four-board-rim),inset 2px 0 1px #ffffff38,inset 0 -3px 2px #0005,inset 0 0 0 3px var(--four-board-edge),inset 0 0 0 4px var(--four-board-rim);
+}
+body.connect-four-game:not(.four-themed) #board:is([data-cosmetic-board="neon"],[data-cosmetic-board="jade"],[data-cosmetic-board="aurora"],[data-cosmetic-board="coral"],[data-cosmetic-board="pearl"]) .cell:is([data-value="0"],.four-drop-hidden){
+  background:radial-gradient(circle at 50% 68%,var(--four-board-well),var(--four-board-deep) 72%);
+  box-shadow:inset 3px 5px 5px #0009,0 0 0 1.5px var(--four-board-edge),0 2px 1px 1px var(--four-board-lip);
+}
+body.connect-four-game:not(.four-themed) #board:is([data-cosmetic-board="neon"],[data-cosmetic-board="jade"],[data-cosmetic-board="aurora"],[data-cosmetic-board="coral"],[data-cosmetic-board="pearl"]) .cell.four-col-hover[data-value="0"]:not(:disabled){
+  box-shadow:inset 3px 5px 5px #0009,0 0 0 1.5px var(--four-board-rim),0 2px 1px 1px var(--four-board-lip);
+}
+body.connect-four-game:not(.four-themed) #board:is([data-cosmetic-board="neon"],[data-cosmetic-board="jade"],[data-cosmetic-board="aurora"],[data-cosmetic-board="coral"],[data-cosmetic-board="pearl"]) .cell.four-landing[data-value="0"]:not(:disabled){
+  box-shadow:inset 3px 5px 5px #0009,0 0 0 2px #f9e9b7;
+}

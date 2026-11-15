@@ -1,9 +1,16 @@
 /* JoyFlock meteor shower.
-   Every now and then — or when the pointer first settles on an interactive
-   element — a small shower of soft meteors streaks across the MIDDLE of the
-   backdrop, then their afterglow slowly fades away. The shower belongs to the
-   page background, never to the cursor: the pointer flourish in
+   Every now and then a small shower of soft meteors streaks across the MIDDLE
+   of the backdrop, then their afterglow slowly fades away. Those showers are
+   TIMED and RANDOM: pointer movement can never bring one forward, so sweeping
+   the nav or the game grid does not turn into a storm. The shower belongs to
+   the page background, never to the cursor: the pointer flourish in
    site-pointer-fx.js is a separate and much quieter effect.
+
+   The ONE exception is the top-left JoyFlock mark. Hovering that brand holds
+   a continuous meteor shower for as long as the pointer stays on it. New
+   meteors are emitted one by one at a steady rate, capped so the streak never
+   becomes a solid wall of light. Leaving the mark stops new emissions;
+   meteors already in flight finish their own animation.
 
    Like site-floating-dots.js, the layer is a direct child of the TOP-LEVEL
    document's body. Embedded game documents create no layer of their own, so
@@ -20,19 +27,24 @@
   var embedded = win.top !== win;
   if (reduced || embedded) return;
 
-  var VERSION = '20261109-fxgame1';
+  var VERSION = '20261110-brandonly1';
   var KEY = 'joyflock.meteor.next';
   /* A quiet, occasional shower: calmer first appearance, then one every
-     18-36s. Hovering a control can bring one forward, but never more than
-     once per 20s, so sweeping the nav cannot turn into a permanent storm. */
+     18-36s. These are the ONLY showers apart from the brand hold below; a
+     hover on any other element is deliberately inert. */
   var FIRST_MIN = 7, FIRST_MAX = 15;
   var GAP_MIN = 18, GAP_MAX = 36;
-  var BOOT_QUIET = 2500;
-  var HOVER_COOLDOWN = 20000;
   var SHOWER_MIN = 3, SHOWER_MAX = 5;
   var STAGGER_MIN = 130, STAGGER_MAX = 300;
   var MAX_LIVE = 8;
-  var HOT = 'a,button,select,summary,[role="button"],[data-control],.game-card,.rail-game';
+  /* Continuous "hold" mode: ONLY the top-left brand. Game covers, nav links,
+     buttons and the embedded game's pointer relay must never start a shower;
+     anything the user sees elsewhere comes from the timed schedule alone. */
+  var HOLD_HOT = '.topbar .brand';
+  var HOLD_FIRST = 40;                  // ms before the first held meteor
+  var HOLD_RATE_MIN = 200, HOLD_RATE_MAX = 360;   // ms between held meteors
+  var HOLD_MAX_LIVE = 10;               // concurrent streaks while holding
+  var HOLD_SEED_SPAN = 7;               // refresh the heading every N meteors
 
   var style = doc.createElement('style');
   style.setAttribute('data-joyflock', 'meteor');
@@ -74,12 +86,16 @@
   }
   function px(v) { return v.toFixed(1) + 'px'; }
 
-  var timer = 0, nextAt = 0, bootAt = Date.now();
+  var timer = 0, nextAt = 0;
   var showers = 0, fired = 0, skipped = 0, lastAt = 0, lastReason = '';
   /* A game in progress owns the viewport: no meteors over the table / board.
      Suspending clears the pending timer and every live streak, and resuming
      starts a fresh quiet wait instead of "catching up" the time in-game. */
   var suspended = false, stagger = [];
+  /* `held` is the icon currently under the pointer, or null when the
+     continuous stream is off. Its own timer is separate from the ordinary
+     schedule, so a long hold never stacks up one-off showers. */
+  var held = null, holdTimer = 0, holdFired = 0, holdSeed = null, holdSeedCount = 0;
   function clearStagger() {
     for (var i = 0; i < stagger.length; i++) win.clearTimeout(stagger[i]);
     stagger = [];
@@ -97,13 +113,14 @@
     if (on === suspended) return;
     suspended = on;
     if (on) {
+      stopHold();
       win.clearTimeout(timer); timer = 0;
       clearStagger();
       while (layer.firstChild) layer.removeChild(layer.firstChild);
       layer.style.display = 'none';
     } else {
       layer.style.display = '';
-      lastAt = Date.now();                 // no hover shower right after a game
+      lastAt = Date.now();                 // fresh quiet wait after a game
       schedule(false);
     }
   }
@@ -116,9 +133,9 @@
      small shower instead of five identical copies. The end point is aimed at
      the middle band (44%-68% of the viewport height), so the streak crosses
      the centre of the background rather than the header or the bottom edge. */
-  function spawnOne(seed) {
+  function spawnOne(seed, cap) {
     if (suspended) return null;
-    if (layer.childElementCount >= MAX_LIVE) return null;
+    if (layer.childElementCount >= (cap || MAX_LIVE)) return null;
     if (doc.hidden) { skipped++; return null; }
 
     var w = win.innerWidth, h = win.innerHeight;
@@ -174,8 +191,47 @@
     return true;
   }
 
+  /* Continuous shower while an icon is hovered. Each meteor is its own
+     spawnOne() call (not a stacked 3-5 member shower), so the stream has no
+     hard beginning or end. A shared heading seed keeps a handful of meteors
+     on one diagonal, then rotates to a fresh angle for the next handful. */
+  function nextHoldSeed() {
+    if (!holdSeed || holdSeedCount >= HOLD_SEED_SPAN) {
+      holdSeed = { deg: rand(20, 29), x0: rand(.66, .96), y0: rand(.06, .20) };
+      holdSeedCount = 0;
+    }
+    holdSeedCount++;
+    return holdSeed;
+  }
+  function holdTick() {
+    if (!held || suspended) return;
+    if (doc.hidden) {                       // paused tab: wait, do not spawn
+      holdTimer = win.setTimeout(holdTick, 500);
+      return;
+    }
+    if (spawnOne(nextHoldSeed(), HOLD_MAX_LIVE)) holdFired++;
+    holdTimer = win.setTimeout(holdTick, rand(HOLD_RATE_MIN, HOLD_RATE_MAX));
+  }
+  function startHold(icon) {
+    if (suspended || doc.hidden) return;
+    held = icon || true;
+    holdFired = 0; holdSeed = null; holdSeedCount = 0;
+    lastAt = Date.now();
+    win.clearTimeout(timer); timer = 0;     // ordinary one-off showers wait
+    win.clearTimeout(holdTimer);
+    holdTimer = win.setTimeout(holdTick, HOLD_FIRST);
+  }
+  function stopHold() {
+    if (!held) return;
+    held = null;
+    win.clearTimeout(holdTimer); holdTimer = 0;
+    lastAt = Date.now();                    // leaving the brand emits nothing
+    schedule(false);                        // re-arm the quiet background wait
+  }
+
   function schedule(first) {
     if (suspended) return;
+    win.clearTimeout(timer); timer = 0;      // never leave two pending waits
     var delay;
     if (first) {
       /* Resume a pending wait left by the previous document, but ignore
@@ -195,35 +251,37 @@
     }, delay * 1000);
   }
 
-  /* Hovering a link / button / card can bring a shower forward. Only the
-     transition from a non-control into a control counts, so sliding across a
-     wide card does not re-trigger on every child element. */
-  function hoverShower() {
-    if (suspended) return;
-    var now = Date.now();
-    if (now - bootAt < BOOT_QUIET) return;
-    if (now - lastAt < HOVER_COOLDOWN) return;
-    if (layer.childElementCount) return;
-    if (!shower('hover')) return;
-    win.clearTimeout(timer); timer = 0;
-    schedule(false);                                   // re-arm from this shower
-  }
-
+  /* ONLY the top-left brand starts a shower on hover. Everything else —
+     game cover, nav link, button, select, in-game control — is deliberately
+     inert, so the meteors seen anywhere else are always the timed random
+     showers from schedule(). */
   doc.addEventListener('pointerover', function (e) {
     if (e.pointerType === 'touch') return;
     var t = e.target;
     if (!t || !t.closest) return;
-    var hot = t.closest(HOT);
-    if (!hot) return;
-    var from = e.relatedTarget;
-    if (from && from.closest && from.closest(HOT) === hot) return;
-    hoverShower();
+    var brand = t.closest(HOLD_HOT);
+    if (brand) {
+      /* Moving between descendants of the mark (e.g. the ✦ glyph) keeps the
+         stream running instead of restarting it. */
+      if (!held) startHold(brand); else held = brand;
+    } else if (held) {
+      stopHold();
+    }
   }, { passive: true });
 
-  /* Game pages live in an iframe: their hover transitions arrive through the
-     pointer relay, so a button in the embedded page can start a shower too.
-     The same relay reports when the embedded document enters / leaves a game. */
-  var relayHot = false;
+  /* pointerover alone cannot report the pointer leaving the document (or
+     entering an iframe), so pointerout / blur close the hold as well. */
+  doc.addEventListener('pointerout', function (e) {
+    if (!held) return;
+    var to = e.relatedTarget;
+    if (to && to.closest && to.closest(HOLD_HOT)) return;   // still on the brand
+    stopHold();
+  }, { passive: true });
+  win.addEventListener('blur', function () { if (held) stopHold(); });
+
+  /* Game pages live in an iframe: the pointer relay is used ONLY to learn
+     whether the embedded document entered / left a game. A hover inside the
+     iframe never triggers a shower (d.hot is intentionally ignored). */
   win.addEventListener('message', function (ev) {
     if (ev.origin !== location.origin) return;
     var d = ev.data;
@@ -233,17 +291,16 @@
     if (d.type === 'joyflock:game-screen') { setSuspended(d.active); return; }
     if (d.type !== 'joyflock:pointer' || d.kind !== 'move') return;
     if (typeof d.screen === 'boolean') setSuspended(d.screen);
-    if (suspended) return;
-    if (d.hot && !relayHot) hoverShower();
-    relayHot = !!d.hot;
   }, { passive: true });
 
   /* A tab that was hidden should not burn through its wait and fire the
      instant it comes back. Re-arm on visibility changes. */
   doc.addEventListener('visibilitychange', function () {
     if (suspended) return;
-    if (doc.hidden) { win.clearTimeout(timer); timer = 0; }
-    else if (!timer) schedule(false);
+    if (doc.hidden) {
+      if (held) stopHold();                 // a hidden tab cannot hover
+      win.clearTimeout(timer); timer = 0;
+    } else if (!timer && !held) schedule(false);
   });
 
   /* Standalone game pages (opened directly, no portal frame) watch their own
@@ -263,14 +320,20 @@
     reduced: reduced,
     layer: layer,
     config: { first: [FIRST_MIN, FIRST_MAX], gap: [GAP_MIN, GAP_MAX],
-      perShower: [SHOWER_MIN, SHOWER_MAX], hoverCooldown: HOVER_COOLDOWN },
+      perShower: [SHOWER_MIN, SHOWER_MAX],
+      hold: { selector: HOLD_HOT, rate: [HOLD_RATE_MIN, HOLD_RATE_MAX],
+        maxLive: HOLD_MAX_LIVE, seedSpan: HOLD_SEED_SPAN } },
     trigger: shower,                 // manual fire, for verification only
     cancel: function () { win.clearTimeout(timer); timer = 0; },
+    hold: function (on) {            // start/stop the hover stream, for verification only
+      if (on === false) stopHold(); else startHold(on && on.closest ? on : true);
+    },
     suspend: setSuspended,           // pause/resume, for verification only
     state: function () {
       var els = [].slice.call(layer.children);
       return {
         version: VERSION, suspended: suspended, showers: showers, fired: fired, skipped: skipped,
+        held: !!held, holdFired: holdFired,
         lastAt: lastAt, lastReason: lastReason, nextAt: nextAt,
         waitS: Math.round((nextAt - Date.now()) / 100) / 10,
         live: els.length,

@@ -1,0 +1,133 @@
+/* JoyFlock Joy Coin — ONE currency (named Joy Coin), ONE mark.
+   Shared by the portal shell, the game detail shell and /shop.html.
+   This file styles the header pill and applies the cosmetics the visitor
+   actually equipped. Shop layout lives in site-shop.css. */
+
+:root{
+  --jp-ink:#eef3ff;
+  --jp-muted:#93a2c8;
+  --jp-line:#ffffff1c;
+  --jp-panel:#121a35;
+  --jp-panel-2:#182246;
+  --jp-accent:#a8b8ff;
+  --jp-vip:#ffd479;
+}
+
+/* ---------------------------------------------------------- header pill */
+.jp-pill{
+  display:inline-flex;align-items:center;gap:7px;flex:none;position:relative;z-index:60;
+  min-height:28px;padding:3px 11px 3px 7px;border-radius:999px;
+  border:1px solid #ffffff24;
+  background:linear-gradient(180deg,#1d2850,#141d3c);
+  color:var(--jp-ink);font:600 13px/1 Nunito,system-ui,-apple-system,sans-serif;
+  cursor:pointer;white-space:nowrap;transition:border-color .2s,box-shadow .2s,transform .2s;
+}
+.jp-pill:hover{border-color:#a8b8ff70;box-shadow:0 0 0 3px #a8b8ff14;transform:translateY(-1px)}
+.jp-pill:focus-visible{outline:2px solid var(--jp-accent);outline-offset:2px}
+.jp-mark{width:19px;height:19px;flex:none;filter:drop-shadow(0 0 5px #6f8dff88)}
+.jp-amount{font-weight:900;font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
+.jp-label{color:var(--jp-muted);font-size:11px;font-weight:700}
+
+/* ambient.css puts the header and <main> at the SAME z-index:1. The shop page
+   comes later in DOM order, so a tooltip hanging below the pill would be
+   painted over by it. Lift only the header one level (the ambient backdrop is
+   still below every real surface). More specific than ambient.css's
+   `body>.topbar`, which loads last. */
+html body>.topbar{z-index:3}
+/* The star currency is named Joy Coin. Its name is published as data-coin by
+   site-points.js and shown on hover / keyboard focus, so the compact header
+   pill (✦ + amount) keeps the fixed width reserved in site-chrome.css. */
+.jp-pill[data-coin]::after{
+  content:attr(data-coin);position:absolute;top:calc(100% + 8px);right:0;
+  padding:5px 10px;border:1px solid #a8b8ff55;border-radius:8px;
+  background:#182246;color:#eaf0ff;
+  font:700 11px/1.2 Nunito,system-ui,-apple-system,sans-serif;
+  white-space:nowrap;opacity:0;pointer-events:none;transform:translateY(-4px);
+  transition:opacity .16s,transform .16s;box-shadow:0 8px 20px #0408179c;z-index:80;
+}
+.jp-pill:hover[data-coin]::after,.jp-pill:focus-visible[data-coin]::after{
+  opacity:1;transform:translateY(0)
+}
+
+/* ---------------------------------------------- equipped cosmetics */
+/* Feed the existing site cursor variables instead of adding a second pointer
+   system: site-cursor.css already applies --joy-cursor / --joy-cursor-hover
+   to every element, including its !important interactive rules. */
+html[data-shop-cursor]{--joy-cursor:var(--shop-cursor);--joy-cursor-hover:var(--shop-cursor)}
+html[data-shop-cursor],html[data-shop-cursor] body{cursor:var(--shop-cursor)}
+html[data-shop-avatar] #chrome-account{padding-left:5px}
+html[data-shop-avatar] #chrome-account::before,
+html[data-shop-avatar] #profile::before,
+html[data-shop-avatar] .shop-current-avatar::before{
+  content:'';display:inline-block;width:17px;height:17px;flex:none;
+  margin-right:5px;border-radius:5px;vertical-align:middle;
+  background:var(--shop-avatar) center/cover no-repeat;
+  box-shadow:0 0 0 1px #ffffff55;
+}
+
+/* -------------------------------------------------------------- notice */
+.jp-toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);
+  padding:9px 16px;border-radius:10px;background:#1d2850;border:1px solid #a8b8ff55;
+  color:#eaf0ff;font:700 12px Nunito,system-ui,sans-serif;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;z-index:9999;
+}
+.jp-toast[data-show="1"]{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:620px){
+  .jp-pill .jp-label{display:none!important}
+  .jp-pill{padding:3px 9px 3px 6px}
+}
+@media(prefers-reduced-motion:reduce){
+  .jp-pill,.jp-toast,.jp-pill[data-coin]::after{transition:none}
+}
+
+/* The portal header reserves a FIXED width for its right cluster so the first
+   frame cannot shift while document.write() finishes. The points pill needs
+   its own reserved slot at every breakpoint. The retired register button no
+   longer takes a slot for ANY visitor, so the desktop guest cluster is 98px
+   narrower than the old 479px budget (88px button + 10px gap):
+     guest  75 + 88 + 96 + 92 + 3*10 = 381
+     signed 75 + 112 +     96 + 92 + 3*10 = 405
+   The signed-in nickname slot stays a little wider than one guest label so a
+   normal display name fits, but is deliberately tight: a 160px slot left a
+   long empty tail after short names like "zhiyuanC". Longer nicknames ellipsis
+   instead of widening the cluster. Keep these numbers in sync with
+   site-chrome.css (75 / 88 / 96 / gap 10). Every width also reserves the
+   shared fullscreen pill: 92px + one gap above 600px, or its 42px icon +
+   one 6px gap at the phone breakpoints. */
+.topbar .top-actions .jp-pill{
+  width:96px;min-width:96px;justify-content:flex-start;padding:3px 8px;
+}
+.topbar .top-actions .jp-pill .jp-label{display:none}
+.topbar .top-actions{width:381px}
+body.chrome-signed>.topbar .top-actions{width:405px}
+/* The ID selector wins over the 88px / 76px .chrome-account rules in
+   site-chrome.css. Each breakpoint below shrinks it again so the cluster
+   still fits a phone; the reserved width above/below changes in lockstep. */
+body.chrome-signed>.topbar #chrome-account{width:112px;min-width:112px}
+@media(max-width:760px){
+  /* Register is hidden for everybody: guest 75 + 88 + 88 + 92 + 3*10 = 373,
+     signed 75 + 96 + 88 + 92 + 3*10 = 381. Repeat the higher-specificity
+     signed-in selectors so the desktop widths cannot leak past this break. */
+  .topbar .top-actions .jp-pill{width:88px;min-width:88px}
+  .topbar .top-actions{width:373px}
+  body.chrome-signed>.topbar .top-actions{width:381px}
+  body.chrome-signed>.topbar #chrome-account{width:96px;min-width:96px}
+}
+@media(max-width:600px){
+  /* guest 64 + 76 + 82 + 42 + 3*6 = 282; signed 64 + 84 + 82 + 42 + 3*6 = 290 */
+  .topbar .top-actions .jp-pill{width:82px;min-width:82px}
+  .topbar .top-actions{width:282px}
+  body.chrome-signed>.topbar .top-actions{width:290px}
+  body.chrome-signed>.topbar #chrome-account{width:84px;min-width:84px}
+}
+@media(max-width:480px){
+  /* ONE 218px budget for both states, matching site-fullscreen.css:
+     44 (language) + 62 (account) + 62 (points) + 38 (fullscreen) + 3*4.
+     A wider signed-in nickname slot pushed the cluster 1px off a 390px
+     screen; short names ellipsis instead of widening the phone header. */
+  .topbar .top-actions{width:218px}
+  body.chrome-signed>.topbar .top-actions{width:218px}
+  body.chrome-signed>.topbar #chrome-account{width:62px;min-width:62px}
+}

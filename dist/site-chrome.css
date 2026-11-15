@@ -8,7 +8,7 @@
   --chrome-footer-bg:#0e1428;
   --chrome-line:#ffffff0c;
   --chrome-footer-line:#ffffff1a;
-  --chrome-fade:#090d1c;
+  --chrome-fade:#0b1020;
   --chrome-muted:#94a0be;
   --chrome-accent:#aab9ff;
   --chrome-active:#1b254a;
@@ -26,7 +26,9 @@
    opening a game never moves a single header element. */
 body>.topbar{
   flex:0 0 auto;height:var(--chrome-height);gap:30px;
-  padding:0 var(--chrome-pad);
+  /* Keep the brand indented, but let the right-hand cluster sit close to the
+     edge: the old 2.5vw right padding wasted ~47px on a 1920px screen. */
+  padding:0 16px 0 var(--chrome-pad);
   border-bottom:1px solid var(--chrome-line);background:var(--chrome-bg);
 }
 /* One type scale for every state; the old two-brand rule let the in-game
@@ -38,15 +40,19 @@ body>.topbar nav{
   flex:0 0 auto;min-width:0;white-space:nowrap;overflow:visible;
 }
 /* Fixed widths are sized for the longest (English) label. Switching the
-   language swaps text only: no link grows, shrinks or changes position. */
+   language swaps text only: no link grows, shrinks or changes position.
+   The nav has exactly two links — Games and Shop (the points shop). Both
+   labels are short enough to share one width; :last-child is part of the
+   base selector so neither pill can stretch when the locale changes.
+   Membership and support stays in the footer. */
 body>.topbar nav a,
 body>.topbar nav a:last-child{
   box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
   align-self:center;height:24px;padding:0 12px;border-radius:var(--chrome-radius);border-bottom:0;
   white-space:nowrap;color:var(--chrome-muted);font-size:12px;font-weight:700;
 }
-body>.topbar nav a:first-child{width:96px}
-body>.topbar nav a:last-child{width:136px}
+body>.topbar nav a{width:96px}
+body>.topbar nav a:nth-child(2){width:96px}
 body>.topbar nav a:hover{color:#e7eeff;background:#ffffff0a}
 body>.topbar nav a.active,
 body>.topbar nav .active{color:#fff;background:var(--chrome-active);border-bottom:0}
@@ -79,29 +85,51 @@ body:not(.playing)>footer::before{
 }
 body:not(.playing)>footer .brand{font:900 15px Nunito,system-ui;letter-spacing:-1px;color:#a4b1d4}
 body:not(.playing)>footer span{margin-left:6px}
-body:not(.playing)>footer div{margin-left:auto;display:flex;gap:14px}
+/* Membership & support joins Terms / Privacy / Contact here. Wrapping keeps
+   the longer label from pushing the footer past a narrow viewport. */
+body:not(.playing)>footer div{margin-left:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 14px}
 body:not(.playing)>footer div a:hover{color:var(--chrome-accent)}
 body.playing>footer{display:none}
 
 /* ------------------------------------------------------------ responsive */
 @media(max-width:920px){
   body>.topbar{padding:0 16px;gap:18px}
-  body>.topbar nav a:first-child{width:88px}
-  body>.topbar nav a:last-child{width:126px}
+  body>.topbar nav a{width:88px}
+  body>.topbar nav a:nth-child(2){width:88px}
   body:not(.playing)>footer{padding:7px 16px}
 }
 @media(max-width:600px){
   :root{--chrome-height:34px}
   body>.topbar{height:var(--chrome-height);padding:0 12px;gap:10px}
   body>.topbar .brand{font-size:17px}
-  body>.topbar nav{gap:4px}
+  body>.topbar nav{gap:2px}
   body>.topbar nav a,
   body>.topbar nav a:last-child{font-size:11px;height:20px;padding:0 6px}
-  body>.topbar nav a:first-child{width:72px}
-  body>.topbar nav a:last-child{width:104px}
+  body>.topbar nav a{width:72px}
+  /* "Shop / 商城" is short: keep the second link narrow so the points pill
+     and the account cluster still fit on a small phone. */
+  body>.topbar nav a:nth-child(2){width:60px}
   body>.topbar .top-actions .portal-language{width:64px;min-width:64px;max-width:64px;height:22px;font-size:10px;padding:0 3px}
   body:not(.playing)>footer{padding:8px 12px;flex-wrap:wrap;gap:8px;font-size:10px}
-  body:not(.playing)>footer div{margin-left:0;width:100%;gap:16px}
+  body:not(.playing)>footer div{margin-left:0;width:100%;gap:6px 16px}
+}
+/* Very small phones: the wordmark is the only flexible item. Keep the ✦
+   logo clickable but drop the text, so Games + Shop, the language picker and
+   the points pill all stay inside the viewport without a horizontal scroll. */
+@media(max-width:480px){
+  body>.topbar{gap:3px;padding:0 4px}
+  body>.topbar .brand{font-size:0}
+  body>.topbar .brand-mark{font-size:19px;margin-right:0}
+  /* Tighten the whole right cluster, not just its reserved box: the child
+     pills are fixed-width and would otherwise still stick out of the box. */
+  body>.topbar .top-actions{gap:6px;width:266px}
+  body>.topbar .top-actions .portal-language{width:58px;min-width:58px;max-width:58px;font-size:9px;padding:0 2px}
+  body>.topbar .top-actions .jp-pill{width:72px;min-width:72px;gap:2px;padding:3px 5px;font-size:10px}
+  /* A seven-character balance ("100,000") needs a smaller star, a tighter
+     gap and 11px digits to stay inside the 72px pill at 390px. Shrinking the
+     contents keeps the reserved cluster width (and the first frame) stable. */
+  body>.topbar .top-actions .jp-mark{width:15px;height:15px}
+  body>.topbar .top-actions .jp-amount{font-size:11px}
 }
 
 /* ------------------------------------------- unified header right cluster */
@@ -115,7 +143,7 @@ body.playing>footer{display:none}
      left. Reserving the final width keeps the cluster anchored on frame one.
      75 (select) + 2*88 (buttons) + 2*10 (gaps) = 271. */
   order:2;margin-left:auto;display:flex;align-items:center;gap:10px;
-  flex:0 0 auto;min-width:0;width:271px;
+  flex:0 0 auto;min-width:0;width:373px;
 }
 .topbar #portal-controls{order:1}
 .topbar .top-actions .portal-language{margin-left:0!important}
@@ -140,9 +168,12 @@ body.playing>footer{display:none}
 /* Sign-in and sign-up are two distinct entries: outlined secondary button. */
 .chrome-account.chrome-register{background:#ffffff08;border-color:#4a5790;color:#c3cff0}
 .chrome-account.chrome-register:hover{background:#ffffff16;border-color:#8d9dbf;color:#fff}
-/* Keep the second slot reserved (invisible) after sign-in so the first
-   button does not slide to the right when the nickname appears. */
-.chrome-account.chrome-account-gone{visibility:hidden;pointer-events:none}
+/* Signed in: retire the second entry from the layout entirely. An invisible
+   but still 88px-wide slot used to leave a dark hole between the nickname and
+   the points pill. display:none keeps the button in the DOM so a later
+   sign-out can reveal it again; site-points.css shrinks the reserved cluster
+   width by the same amount, so no header element shifts on frame one. */
+.chrome-account.chrome-account-gone{display:none!important}
 /* Once signed in the first entry shows the nickname. */
 body.chrome-signed>.topbar .chrome-account{background:#2c3a72;border-color:#6a7ccc;color:#eaf0ff}
 /* A visitor with no cached account state yet (first load on this origin, or
@@ -226,7 +257,7 @@ body.playing>.topbar #portal-controls{display:none!important}
 .chrome-auth-submit:disabled{opacity:.6;cursor:default;transform:none;filter:none}
 .chrome-auth-signed{display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px 0 4px;text-align:center}
 .chrome-auth-avatar{
-  width:52px;height:52px;display:grid;place-items:center;border-radius:50%;
+  width:52px;height:52px;display:grid;place-items:center;border-radius:22%;
   background:linear-gradient(135deg,#5869d8,#7a5bd8);color:#fff;font:800 22px Nunito,system-ui;
 }
 .chrome-auth-who{margin:0;color:#e2e9ff;font-size:14px;font-weight:700}
@@ -238,13 +269,13 @@ body.playing>.topbar #portal-controls{display:none!important}
 @media(max-width:760px){
   .account-extra{display:none}
   /* Narrow header keeps one entry; registration is reachable from the
-     sign-in dialog's switch link. 75 + 88 + 10 = 173. */
-  .topbar .top-actions{width:173px}
+     sign-in dialog's switch link. 75 + 88 + 92 + 2*10 = 275 (fullscreen pill included). */
+  .topbar .top-actions{width:275px}
   .topbar .chrome-register{display:none!important}
 }
 @media(max-width:600px){
-  /* 64 (select) + 76 (button) + 6 (gap) = 146. */
-  .topbar .top-actions{gap:6px;width:146px}
+  /* 64 (select) + 76 (button) + 42 (fullscreen icon) + 2*6 = 194. */
+  .topbar .top-actions{gap:6px;width:194px}
   .chrome-account{width:76px;min-width:76px;height:22px;padding:0 6px;font-size:10px}
   .chrome-auth{padding:24px 20px 22px;border-radius:10px}
   .chrome-auth h2{font-size:20px}

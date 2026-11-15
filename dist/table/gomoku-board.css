@@ -1,68 +1,61 @@
 /* ==========================================================================
-   Five-in-a-row: intersection grid, refined stones, and a dark side card.
+   Five-in-a-row: Canvas 2D wooden board with a fully closed grid.
+   gomoku-view.js paints the wood, the 17 x 17 lines (16 x 16 complete
+   squares), the star points and the glossy stones. The 225 buttons below are
+   transparent hit / keyboard targets only, so the existing click delegation,
+   rules, room protocol and aria labels remain untouched.
    Loaded last so it also wins over the legacy light-theme !important rules.
    ========================================================================== */
 
-/* Five-in-a-row is played on LINE CROSSINGS, never inside the squares.
-   Each .cell stands for one intersection: the grid lines run through the
-   cell centre, so the centred stones sit exactly on a crossing and the
-   click target is centred on that crossing too. */
+/* Geometry mirrors gomokuLayout(): the outer two of 17 lines close the grid,
+   and the playable 15 x 15 crossings sit on the inner lines. The hit grid is
+   inset by half a step plus one full margin square on every side. */
 .board.gomoku{
-  --gomoku-line:#6f4f3085;
-  --gomoku-grid:
-    linear-gradient(90deg,transparent 0 calc(50% - .5px),var(--gomoku-line) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px) 100%),
-    linear-gradient(transparent 0 calc(50% - .5px),var(--gomoku-line) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px) 100%);
-  --gomoku-black:radial-gradient(circle at 32% 24%,#6d788a 0%,#242c3a 40%,#080d16 100%);
-  --gomoku-white:radial-gradient(circle at 32% 24%,#ffffff 0%,#f1f4f8 42%,#aeb9c9 100%);
   position:relative;
-  border-radius:8px;
-  border:9px solid #8c6238;
-  /* Half a cell of breathing room: the outermost grid line sits half a cell
-     inside the content box, so the frame-to-line margin becomes one full cell
-     on all four sides instead of a clipped-looking half square. */
-  padding:clamp(10px,1.8vw,30px);
-  background-color:#dcb681;
-  background-image:
-    repeating-linear-gradient(91deg,#ffffff0b 0 2px,transparent 2px 12px),
-    linear-gradient(155deg,#eed4a4 0%,#dfb982 44%,#cfa068 100%);
-  box-shadow:
-    inset 0 0 0 1px #ffe6b880,
-    inset 0 2px 3px #fff8,
-    inset 0 -4px 8px #6b45204d,
-    0 20px 38px #0007,
-    0 3px 0 #573a20;
+  display:block;
+  aspect-ratio:1;
+  height:auto;
+  padding:0;
+  border:0;
+  background:none;
+  box-shadow:none;
+  border-radius:0;
+  overflow:visible;
 }
-/* No synthetic right/bottom closing lines any more: they belonged to the
-   edge-drawn grid and would add a 16th row/column with no intersections. */
 .board.gomoku::after{content:none}
-.board.gomoku .cell{position:relative}
-
-/* Standard star points (4-4, 4-12, 8-8, 12-4, 12-12) on line crossings. */
-.board.gomoku .cell:nth-child(49)::after,
-.board.gomoku .cell:nth-child(57)::after,
-.board.gomoku .cell:nth-child(113)::after,
-.board.gomoku .cell:nth-child(169)::after,
-.board.gomoku .cell:nth-child(177)::after{
-  content:'';position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%);z-index:0;
-  width:7px;height:7px;border-radius:50%;pointer-events:none;
-  background:#5b3b20c4;box-shadow:0 0 0 1px #ffe4b455;
+.board.gomoku .gomoku-canvas{
+  position:absolute;inset:0;
+  display:block;width:100%;height:100%;
+  border:0;border-radius:0;pointer-events:none;
 }
-
-/* Dimensional stones; the latest move gets a thin gold ring. */
-.board.gomoku .cell[data-value="1"]::before,
-.board.gomoku .cell[data-value="2"]::before{
-  inset:9%;z-index:1;
-  box-shadow:0 3px 6px #0006,inset -2px -3px 5px #0004,inset 1px 2px 2px #fff3;
+.board.gomoku .gomoku-hits{
+  position:absolute;
+  left:10.8125%;top:10.8125%;width:78.375%;height:78.375%;
+  display:grid;
+  grid-template-columns:repeat(15,1fr);
+  grid-template-rows:repeat(15,1fr);
+  pointer-events:none;
 }
-.board.gomoku .cell.last[data-value]:not([data-value="0"])::before{
-  box-shadow:0 0 0 2px #f0c46a,0 3px 6px #0007,inset -2px -3px 5px #0004;
+/* Neutralise every legacy CSS gradient / pseudo stone / star point / hover
+   square. Everything visible on the board now comes from the canvas. */
+.board.gomoku .cell{
+  appearance:none;-webkit-appearance:none;
+  position:relative;
+  margin:0;padding:0;border:0;border-radius:0;
+  min-width:0;min-height:0;aspect-ratio:auto;
+  background:transparent!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  transform:none!important;
+  pointer-events:auto;
 }
-/* Hover shows ONLY the round preview stone. No translucent square/highlight
-   behind it: the inset shadow used to paint a whole light-coloured cell. */
-.board.gomoku .cell[data-value="0"]:hover:not(:disabled){box-shadow:none}
-/* The hover ghost is a stone too, so keep it above the star-point dots. */
-.board.gomoku .cell[data-value="0"]:hover:not(:disabled)::before{z-index:1}
+.board.gomoku button.cell:disabled{opacity:1!important;pointer-events:none;cursor:default}
+.board.gomoku .cell::before,
+.board.gomoku .cell::after{
+  content:none!important;display:none!important;
+  background:none!important;box-shadow:none!important;
+}
+.board.gomoku .cell:focus-visible{outline:2px solid #ffd27a;outline-offset:-2px}
 
 /* The turn card is still forced light by table.css (!important). Keep it on
    the same dark surface as the rest of the in-game sidebar. Four-in-a-row has

@@ -1,6 +1,7 @@
+import {createAvatar} from '../avatar.js?v=20261114-avatar5';
 export const CATALOG={
   snooker:{name:'斯诺克',en:'Snooker',description:'两人轮流击球，红球与彩球交替，最后按分值顺序清彩。可挑战电脑或联网对战。',instruction:'轮到你时瞄准并向后拖动蓄力，松手击球。红球和彩球交替击打，最后按分值顺序清彩。'},
-  bubbles:{name:'泡泡射击',en:'Bubble Shooter',description:'两人轮流发射，三个及以上同色泡泡相连即可消除；24 回合后得分高者获胜。可挑战电脑或联网对战。',instruction:'轮到你时移动鼠标瞄准，点击发射。三个及以上同色泡泡相连即可消除，24 回合后比分高者获胜。'},
+  bubbles:{name:'泡泡射击',en:'Bubble Shooter',description:'两人各占一块球阵，轮流发射。消除同色泡泡或整串掉落都会攻击对手，把对手球阵往下压；谁的球阵先触底线谁输，清空自己的球阵立即获胜。',instruction:'移动鼠标瞄准，点击发射。三个及以上同色泡泡相连即可消除，消除和掉落都会攻击对手。'},
  xo:{name:'井字棋',en:'Tic-tac-toe',description:'3×3 棋盘，双方轮流放 X 或 O，先连成一条线获胜。',instruction:'横、竖或斜线连成三个同样的符号即可获胜。'},
  four:{name:'四子连珠',en:'Connect Four',description:'7 列棋盘，轮流选一列落子，棋子堆到该列最下方。先横、竖或斜连成 4 颗获胜。',instruction:'点击左侧任意一列落子。横、竖或斜向连成四颗就能获胜。'},
  gomoku:{name:'五子棋',en:'Gomoku',description:'黑白轮流落子，先连成 5 颗获胜。当前为无禁手规则。',instruction:'点击棋盘空位落子。连成五颗及以上获胜，当前采用无禁手规则。'},
@@ -14,7 +15,7 @@ export function screenForRoom(room){return room?.phase==='CLOSED'?'home':room?.p
 export function coverFor(game){return '../assets/covers/'+game+(['xo'].includes(game)?'.svg':'.jpg');}
 export function playerCard(document,profile,index,active){
  const item=document.createElement('div');item.className='seat'+(active?' active':'');
- const avatar=document.createElement('span');avatar.className='avatar-shell';const image=document.createElement('img');image.className='seat-avatar';image.alt='';image.src=/^\/api\/avatars\//.test(profile.avatarUrl||'')?profile.avatarUrl:'/api/avatars/system/'+index;if(profile.name==='等待加入'){avatar.textContent='＋';item.classList.add('empty-seat');}else avatar.append(image);
+ const avatar=document.createElement('span');avatar.className='avatar-shell';const image=createAvatar(document,profile);if(profile.name==='等待加入'){avatar.textContent='＋';item.classList.add('empty-seat');}else avatar.append(image);
  if(profile.member&&['gold','cloud','night'].includes(profile.frame)){const frame=document.createElement('img');frame.src='../assets/member/frame-'+profile.frame+'-v2.png';frame.alt='';frame.className='avatar-frame';avatar.append(frame);}
  const copy=document.createElement('div');copy.className='seat-copy';const line=document.createElement('div');line.className='seat-name';const name=document.createElement('strong');name.textContent=profile.name||'等待加入';line.append(name);
  if(profile.member){const annual=profile.member&&profile.annualMember===true;

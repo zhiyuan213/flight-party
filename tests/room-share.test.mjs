@@ -4,7 +4,11 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {avatarStyle} from '../dist/avatar.js';
 import {roomInvitationUrl,isChineseMobile,shareRoomInvitation} from '../dist/room-share.js';
+import {CUSTODY_LABELS} from '../dist/online-custody.js';
+import {ensureCustodyStyles} from '../dist/online-custody-ui.js';
 
+/* live-room-ui.js runs here as an import-stripped vm snippet. */
+const custodyStubs={CUSTODY_LABELS,ensureCustodyStyles,document:{}};
 const roomId='661af86d-d01c-4e98-bc59-dbe5df3079f4',origin='https://flight.joyflock.com';
 
 test('friend invitations use only the current origin, real room and selected language',()=>{
@@ -55,10 +59,27 @@ test('only Chinese mobile friend rooms display the WeChat action; quick rooms ne
  for(const language of ['en','zh'])for(const origin of ['QUICK','FRIENDS'])for(const width of [390,1100]){
   const dialog={open:true,innerHTML:'',setAttribute(){},addEventListener(){}},social={roomDialog:dialog,getLanguage:()=>language,t:(en,zh)=>language==='zh'?zh:en,renderRoom(){}};
   const session={room:{origin,phase:'WAITING_FRIENDS',roomId,yourSeat:0,seats:[{index:0,ready:false}]},addEventListener(){}};
-  const context=vm.createContext({social,session,avatarStyle,isChineseMobile:args=>isChineseMobile({...args,width,userAgent:''})});
+  const context=vm.createContext({...custodyStubs,social,session,avatarStyle,isChineseMobile:args=>isChineseMobile({...args,width,userAgent:''})});
   vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
   assert.equal(dialog.innerHTML.includes('data-live="share-wechat"'),language==='zh'&&origin==='FRIENDS'&&width===390);
   assert.equal(dialog.innerHTML.includes('data-live="copy-link"'),origin==='FRIENDS');
+  assert.ok(!dialog.innerHTML.includes('data-live="copy-code"'),'only the invitation link can be copied');
+  assert.ok(!dialog.innerHTML.includes('room-invite-strip'),'no nested room-code card');
+  assert.equal(dialog.innerHTML.includes('class="secondary room-invite-standalone" data-live="copy-link"'),origin==='FRIENDS','invitation actions are standalone buttons');
+ }
+});
+
+test('matching rooms never show invitation sharing, even on Chinese mobile friend rooms',()=>{
+ const source=readFileSync(new URL('../dist/live-room-ui.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export function','function');
+ for(const origin of ['QUICK','FRIENDS'])for(const language of ['en','zh']){
+  const dialog={open:true,innerHTML:'',setAttribute(){},addEventListener(){}},social={roomDialog:dialog,getLanguage:()=>language,t:(en,zh)=>language==='zh'?zh:en,renderRoom(){}};
+  const session={room:{origin,phase:'MATCHING',roomId,yourSeat:0,matchingDeadline:new Date(Date.now()+29000).toISOString(),seats:[{index:0,ready:true}]},addEventListener(){}};
+  const context=vm.createContext({...custodyStubs,social,session,avatarStyle,isChineseMobile:()=>true});
+  vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
+  assert.ok(!dialog.innerHTML.includes('data-live="copy-link"'));
+  assert.ok(!dialog.innerHTML.includes('data-live="share-wechat"'));
+  assert.ok(!dialog.innerHTML.includes('room-flow-note'));
+  assert.ok(dialog.innerHTML.includes('data-live="leave"'));
  }
 });
 
@@ -70,7 +91,7 @@ test('a stale share result or error cannot overwrite another room or leave its a
   const social={roomDialog:dialog,getLanguage:()=> 'zh',t:(en,zh)=>zh,renderRoom(){}};
   const room={origin:'FRIENDS',phase:'WAITING_FRIENDS',roomId,yourSeat:0,seats:[{index:0,ready:false}]};
   const session={room,addEventListener:(type,fn)=>{sessionEvents[type]=fn;}};
-  const context=vm.createContext({social,session,avatarStyle,location:{origin},document:{dispatchEvent(){}},CustomEvent:class{},isChineseMobile:()=>true,shareRoomInvitation:()=>new Promise((resolve,reject)=>{resolveShare=resolve;rejectShare=reject;})});
+  const context=vm.createContext({...custodyStubs,social,session,avatarStyle,location:{origin},document:{dispatchEvent(){}},CustomEvent:class{},isChineseMobile:()=>true,shareRoomInvitation:()=>new Promise((resolve,reject)=>{resolveShare=resolve;rejectShare=reject;})});
   vm.runInContext(source+';bindLiveRooms(social,session);social.renderRoom();',context);
   events.click({stopImmediatePropagation(){},target:{closest:()=>({dataset:{live:'share-wechat'}})}});
   assert.match(dialog.innerHTML,/正在打开分享/);

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>台球结算验收 · 本地示例</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
   <link rel="stylesheet" href="./table/table.css?v=20261105-pool15">
-  <link rel="stylesheet" href="./table/pool-shell.css?v=20261110-toastheight1">
+  <link rel="stylesheet" href="./table/pool-shell.css?v=20261112-gamelanes1&d=20261115-chatfs1&r=20261115-chattext1&t=20261115-fspill1&h=20261115-nohover1">
+  <link rel="stylesheet" href="./table/result-points.css?v=20261115-joincoin1">
   <style>
     .preview-label{font-size:12px;color:#e4cf94;white-space:nowrap}
     .pool-game[data-screen="play"] .play-sidebar>.preview-tools{flex:none;margin:0 10px 10px;padding:12px;border:1px solid #4c5f79;border-radius:12px;background:#142138;box-shadow:none}
@@ -19,7 +20,7 @@
   </style>
 </head>
 <body class="pool-game" data-screen="play">
-  <header><a href="./table/index.html?game=pool">✦ JoyFlock</a><span id="game-name">台球结算验收</span><div><span class="preview-label">示例 · 仅本地运行，不记录成绩</span></div></header>
+  <header><a href="./table/index.html?game=pool"> · JoyFlock</a><span id="game-name">台球结算验收</span><div><span class="preview-label">示例 · 仅本地运行，不记录成绩/span></div></header>
   <main id="arena" class="arena">
     <section class="game-panel">
       <div id="board" class="board pool" aria-label="本地台球验收桌面"></div>
@@ -27,7 +28,7 @@
     <aside class="play-sidebar">
       <section class="players-panel">
         <div id="seats" class="seats">
-          <div class="seat active"><span class="avatar-shell"><span class="seat-avatar preview-avatar" aria-hidden="true">🙂</span></span><div class="seat-copy"><div class="seat-name"><strong>你</strong></div><span class="seat-status">示例玩家</span></div></div>
+          <div class="seat active"><span class="avatar-shell"><span class="seat-avatar preview-avatar" aria-hidden="true">🙂</span></span><div class="seat-copy"><div class="seat-name"><strong>你/strong></div><span class="seat-status">示例玩家</span></div></div>
           <div class="seat"><span class="avatar-shell"><span class="seat-avatar preview-avatar" aria-hidden="true">🤖</span></span><div class="seat-copy"><div class="seat-name"><strong>电脑</strong></div><span class="seat-status">示例对手</span></div></div>
         </div>
       </section>
@@ -36,11 +37,11 @@
       <section class="preview-tools" aria-label="结算验收操作">
         <h2>结算验收 · 本地示例</h2>
         <p>① 清空自己的全色球，只剩 8 号目标。② 用正式物理和规则击入 8 号，等落袋回放结束后查看正式结算。</p>
-        <button id="set-final" type="button">① 设置最后 8 号球</button>
+        <button id="set-final" type="button">① 设置最终 8 号球</button>
         <button id="pot-eight" type="button" disabled>② 击入 8 号球</button>
         <div class="preview-pair"><button id="show-loss" type="button">失利文案示例</button><button id="show-draw" type="button">平局文案示例</button></div>
         <output id="preview-status" role="status" aria-live="polite"></output>
-        <output id="audio-check" role="status">音频验收：胜利 0 次，GO 0 次</output>
+        <output id="audio-check" role="status">音频验收：胜利 0 次，GO 0 次/output>
       </section>
       <button id="leave-play" type="button">返回台球首页</button>
     </aside>
@@ -59,18 +60,18 @@
     };
   </script>
   <script type="module">
-    import {poolStart,poolMove,renderPool} from './table/pool.js?v=20261105-pool15';
-    import {updatePoolShell} from './table/pool-shell.js?v=20261109-turnsettle1';
+    import {poolStart,poolMove,renderPool} from './table/pool.js?v=20261113-pooldiff1';
+    import {updatePoolShell} from './table/pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1';
     import {cancelPoolCountdown} from './table/pool-countdown.js';
-    import {unlockPoolAudio} from './table/pool-audio.js?v=20261105-pool15';
+    import {unlockPoolAudio} from './table/pool-audio.js?v=20261113-snookerrail1';
 
     const $=id=>document.getElementById(id),host=$('board');
-    let state=poolStart(),fixture=false,restarts=0,example=0,watch=0,notice='点击「设置最后 8 号球」开始验收。';
+    let state=poolStart(),fixture=false,restarts=0,example=0,watch=0,notice='点击「设置最终 8 号球」开始验收。;
     document.addEventListener('pointerdown',unlockPoolAudio,{capture:true});
     function refreshStatus(){
       const waiting=Date.now()<(host._openingUntil||0),busy=host._animating||host._striking;
       $('pot-eight').disabled=!fixture||state.over||busy||waiting;
-      $('preview-status').textContent=notice+' 重开处理器调用：'+restarts+' 次。'+(waiting?' 正式 3、2、1、GO 倒计时中。':busy?' 正在播放真实击球与落袋过程。':'');
+      $('preview-status').textContent=notice+' 重开处理器调用：'+restarts+' 次'+(waiting?' 正式 3 秒、GO 倒计时中:busy?' 正在播放真实击球与落袋过程:'');
     }
     function monitor(){
       cancelAnimationFrame(watch);refreshStatus();
@@ -78,9 +79,9 @@
     }
     function paint(){
       [...$('seats').children].forEach((seat,i)=>seat.classList.toggle('active',!state.over&&state.turn===i+1));
-      $('status').textContent=state.over?'本局结束':state.turn===1?'你的回合':'电脑的回合';
+      $('status').textContent=state.over?'本局结束':state.turn===1?'你的回合':'电脑的回合;
       renderPool(host,state,!state.over);
-      updatePoolShell({room:null,me:null,board:state,local:true,computer:true,names:['你','电脑']});
+      updatePoolShell({room:null,me:null,board:state,local:true,computer:true,names:['你,'电脑']});
       monitor();
     }
     function replaceScene(next,countdown=0){
@@ -92,20 +93,20 @@
     function play(command){
       if(!host._ready?.())return;
       unlockPoolAudio();state=poolMove(state,state.turn,command);fixture=false;
-      notice=state.over?'真实规则结果：'+(state.winner===1?'你获胜':'电脑获胜')+'。回放结束后会自动打开正式弹窗。':'本杆已由正式物理计算。';
+      notice=state.over?'真实规则结果+(state.winner===1?'你获胜:'电脑获胜')+'。回放结束后会自动打开正式弹窗:'本杆已由正式物理计算;
       paint();
     }
     // This original action is installed before the production shell moves and wraps it.
     $('again').onclick=()=>{
-      unlockPoolAudio();restarts++;fixture=false;notice='原重开处理器已执行。新球局开始，仍可再次设置 8 号球场景。';
+      unlockPoolAudio();restarts++;fixture=false;notice='原重开处理器已执行。新球局开始，仍可再次设置 8 号球场景;
       replaceScene(poolStart(),3000);
     };
     $('set-final').onclick=()=>{
       const next=poolStart();for(let id=1;id<8;id++)next.cells[id*3+2]=0;
       next.cells[48]=7;next.cells[50]=1;next.cells[51]=2;
       next.cells[0]=5000;next.cells[1]=1200;next.cells[24]=5000;next.cells[25]=600;
-      next.fen='示例残局：全色已清空，合法目标是 8 号球。';
-      fixture=true;notice='最后 8 号球场景已就绪。点击②执行真实击球。';replaceScene(next);
+      next.fen='示例残局：全色已清空，合法目标是 8 号球。;
+      fixture=true;notice='最终 8 号球场景已就绪。点击②执行真实击球;replaceScene(next);
       host._angle=2700;host._paint(state.cells);host._update();
     };
     $('pot-eight').onclick=()=>play(35*3600+2700);
@@ -114,11 +115,11 @@
     });
     for(const [id,winner] of [['show-loss',2],['show-draw',0]])$(id).onclick=()=>{
       const next=poolStart();next.over=true;next.winner=winner;next.moves=100+(++example);
-      fixture=false;notice=(winner?'失利':'平局')+'文案示例：仅展示结算文案，没有模拟已完成的真实对局。';replaceScene(next);
+      fixture=false;notice=(winner?'失利':'平局')+'文案示例：仅展示结算文案，没有模拟已完成的真实对局;replaceScene(next);
     };
     $('leave-play').onclick=()=>{location.href='./table/index.html?game=pool';};
     window.addEventListener('pagehide',()=>{cancelPoolCountdown(host);cancelAnimationFrame(watch);host._animationToken++;});
     paint();
   </script>
-<script defer src="/site-context-menu.js?v=20261109-noselect1"></script><script defer src="/site-floating-dots.js?v=20261109-motes2"></script><script defer src="/site-shooting-star.js?v=20261109-fxgame1"></script></body>
+<script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></body>
 </html>

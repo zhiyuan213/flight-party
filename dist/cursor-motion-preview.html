@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>光标分级与动画验收</title>
+<link rel="stylesheet" href="/site-cursor.css?v=20261113-pointer1">
+<style>
+  :root{color-scheme:dark;font:14px/1.5 system-ui,sans-serif;color:#dfe8f7;background:#0d1525}
+  body{margin:0;padding:28px;max-width:1180px}h1{font-size:24px;margin:0 0 8px}p{color:#9eafc7;margin:0 0 20px}
+  html[data-shop-cursor]{--joy-cursor:var(--shop-cursor);--joy-cursor-hover:var(--shop-cursor)}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:14px}
+  .card{position:relative;border:1px solid #3a4c67;border-radius:15px;background:#17243a;padding:16px;text-align:left;color:inherit;font:inherit;display:grid;grid-template-columns:98px 1fr;gap:14px;align-items:center}
+  .card img{width:98px;height:98px}.card b{display:block;font-size:17px;margin:4px 0}.card small{display:block;color:#a6b7cf}
+  .card[aria-pressed=true]{border-color:#e2c185;box-shadow:0 0 0 2px #e2c18533}.tier{font-size:12px;letter-spacing:.08em;color:#8fc8f4}.epic .tier{color:#c3a0f0}.legend .tier{color:#eed398}
+  .area{margin-top:22px;padding:22px;border:1px dashed #67809f;border-radius:14px;min-height:150px;background:linear-gradient(120deg,#192b42,#111a2a)}
+  .area h2{font-size:17px;margin:0 0 9px}.controls{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;align-items:center}
+  input,textarea,select,button.control{border:1px solid #68809b;border-radius:7px;background:#101b2d;color:#e8effa;font:inherit;padding:8px 12px}
+  textarea{height:36px}canvas{display:block;width:80px;height:44px;background:#275a52;border-radius:6px;cursor:crosshair}
+  output{display:block;color:#ddc58e;margin-top:8px}.note{margin-top:16px;font-size:12px}
+  @media(max-width:750px){.grid{grid-template-columns:repeat(2,minmax(130px,1fr))}.card{grid-template-columns:1fr}.card img{width:76px;height:76px}}
+</style>
+</head>
+<body>
+<h1>光标 · 十一款分级动画</h1>
+<p>验收页：点击选款后在下方区域移动鼠标，使用正式光标运行脚本；不读取或写入钱包、购买、装配记录。</p>
+<div class="grid" id="designs"></div>
+<section class="area" id="playground">
+  <h2>真实鼠标测试区域</h2>
+  <span>稀有完全静态，史诗仅右下徽记动画，传说箭头内光色与徽记一起动画。箭头尖端固定。</span>
+  <output id="selection"></output><output id="runtime" aria-live="polite">等待鼠标移入</output>
+  <div class="controls"><button class="control" id="reset">恢复默认</button><button class="control" id="tap">普通按钮</button>
+    <input aria-label="文本输入测试" placeholder="输入框保留文字光标"><textarea aria-label="文本编辑测试" placeholder="文字编辑"></textarea>
+    <select aria-label="原生菜单测试"><option>原生菜单</option><option>第二项</option></select>
+    <canvas width="80" height="44" aria-label="瞄准十字测试"></canvas></div>
+</section>
+<p class="note">系统开启“减少动态效果”时保留完整静态PNG。触屏、文字输入、原生菜单和瞄准十字均不会被动画层遮挡。</p>
+<script>
+(function(){
+  var version='20261113-pointer1',selected='cursor-star';
+  var designs=[['ember','rare','稀有','焰火','平面箭头 · 静态火苗'],['leaf','rare','稀有','叶影','平面箭头 · 静态叶片'],
+    ['bubble','rare','稀有','气泡','平面箭头 · 静态气泡'],['shell','rare','稀有','贝壳','平面箭头 · 静态贝壳'],
+    ['rainbow','epic','史诗','彩虹','静态箭头 · 彩虹轻浮'],['frost','epic','史诗','冰晶','静态箭头 · 雪晶转动'],
+    ['heart','epic','史诗','心动','静态箭头 · 爱心跳动'],['butterfly','epic','史诗','蝶舞','静态箭头 · 蝶翼扇动'],
+    ['amethyst','legend','传说','紫晶','箭头流光 · 宝石闪动'],['comet','legend','传说','彗星','箭头变色 · 星环运行'],
+    ['nova','legend','传说','星爆','箭头流光 · 星爆旋转']];
+  window.__joyflockPoints={get:function(){return {equipped:{cursor:selected}};}};
+  window.__joyflockShop={version:version,cursorAssetUrl:function(id){return '/assets/shop/'+id+'.png?v='+version;}};
+  function select(id){
+    selected=id;var root=document.documentElement;
+    if(id==='cursor-star'){root.removeAttribute('data-shop-cursor');root.style.removeProperty('--shop-cursor');}
+    else{root.setAttribute('data-shop-cursor','1');root.style.setProperty('--shop-cursor','url("'+window.__joyflockShop.cursorAssetUrl(id)+'") 3 2, auto');}
+    document.querySelectorAll('[data-cursor]').forEach(function(button){button.setAttribute('aria-pressed',String(button.dataset.cursor===id));});
+    document.querySelector('#selection').textContent='当前选款：'+(id==='cursor-star'?'默认':designs.find(function(item){return 'cursor-'+item[0]===id;})[3]);
+    window.dispatchEvent(new CustomEvent('joyflock:shop-changed'));
+  }
+  designs.forEach(function(item){
+    var id='cursor-'+item[0],button=document.createElement('button');button.className='card '+item[1];button.dataset.cursor=id;button.setAttribute('aria-pressed','false');
+    button.innerHTML='<img src="/assets/shop/'+id+'.svg?v='+version+'" alt=""><span><span class="tier">'+item[2]+'</span><b>'+item[3]+'</b><small>'+item[4]+'</small></span>';
+    button.onclick=function(){select(id);};document.querySelector('#designs').appendChild(button);
+  });
+  document.querySelector('#reset').onclick=function(){select('cursor-star');};
+  document.querySelector('#tap').onclick=function(event){event.currentTarget.textContent='点击正常';};
+  new MutationObserver(function(){document.querySelector('#runtime').textContent=document.documentElement.hasAttribute('data-joy-cursor-animated')?'动画层已启用 · 原生箭头仍可用':'静态PNG兜底 · 原生光标可用';})
+    .observe(document.documentElement,{attributes:true,attributeFilter:['data-joy-cursor-animated']});
+  select('cursor-star');
+})();
+</script>
+<script defer src="/site-cursor-effects.js?v=20261113-pointer1"></script>
+</body>
+</html>

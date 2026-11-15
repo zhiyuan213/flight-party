@@ -14,7 +14,9 @@ public class MatchCompletionService {
     private final JsonMapper json=JsonMapper.builder().build();
     public MatchCompletionService(JdbcClient db,SettlementService settlement) { this.db=db;this.settlement=settlement; }
     @Transactional
-    public boolean complete(UUID match) {
+    public boolean complete(UUID match) { return complete(match,java.util.Set.of()); }
+    @Transactional
+    public boolean complete(UUID match, java.util.Set<Integer> hostedSeats) {
         String status=db.sql("select status from matches where id=:id for update").param("id",match).query(String.class).single();
         if(status.equals("SETTLED")) return false;
         String snapshot=db.sql("select snapshot from match_event_projection where match_id=:id").param("id",match).query(String.class).single();
@@ -27,6 +29,12 @@ public class MatchCompletionService {
             if(player.rank()==null || player.rank()!=i+1 || (i<2 && player.planes().stream().anyMatch(p->p!=57))) throw new IllegalStateException("invalid final ranking");
             db.sql("update match_participants set rank=:rank,finished_planes=:finished where match_id=:id and seat_index=:seat").param("finished",player.planes().stream().filter(p->p==57).count()).param("rank",i+1).param("id",match).param("seat",seat).update();
         }
+        /* Persist which real-player seats finished hosted. The settlement then
+           writes nothing for them: no data and no points. This flag comes from
+           the authoritative Redis room snapshot, never from a client. */
+        for(int seat:hostedSeats)
+            db.sql("update match_participants set hosted_at_end=true where match_id=:id and seat_index=:seat")
+                .param("id",match).param("seat",seat).update();
         db.sql("update matches set status='COMPLETED_PENDING' where id=:id").param("id",match).update();
         return settlement.settle(match);
     }

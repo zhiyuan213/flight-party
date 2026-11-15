@@ -1,0 +1,59 @@
+/* In-page language picker — portal/index.html, shop.html and the four info
+   pages. Loaded after site-chrome.css; the shared chrome version key stays
+   untouched so the wallet / account / points cache chain remains one key.
+
+   Chrome paints the native <select> dropdown as an OS-level popup whose
+   option labels ignore CSS alignment. portal-language-ui.js mounts an
+   in-page menu instead; the native select stays as the state source and is
+   hidden only after the menu exists, so a missing script is a safe no-op. */
+.lang-picker{
+  position:relative;display:inline-flex;flex:0 0 auto;
+  box-sizing:border-box;width:75px;height:24px;
+}
+.lang-picker>.portal-language-native{
+  position:absolute!important;left:0;top:0;width:1px!important;height:1px!important;
+  min-width:0!important;max-width:none!important;padding:0!important;
+  opacity:0!important;pointer-events:none!important;border:0!important;
+}
+.lang-picker .lang-trigger{
+  position:relative;box-sizing:border-box;display:block;
+  width:100%;height:100%;margin:0;padding:0 12px;border:1px solid #46518a;
+  border-radius:var(--chrome-radius);background:var(--chrome-active);
+  color:#e3eaff;font:inherit;font-size:11px;font-weight:700;
+  text-align:center;text-align-last:center;line-height:1;cursor:pointer;
+  white-space:nowrap;
+}
+.lang-picker .lang-trigger:focus-visible{outline:2px solid #a8b8ff;outline-offset:3px}
+.lang-picker .lang-trigger-label{
+  display:block;width:100%;text-align:center;text-align-last:center;
+}
+/* No chevron/arrow glyph: the trigger shows only the centred language label.
+   Keep the label centred in the same 75px slot so the header geometry does
+   not shift between closed and open state. */
+.lang-picker .lang-menu{
+  position:absolute;top:calc(100% + 4px);left:0;z-index:60;
+  box-sizing:border-box;width:100%;padding:3px;
+  background:#1b254a;border:1px solid #46518a;border-radius:10px;
+  box-shadow:0 10px 26px #0008;
+}
+.lang-picker .lang-menu[hidden]{display:none!important}
+.lang-picker .lang-option{
+  display:block;box-sizing:border-box;width:100%;height:30px;margin:0;padding:0 4px;
+  border:0;border-radius:7px;background:transparent;color:#e3eaff;
+  font:inherit;font-size:11px;font-weight:700;
+  text-align:center;text-align-last:center;line-height:30px;
+  white-space:nowrap;cursor:pointer;
+}
+.lang-picker .lang-option:hover,
+.lang-picker .lang-option:focus-visible{background:#ffffff18;outline:none}
+.lang-picker .lang-option.is-selected{background:#8ec5ff;color:#101a33}
+@media(max-width:600px){
+  .lang-picker{width:64px;height:22px}
+  .lang-picker .lang-trigger{font-size:10px;padding:0 8px}
+  .lang-picker .lang-option{font-size:10px}
+}
+@media(max-width:480px){
+  .lang-picker{width:58px}
+  .lang-picker .lang-trigger{font-size:9px;padding:0 6px}
+  .lang-picker .lang-option{font-size:9px}
+}

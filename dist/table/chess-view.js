@@ -1,4 +1,4 @@
-import {chessLegal,chessReplay} from './chess-rules.js?v=20261106-chess';
+import {chessLegal,chessReplay} from './chess-rules.js?v=20261110-glove2';
 
 const pieces=[
  '<path d="M35 73c-1-9 11-12 15-19 3-4 4-9 5-14h10c1 5 2 10 5 14 4 7 16 10 15 19Z"/><circle cx="60" cy="30" r="14"/><path d="M48 40h24a5 5 0 0 1 0 10H48a5 5 0 0 1 0-10Z"/>',

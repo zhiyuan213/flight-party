@@ -1,0 +1,143 @@
+{
+  "version": "20261114-avatar5",
+  "style": "Original flat SVG cartoon expressions and hairstyles. One identical peach rounded-square face base and skin color for all sixteen IDs. Accessory detail determines rarity, never gender or skin color.",
+  "origin": "Code-authored original SVG artwork; no image generation, downloaded art or raster editing.",
+  "face": {
+    "x": 16,
+    "y": 16,
+    "width": 224,
+    "height": 224,
+    "rx": 27,
+    "fill": "#F3D2AD"
+  },
+  "assets": [
+    {
+      "id": "avatar-starling",
+      "cn": "开心笑脸",
+      "en": "Happy Smile",
+      "dc": "睁大眼睛，露出灿烂笑容。",
+      "de": "Bright wide-eyed smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-starling.svg"
+    },
+    {
+      "id": "avatar-cloudy",
+      "cn": "调皮眨眼",
+      "en": "Playful Wink",
+      "dc": "眨一下眼，带着轻松的笑意。",
+      "de": "Friendly wink and open smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-cloudy.svg"
+    },
+    {
+      "id": "avatar-owl",
+      "cn": "好奇宝宝",
+      "en": "Curious Face",
+      "dc": "挑起眉毛，好奇地看过来。",
+      "de": "Raised eyebrow, side glance and small surprised mouth.",
+      "file": "dist/assets/shop/avatars-v4/avatar-owl.svg"
+    },
+    {
+      "id": "avatar-bear",
+      "cn": "温柔微笑",
+      "en": "Gentle Smile",
+      "dc": "弯弯的眼睛，暖暖的微笑。",
+      "de": "Soft crescent eyes and a gentle closed smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-bear.svg"
+    },
+    {
+      "id": "avatar-rocket",
+      "cn": "哈哈大笑",
+      "en": "Big Laugh",
+      "dc": "笑弯了眼睛，开心藏不住。",
+      "de": "Laughing eyes and a broad joyful mouth.",
+      "file": "dist/assets/shop/avatars-v4/avatar-rocket.svg"
+    },
+    {
+      "id": "avatar-luna",
+      "cn": "悠闲眯眼",
+      "en": "Easygoing",
+      "dc": "轻轻眯起眼睛，放松一会儿。",
+      "de": "Relaxed closed eyes and a contented little smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-luna.svg"
+    },
+    {
+      "id": "avatar-fox",
+      "cn": "吐舌鬼脸",
+      "en": "Cheeky Tongue",
+      "dc": "吐吐舌头，开个小玩笑。",
+      "de": "A playful tongue-out smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-fox.svg"
+    },
+    {
+      "id": "avatar-bot",
+      "cn": "酷酷墨镜",
+      "en": "Cool Shades",
+      "dc": "戴上墨镜，笑得轻松又自在。",
+      "de": "Dark rounded sunglasses and a confident grin.",
+      "file": "dist/assets/shop/avatars-v4/avatar-bot.svg"
+    },
+    {
+      "id": "avatar-octo",
+      "cn": "闪亮星星眼",
+      "en": "Starry Eyes",
+      "dc": "眼里闪着小星星，满是期待。",
+      "de": "Golden star pupils inside the same white eyes, with delighted smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-octo.svg"
+    },
+    {
+      "id": "avatar-crown",
+      "cn": "得意小皇冠",
+      "en": "Happy Crown",
+      "dc": "小皇冠戴得正，笑容也更自信。",
+      "de": "The same peach face wearing a little golden crown, with a delighted grin.",
+      "file": "dist/assets/shop/avatars-v4/avatar-crown.svg"
+    },
+    {
+      "id": "avatar-bob",
+      "cn": "栗色短发",
+      "en": "Chestnut Bob",
+      "dc": "利落栗色短发，薄荷发夹，笑得自然又亲切。",
+      "de": "A neat chestnut bob, mint hair clip and a friendly smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-bob.svg"
+    },
+    {
+      "id": "avatar-ponytail",
+      "cn": "元气马尾",
+      "en": "Sunny Ponytail",
+      "dc": "高马尾配珊瑚色发带，俏皮眨眼，元气满满。",
+      "de": "A high ponytail with a coral ribbon and a playful wink.",
+      "file": "dist/assets/shop/avatars-v4/avatar-ponytail.svg"
+    },
+    {
+      "id": "avatar-buns",
+      "cn": "蝴蝶结丸子",
+      "en": "Ribbon Buns",
+      "dc": "双丸子配紫色蝴蝶结，弯弯笑眼，活泼可爱。",
+      "de": "Twin buns with lilac bows and a joyful, crescent-eyed smile.",
+      "file": "dist/assets/shop/avatars-v4/avatar-buns.svg"
+    },
+    {
+      "id": "avatar-waves",
+      "cn": "珍珠卷发",
+      "en": "Pearl Waves",
+      "dc": "柔和波浪长发，点缀珍珠发夹，温柔耐看。",
+      "de": "Soft flowing waves and a small pearl barrette.",
+      "file": "dist/assets/shop/avatars-v4/avatar-waves.svg"
+    },
+    {
+      "id": "avatar-blossom",
+      "cn": "花漾发簪",
+      "en": "Blossom Hairpin",
+      "dc": "侧分长发配立体花瓣发簪，金色花蕊精致闪亮。",
+      "de": "A pink blossom hairpin with gold details on a softly swept hairstyle.",
+      "file": "dist/assets/shop/avatars-v4/avatar-blossom.svg"
+    },
+    {
+      "id": "avatar-beret",
+      "cn": "莓红贝雷帽",
+      "en": "Ruby Beret",
+      "dc": "莓红贝雷帽配星形胸针，轻轻眨眼，俏皮又自信。",
+      "de": "A ruby beret, star brooch and a cheerful, confident wink.",
+      "file": "dist/assets/shop/avatars-v4/avatar-beret.svg"
+    }
+  ]
+}

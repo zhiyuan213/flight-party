@@ -1,0 +1,91 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>袋内往返弹跳 · 逐帧验收</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
+<style>
+body{margin:24px;background:#0b1119;color:#e3edf5;font:15px system-ui;max-width:1500px}
+h1{font-size:22px;margin-bottom:6px}h2{font-size:17px;margin:20px 0 4px}
+p{color:#adbdcc;margin:4px 0 10px;line-height:1.6}
+.bar{display:flex;gap:16px;align-items:center;margin:14px 0 6px}
+button{padding:8px 16px;background:#243d56;color:white;border:1px solid #62778b;border-radius:6px;cursor:pointer}
+label{display:flex;gap:6px;align-items:center;color:#adbdcc;cursor:pointer}
+.row{display:grid;grid-template-columns:repeat(8,168px);gap:10px}
+canvas{width:168px;height:168px;background:#0b1119}
+figure{margin:0}figcaption{margin-bottom:4px;font-size:13px;color:#8fa6ba}
+.tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:12px;margin-left:8px;vertical-align:2px}
+.on{background:#3d2626;color:#ff9b8c;border:1px solid #a4483c}
+.off{background:#23303b;color:#9ab4c8;border:1px solid #456}
+</style>
+<h1>正面大力直进 · 袋内前后往返弹跳</h1>
+<p>同一套正式物理与正式入袋渲染器。力度由「入袋实测速度 + 出杆力度」共同决定：轻推仍是一次撞壁直落，中等力度 2–3 下，满力 **8 下**，间隔逐次缩短；斜擦球走绕圈分支。**出杆满力但到袋口已衰减的球，仍由出杆力度保证一定有一种效果**（F 行）。全力时六个袋、各种角度都不会再静默直落，详见六袋角度矩阵页。黄线是球心轨迹，红点是撞击位置。</p>
+<div class="bar"><button id="play">播放整段动作</button><label><input type="checkbox" id="trace" checked>叠加球心轨迹</label><span id="clock" style="color:#8fa6ba"></span></div>
+<main></main>
+<script type="module">
+import{makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES}from './table/pool-table.js?v=20261112-gamelanes1';
+import{drawReturnChannel,pocketMotion,POCKET_DURATION}from './table/pool-return.js';
+import{poolStart,poolMove}from './table/pool.js';
+const S=168,times=[0,40,80,120,160,200,240,320],views=[];
+const table=document.createElement('canvas');table.width=TABLE_WIDTH*2;table.height=TABLE_HEIGHT*2;
+const t=table.getContext('2d');t.scale(2,2);makeTable(t);
+function shot(x,y,angle,power){
+  const s=poolStart();for(let i=1;i<16;i++)s.cells[i*3+2]=0;
+  s.cells[0]=x*10;s.cells[1]=y*10;
+  const r=poolMove(s,1,power*3600+angle),cap=r.audioEvents.find(e=>e.kind==='pocket');
+  const f=r.history.map(v=>v.split(',').map(Number)).find(v=>!v[2]);
+  return {...cap,id:3,start:0,scratch:true,shotPower:power,x:f[0]/10+TABLE_PAD,y:f[1]/10+TABLE_PAD};
+}
+const cases=[
+  ['A 正面直进 power 30 · 原行为',shot(500,100,2700,30)],
+  ['B 正面直进 power 70',shot(500,100,2700,70)],
+  ['C 正面直进 power 90',shot(500,100,2700,90)],
+  ['D 正面直进 power 100',shot(500,100,2700,100)],
+  ['E 左上角袋 power 100',shot(100,100,2250,100)],
+  ['F 满力 · 到袋口已衰减（兜底生效）',{...shot(400,70,2200,100),shotPower:100}]
+];
+for(const [name,item] of cases){
+  const m=pocketMotion(item),speed=Math.hypot(item.vx,item.vy).toFixed(1);
+  const title=document.createElement('h2');title.textContent=name;
+  const tag=document.createElement('span');tag.className='tag '+(m.rebound?'on':'off');
+  tag.textContent=m.rebound?`往返 ${m.rebound.bounces} 次`:'直落';
+  title.append(tag);document.querySelector('main').append(title);
+  const info=document.createElement('p');
+  info.textContent=`入射速度 ${speed} · 袋壁接触 ${m.contacts.length} 次（${m.contacts.map(c=>c.time+'ms').join(' / ')}）· 落袋时刻 ${m.dropAt} ms`+
+    (m.rebound?` · 力度档 ${m.rebound.level.toFixed(2)}`:'');
+  document.querySelector('main').append(info);
+  const row=document.createElement('div');row.className='row';document.querySelector('main').append(row);
+  for(const age of times){
+    const f=document.createElement('figure'),cap=document.createElement('figcaption'),canvas=document.createElement('canvas');
+    cap.textContent=age+' ms';canvas.width=S*2;canvas.height=S*2;
+    f.append(cap,canvas);row.append(f);views.push({item,age,canvas,motion:m});
+  }
+}
+function paint(v,age){
+  const [hx,hy]=TABLE_HOLES[v.item.holeIndex],c=v.canvas.getContext('2d');
+  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,S*2,S*2);
+  c.scale(S*2/150,S*2/150);c.translate(-(TABLE_PAD+hx-65),-(TABLE_PAD+hy-65));
+  c.drawImage(table,0,0,TABLE_WIDTH,TABLE_HEIGHT);
+  drawReturnChannel(c,[v.item],age,'pockets');
+  if(!document.querySelector('#trace').checked)return;
+  c.save();c.beginPath();let started=false;
+  for(const p of v.motion.samples){if(p.time>age)break;started?c.lineTo(p.x,p.y):(c.moveTo(p.x,p.y),started=true);}
+  c.strokeStyle='#ffd75e';c.lineWidth=1.1;c.globalAlpha=.95;c.stroke();
+  for(const hit of v.motion.contacts)if(hit.time<=age){
+    c.beginPath();c.arc(hit.x,hit.y,2.4,0,Math.PI*2);c.fillStyle='#ff6b5e';c.fill();
+  }
+  const last=v.motion.samples.filter(p=>p.time<=age).at(-1);
+  if(last){c.beginPath();c.arc(last.x,last.y,1.8,0,Math.PI*2);c.fillStyle='#7ee8ff';c.fill();}
+  c.restore();
+}
+views.forEach(v=>paint(v,v.age));
+let run=0;
+document.querySelector('#play').onclick=()=>{
+  const token=++run,start=performance.now(),clock=document.querySelector('#clock');
+  function tick(now){
+    if(token!==run)return;
+    const age=Math.min(POCKET_DURATION,(now-start)%880);
+    clock.textContent=`t = ${Math.round(age)} ms`;
+    views.forEach(v=>paint(v,age));
+    if(now-start<4400)requestAnimationFrame(tick);
+    else views.forEach(v=>paint(v,v.age)),clock.textContent='';
+  }
+  requestAnimationFrame(tick);
+};
+document.querySelector('#trace').onchange=()=>views.forEach(v=>paint(v,v.age));
+</script><script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></html>

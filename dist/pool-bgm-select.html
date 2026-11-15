@@ -1,0 +1,167 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>台球背景音乐 · 选曲试听</title>
+<style>
+:root{--bg:#101820;--panel:#182430;--panel2:#1d2c39;--line:#2c3f4d;--text:#e8f1f8;--muted:#93a9ba;--gold:#ffd44d;--green:#6fd39a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 620px at 50% -10%,#1b3040 0%,var(--bg) 62%);color:var(--text);font:14px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;padding:26px 20px 60px}
+.wrap{max-width:1120px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:.5px}
+.sub{color:var(--muted);margin:0;font-size:13px}
+a.back{color:#a9d6f5;font-size:12px;text-decoration:none;border:1px solid var(--line);padding:7px 12px;border-radius:7px}
+a.back:hover{border-color:#5c93b5}
+.now{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
+.now .lead{font-size:13px;color:var(--muted)}
+.now b{color:var(--gold);font-size:15px}
+button{background:#243746;color:var(--text);border:1px solid #3d5a6c;border-radius:8px;padding:8px 14px;font:600 12px system-ui;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+button:hover{background:#2f4a5c;border-color:#6190aa}
+button:active{transform:translateY(1px)}
+button.primary{background:#2c4a3c;border-color:#4d8a5d;color:#d9ffe6}
+button.primary:hover{background:#356047;border-color:#6fc38b}
+button.on{background:#4a3c22;border-color:#c9a23c;color:#ffe8a6}
+input[type=range]{vertical-align:middle;width:120px;accent-color:var(--gold)}
+.bar{height:6px;background:#20303c;border-radius:4px;overflow:hidden;flex:1 1 180px;min-width:120px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4d8a5d,var(--gold));transition:width .12s linear}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:16px 17px 14px;position:relative;transition:border-color .2s,box-shadow .2s}
+.card.playing{border-color:#c9a23c;box-shadow:0 0 0 1px rgba(255,212,77,.22),0 10px 30px rgba(0,0,0,.25)}
+.card.saved::after{content:"游戏默认";position:absolute;top:-9px;right:14px;background:#2c4a3c;border:1px solid #4d8a5d;color:#d9ffe6;font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;letter-spacing:.5px}
+.card h2{font-size:17px;margin:0 0 1px}
+.card .en{color:#8fa9bc;font-size:11px;letter-spacing:.6px;margin:0 0 9px}
+.mood{color:var(--gold);font-size:11px;margin:0 0 8px}
+.desc{color:#b6c8d6;font-size:12px;min-height:57px;margin:0 0 10px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tags span{background:#22313e;border:1px solid #31485a;border-radius:20px;padding:1px 9px;font-size:10px;color:#a8c2d4}
+canvas{width:100%;height:64px;background:#0e161d;border:1px solid #283945;border-radius:8px;display:block}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;color:#8fa9bc;font-size:11px;margin:9px 0 11px}
+.meta b{color:#cfe2ef;font-weight:600}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.actions .state{font-size:11px;color:var(--green);margin-left:auto}
+.foot{margin-top:22px;color:#7f93a4;font-size:12px;border-top:1px solid var(--line);padding-top:14px}
+code{color:#ffd88a;background:#182430;padding:1px 5px;border-radius:4px}
+.banner{background:#20303a;border:1px solid #3a5568;border-left:3px solid var(--gold);border-radius:8px;padding:10px 14px;color:#c3d6e4;font-size:12px;margin-bottom:18px}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#243c32;border:1px solid #4d8a5d;color:#dcffe8;padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:20}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){body{padding:18px 12px 40px}.desc{min-height:0}}
+</style></head><body><div class="wrap">
+<header>
+  <div><h1>台球背景音乐 · 选曲试听</h1>
+  <p class="sub">五首为打球做的放松循环 · 全部程序合成、无音频文件 · 选中的曲目会直接用于游戏详情页与对局</p></div>
+  <a class="back" href="/table/index.html?game=pool">返回台球 →</a>
+</header>
+<div class="banner" style="background:#2a2418;border-color:#5c4a24;border-left-color:#ffd44d;color:#ffe8a6">注意：游戏详情页与对局页的<strong>背景音乐已暂时停用</strong>（2026-11-10）。本页仍能逐首试听、设为默认，选择会保存在本机，但要等游戏页恢复加载音乐模块后才会生效。</div>
+<div class="banner">之前那首 82 BPM 的 lounge 你不喜欢，我已经把默认换成 <b>「慢拍磁带」</b>（68 BPM lo-fi，最安静的一首）。原版仍留在下面第五张卡，随时可以换回去；点「试听」只在本页播放，点「设为游戏默认」才写入本机。</div>
+<div class="now">
+  <button id="toggle" class="primary">▶ 播放</button>
+  <button id="stop">停止</button>
+  <div><div class="lead">正在播放</div><b id="playingName">—</b></div>
+  <div><div class="lead">游戏默认</div><b id="savedName">—</b></div>
+  <label class="lead">音量 <input id="volume" type="range" min="0" max="100" value="100"></label>
+  <div class="bar"><i id="progress"></i></div>
+  <span id="hint" class="lead"></span>
+</div>
+<div class="grid" id="grid"></div>
+<div class="foot">
+  <p><b>怎么选</b>：先点「试听这首」逐首听（浏览器要求先有一次点击才能出声），听到喜欢的点「设为游戏默认」。选择存在本机 <code>joyflock.pool.bgm.track</code>，游戏里已打开的标签页也会自动切换；下次打开 <code>table/index.html?game=pool</code> 直接生效。</p>
+  <p><b>游戏里</b>：左下角 ♫ 圆钮单击开关音乐、<b>双击打开本选曲页</b>；对局里的「声音／静音」会一起静音背景音乐；切到后台自动淡出。音乐从详情页一路播到对局，不重启、不叠轨。</p>
+  <p><b>技术</b>：每首 8 小节无缝循环，尾部余音折回开头并做边缘平滑；按统一 RMS 做过响度匹配，切歌不会忽大忽小；按小节分帧合成，不卡首屏；低通／混响／磁带饱和按曲目配置。物理、协议、Java、parity 均未改动。</p>
+</div>
+</div><div id="toast"></div>
+<script type="module">
+import {
+  POOL_BGM_TRACKS,POOL_BGM_SCORE,DEFAULT_BGM_TRACK,buildPoolBgmAsync,
+  startPoolBgm,unlockPoolBgm,setPoolBgmTrack,previewPoolBgmTrack,getPoolBgmTrack,
+  setPoolBgmEnabled,setPoolBgmVolume,poolBgmState,poolBgmPosition
+} from './table/pool-bgm.js?v=20261110-glove2';
+const $=id=>document.getElementById(id);
+const byId=new Map(POOL_BGM_TRACKS.map(t=>[t.id,t]));
+const seconds=t=>60/t.bpm*4*t.bars;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('grid').innerHTML=POOL_BGM_TRACKS.map(t=>`
+  <article class="card" data-id="${t.id}">
+    <h2>${esc(t.name)}</h2><p class="en">${esc(t.en)}</p>
+    <p class="mood">${esc(t.mood)}</p>
+    <p class="desc">${esc(t.description)}</p>
+    <div class="tags">${t.tags.map(x=>`<span>${esc(x)}</span>`).join('')}</div>
+    <canvas width="460" height="64"></canvas>
+    <div class="meta">
+      <span><b>${t.bpm}</b> BPM</span><span><b>${seconds(t).toFixed(1)}</b> 秒循环</span>
+      <span><b>${esc(t.key)}</b></span><span>低通 <b>${(t.mix.cutoff/1000).toFixed(1)}k</b></span>
+      <span>混响 <b>${Math.round(t.mix.wet*100)}%</b></span><span>${t.drums?'有鼓':'无鼓'}</span>
+    </div>
+    <div class="actions">
+      <button data-act="play" class="primary">▶ 试听这首</button>
+      <button data-act="save">✓ 设为游戏默认</button>
+      <span class="state"></span>
+    </div>
+  </article>`).join('');
+
+let toastTimer=null;
+function toast(text){const n=$('toast');n.textContent=text;n.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.classList.remove('show'),2200);}
+function draw(canvas,data){
+  const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,n=data.left.length,points=460,bucket=Math.floor(n/points);
+  c.clearRect(0,0,w,h);
+  c.strokeStyle='#253743';c.lineWidth=1;
+  for(let bar=1;bar<data.bars;bar++){const x=bar/data.bars*w;c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
+  c.strokeStyle='#ffd44d';c.lineWidth=1.2;c.beginPath();
+  for(let p=0;p<points;p++){
+    let sum=0,count=0;
+    for(let i=p*bucket;i<(p+1)*bucket;i+=4){sum+=data.left[i]*data.left[i];count++;}
+    const y=h/2-Math.sqrt(sum/Math.max(1,count))*h*4.2;
+    if(p===0)c.moveTo(0,y);else c.lineTo(p/points*w,y);
+  }
+  c.stroke();
+}
+// Render one waveform per task so opening this page never blocks the UI.
+(async()=>{
+  for(const t of POOL_BGM_TRACKS){
+    const data=await buildPoolBgmAsync(8000,t.id);
+    draw(document.querySelector(`.card[data-id="${t.id}"] canvas`),data);
+  }
+})();
+
+function play(id){
+  unlockPoolBgm();
+  setPoolBgmEnabled(true);
+  if(poolBgmState().track!==id)previewPoolBgmTrack(id);
+  toast(`正在试听：${byId.get(id).name}`);
+}
+function save(id){
+  unlockPoolBgm();
+  setPoolBgmEnabled(true);
+  setPoolBgmTrack(id);
+  toast(`已设为游戏默认：${byId.get(id).name}`);
+}
+$('grid').addEventListener('click',event=>{
+  const button=event.target.closest('button[data-act]');if(!button)return;
+  const id=button.closest('.card').dataset.id;
+  if(button.dataset.act==='play')play(id);else save(id);
+});
+$('toggle').onclick=()=>{unlockPoolBgm();setPoolBgmEnabled(!poolBgmState().musicOn);};
+$('stop').onclick=()=>{setPoolBgmEnabled(false);toast('已暂停');};
+$('volume').oninput=e=>setPoolBgmVolume(Number(e.target.value)/100);
+startPoolBgm({button:false});
+
+function frame(){
+  const s=poolBgmState(),saved=getPoolBgmTrack();
+  const playing=byId.get(s.track),defaultTrack=byId.get(saved);
+  $('playingName').textContent=playing.name+(s.playing?'':'（未播放）');
+  $('savedName').textContent=defaultTrack.name+(saved===DEFAULT_BGM_TRACK?' · 推荐':'');
+  $('progress').style.width=(s.playing?poolBgmPosition()/s.loopSeconds*100:0)+'%';
+  $('toggle').textContent=s.playing?'❚❚ 暂停':'▶ 播放';
+  $('hint').textContent=!s.unlocked?'点击任意试听按钮解锁音频':s.playing?`循环 ${s.loopSeconds.toFixed(1)}s · ${s.bpm} BPM`:'已暂停';
+  for(const card of document.querySelectorAll('.card')){
+    const id=card.dataset.id;
+    card.classList.toggle('playing',s.playing&&s.track===id);
+    card.classList.toggle('saved',saved===id);
+    const state=card.querySelector('.state');
+    state.textContent=s.playing&&s.track===id?'● 正在播放':saved===id?'✓ 当前默认':'';
+    const pb=card.querySelector('[data-act="play"]'),sb=card.querySelector('[data-act="save"]');
+    pb.classList.toggle('on',s.playing&&s.track===id);
+    sb.classList.toggle('on',saved===id);
+  }
+  requestAnimationFrame(frame);
+}
+frame();
+</script></body></html>

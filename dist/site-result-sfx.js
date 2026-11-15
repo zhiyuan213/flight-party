@@ -21,11 +21,11 @@
  'use strict';
  if(window.__joyflockResultSfx)return;
 
- var VERSION='20261109-result1';
+ var VERSION='20261114-coin2';
  var volume=.9,enabled=true;
  var localCtx=null,noiseBuffer=null,outputs=new WeakMap();
- var lastKey='',lastAt=0,played=0,blocked=0,skipped=0;
- var DEDUPE_MS=900;
+ var lastKey='',lastAt=0,played=0,blocked=0,skipped=0,lastCoinAt=0;
+ var DEDUPE_MS=900,COIN_GAP=36;
 
  function muted(){
   if(!enabled)return true;
@@ -171,6 +171,29 @@
   voice(c,out,t+.24,{freq:523.25,peak:.052,dur:.42,type:'sine',attack:.01,lp:4200});
   voice(c,out,t+.24,{freq:1046.5,peak:.014,dur:.30,type:'sine',attack:.006});
  }
+
+ /* A bright metallic "coin drop" for the points count-up. Two inharmonic
+    partials give the metal ring; a random pitch and a short falling tail make
+    a run of them read as coins cascading into a counter instead of a steady
+    beep. Kept high and quick so each clink reads as crisp, not dull. */
+ function coin(c,out,at,peak,final){
+  var f=2800+Math.random()*1000;
+  var d=(final?1.6:1)*(.045+Math.random()*.03);
+  voice(c,out,at,{freq:f,to:f*.9,peak:peak,dur:d,type:'triangle',attack:.0006});
+  voice(c,out,at,{freq:f*1.48,peak:peak*.52,dur:d*.58,type:'sine',attack:.0005});
+  voice(c,out,at,{freq:f*2.71,peak:peak*.3,dur:d*.36,type:'sine',attack:.0004});
+ }
+ function coinTick(final){
+  if(muted())return false;
+  var now=performance.now();
+  // Throttle so the 60Hz count-up reads as a coin rhythm, not a buzz. The
+  // closing coin always fires so the deposit lands with a clear "cha-ching".
+  if(!final&&now-lastCoinAt<COIN_GAP)return false;
+  var c=context();if(!c)return false;
+  lastCoinAt=now;
+  try{coin(c,outputFor(c),c.currentTime+.01,(final?.07:.05)+Math.random()*.024,final);return true;}
+  catch(e){return false;}
+ }
  function build(kind,c,out,at){
   if(kind==='loss')loss(c,out,at);
   else if(kind==='draw')draw(c,out,at);
@@ -225,6 +248,7 @@
    catch(e){blocked++;return false;}
   },
   reset:function(){lastKey='';lastAt=0;},
+  coinTick:coinTick,
   setEnabled:function(value){enabled=!!value;return enabled;},
   setVolume:function(value){
    volume=Math.max(0,Math.min(2,Number(value)||0));

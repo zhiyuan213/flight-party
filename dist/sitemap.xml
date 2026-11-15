@@ -1,7 +1,225 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://flight.joyflock.com/</loc></url>
-  <url><loc>https://flight.joyflock.com/membership.html</loc></url>
-  <url><loc>https://flight.joyflock.com/terms.html</loc></url>
-  <url><loc>https://flight.joyflock.com/privacy.html</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://flight.joyflock.com/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/portal/index.html</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/pool/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/pool/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/pool/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/pool/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/pool/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/pool/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/pool/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/pool/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/flight-party/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/flight-party/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/flight-party/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/flight-party/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/flight-party/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/flight-party/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/flight-party/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/flight-party/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/connect-four/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/connect-four/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/connect-four/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/connect-four/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/connect-four/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/connect-four/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/connect-four/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/connect-four/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/gomoku/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/gomoku/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/gomoku/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/gomoku/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/gomoku/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/gomoku/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/gomoku/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/gomoku/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/chess/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/chess/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/chess/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/chess/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/chess/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/chess/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/chess/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/chess/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/tic-tac-toe/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/tic-tac-toe/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/tic-tac-toe/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/tic-tac-toe/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/tic-tac-toe/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/tic-tac-toe/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/tic-tac-toe/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/tic-tac-toe/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/cards/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/cards/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/cards/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/cards/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/cards/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/cards/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/cards/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/cards/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/snooker/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/snooker/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/snooker/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/snooker/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/snooker/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/snooker/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/snooker/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/snooker/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/bubble-shooter/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/bubble-shooter/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/bubble-shooter/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/bubble-shooter/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/bubble-shooter/</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/bubble-shooter/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/bubble-shooter/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/bubble-shooter/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/shop.html</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/membership.html</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/terms.html</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/privacy.html</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/contact.html</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>

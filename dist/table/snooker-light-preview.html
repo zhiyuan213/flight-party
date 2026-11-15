@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>斯诺克灯光高度</title>
+<style>body{margin:24px;background:#101827;color:#e6edf8;font:15px/1.6 system-ui}h1{font-size:21px}p{color:#aabbd0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:1080px}figure{margin:0}canvas{width:100%;border-radius:10px}figcaption{margin:8px 0}#table{display:block;max-width:1080px;margin-top:24px}@media(max-width:600px){.grid{grid-template-columns:1fr}}</style>
+<h1>桌灯高度 · 球影缩短</h1>
+<p>同一球位、同一球体绘制函数；灯仍在桌面正中，接触阴影贴住球底。</p>
+<div id="comparison" class="grid"></div><canvas id="table" width="2464" height="1288"></canvas><p id="errors"></p>
+<script type="module">
+import {makeSnookerTable} from './snooker-table.js?v=20261114-pocketdepth1';
+import {drawPoolBall} from './pool-ball.js';
+import {SNOOKER_LIGHT} from './snooker-light.js?v=20261113-reboundlight1';
+import {TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './pool-table.js';
+window.addEventListener('error',e=>document.querySelector('#errors').textContent=e.message);
+const sheet=document.createElement('canvas');sheet.width=TABLE_WIDTH*2;sheet.height=TABLE_HEIGHT*2;
+const s=sheet.getContext('2d');s.scale(2,2);makeSnookerTable(s);
+const ball=(ctx,x,y,height)=>drawPoolBall(ctx,6,TABLE_PAD+x,TABLE_PAD+y,8,0,0,null,{...SNOOKER_LIGHT,x:TABLE_PAD+500,y:TABLE_PAD+250,height},{plain:true,overhead:true});
+for(const [height,label] of [[420,'调整前'],[SNOOKER_LIGHT.height,'默认桌灯']]){
+  const fig=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');
+  canvas.width=960;canvas.height=480;const ctx=canvas.getContext('2d');ctx.translate(480,220);ctx.scale(10,10);ctx.translate(-TABLE_PAD-80,-TABLE_PAD-400);
+  ctx.drawImage(sheet,0,0,TABLE_WIDTH,TABLE_HEIGHT);ball(ctx,80,400,height);
+  caption.textContent=label;fig.append(canvas,caption);document.querySelector('#comparison').append(fig);
+}
+const ctx=document.querySelector('#table').getContext('2d');ctx.scale(2,2);ctx.drawImage(sheet,0,0,TABLE_WIDTH,TABLE_HEIGHT);
+for(const y of [75,250,425])for(const x of [100,500,900])ball(ctx,x,y,SNOOKER_LIGHT.height);
+</script></html>

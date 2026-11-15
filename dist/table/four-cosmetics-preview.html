@@ -1,0 +1,35 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>四子连珠 · 棋盘装扮验收</title>
+<link rel="stylesheet" href="./table.css"><link rel="stylesheet" href="./pool-shell.css"><link rel="stylesheet" href="./four-theme.css"><link rel="stylesheet" href="./game-cosmetics.css"><link rel="stylesheet" href="./four-feedback.css"><link rel="stylesheet" href="./four-board-cosmetics.css"><link rel="stylesheet" href="./four-seat-piece.css">
+<style>
+body{margin:0;padding:24px;background:#10182b;color:#e7efff;font:14px system-ui}h1{font-size:23px;margin:0 0 8px}p{color:#9cb0ce;line-height:1.7;margin:8px 0 18px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px}.controls label{display:flex;align-items:center;gap:6px}select{padding:8px;border-radius:8px;background:#1e304c;color:#e5edff;border:1px solid #456080}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:22px;max-width:1100px;margin:auto}.game-panel{min-height:0;height:540px;justify-content:center;padding:35px 24px;overflow:hidden;background:#131f34}
+.game-panel #board{width:min(100%,540px);margin:auto;max-width:none}.sidebar{display:flex;flex-direction:column;gap:15px}.sidebar .seat{background:#1e3048;color:#e4ecff;border-color:#405777}.sidebar .seat.active{background:#2b405e;border-color:#9cbeed}.seat-avatar{border-radius:16px}
+#decision{padding:16px;border:1px solid #405777;border-radius:12px;color:#b6cae6;line-height:1.8;white-space:pre-wrap;background:#152238}#errors{color:#ffacb5}@media(max-width:760px){body{padding:14px}.layout{grid-template-columns:1fr}.game-panel{height:auto;min-height:340px;padding:20px}.sidebar{display:grid;grid-template-columns:1fr 1fr}.sidebar #decision{grid-column:1/-1}.sidebar .seat{gap:8px;padding:9px}.avatar-shell{width:36px;height:36px;flex-basis:36px}.four-seat-piece{transform:scale(.8)}}
+</style></head><body class="connect-four-game" data-screen="play">
+<h1>四子连珠 · 棋盘与个人棋子</h1><p>本地外观验收，使用实际棋盘、玩家卡和装扮规则。不会购买道具、修改装备或连接对局。</p>
+<div class="controls">
+<label>主题 <select id="theme"><option value="classic">默认主题</option><option value="halloween">万圣节</option><option value="christmas">圣诞节</option></select></label>
+<label>玩家一棋盘 <select id="board-one"><option value="neon">冰川铝板</option><option value="default">默认桃木</option><option value="jade">翡翠玉石</option><option value="aurora">星夜紫晶</option></select></label>
+<label>玩家二棋盘 <select id="board-two"><option value="default">默认桃木</option><option value="neon">冰川铝板</option><option value="jade">翡翠玉石</option><option value="aurora">星夜紫晶</option></select></label>
+<label>玩家二级别 <select id="tier"><option value="normal">普通</option><option value="vip">VIP</option><option value="annual">年 VIP</option></select></label>
+</div>
+<main class="layout"><section class="game-panel"><div id="board" class="board" aria-label="四子棋盘"></div></section><aside class="sidebar"><div id="seats" class="seats"></div><div id="decision" role="status"></div></aside></main><pre id="errors"></pre>
+<script type="module">
+import {applyCosmetics,decoratePieces} from './game-cosmetics.js?v=20261112-gamelanes1';
+import {fourSeatPiece} from './four-seat-piece.js?v=20261113-fourboard1';
+import {playerCard} from './presentation.js?v=20261113-fourfx1';
+import {setTheme} from './four-theme.js?v=20261110-glove2';
+import {start,move} from './grid-rules.js?v=20261112-frameback1';
+const $=id=>document.getElementById(id);let state=start('four');for(const col of [0,6,1,6,2])state=move(state,state.turn,col);
+function render(){
+ setTheme($('theme').value,{persist:false,silent:true});
+ const profiles=[{name:'玩家一',isSelf:true,signedIn:false,piece:'four-piece-neon',board:'four-board-'+$('board-one').value,points:900},
+ {name:'玩家二',piece:'four-piece-default',board:'four-board-'+$('board-two').value,tier:$('tier').value,points:100}];
+ const result=applyCosmetics({network:true,mySeat:1,matchKey:'four-style-preview',seatProfiles:profiles});
+ $('board').innerHTML=state.cells.map((v,i)=>`<button class="cell" disabled data-value="${v}" aria-label="第${i%7+1}列，${v?'玩家'+v:'空位'}"></button>`).join('');decoratePieces($('board'));
+ $('seats').replaceChildren(...profiles.map((p,i)=>{const card=playerCard(document,p,i,state.turn===i+1);card.append(fourSeatPiece(document,i+1,p.name));return card;}));
+ $('decision').textContent=result.themedFour?'整套节日主题\n商城棋盘与个人徽章均不叠加。':`实际棋盘：${result.boardTheme||'默认桃木'}\n选择原因：${({single:'仅一方装配',tier:'会员级别',points:'累计 Joy Coins',random:'同级同分随机',none:'均为默认'})[result.decision.reason]}\n个人徽章：玩家一轨道徽章，玩家二默认。`;
+}
+document.querySelectorAll('select').forEach(n=>n.addEventListener('change',render));window.addEventListener('error',e=>$('errors').textContent=e.message);render();
+</script></body></html>

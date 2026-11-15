@@ -8,7 +8,7 @@ html{color-scheme:dark}
 body{
   height:100dvh;min-height:0;margin:0;
   display:flex;flex-direction:column;overflow:hidden;
-  background:#090d1c;color:#eaf0ff;
+  background:#0b1020;color:#eaf0ff;
   font:16px/1.65 Inter,"Microsoft YaHei",system-ui,sans-serif;
 }
 

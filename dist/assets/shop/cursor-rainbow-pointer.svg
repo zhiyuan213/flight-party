@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" data-cursor-tier="epic"><style>
+.badge-motion{transform-box:fill-box;transform-origin:center;animation:badge-float 2.8s ease-in-out infinite}
+
+
+@keyframes badge-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+@keyframes badge-turn{to{transform:rotate(360deg)}}
+@keyframes badge-gem{0%,100%{transform:rotate(-8deg) scale(.95)}50%{transform:rotate(8deg) scale(1.05)}}
+@keyframes badge-orbit{to{transform:rotate(360deg)}}
+@keyframes badge-beat{0%,100%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}40%{transform:scale(1.08)}}
+@keyframes badge-flap{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.72)}}
+@keyframes badge-nova{0%,100%{transform:rotate(0) scale(.82)}50%{transform:rotate(22deg) scale(1.12)}}
+@keyframes arrow-colour{0%,100%{stop-color:#dc9bbf}50%{stop-color:#dc9bbf}}
+@keyframes arrow-glint{0%,15%{transform:translate(-22px,0);opacity:0}25%{opacity:.95}62%{transform:translate(22px,0);opacity:0}100%{transform:translate(22px,0);opacity:0}}
+@keyframes spark{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.arrow-glint{display:none}}
+</style><path d="M3 2 L3 24 L9.3 18.6 L13.4 28.2 L17.6 26.4 L13.6 17.4 L22.2 17.5 Z" fill="#dc9bbf" stroke="#17283e" stroke-width="1.35" stroke-linejoin="round" class="cursor-arrow" data-base-fill="#dc9bbf"/></svg>

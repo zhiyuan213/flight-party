@@ -1,5 +1,6 @@
 import {playerPlaneSkin, vipTrailStyle} from './plane-skin.js';
 import {FlightTrails, drawVipGlow} from './flight-trails.js';
+import {activeTrailStyle} from './shop-trail.js';
 import {drawPlaneNames,planeMembershipGrade} from './plane-nameplates.js';
 import {drawPropeller} from './propeller.js';
 // Fixed-camera 2.5D renderer. Rule coordinates are owned exclusively by engine.js.
@@ -64,7 +65,7 @@ export class CanvasBoard{
   for(let step=result.from+1;step<=result.to;step++){
    const end=position(p.color,p.piece,step),start={...p};if(Math.abs(end.x-start.x)>.001)p.heading=end.x<start.x?1:0;
    if(step===result.from+1)this.puff({...p,y:p.y-.05},.48,650,step);
-   await this.tween(Math.max(100,Math.min(175,1250/count)),t=>{const e=ease(t);p.x=lerp(start.x,end.x,e);p.z=lerp(start.z,end.z,e);p.groundY=lerp(start.groundY,end.groundY,e);p.y=lerp(start.y,end.y,e)+Math.sin(t*Math.PI)*.14;p.spin=Math.sin(t*Math.PI)*.035*(p.heading?-1:1);const owner=this.game?.players?.[p.color];if(owner?.member)this.cosmeticTrails.emit(owner.flightTrail,`${p.color}:${p.piece}`,p,performance.now(),this.reduced);});
+   await this.tween(Math.max(100,Math.min(175,1250/count)),t=>{const e=ease(t);p.x=lerp(start.x,end.x,e);p.z=lerp(start.z,end.z,e);p.groundY=lerp(start.groundY,end.groundY,e);p.y=lerp(start.y,end.y,e)+Math.sin(t*Math.PI)*.14;p.spin=Math.sin(t*Math.PI)*.035*(p.heading?-1:1);const owner=this.game?.players?.[p.color];const trailStyle=activeTrailStyle(owner);if(trailStyle)this.cosmeticTrails.emit(trailStyle,`${p.color}:${p.piece}`,p,performance.now(),this.reduced);});
    if(gen!==this.generation)return;
   }
   p.air=0;p.spin=0;

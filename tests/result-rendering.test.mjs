@@ -10,7 +10,7 @@ test('server confirmation patches scores without replacing row or avatar nodes',
  try{const players=[{name:'大卫',member:true,annualMember:true,avatarFrame:'cloud',bumps:0,rolls:0},{name:'Pilot 2'}];const ranking=[1,0];
  renderResultRankings(root,players,ranking,{key:'match',online:true});const row=root.children[1],avatar=row.querySelector('.result-avatar');assert.match(row.querySelector('small').textContent,/Confirming/);
  const args={key:'match',online:true,confirmed:[{seatIndex:1,pointsDelta:2},{seatIndex:0,pointsDelta:0}]};renderResultRankings(root,players,ranking,args);renderResultRankings(root,players,ranking,args);
- assert.equal(created,2);assert.equal(root.children[1],row);assert.equal(row.querySelector('.result-avatar'),avatar);assert.equal(row.querySelector('small').textContent,'0 points this game');assert.equal(row.dataset.cardFrame,'cloud');assert.equal(avatar.dataset.frame,'cloud');
+ assert.equal(created,2);assert.equal(root.children[1],row);assert.equal(row.querySelector('.result-avatar'),avatar);assert.equal(row.querySelector('small').textContent,'0 Joy Coins this game');assert.equal(row.dataset.cardFrame,'cloud');assert.equal(avatar.dataset.frame,'cloud');
  assert.equal(row.querySelector('b').dataset.member,'true');assert.equal(row.querySelector('b').dataset.annualMember,'true');
  players[0].annualMember=false;renderResultRankings(root,players,ranking,args);assert.equal(row.querySelector('b').dataset.annualMember,'false');assert.equal(row.querySelector('b').dataset.member,'true');
  }finally{globalThis.document=saved}

@@ -1,0 +1,23 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>cue ball check</title>
+<style>body{margin:0;background:#1b3f74}canvas{display:block}</style></head><body>
+<canvas id="cv" width="1200" height="620"></canvas>
+<script type="module">
+import {drawPoolBall,rotateSphere,sphereIdentity} from './table/pool-ball.js';
+const c=document.getElementById('cv').getContext('2d');
+// background cloth-like grid
+c.fillStyle='#22508f';c.fillRect(0,0,1200,620);
+c.strokeStyle='#ffffff08';c.lineWidth=1;
+for(let x=-620;x<1800;x+=9){c.beginPath();c.moveTo(x,0);c.lineTo(x+620,620);c.stroke();}
+const angles=[0,.35,.7,1.05,1.4,1.75,2.1,2.45];
+const cols=['POOL cue ball (id 0, plain=false)','SNOOKER cue ball (id 0, plain=true)'];
+cols.forEach((label,row)=>{
+  c.fillStyle='#ffffffcc';c.font='16px sans-serif';c.fillText(label,20,30+row*300);
+  angles.forEach((a,i)=>{
+    const x=80+i*140,y=170+row*300;
+    const m=rotateSphere(sphereIdentity(),1,0,0,a);
+    drawPoolBall(c,0,x,y,50,0,0,m,row?{x:500,y:240}:{x:480,y:234},row?{plain:true,palette:['#faf9f2']}:null);
+    c.fillStyle='#ffffffaa';c.font='11px sans-serif';c.fillText(a.toFixed(2),x-12,y+72);
+  });
+});
+document.body.dataset.ready='1';
+</script></body></html>

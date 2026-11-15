@@ -1,6 +1,23 @@
-import {simulateCueShot} from './pool.js?v=snooker1';
+import {simulateCueShot,SHOT_SPEED} from './pool.js?v=20261113-pooldiff1';
 
-export const radius=8;
+/* 2026-11-13: Snooker felt as hard as 8-ball even though its table is longer
+   and its ball is smaller. Keep the two games' power SEPARATE: Pool keeps the
+   shared SHOT_SPEED, while Snooker scales every stroke's velocity to 70%.
+   The player's power meter still reads 0..100 (their intent); only the
+   physical velocity is reduced, so audio events, replays and bot probes all
+   follow the softer shot automatically. */
+export const SNOOKER_POWER_SCALE=.7;
+export const SNOOKER_SHOT_SPEED=SHOT_SPEED*SNOOKER_POWER_SCALE;
+export const radius=11;
+/* 2026-11-13: balls looked ~4 screen px too small (12px -> 16px requested).
+   At roughly 0.75 px per table unit that is radius 8 -> 11, diameter 16 -> 22.
+   Rack spacing scales by the same 11/8, and the first red column moves from
+   769 to 774 so the pink spot at 752 stays exactly one ball diameter clear. */
+const RACK_X=774,RACK_COL=19.525,RACK_ROW=22.55;
+/* Snooker's command has no spin field, so a cushion contact has no side-spin
+   kick to restore the along-rail velocity. Keep at least 75% of it per bounce;
+   see simulateCueShot's railTangentLoss in pool.js. Pool stays at 1. */
+const RAIL_TANGENT_LOSS=.25;
 export const colours=['#fff8e6','#e34235','#edc42c','#2d9d54','#8e4728','#3979da','#e976a7','#181b23'];
 export const value=id=>id>6?1:id+1;
 const spots=[[245,290],[260,330],[260,170],[260,250],[500,250],[752,250],[918,250]];
@@ -8,7 +25,7 @@ const reds=cells=>Array.from({length:15},(_,i)=>i+7).filter(id=>cells[id*3+2]);
 export function startSnooker(){
   const cells=spots.flatMap(([x,y])=>[x*10,y*10,1]);
   for(let col=0;col<5;col++)for(let row=0;row<=col;row++)
-    cells.push(Math.round((769+col*14.2)*10),Math.round((250+(row-col/2)*16.4)*10),1);
+    cells.push(Math.round((RACK_X+col*RACK_COL)*10),Math.round((250+(row-col/2)*RACK_ROW)*10),1);
   return {cells,turn:1,scores:[0,0],on:'red',breakScore:0,winner:0,over:false,penalty:0};
 }
 
@@ -36,7 +53,7 @@ export function placeCue(state,x,y){
 
 export function shootSnooker(state,command,nomination){
   if(state.over||state.inHand)throw Error('shot unavailable');
-  const {c:cells,potted,firstContact,history,audioEvents}=simulateCueShot(state.cells,command,22,radius);
+  const {c:cells,potted,firstContact,history,audioEvents}=simulateCueShot(state.cells,command,22,radius,RAIL_TANGENT_LOSS,SNOOKER_SHOT_SPEED);
   const targets=snookerTargets(state);
   const nominated=targets.includes(nomination)?nomination:firstContact;
   const allowed=id=>state.on==='colour'?id===nominated&&targets.includes(id):targets.includes(id);

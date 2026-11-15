@@ -71,6 +71,17 @@
 .chess-game .chess-moves button{min-height:26px;padding:3px 8px;text-align:left;background:none;border:0;font-size:13px}
 .chess-game .chess-moves button[aria-current="true"]{background:#385c88;color:#fff}
 .chess-review-status{color:#b6d4f2;margin:8px 0 0;font-size:12px;min-height:1.2em}
+/* On desktop the sidebar stretches to the full game height. Let the move
+   list grow into that space instead of stopping at a fixed 115px/31dvh cap;
+   the leave button then sits at the bottom of the same column. */
+@media(min-width:921px){
+ .chess-game[data-screen="play"] .play-sidebar{align-self:stretch;min-height:0}
+ .chess-game[data-screen="play"] .chess-review{display:flex;flex-direction:column;flex:1 1 0;min-height:0}
+ .chess-game[data-screen="play"] .chess-moves{flex:1 1 0;max-height:none}
+}
+@media(min-width:921px) and (max-height:620px){
+ .chess-game[data-screen="play"] .chess-moves{flex:none;max-height:clamp(115px,31dvh,350px)}
+}
 @media(max-width:820px){
   .chess-game #arena:not(.table-chat-layout){grid-template-columns:minmax(0,1fr);padding:8px;gap:11px}
   .chess-game .game-panel .board.chess{width:min(100%,650px)}

@@ -1,12 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-shop-no-pill>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>JoyFlock</title><link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-icon1"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261109-icon1">
-  <link rel="stylesheet" href="/site-cursor.css?v=20261108-usa6">
+  <link rel="stylesheet" href="/site-cursor.css?v=20261113-pointer1"><link rel="stylesheet" href="/site-points.css?v=20261112-gamelanes1&d=20261115-topbar1">
   <link rel="stylesheet" href="./arcade.css?v=20261109-glass1">
-</head>
+  <link rel="stylesheet" href="../bot-difficulty.css?v=20261110-glove2">
+<link rel="stylesheet" href="./bubbles-fine.css?v=20261110-bubblestatus1">
+<script defer src="/site-points.js?v=20261112-gamelanes1"></script></head>
 <body>
   <header hidden><button id="back" type="button" aria-label="Back">←</button><span id="game-title"></span><output id="status" aria-live="polite"></output></header>
   <main>
@@ -18,12 +20,14 @@
         <h1 id="intro-title"></h1>
         <p id="instructions"></p>
         <div class="intro-actions"><button id="start" type="button"></button><button id="online" type="button" hidden></button></div>
+        <div id="bot-difficulty" class="bot-difficulty bot-difficulty-slot" role="group" aria-label="Computer difficulty"><button type="button" class="bot-difficulty-trigger" data-bot-open aria-haspopup="dialog" aria-expanded="false" title="Computer difficulty"><span class="bd-trigger-label" data-system-english="Computer difficulty">Computer difficulty</span><span class="bd-trigger-current"><span class="bd-trigger-value" data-system-english="Easy">Easy</span><span class="bd-trigger-chevron" aria-hidden="true">›</span></span></button></div>
+        <script src="../bot-difficulty-boot.js?v=20261110-firstframe1"></script>
         <a id="lobby" href="/portal/index.html" target="_top"></a>
       </div>
     </section>
   </main>
   <footer hidden><label id="nomination-label" hidden><span></span><select id="nomination"></select></label><label id="power-label" hidden><span></span><input id="power" type="range" min="5" max="100" value="55"></label><button id="action" type="button" hidden></button></footer>
   <dialog><h2></h2><button id="again" type="button"></button></dialog>
-  <script type="module" src="./arcade.js?v=20261109-nolocal1"></script>
-<script defer src="/site-hover-sfx.js?v=20261109-zoom1"></script><script defer src="/site-result-sfx.js?v=20261109-result1"></script><script defer src="/site-pointer-relay.js?v=20261109-fxgame1"></script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script><script defer src="/site-floating-dots.js?v=20261109-motes2"></script><script defer src="/site-shooting-star.js?v=20261109-fxgame1"></script></body>
+  <script type="module" src="./arcade.js?v=20261112-gamelanes1"></script>
+<script defer src="/site-hover-sfx.js?v=20261112-gamelanes1"></script><script defer src="/site-result-sfx.js?v=20261114-coin2"></script><script defer src="/site-pointer-relay.js?v=20261110-glove2"></script><script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></body>
 </html>

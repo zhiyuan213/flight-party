@@ -3,7 +3,7 @@
    Loaded after table.css / table-home-theme.css / four-theme.css. */
 
 body.table-home-theme:not([data-screen="play"]){
-  background:#090d1c;
+  background:#0b1020;
 }
 body.table-home-theme:not([data-screen="play"]) #intro{
   max-width:1080px;margin:0 auto;padding:30px 30px 22px;
@@ -16,7 +16,7 @@ body.table-home-theme[data-screen="play"] .board-top .eyebrow{display:none}
 
 /* Two plain columns: game info on the left, standings on the right. */
 body.table-home-theme:not([data-screen="play"]) .intro-grid{
-  grid-template-columns:minmax(0,1fr) 360px;
+  grid-template-columns:minmax(0,1fr) 460px;
   gap:24px;min-height:0;align-items:start;
 }
 
@@ -39,8 +39,7 @@ body.table-home-theme:not([data-screen="play"]) .hero-art img{width:100%;height:
 body.table-home-theme:not([data-screen="play"]) #hero-title,
 body.table-home-theme:not([data-screen="play"]) #hero-description,
 body.table-home-theme:not([data-screen="play"]) .hero-tags,
-body.table-home-theme:not([data-screen="play"]) .launch-actions,
-body.table-home-theme:not([data-screen="play"]) .join-box{grid-column:2}
+body.table-home-theme:not([data-screen="play"]) .launch-actions{grid-column:2}
 
 /* The small English game name above the title is gone. The node stays in the
    DOM because intro-boot.js and table.js write into it on the first frame;
@@ -71,8 +70,7 @@ body.table-home-theme:not([data-screen="play"]) .intro-screen button{
 body.table-home-theme:not([data-screen="play"]) .intro-screen button:hover:not(:disabled){
   background:#293657;border-color:#8d9dff;transform:none;
 }
-/* Four stacked launch buttons: Quick play / Create room / Join room /
-   Play computer. The old .local-buttons wrapper put the last two side by
+/* Three stacked launch buttons: Quick play / Create room / Play computer. The old .local-buttons wrapper put the last two side by
    side; it is gone from the markup, so every button owns a full row. */
 body.table-home-theme:not([data-screen="play"]) .launch-actions{
   width:100%;max-width:100%;
@@ -95,13 +93,6 @@ body.table-home-theme:not([data-screen="play"]) .local-buttons button{
   min-height:40px;font-size:13.5px;padding:8px 10px;
   display:flex;align-items:center;justify-content:center;gap:6px;
 }
-body.table-home-theme:not([data-screen="play"]) .join-box{
-  margin-top:8px;width:100%;max-width:100%;font-size:12.5px;color:#8390b0;
-}
-body.table-home-theme:not([data-screen="play"]) .join-box form{
-  margin-top:8px;padding:12px;background:#141b30;border:1px solid #ffffff12;border-radius:8px;
-}
-body.table-home-theme:not([data-screen="play"]) .join-box button{margin-top:8px;width:100%}
 body.table-home-theme:not([data-screen="play"]) input{
   color:#e8edff;background:#0c1426;border:1px solid #46518a;border-radius:8px;
 }
@@ -118,12 +109,13 @@ body.table-home-theme:not([data-screen="play"]) .ranking-heading h2{
 body.table-home-theme:not([data-screen="play"]) .ranking-heading>img,
 body.table-home-theme:not([data-screen="play"]) .ranking-heading .eyebrow{display:none}
 body.table-home-theme:not([data-screen="play"]) .period-tabs{
-  gap:16px;padding:0;margin:0 0 8px;border:0;border-bottom:1px solid #ffffff14;
+  display:flex;gap:0;padding:0;margin:0 0 8px;border:0;border-bottom:1px solid #ffffff14;
   background:none;border-radius:0;
 }
 body.table-home-theme:not([data-screen="play"]) .period-tabs button{
-  flex:0 0 auto;min-height:0;padding:6px 0;border-radius:0;
+  flex:1 1 0;min-width:0;min-height:0;padding:6px 2px;border-radius:0;
   background:none;border:0;box-shadow:none;font-size:11px;color:#8390b0;
+  text-align:center;white-space:nowrap;
 }
 body.table-home-theme:not([data-screen="play"]) .period-tabs button:hover:not(:disabled){background:none;color:#c8d3ff}
 body.table-home-theme:not([data-screen="play"]) .period-tabs button[aria-pressed="true"]{
@@ -142,10 +134,14 @@ body.table-home-theme:not([data-screen="play"]) #leaderboard li{
 body.table-home-theme:not([data-screen="play"]) #leaderboard li .seat{
   padding:0;border:0;background:none;box-shadow:none;
 }
-body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points{
-  font-size:13px;color:#c8d3ff;
+/* Both number columns share one type scale. A larger score beside a smaller
+   game count reads as a mismatched pair inside the same row; the score's
+   brighter colour is enough of a hierarchy cue. */
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points,
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-games{
+  font-size:16px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;
 }
-body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-games{font-size:11px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points{color:#c8d3ff}
 body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-empty{
   min-height:0;justify-content:flex-start;padding:14px 0;
   border:0;background:none;color:#8390b0;font-size:11px;
@@ -175,9 +171,6 @@ body.table-home-theme:not([data-screen="play"]) .intro-bottom p{
   margin:0;font-size:12.5px;line-height:1.7;color:#8494b4;
 }
 body.table-home-theme:not([data-screen="play"]) .member-note>.member-label{display:none}
-body.table-home-theme:not([data-screen="play"]) .member-note a{
-  display:inline-block;margin-top:8px;font-size:12px;color:#93a4e8;
-}
 
 @media(max-width:900px){
   body.table-home-theme:not([data-screen="play"]) .intro-grid{grid-template-columns:1fr;gap:24px}
@@ -199,8 +192,8 @@ body.table-home-theme:not([data-screen="play"]) .member-note a{
    a standings panel that spans both rows and always reserves ten player rows. */
 body.table-home-theme:not([data-screen="play"]) #intro{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 360px;
-  column-gap:24px;row-gap:0;align-items:start;
+  grid-template-columns:minmax(0,1fr) 460px;
+  column-gap:28px;row-gap:0;align-items:start;
 }
 body.table-home-theme:not([data-screen="play"]) .intro-grid{display:contents;min-height:0}
 body.table-home-theme:not([data-screen="play"]) .game-hero{grid-column:1;grid-row:1}
@@ -225,30 +218,63 @@ body.table-home-theme:not([data-screen="play"]) #leaderboard{
   min-height:calc(var(--rank-row)*10);max-height:none;height:auto;
   overflow:hidden;margin:0;
 }
+/* The gold / silver / bronze accent bar is absolutely positioned at left:0.
+   Without this gutter the first-place coin sat exactly on top of the bar,
+   so the two were visually squashed together. 14px separates them, and the
+   header gets the same gutter so its two number columns stay pixel-aligned. */
 body.table-home-theme:not([data-screen="play"]) #leaderboard li{
-  padding:4px 0;margin:0;min-height:0;align-items:center;
+  grid-template-columns:32px minmax(0,1fr) 60px 60px;column-gap:16px;
+  padding:0 0 0 14px;margin:0;min-height:0;align-items:center;
+  position:relative;transition:background .16s ease;
 }
 body.table-home-theme:not([data-screen="play"]) #leaderboard .avatar-shell{
-  width:24px;height:24px;flex:0 0 24px;
+  width:30px;height:30px;flex:0 0 30px;
 }
-body.table-home-theme:not([data-screen="play"]) #leaderboard .seat{gap:8px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .seat{gap:9px}
 /* One line per player: the name plus its VIP / YEAR VIP badge. The old 280px
    column was too narrow, so flex-wrap pushed the badge onto a second line and
    the medals looked stacked. The name may ellipsise, the badge never moves. */
 body.table-home-theme:not([data-screen="play"]) #leaderboard .seat-name{
-  flex-wrap:nowrap;gap:5px;min-width:0;
+  flex-wrap:nowrap;gap:3px;min-width:0;
 }
 body.table-home-theme:not([data-screen="play"]) #leaderboard .seat-name strong{
-  font-size:11px;max-width:none;flex:0 1 auto;min-width:0;
+  font-size:14px;max-width:none;flex:0 1 auto;min-width:0;
 }
-body.table-home-theme:not([data-screen="play"]) #leaderboard .member-label{flex:0 0 auto}
+body.table-home-theme:not([data-screen="play"]) #leaderboard .member-label{
+  flex:0 0 auto;margin-left:2px;width:36px;height:18px;
+}
 body.table-home-theme:not([data-screen="play"]) #leaderboard .rank-medal{
-  font-size:10px;color:#8a9ac0;
+  width:28px;height:28px;font-size:12px;color:#8a9ac0;
 }
-body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points{font-size:13px}
-body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-games{font-size:11px}
+/* Keep the score and the game count on exactly the same 16px / 600 scale so
+   "486 96" reads as one pair. Only the colours differ; column widths and
+   --rank-row stay untouched, so the panel height does not change. */
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-points,
+body.table-home-theme:not([data-screen="play"]) #leaderboard .ranking-games{
+  font-size:16px;font-weight:600;line-height:1;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+body.table-home-theme:not([data-screen="play"]) .ranking-columns{
+  grid-template-columns:1fr 60px 60px;column-gap:16px;padding:0 0 6px 14px;
+  font-size:12px;line-height:13px;
+}
 body.table-home-theme:not([data-screen="play"]) .ranking-footnote{margin-top:8px}
 body.table-home-theme:not([data-screen="play"]) .demo-tag{color:#6f7fa0}
+/* Podium polish: the top three rows read as a podium — a faint metal wash plus
+   a short left accent bar in gold / silver / bronze. The portrait itself gets
+   NO coloured square frame: all ten rows show the same plain rounded-square
+   avatar. Any other row lights softly on hover. :has() keeps the JS row
+   markup untouched. */
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:hover{background:#ffffff0a}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-1){background:linear-gradient(90deg,#f7cd5e26,transparent 68%)}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-2){background:linear-gradient(90deg,#c9d7e622,transparent 68%)}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-3){background:linear-gradient(90deg,#e4b08322,transparent 68%)}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-1)::before,
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-2)::before,
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-3)::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:3px;border-radius:3px}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-1)::before{background:#efbe45}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-2)::before{background:#b8c9d8}
+body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.rank-3)::before{background:#d49a63}
 
 /* Membership figures keep the lower-left block populated on a new deployment. */
 body.table-home-theme:not([data-screen="play"]) .member-facts{
@@ -262,7 +288,6 @@ body.table-home-theme:not([data-screen="play"]) .member-facts b{
   font-size:15.5px;color:#c6d2f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 body.table-home-theme:not([data-screen="play"]) .member-facts span{font-size:11px;color:#7e8eb0}
-body.table-home-theme:not([data-screen="play"]) .member-note a{margin-top:10px}
 
 @media(max-width:900px){
   body.table-home-theme:not([data-screen="play"]) #intro{grid-template-columns:1fr;row-gap:20px}
@@ -287,11 +312,12 @@ body.table-home-theme:not([data-screen="play"]) .member-note a{margin-top:10px}
 body.table-home-theme:not([data-screen="play"]) #intro{
   --intro-zoom:1.3;
   zoom:var(--intro-zoom);
-  /* The standings column grew from 280px to 360px so a name and its
-     VIP / YEAR VIP badge fit on one line. Grow the shell by the same 80px:
+  /* The standings column grew from 360px to 460px so the medal, portrait
+     and a name with its VIP / YEAR VIP badge no longer touch. Grow the shell by
+     160px (and its viewport share) so the left column keeps its old width:
      the left column keeps its old width, so the description and buttons do
      not wrap into a tall column and push the panel past the iframe. */
-  max-width:min(1000px,64vw);
+  max-width:min(1160px,74vw);
   grid-template-rows:auto minmax(0,1fr);
   align-items:stretch;
 }
@@ -344,14 +370,15 @@ body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:760px}
   body.table-home-theme:not([data-screen="play"]) #leaderboard{flex:none}
 }
 
-/* Medium desktops (1201-1450px): the shell is narrower, so take 40px back
-   from the standings and 35px from the cover column. 320px still fits a name
-   plus a 40px VIP badge on one line, while the description and the launch
-   buttons keep a usable width instead of being clipped. The extra #intro
+/* Medium desktops (1201-1450px): the shell is narrower, so take 70px back
+   from the standings and 35px from the cover column. 390px still fits the wider
+   medal / portrait track plus a name and its 40px VIP badge on one line, while
+   the description and the launch buttons keep a usable width instead of being
+   clipped. The extra #intro
    qualifier keeps this hero split ahead of the wider <=1500px rule below. */
 @media(min-width:1201px) and (max-width:1450px){
   body.table-home-theme:not([data-screen="play"]) #intro{
-    grid-template-columns:minmax(0,1fr) 320px;
+    grid-template-columns:minmax(0,1fr) 390px;
   }
   body.table-home-theme:not([data-screen="play"]) #intro .game-hero{
     grid-template-columns:minmax(0,165px) minmax(0,1fr);column-gap:16px;
@@ -398,57 +425,19 @@ body.table-home-theme:not([data-screen="play"]) .home-ranking{min-height:760px}
 }
 
 
-/* Join room: the old collapsed <details> row is now a real launch button that
-   opens one focused text field. A top-layer dialog keeps the field readable
-   inside the portal iframe and never changes the intro layout. */
-body.table-home-theme dialog#join-dialog{
-  width:340px;max-width:calc(100vw - 24px);
-  padding:20px 20px 18px;border-radius:12px;
-  border:1px solid #2c3a5e;background:#141b30;color:#e7eeff;
-  box-shadow:0 18px 50px #0009;
+/* Standings width. The intro's two-column layout gives this panel roughly
+   326px of usable width. An earlier pass pinned the header and the ten rows
+   to a fixed min(84%,340px) centred track, which left a visible empty gutter
+   on both sides of an otherwise wide panel. Fill the panel instead. The
+   520px cap matters only for the <=1200px single-column fallback, where a
+   full-width row would otherwise open a huge gap between name and score.
+   Column widths and column-gap are shared by .ranking-columns and each li,
+   so the header stays pixel-aligned with the numbers. No height value
+   (--rank-row, the ten-row minimum, panel min-height) changes here. */
+body.table-home-theme:not([data-screen="play"]) .ranking-columns,
+body.table-home-theme:not([data-screen="play"]) #leaderboard{
+  width:100%;max-width:520px;margin-left:auto;margin-right:auto;
 }
-body.table-home-theme dialog#join-dialog::backdrop{background:#050a18b8;backdrop-filter:blur(4px)}
-body.table-home-theme dialog#join-dialog .close{
-  position:absolute;top:12px;right:12px;
-  width:24px;height:24px;min-width:24px;min-height:24px;
-  padding:0;margin:0;border:0;border-radius:50%;background:transparent;
-  color:#9aa9cc;font-size:19px;line-height:1;box-shadow:none;
+body.table-home-theme:not([data-screen="play"]) .ranking-columns span:not(:first-child){
+  text-align:right;
 }
-body.table-home-theme dialog#join-dialog .close:hover{background:#26324f;color:#fff}
-body.table-home-theme dialog#join-dialog h2{
-  margin:0 0 6px;padding-right:28px;font-size:16px;font-weight:600;color:#e4ebff;
-}
-body.table-home-theme dialog#join-dialog>p{
-  margin:0 0 14px;font-size:11.5px;line-height:1.6;color:#8493b4;
-}
-body.table-home-theme dialog#join-dialog form{margin:0}
-body.table-home-theme dialog#join-dialog label{
-  display:block;margin:0 0 6px;font-size:11px;color:#9aa9cc;
-}
-body.table-home-theme dialog#join-dialog input{
-  width:100%;margin:0;padding:10px 11px;box-sizing:border-box;
-  font-size:13px;color:#e8edff;background:#0c1426;
-  border:1px solid #46518a;border-radius:8px;
-}
-body.table-home-theme dialog#join-dialog input:focus{
-  outline:none;border-color:#8d9dff;box-shadow:0 0 0 2px #6f8bff33;
-}
-body.table-home-theme dialog#join-dialog #join-error{
-  margin:8px 0 0;font-size:11px;line-height:1.5;color:#f0a8a8;
-}
-body.table-home-theme dialog#join-dialog #join-error:empty{display:none}
-body.table-home-theme dialog#join-dialog .join-dialog-actions{
-  display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:16px;
-}
-body.table-home-theme dialog#join-dialog .join-dialog-actions button{
-  width:100%;min-height:36px;margin:0;padding:8px 10px;font-size:12.5px;
-  border-radius:8px;border:1px solid #3d4f7d;background:#1c2a4b;
-  color:#dbe4ff;box-shadow:none;
-}
-body.table-home-theme dialog#join-dialog .join-dialog-actions button:hover{
-  background:#27375d;border-color:#6f8bff;
-}
-body.table-home-theme dialog#join-dialog .join-dialog-actions button.primary{
-  background:#4159c8;border-color:#6f8bff;color:#fff;font-weight:600;
-}
-body.table-home-theme dialog#join-dialog .join-dialog-actions button.primary:hover{background:#4d66d8}

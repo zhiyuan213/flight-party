@@ -1,0 +1,30 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>袋口外扩 2 单位 · 视觉验收</title>
+<style>body{background:#141a20;color:#e7eef5;font:14px/1.6 system-ui,sans-serif;margin:20px 26px}h1{font-size:19px;margin:0 0 6px}p{margin:0 0 14px;color:#9fb0c0}canvas{background:#0a0e12;border:1px solid #333c46;border-radius:8px}.key{display:inline-block;margin-right:18px}.sw{display:inline-block;width:22px;border-top:2px solid;vertical-align:middle;margin-right:6px}</style></head><body>
+<h1>袋口外扩 2 单位 · 视觉验收</h1>
+<p>真实台面缓存 <code>makeTable()</code> 的局部放大。<span class="key"><span class="sw" style="border-color:#ff5a52;border-top-style:dashed"></span>红虚线＝外扩前轮廓</span><span class="key"><span class="sw" style="border-color:#ffd44d"></span>黄实线＝当前（外扩 2）</span>物理落袋判定仍走红色轮廓。</p>
+<canvas id="cv" width="1260" height="590"></canvas>
+<script type="module">
+import {makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES} from './table/pool-table.js?v=20261112-gamelanes1';
+import {tracePocket,pocketVisualContext} from './table/pool-geometry.js?v=20261114-pocketdepth1';
+const S=2,table=document.createElement('canvas');table.width=TABLE_WIDTH*S;table.height=TABLE_HEIGHT*S;
+const tc=table.getContext('2d');tc.scale(S,S);makeTable(tc);
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+ctx.fillStyle='#0a0e12';ctx.fillRect(0,0,cv.width,cv.height);
+function view(label,idx,sx,sy,sw,sh,dx,dy,dw,dh){
+  const hole=TABLE_HOLES[idx],middle=hole[0]===500,scale=dw/sw;
+  ctx.save();ctx.beginPath();ctx.rect(dx,dy,dw,dh);ctx.clip();
+  ctx.drawImage(table,sx*S,sy*S,sw*S,sh*S,dx,dy,dw,dh);
+  ctx.setTransform(1,0,0,1,0,0);ctx.translate(dx-sx*scale,dy-sy*scale);ctx.scale(scale,scale);
+  ctx.translate(TABLE_PAD+hole[0],TABLE_PAD+hole[1]);
+  if(hole[1]===500)ctx.scale(1,-1);if(hole[0]===1000)ctx.scale(-1,1);
+  ctx.setLineDash([4,3]);ctx.lineWidth=1.1/scale*2;ctx.strokeStyle='#ff5a52';
+  tracePocket(pocketVisualContext(ctx,middle,0),middle);ctx.stroke();
+  ctx.setLineDash([]);ctx.lineWidth=1.3/scale*2;ctx.strokeStyle='#ffd44d';
+  tracePocket(pocketVisualContext(ctx,middle,2),middle);ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle='#dce7f0';ctx.font='600 13px system-ui';ctx.fillText(label,dx+10,dy+22);
+}
+view('上中袋（放大 3.7×）',1,502,0,140,150,20,20,518,555);
+view('左上角袋口（放大 3.3×）',0,0,0,170,170,558,20,560,555);
+document.body.dataset.ready='1';
+</script></body></html>

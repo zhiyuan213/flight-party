@@ -9,6 +9,16 @@ export function bindHangar(hero,session,t,getReduced,onSelect){
  function open(){openRevision++;choice=normalizePlaneStyle(identity?.appearance?.plane);dialog.innerHTML=`<button type="button" class="close" data-hangar-close aria-label="${t('Close','关闭')}">×</button><span class="sample-pill">${t('YOUR HANGAR','我的机库')}</span><h2>${t('Ready for your next flight','选一架，准备起飞')}</h2><div class="hangar-stage"></div><p class="hangar-hint">${t('2D aircraft · animated propeller','2D 飞机 · 螺旋桨动态展示')}</p><div class="hangar-choices">${designs.map(([id,en,zh])=>`<button type="button" class="secondary" data-plane="${id}" data-plane-tier="${planeSkin(id).tier||'classic'}">${t(en,zh)}${planeSkin(id).tier==='annual'?`<small>${t('Annual VIP','年VIP专属')}</small>`:''}</button>`).join('')}</div><p class="hangar-notice" role="status">${t('Your selected VIP aircraft appears on your homepage and in live games with exclusive glow and trail effects.','选择的会员飞机会显示在主页和实际对局中，并带有专属光效与尾迹。')}</p>`;dialog.showModal();showModel();}
  function bindHero(){hero.wrap.setAttribute('role','button');hero.wrap.setAttribute('tabindex','0');hero.wrap.setAttribute('aria-label',t('Open airplane hangar','查看飞机机库'));hero.wrap.onclick=open;hero.wrap.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};}
  bindHero();
+ /* The external points shop redeems these same style keys. Keep the homepage
+    hero in sync with that choice without granting membership: the server
+    identity handler below still takes precedence when it arrives. */
+ const shopPlaneStyle=()=>{try{const v=JSON.parse(localStorage.getItem('joyflock.shop.v1')||'{}');return normalizePlaneStyle(String((v&&v.equipped&&v.equipped.plane)||'').replace(/^plane-/,''));}catch(e){return 'classic';}};
+ const applyShopPlane=style=>{const next=normalizePlaneStyle(style);hero=onSelect(next);hero.wrap.dataset.planeStyle=next;bindHero();};
+ hero.wrap.dataset.planeStyle=shopPlaneStyle();
+ if(typeof window!=='undefined'&&window.addEventListener){
+  window.addEventListener('joyflock:plane-changed',e=>applyShopPlane(e&&e.detail));
+  window.addEventListener('storage',e=>{if(e.key==='joyflock.shop.v1')applyShopPlane(shopPlaneStyle());});
+ }
  const onIdentity=event=>{identity=event.detail;const style=canUsePlaneStyle(identity?.appearance?.plane,identity?.appearance)?normalizePlaneStyle(identity?.appearance?.plane):'classic';if(hero.wrap.dataset.planeStyle!==style){hero=onSelect(style);hero.wrap.dataset.planeStyle=style;bindHero();}updateControls();};session.addEventListener('identity',onIdentity);session.addEventListener('profile-updated',onIdentity);
  dialog.addEventListener('click',async e=>{
   if(e.target.closest('[data-hangar-close]')){dialog.close();return;}

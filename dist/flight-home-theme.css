@@ -50,8 +50,17 @@ body:has(#welcome:not(.hidden), #lobby:not(.hidden)) :is(#mode-label,nav .icon-b
 }
 #welcome .leaderboard-row {background:#1b2842;border-color:#2c3a57;color:#c3cfea}
 #welcome .leaderboard-row:nth-child(even) {background:#172239}
-#welcome .leaderboard-row.podium {background:linear-gradient(100deg,#263554,#1b2944);border-color:#405377}
-#welcome .leaderboard-row.podium-0 {background:linear-gradient(110deg,#3c352a,#1e2b45 70%);border-color:#5e553e}
+#welcome .leaderboard-row.podium {position:relative;background:linear-gradient(100deg,#263554,#1b2944);border-color:#405377}
+#welcome .leaderboard-row.podium-0 {background:linear-gradient(100deg,#f7cd5e24,#1b2944 72%);border-color:#5e553e}
+#welcome .leaderboard-row.podium-1 {background:linear-gradient(100deg,#c9d7e61f,#1b2944 72%);border-color:#405377}
+#welcome .leaderboard-row.podium-2 {background:linear-gradient(100deg,#e4b08320,#1b2944 72%);border-color:#5b4433}
+#welcome .leaderboard-row.podium::before {content:"";position:absolute;left:0;top:22%;bottom:22%;width:3px;border-radius:3px}
+#welcome .leaderboard-row.podium-0::before {background:#efbe45}
+#welcome .leaderboard-row.podium-1::before {background:#b8c9d8}
+#welcome .leaderboard-row.podium-2::before {background:#d49a63}
+#welcome .leaderboard-row.podium-0 .leaderboard-avatar {border-color:#efbe45}
+#welcome .leaderboard-row.podium-1 .leaderboard-avatar {border-color:#b8c9d8}
+#welcome .leaderboard-row.podium-2 .leaderboard-avatar {border-color:#d49a63}
 #welcome .leaderboard-row strong {color:#9bacce}
 #welcome .leaderboard-row strong.ranking-value-active {color:#c2ccff}
 #welcome .leaderboard-row:not(.podium) .leaderboard-rank {color:#a4b3d1}

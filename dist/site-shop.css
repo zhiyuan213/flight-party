@@ -1,0 +1,339 @@
+/* JoyFlock points shop (/shop.html) — dark sectioned grid, six cards per row.
+   EVERY section (aircraft, trails, cursors, avatars) shares this one grid and
+   the same card box, so a plane card and a pointer card have identical width
+   and height; more than six cards simply wrap onto the next row.
+   Layout mirrors the supplied reference: rarity tag, large artwork, name and
+   a single star price. Only the site chrome and site-points.css are shared
+   with the rest of the site. */
+
+.shop-page{
+  /* legal.css makes every <main> a flex column; auto margins on the sections
+     would then shrink them to their content width. Restore normal block flow
+     so every six-card row is exactly the same width. */
+  /* One shared size for the grade label and the "Owned / 已拥有" pill.
+     One shared green for every owned marker. */
+  --shop-label-size:12px;
+  --shop-owned:#2f9e6d;
+  display:block;width:100%;
+  flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding:26px var(--chrome-pad,4vw) 34px;
+  color:var(--jp-ink);
+  font-family:Nunito,Inter,"Microsoft YaHei",system-ui,sans-serif;
+}
+.shop-page *{box-sizing:border-box}
+
+/* Three grades, three colours. The grade label, the resting outline, the
+   outer glow and the top gradient all derive from the SAME grade colour, so
+   they always agree. `--shop-rarity-line` stays the quieter tone used by the
+   redeem dialog; `--shop-rarity-edge` is the brighter tone used ONLY by the
+   card outline (the reference has a visibly lit rim, not a dim hairline). */
+[data-rarity="rare"]{--shop-rarity:#63b3ff;--shop-rarity-dim:#63b3ff1f;--shop-rarity-line:#63b3ff66;--shop-rarity-edge:#7cc7ff;--shop-rarity-glow:#63b3ff55;--shop-rarity-top:#63b3ff33}
+[data-rarity="epic"]{--shop-rarity:#c49bff;--shop-rarity-dim:#c49bff1f;--shop-rarity-line:#c49bff66;--shop-rarity-edge:#d5b2ff;--shop-rarity-glow:#c49bff55;--shop-rarity-top:#c49bff33}
+[data-rarity="legend"]{--shop-rarity:#ffc861;--shop-rarity-dim:#ffc8611f;--shop-rarity-line:#ffc86166;--shop-rarity-edge:#ffd68a;--shop-rarity-glow:#ffc86155;--shop-rarity-top:#ffc86133}
+/* The free baseline is deliberately quiet: a neutral rim, no coloured aura.
+   It is not a fourth rarity — it is never sold and carries no membership. */
+[data-rarity="default"]{--shop-rarity:#9fb0cf;--shop-rarity-dim:#9fb0cf1f;--shop-rarity-line:#9fb0cf66;--shop-rarity-edge:#9fb0cf;--shop-rarity-glow:#9fb0cf33;--shop-rarity-top:#9fb0cf1a}
+
+/* ------------------------------------------------------------------ hero */
+.shop-hero{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  max-width:1480px;margin:0 auto 18px;
+}
+.shop-hero h1{margin:0 0 6px;font-size:26px;font-weight:900;letter-spacing:-.5px}
+.shop-hero p{margin:0;color:var(--jp-muted);font-size:12px;line-height:1.6;max-width:720px}
+.shop-wallet{
+  display:flex;align-items:center;gap:9px;flex:none;
+  padding:9px 14px;border:1px solid #a8b8ff45;border-radius:12px;
+  background:linear-gradient(180deg,#1d2850,#141d3c);
+  font-size:12px;font-weight:800;
+}
+.shop-wallet-label{color:var(--jp-muted);font-size:11px}
+.shop-wallet-value{display:inline-flex;align-items:center;gap:6px;font-size:17px;font-weight:900;font-variant-numeric:tabular-nums}
+.shop-wallet-value .jp-mark{width:18px;height:18px}
+.shop-wallet-vip{
+  padding:2px 6px;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.6px;
+  background:#ffd47926;color:#ffe3a8;
+}
+.shop-wallet-annual{background:#c98d7933;color:#ffc9b5}
+
+/* ------------------------------------------------------- current loadout */
+/* All 16 equipped slots live here as compact chips. flex-wrap keeps the strip
+   usable on narrow screens; each chip carries a category label because the
+   free baselines share the same "默认 / Default" wording across sections. */
+.shop-current{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  max-width:1480px;margin:0 auto 22px;padding:10px 12px;
+  border:1px solid var(--jp-line);border-radius:12px;background:#ffffff08;
+  font-size:12px;color:var(--jp-muted);
+}
+.shop-current-title{
+  flex:none;margin-right:2px;padding-right:10px;border-right:1px solid #ffffff1f;
+  font-size:11px;font-weight:900;letter-spacing:.4px;color:#9fb0d8;
+}
+.shop-current-item{
+  display:inline-flex;align-items:center;gap:6px;flex:none;white-space:nowrap;
+  padding:4px 9px 4px 5px;border:1px solid #ffffff16;border-radius:9px;
+  background:#ffffff09;color:#dbe4ff;font-weight:800;
+}
+.shop-current-slot{font-size:10px;font-weight:600;color:var(--jp-muted)}
+.shop-current-name{font-size:11px;color:#e6edff}
+.shop-current-svg{width:24px;height:24px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px #0007)}
+.shop-current-cursor{width:24px;height:24px;filter:drop-shadow(0 2px 4px #0007)}
+.shop-current-avatar{display:inline-block;width:24px;height:24px;flex:none}
+.shop-current-empty{display:inline-grid;place-items:center;width:24px;height:24px;border:1px dashed #ffffff30;border-radius:7px;color:#7c8bb0}
+
+/* -------------------------------------------------------------- sections */
+.shop-section{max-width:1480px;margin:0 auto 24px}
+.shop-section-head{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+.shop-section-head h2{margin:0;font-size:15px;font-weight:900;letter-spacing:.3px;color:#dfe8ff}
+.shop-section-head h2 small{margin-left:8px;font-size:11px;font-weight:600;color:var(--jp-muted)}
+
+/* One shared six-up grid. Section modifier classes are only hooks — they
+   never change the column count, so all four sections line up exactly. */
+.shop-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+/* Connect Four owns BOTH roles, so its section is split into two labelled
+   lanes: all 棋子 cards in one, all 棋盘 cards in the other. The lane is a
+   header + the SAME six-column grid — no extra column rule, no card resize,
+   so every card still matches the other ten sections exactly. */
+.shop-lane{--shop-lane-accent:#6f8dff;margin:0 0 14px}
+.shop-lane[data-lane="piece"]{--shop-lane-accent:#63b3ff}
+.shop-lane[data-lane="pink"]{--shop-lane-accent:#ff8fb5}
+.shop-lane[data-lane="board"]{--shop-lane-accent:#ffc861}
+.shop-lane:last-child{margin-bottom:0}
+.shop-lane-head{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;
+  padding-left:10px;border-left:2px solid var(--shop-lane-accent)}
+.shop-lane-head h3{margin:0;font-size:12px;font-weight:900;letter-spacing:.4px;color:#e6edff}
+.shop-lane-head small{font-size:11px;font-weight:600;color:var(--jp-muted)}
+/* ONE lit grade-coloured rim with a soft halo, and a small grade-coloured
+   gradient confined to the header strip behind the rarity label (~46px).
+   The card BODY is now the SAME blue gradient as the hangar banner above
+   (site-plane.css .shop-hangar): linear-gradient(150deg,#1a2750,#0e1734 72%).
+   The two header layers stay bounded in absolute pixels so the grade tint
+   must NOT wash down over the artwork, name or owned pill. Hovering fades in
+   a warm yellow frame inset from the edge at 50% opacity while the OUTER rim
+   stays completely still: no colour change, no lift, no halo swap. The grade
+   label has no bar or divider rule. */
+.shop-card{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-width:0;padding:30px 6px 10px;border:1px solid var(--shop-rarity-edge);border-radius:16px;
+  background:
+    linear-gradient(180deg,var(--shop-rarity-top) 0,transparent 46px),
+    radial-gradient(ellipse 78% 46px at 50% 0%,#ffffff0a,transparent 100%),
+    linear-gradient(150deg,#1a2750,#0e1734 72%);
+  color:var(--jp-ink);font:inherit;cursor:pointer;overflow:hidden;
+  /* A lit rim: the border stays ONE 1px stroke, and the reference's soft
+     halo is painted as blurred box-shadow ONLY (never a second sharp ring,
+     which would read as the "extra line" the user already rejected). */
+  box-shadow:
+    0 -2px 18px -4px var(--shop-rarity-glow),
+    0 0 12px -1px var(--shop-rarity-glow),
+    0 6px 18px #0006,
+    inset 0 1px 0 #ffffff0d;
+  transition:transform .16s,box-shadow .16s;
+}
+/* Hover changes ONLY the inner frame. The card's own 1px grade rim, the blue
+   halo, the top inset highlight and the stronger equipped glow are all left
+   exactly as they are: no border-colour swap, no translateY lift, no
+   box-shadow override. The OUTER border must not move or change on hover.
+   The 50% opacity is applied to the whole ::after layer, so the 2px gold
+   stroke and its soft glow fade together and no second brighter line appears.
+   The green inset band (an earlier "extra stroke") stays gone. */
+.shop-card::after{
+  content:"";position:absolute;inset:3px;z-index:0;pointer-events:none;
+  border:2px solid #ffd84d;border-radius:13px;
+  box-shadow:0 0 12px #ffd84d55;
+  opacity:0;transition:opacity .18s;
+}
+.shop-card:hover::after,.shop-card:focus-visible::after{opacity:.5}
+/* Keyboard focus keeps its accessible outline; the rim itself never moves. */
+.shop-card:focus-visible{outline:2px solid var(--shop-rarity);outline-offset:2px}
+/* Equipped cards glow a little stronger instead of adding a sharp 1px ring —
+   a ring plus the lit border would read as two parallel lines again. */
+.shop-card[data-equipped="1"]{
+  box-shadow:
+    0 -2px 20px -4px var(--shop-rarity-glow),
+    0 0 16px 0 var(--shop-rarity-glow),
+    0 6px 18px #0006,
+    inset 0 0 24px -12px var(--shop-rarity-glow)}
+.shop-rarity{
+  position:absolute;top:0;left:0;right:0;z-index:1;
+  padding:5px 0 4px;
+  color:var(--shop-rarity);text-align:center;text-shadow:0 0 8px var(--shop-rarity-glow);
+  font-size:var(--shop-label-size);font-weight:900;letter-spacing:1.2px;
+}
+.shop-rarity--dialog{
+  position:static;display:inline-block;margin-left:8px;padding:2px 8px;
+  border:1px solid var(--shop-rarity-line);border-radius:999px;
+  background:var(--shop-rarity-dim);vertical-align:middle;
+  font-size:9px;letter-spacing:.5px;
+}
+.shop-hangar-current .shop-rarity{
+  position:static;width:auto;padding:2px 8px;
+  border:1px solid var(--shop-rarity-line);border-radius:999px;
+  background:var(--shop-rarity-dim);
+}
+/* Restored top-right ribbon. It is the SAME green diagonal mark that was
+   removed earlier, but it now says 装配中 / Equipped and appears ONLY on the
+   one card currently in use — so it never repeats the bottom 已拥有 pill.
+   `:empty` hides it on every other card. */
+.shop-state{
+  position:absolute;top:6px;right:-30px;z-index:2;width:96px;padding:3px 0;
+  transform:rotate(38deg);background:var(--shop-owned);color:#fff;
+  font-size:var(--shop-label-size);font-weight:900;letter-spacing:.6px;text-align:center;
+  text-shadow:0 1px 2px #0006;box-shadow:0 2px 8px #0008;pointer-events:none;
+}
+.shop-state:empty{display:none}
+/* 98px is also the height of the aircraft / trail canvas stages, so every
+   card in the six-up grid has the same box regardless of its artwork type. */
+.shop-art{
+  width:76%;max-width:86px;height:98px;object-fit:contain;flex:none;
+  filter:drop-shadow(0 6px 9px #0009);pointer-events:none;
+}
+/* Original illustrated portraits retain the same 98px artwork slot as every
+   other card. Rounded corners frame the square artwork without cropping it. */
+.shop-section[data-kind="avatar"] .shop-art{
+  width:86px;max-width:76%;height:86px;margin:6px 0;object-fit:cover;
+  border-radius:19px;border:1px solid #ffffff3b;
+}
+.shop-name{
+  width:100%;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;
+  font-size:12.5px;font-weight:900;letter-spacing:.2px;color:#f4f8ff;
+  text-shadow:0 2px 8px #0008;
+}
+.shop-price{
+  display:inline-flex;align-items:center;gap:3px;min-height:19px;
+  font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;color:#ffd479;
+}
+.shop-price .jp-mark{width:14px;height:14px}
+.shop-price-free{color:#ffe3a8;font-size:10px}
+/* Owned states sit in ONE filled green pill at the bottom of the card —
+   the only place the word "已拥有" appears on a card. */
+.shop-price-owned{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;
+  background:var(--shop-owned);border:1px solid #7fe0b688;color:#fff;
+  font-size:var(--shop-label-size);font-weight:900;letter-spacing:.6px;
+  box-shadow:0 3px 10px #2f9e6d55;
+}
+.shop-price-owned::before{content:'✦';font-size:.85em;color:#ffd479}
+
+/* --------------------------------------------------------- redeem dialog */
+.shop-buy{
+  width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow-y:auto;
+  padding:20px 22px 22px;border:1px solid var(--shop-rarity-line);border-radius:16px;
+  background:linear-gradient(165deg,#182246,#0d142e 72%);color:var(--jp-ink);
+  box-shadow:0 30px 90px #040817dd,inset 0 0 0 1px var(--shop-rarity-dim);
+  font-family:Nunito,Inter,system-ui,sans-serif;
+}
+.shop-buy::backdrop{background:#050917c7;backdrop-filter:blur(5px)}
+.shop-buy[open]{animation:shop-in .2s ease-out}
+@keyframes shop-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.shop-buy-close{
+  position:absolute;top:12px;right:12px;width:28px;height:28px;border:0;border-radius:8px;
+  background:#ffffff12;color:#eaf0ff;font-size:18px;line-height:1;cursor:pointer;
+}
+.shop-buy-close:hover{background:#ffffff26}
+.shop-buy h2{margin:0 0 16px;text-align:center;font-size:17px;font-weight:900}
+.shop-buy-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px}
+/* The art column is a plain product card. It no longer carries a gold rule
+   box pinned to its bottom edge (that box read as a second button), so the
+   illustration / name / description are centred as one group in the space
+   the payment column reserves. */
+.shop-buy-art{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:16px 12px;
+  border:1px solid var(--jp-line);border-radius:12px;background:#080f27a8;text-align:center;
+}
+.shop-buy-art img{width:112px;height:112px;object-fit:contain;filter:drop-shadow(0 8px 14px #0009)}
+.shop-buy[data-kind="avatar"] .shop-buy-art img{border-radius:24px;border:1px solid #ffffff3b}
+.shop-buy-art h3{margin:2px 0 0;font-size:15px;font-weight:900}
+.shop-buy-art p{margin:0;font-size:11px;line-height:1.6;color:var(--jp-muted)}
+.shop-buy-pay{display:flex;flex-direction:column;gap:10px;min-width:0}
+.shop-buy-caption{font-size:11px;font-weight:800;color:var(--jp-muted)}
+.shop-pay-option{
+  display:flex;flex-direction:column;gap:4px;padding:11px 13px;
+  border:1px solid #6f8dff;border-radius:11px;background:#1b2855;
+  font-size:11px;font-weight:800;color:#c8d3ff;
+}
+.shop-pay-option b{display:flex;align-items:center;gap:5px;font-size:20px;color:#fff;font-variant-numeric:tabular-nums}
+.shop-pay-option b .jp-mark{width:20px;height:20px}
+.shop-pay-option small{font-size:10px;font-weight:700;color:var(--jp-muted)}
+.shop-pay-option.is-vip{border-color:#ffd479;background:#3a2e18}
+.shop-pay-option.is-vip b{color:#ffe3a8}
+.shop-buy-submit{
+  width:100%;padding:11px 12px;border:0;border-radius:10px;
+  background:linear-gradient(180deg,#e9edff,#b9c8f2);color:#17224a;
+  font:900 13px Nunito,system-ui,sans-serif;cursor:pointer;
+}
+.shop-buy-submit:hover:not([disabled]){filter:brightness(1.06)}
+.shop-buy-submit[disabled]{background:#6b7391;color:#d4d9e8;cursor:default}
+.shop-buy-short{text-align:center;color:#ffd479;font-size:11px;font-weight:900}
+/* ONE quiet rule line, directly under the price and in the same muted tone as
+   the "Payment method" caption. It used to be a loud gold paragraph wedged
+   between the CTA and Cancel while an almost identical gold box sat in the
+   other column; both copies are gone. Small left-aligned text stays on one
+   line on desktop and wraps politely on narrow screens. */
+.shop-buy-vip-note{
+  margin:0;text-align:left;color:var(--jp-muted);
+  font-size:10.5px;font-weight:600;line-height:1.6;
+  /* Chinese copy otherwise leaves a two-character orphan on line two. */
+  text-wrap:balance;
+}
+/* Information above, actions together at the bottom. The auto margin keeps
+   the CTA, the short-funds hint and Cancel as one group even when the art
+   column is taller; no divider rule is added, whitespace does the grouping. */
+.shop-buy-actions{
+  margin-top:auto;display:flex;flex-direction:column;align-items:stretch;
+  gap:8px;padding-top:6px;
+}
+.shop-buy-cancel{
+  align-self:center;padding:2px 8px;border:0;background:none;color:var(--jp-muted);
+  font:700 11px Nunito,system-ui,sans-serif;cursor:pointer;
+}
+.shop-buy-cancel:hover{color:#fff}
+.shop-note{
+  max-width:1480px;margin:6px auto 0;font-size:11px;line-height:1.7;color:#7787ab;
+}
+
+/* Narrow screens keep fewer columns, but the same rule applies to every
+   section: plane.css / site-trail.css must not override the shared grid. */
+@media(max-width:1240px){.shop-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){
+  .shop-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .shop-hero h1{font-size:22px}
+}
+@media(max-width:520px){
+  .shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shop-art{height:84px}
+  .shop-buy-body{grid-template-columns:1fr}
+  .shop-buy-art img{width:72px;height:72px}
+  /* Stacked columns have no spare height to distribute, so the action group
+     sits immediately after the note instead of pushing to a far bottom. */
+  .shop-buy-actions{margin-top:0;padding-top:4px}
+  .shop-current{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .shop-buy[open]{animation:none}
+  .shop-card,.shop-card::after{transition:none}
+}
+
+/* A personal item is one complete object, never a pair of players. */
+.shop-personal-art{display:grid;place-items:center;width:112px;max-width:80%;height:98px;flex:none;pointer-events:none}
+.shop-personal-art img{width:98px;height:98px;object-fit:contain;filter:drop-shadow(0 4px 5px #0005)}
+.shop-buy-art .shop-personal-art{width:160px;max-width:100%;height:160px}
+.shop-buy-art .shop-personal-art img{width:160px;height:160px}
+.shop-section[data-kind="avatar"] .shop-art,.shop-buy[data-kind="avatar"] .shop-buy-art img{border:0;border-radius:0;object-fit:contain}
+
+/* ------------------------------------------------------- notice placement */
+/* The wallet's short notice ("成功替换头像", "还差 1,000 Joy Coin" …) is
+   appended directly to <body> and used to sit at the very BOTTOM of the
+   viewport, where it was completely missed among the cards. On the SHOP page
+   only, lift it into the open upper area marked by the user's arrow (26% of
+   the viewport height). Scoped with :has(.shop-page) so the other pages keep
+   the shared bottom-centred notice from site-points.css.
+   site-shop.css loads AFTER site-points.css and the scoped selector is more
+   specific, so this always wins — including over .jp-toast[data-show="1"]. */
+body:has(.shop-page) .jp-toast{
+  top:26%;bottom:auto;
+  transform:translateX(-50%) translateY(-10px);
+}
+body:has(.shop-page) .jp-toast[data-show="1"]{transform:translateX(-50%)}

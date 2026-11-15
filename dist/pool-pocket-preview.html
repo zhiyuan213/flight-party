@@ -2,7 +2,7 @@
 <style>body{margin:24px;background:#0b1119;color:#e3edf5;font:16px system-ui}h1{font-size:22px}p{color:#adbdcc}.row{display:grid;grid-template-columns:repeat(6,190px);gap:14px;margin-bottom:22px}canvas{width:190px;height:190px;background:#0b1119}figure{margin:0}figcaption{margin-bottom:6px;font-size:14px}button{padding:8px 16px;background:#243d56;color:white;border:1px solid #62778b;border-radius:6px}</style>
 <h1>袋口入球逐帧验收</h1><p>正式球桌与入袋渲染器的固定时间截帧。逐格检查球体遮挡、连续布面及斜角阴影。</p><button id="play">播放袋内动作</button><main></main>
 <script type="module">
-import{makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES}from './table/pool-table.js';
+import{makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES}from './table/pool-table.js?v=20261112-gamelanes1';
 import{drawReturnChannel,pocketMotion}from './table/pool-return.js';
 import{poolStart,poolMove}from './table/pool.js';
 const table=document.createElement('canvas');table.width=TABLE_WIDTH*2;table.height=TABLE_HEIGHT*2;const t=table.getContext('2d');t.scale(2,2);makeTable(t);
@@ -17,4 +17,4 @@ const row=document.createElement('div');row.className='row';document.querySelect
 for(const age of times){const f=document.createElement('figure'),cap=document.createElement('figcaption'),canvas=document.createElement('canvas');cap.textContent=age+' ms';canvas.width=440;canvas.height=440;f.append(cap,canvas);row.append(f);views.push({item,age,canvas});}}
 function paint(v,age){const [x,y]=TABLE_HOLES[v.item.holeIndex],c=v.canvas.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,440,440);c.scale(440/150,440/150);c.translate(-(TABLE_PAD+x-65),-(TABLE_PAD+y-65));c.drawImage(table,0,0,TABLE_WIDTH,TABLE_HEIGHT);drawReturnChannel(c,[v.item],age,'pockets');}
 views.forEach(v=>paint(v,v.age));let run=0;document.querySelector('#play').onclick=()=>{const token=++run,start=performance.now();function tick(now){if(token!==run)return;const age=(now-start)%900;views.forEach(v=>paint(v,age));if(now-start<3600)requestAnimationFrame(tick);else views.forEach(v=>paint(v,v.age));}requestAnimationFrame(tick);};
-</script><script defer src="/site-context-menu.js?v=20261109-noselect1"></script><script defer src="/site-floating-dots.js?v=20261109-motes2"></script><script defer src="/site-shooting-star.js?v=20261109-fxgame1"></script></html>
+</script><script defer src="/site-context-menu.js?v=20261110-glove2"></script><script defer src="/site-floating-dots.js?v=20261110-glove2&d=20261115-staticnebula1"></script><script defer src="/site-shooting-star.js?v=20261110-brandonly1"></script></html>

@@ -27,14 +27,15 @@ test('hard-rubber pocket guard is a short solid impact, distinct from cloth-cove
   assert.deepEqual(samples[1],impactSamples('pocket',.5,0,rate,seeded()),'legacy pocket voice must not retain the old noise burst');
 });
 
-test('wooden pocket landing has a low hollow body and finite quiet reflections, without hiss',()=>{
+test('wooden pocket landing has a low solid body and a faint, quickly finished reflection',()=>{
   const samples=[.15,.5,1].map(level=>impactSamples('wood-drop',level,0,rate,seeded()));
   for(const a of samples){
-    assert.equal(a.length,rate*.18);assert.equal(a[0],0);assert.equal(a.at(-1),0);
+    assert.equal(a.length,rate*.135);assert.equal(a[0],0);assert.equal(a.at(-1),0);
     assert.ok(a.every(v=>Number.isFinite(v)&&Math.abs(v)<1));
     assert.ok(bandEnergy(a,1500,6000)<bandEnergy(a,50,750)*.001,'wooden landing must not have a sandy upper noise bed');
-    assert.ok(rms(a.slice(rate*.06,rate*.1))>rms(a)*.05,'short wooden cavity reflection should survive the initial impact');
-    assert.ok(rms(a.slice(rate*.15))<rms(a)*.001,'finite reflections must end instead of ringing');
+    assert.ok(rms(a.slice(rate*.025,rate*.05))>rms(a)*.05,'a near-field wooden reflection is still audible');
+    assert.ok(rms(a.slice(rate*.09,rate*.12))<rms(a)*.02,'the well no longer rings out for 180 ms');
+    assert.ok(rms(a.slice(rate*.12))<rms(a)*.005,'finite reflections must end instead of ringing');
   }
   assert.ok(rms(samples[1])>rms(samples[0])*1.7&&rms(samples[2])>rms(samples[1])*1.4);
   assert.notDeepEqual(samples[1],impactSamples('wood-drop',.5,0,rate,seeded(954)));
@@ -44,34 +45,41 @@ test('wooden pocket landing has a low hollow body and finite quiet reflections, 
 
 test('pocket audio follows actual wall contacts, then wooden landing, without compulsory side impacts',()=>{
   const direct=pocketSoundStages({contacts:[],dropAt:420},.5);
-  assert.deepEqual(direct,[[420,'drop','wood-drop',.16]],'clean entry must not invent guard contacts');
+  assert.deepEqual(direct,[[420,'drop','wood-drop',.13]],'clean entry must not invent guard contacts');
   const hit=pocketSoundStages({contacts:[{time:82,strength:.7},{time:198,strength:.3}],dropAt:488},.8);
-  assert.deepEqual(hit.slice(0,3),[[82,'guard0','rubber',.7],[198,'guard1','rubber',.3],[488,'drop','wood-drop',.256]]);
+  assert.deepEqual(hit.slice(0,3),[[82,'guard0','wood-knock',.7,.8],[198,'guard1','wood-knock',.3,1],[488,'drop','wood-drop',.8*.26]]);
   const quiet=pocketSoundStages({contacts:[{time:82,strength:.1}],dropAt:488},.15);
   assert.ok(quiet[0][3]<hit[0][3]&&quiet[1][3]<hit[2][3],'both contact and landing follow incoming strength');
 });
 
-test('real pocket motion produces one voice per resolved contact and a separate wooden drop',()=>{
+test('real pocket motion produces one wooden knock per resolved contact and a separate wooden drop',()=>{
   for(const [vx,vy] of [[0,0],[0,-8],[8,-24],[-8,-24]]){
     const item={id:1,holeIndex:1,x:TABLE_PAD+500,y:TABLE_PAD-11,vx,vy,strength:Math.min(1,Math.hypot(vx,vy)/40)};
-    const motion=pocketMotion(item),stages=pocketSoundStages(motion,item.strength);
-    assert.equal(stages.filter(s=>s[2]==='rubber').length,motion.contacts.length);
+    const motion=pocketMotion(item),stages=pocketSoundStages(motion,item.strength),knocks=stages.filter(s=>s[2]==='wood-knock');
+    assert.equal(knocks.length,motion.contacts.length);
     assert.equal(stages.filter(s=>s[2]==='wood-drop').length,1);
     assert.equal(stages.find(s=>s[2]==='wood-drop')[0],motion.dropAt);
-    assert.ok(stages.filter(s=>s[2]==='rubber').every((s,i)=>s[0]===motion.contacts[i].time&&s[3]===motion.contacts[i].strength));
-    if(!vx&&!vy)assert.equal(stages.length,1,'stationary falling ball must not generate imaginary rubber hits');
+    assert.ok(knocks.every((s,i)=>s[0]===motion.contacts[i].time&&s[3]===motion.contacts[i].strength));
+    assert.ok(knocks.every(s=>s[4]>=.35&&s[4]<=1),'cavity echo stays in a controlled range');
+    if(knocks.length)assert.equal(knocks.at(-1)[4],1,'only the final hit rings out in the well');
+    if(!vx&&!vy)assert.equal(stages.length,1,'stationary falling ball must not generate imaginary hits');
   }
 });
 
-test('only strong entries add one wooden rebound group after landing, with a smooth threshold',()=>{
+test('no self-generated rebound group: audio stages stay in sync with the visual volley',()=>{
   const motion={contacts:[],dropAt:300};
-  for(const strength of [0,.15,.5])assert.ok(!pocketSoundStages(motion,strength).some(s=>s[2]==='wood-rattle'));
-  const levels=[.5001,.6,.75,1].map(strength=>pocketSoundStages(motion,strength).filter(s=>s[2]==='wood-rattle'));
-  assert.ok(levels.every(stages=>stages.length===1&&stages[0][0]===332&&stages[0][1]==='rattle'));
-  assert.ok(levels[0][0][3]<.000001,'crossing the strength threshold must not suddenly become loud');
-  assert.ok(levels.every((s,i)=>!i||s[0][3]>levels[i-1][0][3]));
-  assert.equal(levels.at(-1)[0][3],1);
-  assert.ok(pocketSoundStages(motion,1).every(s=>s[2]!=='rubber'),'deep wooden rebounds must not invent gray-guard contacts');
+  for(const strength of [0,.15,.5,1]){
+    const stages=pocketSoundStages(motion,strength);
+    assert.ok(!stages.some(s=>s[2]==='wood-rattle'),'no invented knock group');
+    assert.equal(stages.length,1,'a clean entry only lands');
+  }
+  const volley={contacts:[{time:60,strength:.9},{time:104,strength:.8},{time:140,strength:.7},{time:228,strength:.6}],dropAt:228};
+  const stages=pocketSoundStages(volley,1),knocks=stages.filter(s=>s[2]==='wood-knock');
+  assert.equal(knocks.length,volley.contacts.length,'one voice per visual wall contact');
+  assert.deepEqual(knocks.map(s=>s[0]),volley.contacts.map(c=>c.time),'exact contact timestamps');
+  assert.equal(knocks.at(-1)[4],1,'only the final knock gets the full cavity echo');
+  assert.ok(knocks.slice(0,-1).every(s=>s[4]<1),'a dense volley keeps its echoes short');
+  assert.ok(!stages.some(s=>s[2]==='rubber'),'the old muffled rubber guard voice is no longer scheduled');
 });
 
 test('wooden rebound group has 3–5 distinct knocks that spread out and decay without a friction hiss',()=>{
@@ -103,17 +111,20 @@ test('wooden rebound group has 3–5 distinct knocks that spread out and decay w
 });
 
 test('new material voices retain audio unlock, mute, hidden-tab and source cleanup protections',async()=>{
-  const originalAudio=globalThis.AudioContext,originalDocument=globalThis.document,sources=[];
+  const originalAudio=globalThis.AudioContext,originalDocument=globalThis.document,sources=[],lengths=[];
   const audio=await import('../dist/table/pool-audio.js?material-gates-test');
   globalThis.AudioContext=class{
     state='running';currentTime=4;sampleRate=48000;destination={};
-    createBuffer(_,n){return{getChannelData:()=>new Float32Array(n)};}
+    createBuffer(_,n){lengths.push(n);return{getChannelData:()=>new Float32Array(n)};}
     createBufferSource(){const source={connect(){},disconnect(){this.disconnected=true;},start(t){this.started=t;},stop(t){this.ends??=[];this.ends.push(t);}};sources.push(source);return source;}
   };
   try{
     audio.setPoolMuted(false);assert.equal(audio.poolImpact('wood-drop',.5),false);audio.unlockPoolAudio();
-    for(const kind of ['rubber','wood-drop','wood-rattle'])assert.equal(audio.poolImpact(kind,.5),true);
-    assert.equal(sources.length,3);assert.ok(sources.every(s=>s.started>=4&&s.ends[0]<4.4));
+    for(const kind of ['rubber','wood-drop','wood-rattle','wood-knock'])assert.equal(audio.poolImpact(kind,.5),true);
+    assert.equal(sources.length,4);assert.ok(sources.every(s=>s.started>=4&&s.ends[0]<4.4));
+    const fullEcho=lengths.at(-1);
+    assert.equal(audio.poolImpact('wood-knock',.5,0,1,0,-1,.35),true);
+    assert.ok(lengths.at(-1)<fullEcho,'a shorter echo really shortens the rendered cavity tail');
     audio.setPoolMuted(true);assert.equal(audio.poolImpact('wood-drop',.5),false);
     for(const source of sources){assert.equal(source.ends.length,2);source.onended();assert.equal(source.disconnected,true);}
     audio.setPoolMuted(false);globalThis.document={hidden:true};assert.equal(audio.poolImpact('rubber',.5),false);

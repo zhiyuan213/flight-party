@@ -1,7 +1,15 @@
-import {drawPoolBall} from './pool-ball.js';
-import {poolTargets,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261106-penalty';
-import {playPocketChime} from './pool-pocket-sfx.js?v=20261109-pocketscore2';
+import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
+import {poolTargets,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261110-glove2';
+import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2';
+import {createResultPointsTicker} from './result-points.js?v=20261115-joincoin1';
 // Pool-only presentation. Existing account, turn and reaction nodes keep their handlers.
+/* One ticker per document: it listens for the scorer's award event from module
+   evaluation time, so a result that settles before createResult() still has its
+   reward payload when the dialog finally opens. Node-side unit tests import
+   poolSeatSummary() from this module without a DOM, so keep the top level safe. */
+const pointsTicker = typeof document !== 'undefined' && document?.createElement
+  ? createResultPointsTicker(document)
+  : {panel: null, reveal() {}, finish() {}, hide() {}};
 let shell, current = null, roomId, chatKey, cursor = 0, polling = false, timer = null, sending = false, localId = 0;
 // Live room chat: server rooms keep their REST history, while a same-origin
 // BroadcastChannel delivers every new message to all windows in the room
@@ -11,6 +19,11 @@ let channel=null,roomKey=null,seen=new Set(),clientSeq=0;
 const clientId=globalThis.crypto?.randomUUID?.()||Math.random().toString(36).slice(2)+Date.now().toString(36);
 const CHAT_POLL_MS=250;
 let resultKey = null, resultFrame = 0, resultShown = false, confettiTimer = null, rematchBusy = false;
+/* An online room keeps publishing snapshots after the match is final (an easy
+   bot may still be finishing its paced move, reconnect grace can expire, etc).
+   Rebuilding the player cards on each snapshot restarts result-art-in and makes
+   both trophies pulse. Build them once per result state instead. */
+let resultPlayersKey = null;
 /* The seven games without their own result dialog (Gomoku, Chess, Cards,
    Puzzle, Draw, Bubble Duel, Snooker) now open this very same dialog. They
    behave like Connect Four: SVG emblem, no pool ball counts, no 3-second
@@ -18,6 +31,47 @@ let resultKey = null, resultFrame = 0, resultShown = false, confettiTimer = null
 let gridResult = false, gridGame = '';
 const element = (tag, className, text) => {const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const $ = id => document.getElementById(id);
+
+/* The chat heading used to carry a static "Room only" badge. The user asked
+   for a fullscreen toggle there instead. The portal owns the real fullscreen
+   state machine (bindPoolFullscreen), so this button only forwards a request
+   and mirrors the state the parent broadcasts back. Standalone pages use
+   their own native fullscreen. */
+let chatFullscreenState = false;
+function chatEnglish(){return document.documentElement.lang.toLowerCase().indexOf('en')===0;}
+function chatFullscreenCopy(full){
+  const en=chatEnglish();
+  return full
+    ? {label:en?'Exit fullscreen':'退出全屏', english:'Exit fullscreen', title:en?'Exit fullscreen (Esc)':'退出全屏（Esc）'}
+    : {label:en?'Fullscreen':'全屏', english:'Fullscreen', title:en?'Enter fullscreen':'进入全屏'};
+}
+function syncChatFullscreen(full){
+  chatFullscreenState=Boolean(full);
+  const button=shell&&shell.chatFullscreen;
+  if(!button)return;
+  const copy=chatFullscreenCopy(chatFullscreenState);
+  button.textContent=copy.label;
+  button.dataset.systemEnglish=copy.english;
+  button.setAttribute('aria-label',copy.title);
+  button.removeAttribute('title');
+  button.setAttribute('aria-pressed',String(chatFullscreenState));
+}
+function chatParentOrigin(){
+  try{return new URL(document.referrer).origin;}catch(error){return location.origin;}
+}
+function chatEmbedded(){
+  return window.parent!==window&&new URLSearchParams(location.search).get('embed')==='joyflock';
+}
+function toggleChatFullscreen(){
+  if(chatEmbedded()){
+    try{window.parent.postMessage({type:'joyflock:toggle-fullscreen'},chatParentOrigin());}catch(error){}
+    return;
+  }
+  const doc=document;
+  if(doc.fullscreenElement){try{doc.exitFullscreen?.();}catch(error){}}
+  else if(doc.documentElement.requestFullscreen){try{doc.documentElement.requestFullscreen();}catch(error){}}
+}
+
 
 // Presentation reads archived scores without converting or rewriting room state.
 export function poolSeatSummary(board,seat){
@@ -28,8 +82,10 @@ export function poolSeatSummary(board,seat){
 function createChat() {
   const arena=$('arena'),sidebar=arena.querySelector('.play-sidebar');
   shell={sidebar};
-  const chat=element('section','pool-chat-panel'),head=element('div','pool-chat-heading'),title=element('h2','','房间聊天'),count=element('span','pool-chat-count','');
-  head.append(title,count);
+  const chat=element('section','pool-chat-panel'),head=element('div','pool-chat-heading'),title=element('h2','','房间聊天'),fullscreen=element('button','pool-chat-fullscreen','全屏');
+  fullscreen.type='button';fullscreen.setAttribute('aria-pressed','false');
+  fullscreen.addEventListener('click',toggleChatFullscreen);
+  head.append(title,fullscreen);
   const log=element('div','pool-chat-log');log.setAttribute('role','log');log.setAttribute('aria-live','polite');log.setAttribute('aria-relevant','additions');log.setAttribute('aria-label','场内聊天消息');
   const empty=element('p','pool-chat-empty','和同房间的朋友聊两句吧。');log.append(empty);
   const note=element('p','pool-chat-notice'),form=element('form','pool-chat-form'),input=element('input'),send=element('button','','发送');
@@ -38,7 +94,26 @@ function createChat() {
   chat.append(head,log,note,reactions,form);if(arena.classList.contains('table-chat-layout'))arena.append(chat);else sidebar.prepend(chat);
   const leave=$('leave-play');leave.classList.add('pool-leave');
   form.onsubmit=sendMessage;
-  Object.assign(shell,{chat,log,empty,note,input,send,count});
+  Object.assign(shell,{chat,log,empty,note,input,send,chatFullscreen:fullscreen});
+  /* Ask the parent for its current fullscreen state, mirror every broadcast,
+     and redraw the label when the page language changes. */
+  window.addEventListener('message',function(event){
+    if(event.source!==window.parent)return;
+    if(event.origin!==chatParentOrigin()&&event.origin!==location.origin)return;
+    if(event.data?.type==='joyflock:game-fullscreen')syncChatFullscreen(Boolean(event.data.full));
+    else if(event.data?.type==='joyflock:locale')syncChatFullscreen(chatFullscreenState);
+  });
+  document.addEventListener('fullscreenchange',function(){
+    if(!chatEmbedded())syncChatFullscreen(Boolean(document.fullscreenElement));
+  });
+  if(typeof MutationObserver!=='undefined'){
+    new MutationObserver(function(){syncChatFullscreen(chatFullscreenState);})
+      .observe(document.documentElement,{attributes:true,attributeFilter:['lang','data-locale']});
+  }
+  if(chatEmbedded()){
+    try{window.parent.postMessage({type:'joyflock:fullscreen-query'},chatParentOrigin());}catch(error){}
+  }
+  syncChatFullscreen(Boolean(document.body.dataset.gameFullscreen));
 }
 
 function createShell() {
@@ -55,7 +130,7 @@ function createShell() {
      board's innerHTML when it first builds the canvas. */
   const turnToast=element('div','pool-turn-toast');
   turnToast.setAttribute('aria-hidden','true');turnToast.hidden=true;
-  turnToast.append(element('i'),element('span','pool-turn-label'));
+  turnToast.append(element('span','pool-turn-label'));
   panel.append(turnToast);shell.turnToast=turnToast;
   createResult();
   return shell;
@@ -98,8 +173,16 @@ function createResult() {
   const nav=element('div','pool-result-nav'),toGame=element('button','pool-result-to-game','返回游戏页'),toHome=element('button','pool-result-to-home','返回首页');
   toGame.type='button';toHome.type='button';nav.append(toGame,toHome);
   again.textContent='再玩一局';again.type='button';actions.append(again,nav);
-  card.append(close,label,emblem,title,description,players,actions,note);dialog.append(confetti,card);document.body.append(dialog);
-  const reopen=element('button','pool-result-open','查看本局结算');reopen.type='button';reopen.hidden=true;
+  const cardKids=[close,label,emblem,title,description];
+  if(pointsTicker.panel)cardKids.push(pointsTicker.panel);
+  cardKids.push(players,actions,note);
+  card.append(...cardKids);dialog.append(confetti,card);document.body.append(dialog);
+  /* This button sits directly above "Leave game" in the sidebar. Mirror that
+     button's classes instead of giving it a private skin: every game theme
+     (generic / pool / snooker / four) styles .quiet + .pool-leave on the leave
+     button, so the pair stays identical in width, height, radius and colour
+     without duplicating per-theme CSS. */
+  const reopen=element('button','pool-result-open '+$('leave-play').className,'查看本局结算');reopen.type='button';reopen.hidden=true;
   shell.sidebar.insertBefore(reopen,$('leave-play'));
   Object.assign(shell,{resultDialog:dialog,resultTitle:title,resultDescription:description,resultPlayers:players,resultNote:note,resultReopen:reopen,confetti,resultEmblem:emblem,resultIsPool:!isFour});
   /* Only the newly shared dialog follows the page locale. Pool / Connect Four
@@ -113,7 +196,7 @@ function createResult() {
   toGame.onclick=()=>{dialog.close();$('home-link')?.click();};
   toHome.onclick=()=>{window.top.location.assign('/portal/index.html');};
   dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
-  dialog.addEventListener('close',()=>{clearConfetti();if(current?.board?.over&&document.body.dataset.screen==='play'){reopen.hidden=false;reopen.focus({preventScroll:true});}});
+  dialog.addEventListener('close',()=>{pointsTicker.finish();clearConfetti();if(current?.board?.over&&document.body.dataset.screen==='play'){reopen.hidden=false;reopen.focus({preventScroll:true});}});
 }
 
 function clearConfetti() {
@@ -156,7 +239,7 @@ function celebrateResult(kind,playSound) {
 }
 function openResult(celebrate,carryConfetti=false) {
   if(!current?.board?.over||document.body.dataset.screen!=='play'||shell.resultDialog.open)return;
-  shell.resultDialog.showModal();$('again').focus({preventScroll:true});
+  shell.resultDialog.showModal();pointsTicker.reveal();$('again').focus({preventScroll:true});
   const outcome=shell.resultDialog.dataset.outcome;
   if(carryConfetti){
     const {resultDialog,confetti}=shell;
@@ -179,7 +262,7 @@ function openResult(celebrate,carryConfetti=false) {
   }
 }
 function resultDetails(options) {
-  const winner=Number(options.board.winner)||0,personal=!!options.room||!!options.computer,you=options.room?Number(options.room.you)+1:1;
+  const winner=Number(options.board.winner)||0,personal=!!options.room||!!options.computer,you=options.room?Number(options.room.you)+1:(Number(options.mySeat)||1);
   const name=options.names?.[winner-1]||'玩家',kind=!winner?'draw':personal&&winner!==you?'loss':'win';
   return {winner,kind,title:!winner?'本局平局':kind==='loss'?'本局失利':personal||name==='你'?'你获胜了！':name+' 获胜！',description:!winner?'势均力敌，再来一局。':kind==='loss'?name+' 赢得了这一局。':personal?'这一局，胜利属于你。':'精彩对局，感谢两位玩家。'};
 }
@@ -188,10 +271,12 @@ function updateResult(options) {
   // The turn caption stays available to the shared UI, but no result row occupies the table header.
   if(shell.strip)shell.strip.hidden=true;
   if(!ended){
-    if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=null;resultShown=false;
-    if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultReopen.hidden=true;shell.resultNote.hidden=true;return;
+    if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=null;resultShown=false;resultPlayersKey=null;
+    if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultReopen.hidden=true;shell.resultNote.hidden=true;
+    pointsTicker.hide();return;
   }
-  const key=[options.room?.id||'local',options.board.moves,options.board.winner].join(':'),details=resultDetails(options);
+  const localKey=document.body.classList.contains('connect-four-game')?'local-four-'+options.generation:'local';
+  const key=[options.room?.id||localKey,options.board.moves,options.board.winner].join(':'),details=resultDetails(options);
   if(gridResult){
     const en=document.documentElement.lang.toLowerCase().indexOf('en')===0;
     if(!details.winner){
@@ -206,19 +291,51 @@ function updateResult(options) {
     }
   }
   if(resultKey!==key){
-    if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=key;resultShown=false;
+    if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=key;resultShown=false;resultPlayersKey=null;
     if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultNote.hidden=true;
+    pointsTicker.hide();
   }
   shell.resultDialog.dataset.outcome=details.kind;setResultEmblem(details.kind);shell.resultTitle.textContent=details.title;shell.resultDescription.textContent=details.description;
   const isFour=document.body.classList.contains('four-game')||gridResult;
   const isPool=!isFour;   // only Pool has pocketed-ball counts / legacy boards
   const archived=isPool&&poolSeatSummary(options.board,1).legacy;
   if(archived)shell.resultDescription.textContent='这是升级前的共用目标对局，下一局将使用全色／花色分组玩法。';
-  shell.resultPlayers.replaceChildren(...[0,1].map(i=>{
-    const row=element('div','pool-result-player'),name=element('strong','',options.names?.[i]||'玩家 '+(i+1)),score=element('span','','落袋 '+poolSeatSummary(options.board,i+1).score+' 颗');
-    row.classList.toggle('winner',details.winner===i+1);name.title=name.textContent;row.append(name);if(isPool)row.append(score);
-    if(details.winner===i+1)row.append(element('b','pool-result-winner',document.documentElement.lang.toLowerCase().indexOf('en')===0&&gridResult?'Winner':'胜方'));return row;
-  }));
+  /* Only rebuild when the DISPLAYED result actually changes. `key` already
+     covers room id + moves + winner, so repeated online snapshots of one
+     finished match produce the same signature and never restart the trophy
+     entrance animation. Locale / names / scores / archived state are included
+     because they change what the cards print. */
+  const playersKey=[key,document.documentElement.lang,isFour?1:0,archived?1:0,
+    (options.names||[]).join('|'),Array.isArray(options.scores)?options.scores.join(','):''].join('~');
+  if(resultPlayersKey!==playersKey){
+    resultPlayersKey=playersKey;
+    shell.resultPlayers.replaceChildren(...[0,1].map(i=>{
+      const won=details.winner===i+1;
+      /* The artwork follows the RESULT, never the seat: the winner gets the gold
+         trophy, the other player the cool "next time" cup, and a draw gives both
+         the neutral badge. All three SVGs share the same trophy silhouette. */
+      const artKind=!details.winner?'draw':won?'winner':'loser';
+      const row=element('div','pool-result-player'),copy=element('div','pool-result-player-copy');
+      const name=element('strong','',options.names?.[i]||'玩家 '+(i+1)),score=element('span','','落袋 '+poolSeatSummary(options.board,i+1).score+' 颗');
+      row.classList.toggle('winner',won);row.dataset.outcome=artKind;name.title=name.textContent;copy.append(name);
+      if(isPool)copy.append(score);
+      /* Bubble Duel is scored in points rather than pocketed balls. Its canvas
+         result card used to print the two totals; the shared dialog now carries
+         them so removing that card loses no information. */
+      else if(Array.isArray(options.scores)){
+        const en=document.documentElement.lang.toLowerCase().indexOf('en')===0;
+        copy.append(element('span','',Number(options.scores[i]||0)+(en?' pts':' 分')));
+      }
+      const art=element('img','pool-result-player-art');
+      art.src='/assets/result/'+artKind+'.svg?v=20261115-joincoin1';art.alt='';art.decoding='async';
+      art.setAttribute('aria-hidden','true');
+      /* A late rebuild (e.g. locale switch) must not replay the entrance
+         animation on an already visible dialog. */
+      if(resultShown)art.style.animation='none';
+      row.append(copy,art);
+      if(won)row.append(element('b','pool-result-winner',document.documentElement.lang.toLowerCase().indexOf('en')===0&&gridResult?'Winner':'胜方'));return row;
+    }));
+  }
   const again=$('again');again.hidden=false;
   // Move the original action, then wrap its existing local/online handler only once.
   if(!again._poolResultAction&&typeof again.onclick==='function'){
@@ -232,18 +349,21 @@ function updateResult(options) {
     };
   }
   if(resultShown||resultFrame)return;
-  const preview=isPool&&!archived&&details.kind!=='draw';
+  const connectFour=document.body.classList.contains('connect-four-game');
+  const preview=(isPool&&!archived||connectFour)&&details.kind!=='draw';
+  // Let the landing, connected counters and win jingle finish on the board.
+  const previewDuration=connectFour?1600:3000;
   let celebrationStartedAt=null;
   const reveal=now=>{
     resultFrame=0;if(resultKey!==key||!current?.board?.over||document.body.dataset.screen!=='play')return;
     // Let the winning shot, pocket movement and return-channel rebound finish before covering the table.
-    if($('board').querySelector('.four-drop-hidden')||$('board')._animating||$('board')._striking||document.hidden||document.querySelector('dialog[open]:not(.pool-result-overlay)')){resultFrame=requestAnimationFrame(reveal);return;}
+    if($('board')._fourDropAnimating||$('board').querySelector('.four-drop-hidden')||$('board')._animating||$('board')._striking||document.hidden||document.querySelector('dialog[open]:not(.pool-result-overlay)')){resultFrame=requestAnimationFrame(reveal);return;}
     if(preview&&celebrationStartedAt===null){
       celebrateResult(details.kind,true);
       document.body.append(shell.confetti);
       celebrationStartedAt=now;
     }
-    if(preview&&now-celebrationStartedAt<3000){resultFrame=requestAnimationFrame(reveal);return;}
+    if(preview&&now-celebrationStartedAt<previewDuration){resultFrame=requestAnimationFrame(reveal);return;}
     resultShown=true;shell.resultReopen.hidden=false;openResult(!archived,preview);
   };
   resultFrame=requestAnimationFrame(reveal);
@@ -327,7 +447,7 @@ async function pollChat() {
 }
 // Catch up the moment a backgrounded tab comes back, instead of waiting for
 // the next interval tick.
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollChat();},{passive:true});
+if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollChat();},{passive:true});
 async function sendMessage(event) {
   event.preventDefault();const text=shell.input.value.trim();
   if(await sendChatText(text)&&shell.input.value.trim()===text)shell.input.value='';
@@ -367,7 +487,7 @@ export function appendPoolChatReaction(event){
   appendMessage({name:event.name,text:event.emoji,time:event.time});
 }
 
-let feedbackTimer, feedbackKey, lastPoolBoard, feedbackFrame=0;
+let feedbackTimer, feedbackKey, lastPoolBoard, feedbackFrame=0, feedbackPromptUntil=0;
 let pendingFeedback=[];
 function updatePoolFeedback({board,room,me,computer}) {
   if(feedbackKey!==chatKey||document.body.dataset.screen!=='play'){
@@ -375,6 +495,7 @@ function updatePoolFeedback({board,room,me,computer}) {
     clearTimeout(feedbackTimer);shell.feedback?.replaceChildren();
     lastPoolBoard=null;
     pendingFeedback=[];
+    feedbackPromptUntil=0;
     cancelAnimationFrame(feedbackFrame);
     feedbackFrame=0;
   }
@@ -487,7 +608,14 @@ function updatePoolFeedback({board,room,me,computer}) {
       }
       shell.feedback.replaceChildren(...labels);
       clearTimeout(feedbackTimer);
-      feedbackTimer=setTimeout(()=>shell.feedback.replaceChildren(),assignment?2400:1700);
+      const hold=assignment?2400:1700;
+      feedbackTimer=setTimeout(()=>shell.feedback.replaceChildren(),hold);
+      /* Feedback owns the first slot over the cloth. The turn caption waits
+         until this card has faded, and a still-visible caption is dismissed
+         so the two never stack. A seat change then re-queues the turn text. */
+      feedbackPromptUntil=Date.now()+hold;
+      const toast=shell.turnToast;
+      if(toast&&!toast.hidden){toast.hidden=true;clearTimeout(turnPromptTimer);turnPromptTimer=0;}
     }
     pendingFeedback=[];
   };
@@ -542,6 +670,12 @@ function updatePoolTurnPrompt({board,room,computer,names}){
     const pending=turnPromptPending,latest=turnPromptBoard,host=$('board');
     if(!pending||!latest||!host||turnPromptChat!==chatKey||
        document.body.dataset.screen!=='play'||latest.over)return;
+    /* Feedback first, turn announcement second. Wait while a foul / reward /
+       group card is queued or on screen, so "对方击球" never appears above or
+       at the same time as "犯规". */
+    if(pendingFeedback.length||feedbackFrame||Date.now()<feedbackPromptUntil){
+      turnPromptFrame=requestAnimationFrame(reveal);return;
+    }
     const countdown=host.querySelector('.pool-countdown');
     const beforeBreak=(countdown&&!countdown.hidden)||
       Date.now()+(host._serverOffset||0)<(host._openingUntil||0);
@@ -632,7 +766,6 @@ export function updateTableChat(options){
     shell.note.textContent='消息在本房间实时同步。';
   }
   if(nextChatKey!==chatKey){chatKey=nextChatKey;roomId=nextId;clearMessages();}
-  shell.count.textContent='同房间可见';
   const playing=document.body.dataset.screen==='play';
   if(options.room&&playing){if(!timer)timer=setInterval(pollChat,CHAT_POLL_MS);pollChat();}
   else if(timer){clearInterval(timer);timer=null;}

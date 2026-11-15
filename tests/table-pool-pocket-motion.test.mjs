@@ -111,8 +111,11 @@ test('real angled shot enters leftward, contacts its left back wall, and does no
 });
 
 test('shallow real rebounds descend before their center can return onto the cloth',()=>{
+  // These lock the legacy straight-descent geometry. A firm 67% stroke is now
+  // claimed by the animated orbit branch, so disable both effects explicitly
+  // here; the animated path has its own continuity and symmetry tests.
   for(const [x,angle,power] of [[460,2900,20],[490,2650,20],[460,3050,67]]){
-    const item=shotEntry(x,70,angle,power),motion=pocketMotion(item);
+    const item={...shotEntry(x,70,angle,power),rattle:false,rebound:false},motion=pocketMotion(item);
     assert.ok(motion.dropAt<220,'the returning open-lip crossing starts descent early');
     for(const p of motion.samples.filter(p=>p.time<=motion.dropAt))assert.equal(pocketIndex(p.x-TABLE_PAD,p.y-TABLE_PAD),item.holeIndex);
     assert.ok(motion.contacts.every(c=>c.time<=motion.dropAt));

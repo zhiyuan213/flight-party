@@ -1,8 +1,17 @@
 /* Room dialog — compact, factual, same blue-violet surfaces as the game intro.
    Loaded last so it wins over table.css / table-home-theme.css / four-theme.css. */
 
+/* Both room dialogs sit slightly above the exact vertical centre of the game
+   iframe: the intro art occupies the upper half, so a centred card reads as
+   too low. A pure visual lift keeps the browser's margin:auto centring, the
+   backdrop and the login dialog untouched. Short viewports use a smaller lift
+   so the card can never reach the top edge. */
+body.table-home-theme{--room-dialog-lift:-8vh}
+@media(max-height:520px){body.table-home-theme{--room-dialog-lift:-4vh}}
+
 body.table-home-theme dialog#waiting{
   width:360px;max-width:calc(100vw - 24px);
+  transform:translateY(var(--room-dialog-lift,-8vh));
   max-height:calc(100dvh - 32px);overflow-y:auto;
   padding:16px 18px 18px;border-radius:12px;
   border:1px solid #2c3a5e;background:#141b30;color:#eef2ff;
@@ -39,34 +48,68 @@ body.table-home-theme dialog#waiting .seat-avatar{border-width:1px}
 body.table-home-theme dialog#waiting .avatar-frame,
 body.table-home-theme dialog#waiting .member-label{display:none}
 body.table-home-theme dialog#waiting .empty-seat .avatar-shell{
-  display:grid;place-items:center;border:1px dashed #4a5c85;border-radius:50%;
+  display:grid;place-items:center;border:1px dashed #4a5c85;border-radius:22%;
   background:#131d33;color:#8e9fc5;font-size:15px;line-height:1;
 }
 body.table-home-theme dialog#waiting .seat-name strong{font-size:12px;font-weight:700}
 body.table-home-theme dialog#waiting .seat-status{font-size:10px;color:#8fa0c4}
 
-/* Controls: room id on one quiet line, primary full width, secondary pair. */
+/* Three stacked actions: "准备" casts a manual ready vote, "邀请好友" copies
+   the invite link, "退出房间" leaves. One column gives each action its own
+   full-width row. */
 body.table-home-theme dialog#waiting #room-tools{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;
-}
-body.table-home-theme dialog#waiting #room-tools>#room-status{
-  grid-column:1/-1;margin:0 0 2px;padding:0;
-  border:0;background:none;border-radius:0;
-  font-size:10px;line-height:1.4;color:#7f8fb4;overflow-wrap:anywhere;
+  display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:0;
 }
 body.table-home-theme dialog#waiting #room-tools>.four-room-theme{grid-column:1/-1}
 body.table-home-theme dialog#waiting #room-tools button{
-  min-height:34px;padding:7px 8px;border-radius:8px;
+  width:100%;min-height:34px;padding:7px 8px;border-radius:8px;
   border:1px solid #3d4f7d;background:#1c2a4b;color:#dbe4ff;
   box-shadow:none;font-size:12px;line-height:1.2;
 }
 body.table-home-theme dialog#waiting #room-tools button:hover:not(:disabled){
   background:#27375d;border-color:#6f8bff;
 }
-body.table-home-theme dialog#waiting #room-tools button.primary{
-  grid-column:1/-1;background:#4159c8;border-color:#6f8bff;color:#fff;font-weight:700;
-}
 body.table-home-theme dialog#waiting #room-tools button[hidden]{display:none!important}
+
+/* Manual ready button. It is dimmed while a seat is still empty, lights up
+   as soon as both seats hold real players, and drops the highlight once the
+   vote is cast (the label becomes "已准备"). */
+body.table-home-theme dialog#waiting #room-tools button:disabled{
+  cursor:default;opacity:.6;box-shadow:none;
+}
+body.table-home-theme dialog#waiting #room-tools #ready-room[data-ready="available"]{
+  border-color:#a9bdff;
+  background:linear-gradient(180deg,#5573ee,#344fcd);color:#fff;
+  font-weight:900;letter-spacing:.4px;
+  box-shadow:0 0 0 1px #9db4ff55,0 8px 22px #3b5bff55;
+}
+body.table-home-theme dialog#waiting #room-tools #ready-room[data-ready="available"]:hover:not(:disabled){
+  border-color:#cfdaff;background:linear-gradient(180deg,#6b86ff,#4261e0);
+}
+body.table-home-theme dialog#waiting #room-tools #ready-room[data-ready="done"]{
+  border-color:#2f9e6d;background:#17382c;color:#9ff0c4;
+  box-shadow:none;font-weight:800;opacity:1;
+}
+body.table-home-theme dialog#waiting #ready-room[data-ready="done"]::before{
+  content:'✓';margin-right:6px;font-weight:900;
+}
+
+/* "已准备" tag at the top-right of the seat card, using the same green as
+   the shop's owned/equipped ribbon, plus a green ring on the portrait. */
+body.table-home-theme dialog#waiting #waiting-seats .seat{position:relative}
+body.table-home-theme dialog#waiting #waiting-seats .seat-ready-tag{
+  position:absolute;top:-5px;right:-5px;z-index:3;
+  padding:2px 6px;border:1px solid #7fe0b688;border-radius:999px;
+  background:#2f9e6d;color:#fff;font-size:9px;font-weight:900;
+  letter-spacing:.4px;line-height:1.2;white-space:nowrap;
+  box-shadow:0 3px 10px #2f9e6d66;pointer-events:none;
+}
+body.table-home-theme dialog#waiting #waiting-seats .seat.is-ready{
+  border-color:#3f9d76;background:#1a2f3d;
+}
+body.table-home-theme dialog#waiting #waiting-seats .seat.is-ready .avatar-shell{
+  box-shadow:0 0 0 2px #2f9e6d;
+}
 
 /* One line: current theme + a button that reuses the full theme picker. */
 body.table-home-theme dialog#waiting .four-room-theme{
@@ -99,3 +142,12 @@ body.table-home-theme dialog#waiting .four-room-theme-change:hover{
   body.table-home-theme dialog#waiting{padding:14px}
   body.table-home-theme dialog#waiting #waiting-seats{gap:6px}
 }
+
+/* The status toast (#message) is a plain fixed element in the page layer, so a
+   modal dialog's ::backdrop (72% navy + 4px blur) makes messages like
+   "邀请链接已复制" unreadable. room-toast.js promotes it to a manual popover in
+   the top layer; the UA popover box uses inset:0 / margin:auto, so restore the
+   original bottom-centred geometry here. The second rule keeps the toast
+   visible if the popover API is missing or the show call fails. */
+#message[popover]{inset:auto auto 18px 50%;margin:0;overflow:visible;border:1px solid #3a4d73}
+#message[popover]:not(:popover-open):not(:empty){display:block}

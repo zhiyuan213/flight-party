@@ -1,0 +1,53 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>个人棋子验收</title>
+<link rel="stylesheet" href="./table.css"><link rel="stylesheet" href="./pool-shell.css"><link rel="stylesheet" href="./gomoku-board.css"><link rel="stylesheet" href="./chess-view.css"><link rel="stylesheet" href="../site-cosmetics.css"><link rel="stylesheet" href="./game-cosmetics.css">
+<style>body{background:#101827;color:#eef3ff;padding:20px}h1{font-size:22px;margin:0}p{color:#a9b9ce}.preview-wrap{max-width:720px;margin:20px auto}#board{margin:20px auto;width:min(640px,85vw);max-width:none}#board.gomoku{height:min(640px,85vw);padding:0;border:0}#board.xo{width:min(470px,85vw)}.four-held{position:relative;width:100px;height:100px;margin:auto}.four-held .four-drop-marker{--coin-size:80px;left:50%;top:50%;position:absolute}#checks{font:14px monospace;white-space:pre-wrap}nav{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}nav a{padding:8px;border:1px solid #557}
+/* Fixture-only layout: the actual renderer needs an arena ancestor, but its
+   review panel must never steal or cover the fixed-width board's columns. */
+.chess-game .preview-wrap.arena{display:grid;grid-template-columns:minmax(0,1fr) 220px;max-width:760px;gap:20px;align-items:start;height:auto;min-height:0;margin:12px auto;padding:0}
+.chess-game .preview-wrap>.game-panel{grid-column:1;grid-row:1;display:block;width:100%;min-width:0;padding:0}
+.chess-game .preview-wrap #board.chess{width:min(500px,calc(100dvh - 205px),100%);max-width:100%;height:auto;aspect-ratio:1;margin:0 auto}
+.chess-game .preview-wrap>.chess-review{grid-column:2;grid-row:1;min-width:0;padding:12px;border:1px solid #344965;border-radius:12px;background:#131e34}
+@media(max-width:700px){.chess-game .preview-wrap.arena{display:block;max-width:500px}.chess-game .preview-wrap>.chess-review{margin-top:14px}}
+</style>
+<h1>个人棋子 · 本地渲染验收</h1><p>两个席位各自选择外观。示例不更改钱包或装备，不连接房间服务。</p><nav><a href="?game=four">四子连珠</a><a href="?game=gomoku">五子棋</a><a href="?game=xo">井字棋</a><a href="?game=chess">国际象棋棋盘</a></nav>
+<label>席位1 <select id="one"><option>neon</option><option>jade</option><option>aurora</option><option>default</option></select></label>
+<label>席位2 <select id="two"><option>default</option><option>neon</option><option>jade</option><option>aurora</option></select></label>
+<div class="preview-wrap"><div id="board" class="board"></div><div class="four-held" hidden><div class="four-drop-marker" data-player="1"><i></i></div></div></div><pre id="checks"></pre><pre id="errors"></pre>
+<script type="module">
+import {applyCosmetics,decoratePieces,decoratePiece} from './game-cosmetics.js?v=20261112-gamelanes1';
+import {renderGomoku} from './gomoku-view.js?v=20261112-natural1';
+import {renderChess} from './chess-view.js?v=20261110-glove2';
+import {chessStart,chessMove} from './chess-rules.js?v=20261110-glove2';
+const params=new URLSearchParams(location.search),game=['four','gomoku','xo','chess'].includes(params.get('game'))?params.get('game'):'four';
+const host=document.querySelector('#board'),one=document.querySelector('#one'),two=document.querySelector('#two');
+one.value=params.get('theme')||'neon';two.value=params.get('other')||'default';
+host.className='board'+(game==='four'?'':' '+game);document.body.classList.toggle('connect-four-game',game==='four');
+let chess=chessStart(),chessSelected=1;
+if(game==='chess'){
+ document.body.classList.add('chess-game');const arena=host.parentNode;arena.classList.add('arena');
+ const panel=document.createElement('section');panel.className='game-panel';host.before(panel);panel.append(host);
+ const turn=document.createElement('section');turn.className='turn-panel';turn.hidden=true;arena.append(turn);
+ // Real legal sequence: e4, d5, Bb5+. Black can block with the b8 knight;
+ // the renderer exposes check, previous move, selected piece and targets.
+ for(const [from,to]of [[52,36],[11,27],[61,25]])chess=chessMove(chess,chess.turn,from*64+to);
+ host.addEventListener('click',e=>{const cell=e.target.closest('[data-position]');if(cell){chessSelected=Number(cell.dataset.position);render();}});
+}
+function render(){
+ const profiles=[one.value,two.value].map(theme=>game==='chess'?{board:'chess-board-'+theme}:{piece:game+'-piece-'+theme});
+ const state=applyCosmetics({network:true,mySeat:1,matchKey:'isolated-preview',seatProfiles:profiles});
+ if(game==='gomoku'){
+  const cells=Array(225).fill(0);for(const [i,value]of [[112,1],[113,2],[97,1],[98,2],[128,1],[129,2],[82,1],[114,2]])cells[i]=value;
+  renderGomoku(host,{cells,turn:1,over:false},{can:false,last:128});
+ }else if(game==='chess'){
+  renderChess(host,chess,{can:true,selected:chessSelected,seat:1,key:'fixture-check',refresh:render});
+ }else{
+  const cells=game==='four'?Array(42).fill(0).map((v,i)=>i>=28?(i%3===0?1:2):i>=21&&i%3===0?1:0):[1,2,0,2,1,0,0,0,1];
+  host.innerHTML=cells.map(value=>'<button class="cell" disabled data-value="'+value+'" aria-label="席位 '+value+'"></button>').join('');
+  decoratePieces(host);
+ }
+ const held=document.querySelector('.four-held');held.hidden=game!=='four';decoratePiece(held.querySelector('i'),1);
+ document.querySelector('#checks').textContent=JSON.stringify({game,seatThemes:state.pieceThemes,boardTheme:state.boardTheme,storageWrites:0,
+  ...(game==='chess'?{check:host.querySelectorAll('.chess-check').length,last:host.querySelectorAll('.chess-last').length,targets:host.querySelectorAll('.chess-target').length}:{} )},null,2);
+}
+one.onchange=two.onchange=render;window.addEventListener('error',e=>document.querySelector('#errors').textContent=e.message);render();
+</script></html>

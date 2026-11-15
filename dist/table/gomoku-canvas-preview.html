@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>五子棋 Canvas 2D 棋盘 · 验收预览</title>
+<link rel="stylesheet" href="./gomoku-board.css?v=20261110-gomokucanvas1">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 50% 0,#1b2a48,#0b1020 70%);color:#e9f0ff;font:14px system-ui,"Microsoft YaHei",sans-serif}
+  header{padding:18px 24px 6px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  h1{font-size:18px;margin:0 18px 0 0}
+  button{padding:8px 14px;border:1px solid #46598a;border-radius:9px;background:#20304f;color:#e9f0ff;font:inherit;cursor:pointer}
+  button[data-active="1"]{background:#3d5c9e;border-color:#8fb0ff}
+  #info{padding:0 24px;color:#9fb2d8;font-size:12px;line-height:1.7}
+  #board{width:min(88vw,760px);margin:18px auto 32px}
+</style>
+</head>
+<body>
+<header>
+  <h1>五子棋 · Canvas 2D 木盘</h1>
+  <button data-demo="empty" data-active="1">空盘</button>
+  <button data-demo="cover">封面示例棋子</button>
+  <button data-demo="midgame">对局中</button>
+  <button id="toggle-last">最后一步标记：开</button>
+  <button id="toggle-hover">悬停预览：开</button>
+</header>
+<p id="info"></p>
+<div id="board" class="board gomoku"></div>
+<script type="module">
+import {renderGomoku,GOMOKU_SIZE,GOMOKU_LINES,GOMOKU_INSET,GOMOKU_HIT_LEFT,GOMOKU_HIT_SIZE} from './gomoku-view.js?v=20261112-natural1';
+
+const board=document.getElementById('board');
+const N=GOMOKU_SIZE;
+const COVER=[[1,4],[1,8],[2,2],[3,12],[4,7],[5,5],[6,1],[6,10],[7,11],[8,3],[9,6],[9,12],[10,2],[10,9],[11,5]];
+const MIDGAME=[[7,7],[7,8],[8,7],[6,7],[8,8],[6,8],[5,7],[9,7],[8,6],[7,9]];
+let demo='empty',showLast=true,showHover=true,turn=1;
+
+function state(){
+  const cells=Array(N*N).fill(0);
+  const moves=demo==='cover'?COVER:demo==='midgame'?MIDGAME:[];
+  moves.forEach(([r,c],i)=>{cells[r*N+c]=i%2===0?1:2;});
+  return {cells,turn,winner:0,over:false,moves:moves.length};
+}
+function paint(){
+  const options={can:showHover,turn,last:showLast&&state().cells.some(Boolean)?lastIndexOf():-1};
+  renderGomoku(board,state(),options);
+  for(const b of document.querySelectorAll('[data-demo]'))b.dataset.active=String(b.dataset.demo===demo);
+  document.getElementById('toggle-last').textContent='最后一步标记：'+(showLast?'开':'关');
+  document.getElementById('toggle-hover').textContent='悬停预览：'+(showHover?'开':'关');
+  document.getElementById('info').textContent=
+    `封闭网格：${GOMOKU_LINES}×${GOMOKU_LINES} 条线 → ${GOMOKU_LINES-1}×${GOMOKU_LINES-1} 个完整方格；可落子交点 ${N}×${N}；`+
+    `木框 ${(GOMOKU_INSET*100).toFixed(1)}%；命中层 left ${(GOMOKU_HIT_LEFT*100).toFixed(4)}% / size ${(GOMOKU_HIT_SIZE*100).toFixed(4)}%。`+
+    ` 纯 Canvas 2D 绘制，无贴图；DOM 按钮仅作点击与键盘命中层。`;
+}
+function lastIndexOf(){
+  const moves=demo==='cover'?COVER:demo==='midgame'?MIDGAME:[];
+  if(!moves.length)return -1;
+  const [r,c]=moves[moves.length-1];return r*N+c;
+}
+for(const b of document.querySelectorAll('[data-demo]'))b.onclick=()=>{demo=b.dataset.demo;paint();};
+document.getElementById('toggle-last').onclick=()=>{showLast=!showLast;paint();};
+document.getElementById('toggle-hover').onclick=()=>{showHover=!showHover;paint();};
+board.addEventListener('click',event=>{
+  const button=event.target.closest('[data-position]');
+  if(!button)return;
+  const index=Number(button.dataset.position);
+  const next=state();
+  if(!next.cells[index]){next.cells[index]=turn;turn=turn===1?2:1;}
+  renderGomoku(board,next,{can:true,turn,last:index});
+});
+paint();
+</script>
+</body>
+</html>

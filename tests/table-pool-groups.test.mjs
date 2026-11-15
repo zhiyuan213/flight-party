@@ -40,12 +40,15 @@ test('return path connects outlet to column and settles without reversal',()=>{a
 test('meter maps full travel precisely including short and resized tracks',()=>{for(const height of [100,480]){assert.equal(meterPower(30,30,height),0);assert.equal(meterPower(30+height/2,30,height),50);assert.equal(meterPower(30+height,30,height),100);}});
 test('replays contain all sixteen balls and densely sample the strongest shot',()=>{const s=poolMove(poolStart(),1,360000);assert.ok(s.history.length>50);for(const frame of s.history)assert.equal(frame.split(',').length,48);});
 
-test('full power travels over four table lengths on a clear table',()=>{
+test('full power traverses the cleared table under the calibrated rail restitution',()=>{
   const s=poolStart();for(let i=1;i<16;i++)s.cells[i*3+2]=0;
   const frames=poolMove(s,1,360000).history.map(f=>f.split(',').map(Number));
   let distance=0,prev=[s.cells[0],s.cells[1]];
   for(const f of frames){distance+=Math.hypot(f[0]-prev[0],f[1]-prev[1])/10;prev=f;}
-  assert.ok(distance>4250&&distance<4450,`travel ${distance}`);
+  // e_rail = 0.78; cloth drag cut by a quarter twice makes a full-power shot
+  // cover ~4.9 table lengths (was ~3.4, then ~4.1). Matching assertion in
+  // PoolRulesTest.java.
+  assert.ok(distance>4780&&distance<4960,`travel ${distance}`);
 });
 
 test('a centered pot continues into the well without an invented sideways zigzag',async()=>{

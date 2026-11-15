@@ -1,0 +1,39 @@
+/* Standalone Flight Party page: the shared top-centre matchmaking notice.
+   Table games already ship these rules inside four-theme.css; this page does
+   not load that stylesheet, so keep an identical copy here. */
+.four-match-box{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9999;
+  display:flex;align-items:center;gap:9px;width:max-content;max-width:calc(100% - 24px);
+  min-width:230px;padding:8px 11px 9px;border-radius:0 0 10px 10px;
+  background:linear-gradient(135deg,#3b5bd9,#263f9e);border:1px solid #6f8bff;border-top:0;
+  color:#fff;box-shadow:0 10px 26px #0008,inset 0 -1px 0 #ffffff24;
+  font:600 12px/1.25 system-ui,sans-serif;
+  animation:mb-in .25s ease-out;
+}
+.four-match-box[hidden]{display:none}
+.mb-spinner{
+  flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:#0d1b3d;
+  border:1px solid #91a9ff55;display:grid;place-items:center;
+}
+.mb-spinner svg{width:15px;height:15px;animation:mb-spin 1.5s linear infinite}
+.mb-copy{flex:1;min-width:0}
+.mb-title{font-size:13px;font-weight:700;line-height:1.25;white-space:nowrap}
+.mb-meta{font-size:10px;color:#c9d8ff;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mb-close{
+  flex:0 0 auto;width:22px!important;height:22px!important;min-width:22px!important;min-height:0!important;
+  max-width:22px!important;max-height:22px!important;aspect-ratio:1;
+  border-radius:50%!important;border:1px solid #ffffff44!important;
+  background:#ffffff14!important;color:#fff!important;font-size:13px!important;line-height:1!important;
+  padding:0!important;box-shadow:none!important;box-sizing:border-box!important;cursor:pointer;
+}
+.mb-close:hover{background:#ffffff2e!important}
+@keyframes mb-in{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes mb-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){
+  .four-match-box *,.four-match-box,.mb-spinner svg{animation:none!important}
+}
+@media(max-width:760px){
+  .four-match-box{min-width:0;top:0;padding:5px 8px 6px;gap:7px}
+  .mb-title{font-size:11px}
+  .mb-meta{font-size:9px}
+}

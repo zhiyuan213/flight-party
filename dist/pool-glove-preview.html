@@ -1,0 +1,103 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>白手套造型 · Canvas 2D 预览</title>
+<style>
+:root{--ink:#e8f1f8;--muted:#93a9ba;--line:#2c3f4d;--gold:#ffd44d}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1000px 560px at 50% -10%,#1b3040 0%,#101820 62%);color:var(--ink);font:14px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;padding:26px 20px 60px}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:22px;margin:0 0 5px}h2{font-size:14px;margin:24px 0 10px;color:#cfe0ef}
+p{margin:0 0 14px;color:var(--muted);font-size:13px}code{color:#ffd88a}
+.note{background:#20303a;border:1px solid #3a5568;border-left:3px solid var(--gold);border-radius:8px;padding:10px 14px;color:#c3d6e4;font-size:12px;margin-bottom:18px}
+canvas{display:block;border:1px solid var(--line);border-radius:10px;background:#2b5d9c}
+#main{width:100%;height:auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0 18px}
+button{background:#243746;color:var(--ink);border:1px solid #3d5a6c;border-radius:8px;padding:8px 15px;font:600 12px system-ui;cursor:pointer}
+button:hover{background:#2f4a5c;border-color:#6190aa}
+button.on{background:#4a3c22;border-color:#c9a23c;color:#ffe8a6}
+.trio{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.trio figure{margin:0}.trio canvas{width:100%;height:auto}
+figcaption{color:#a9bccb;font-size:12px;margin-top:6px}
+.stats{display:flex;gap:24px;flex-wrap:wrap;background:#1b242c;border:1px solid var(--line);border-radius:8px;padding:11px 16px;margin:14px 0}
+.stat b{display:block;font-size:16px;color:var(--gold);font-weight:700}.stat span{color:var(--muted);font-size:11px}
+</style></head><body><div class="wrap">
+<h1>白手套造型 · Canvas 2D 预览</h1>
+<p>正式绘制模块 <code>dist/table/pool-glove.js</code>。全部由 Canvas 2D 路径（贝塞尔曲线、渐变、柔和描边）绘制，没有图片或贴图：四根从右上向左上扇形张开的锥形手指、连续的白色手背体积、弯过白球的拇指、右下深藏青袖口，以及白色高光与蓝灰阴影。</p>
+<div class="note">这里按台面坐标放大绘制：白球半径 16 单位，手套与球的比例、层级（手套画在球之上）与正式对局完全一致。静止 85% 不透明、拖动 100%，白球本身始终不透明。</div>
+<div class="row">
+  <button id="idle" class="on">静止 · 85%</button>
+  <button id="drag">拖动 · 100%</button>
+  <button id="cue">显示 / 隐藏球杆</button>
+</div>
+<canvas id="main" width="1120" height="620"></canvas>
+<div class="stats" id="stats"></div>
+<h2>两种透明度对照</h2>
+<div class="trio">
+ <figure><canvas id="a" width="520" height="340"></canvas><figcaption>① 球停在原点，手 85% 不透明</figcaption></figure>
+ <figure><canvas id="b" width="520" height="340"></canvas><figcaption>② 拖动中，手 100% 不透明</figcaption></figure>
+</div>
+<script type="module">
+import {drawGlovedHand,GLOVE_IDLE_ALPHA,GLOVE_DRAG_ALPHA} from './table/pool-glove.js?v=20261110-handref1';
+const $=id=>document.getElementById(id);
+let opacity=GLOVE_IDLE_ALPHA,showCue=true;
+
+function cloth(ctx,w,h){
+  const g=ctx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0,'#3568ac');g.addColorStop(.5,'#2a5898');g.addColorStop(1,'#1e447e');
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,.035)';
+  for(let i=0;i<w;i+=14){ctx.fillRect(i,0,1,h);}
+}
+function cueStick(ctx){
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(-190,-4.4);ctx.lineTo(-22,-1.5);ctx.lineTo(-22,1.5);ctx.lineTo(-190,4.4);ctx.closePath();
+  const g=ctx.createLinearGradient(-190,0,-22,0);
+  g.addColorStop(0,'#3a2a17');g.addColorStop(.18,'#c99a4e');g.addColorStop(.75,'#e9c986');g.addColorStop(1,'#f6e2ae');
+  ctx.fillStyle=g;ctx.fill();
+  ctx.fillStyle='#1d2b45';ctx.fillRect(-190,-4.4,13,8.8);
+  ctx.fillStyle='#3b6ea8';ctx.fillRect(-23,-1.8,4,3.6);
+  ctx.restore();
+}
+function aimLine(ctx){
+  ctx.save();ctx.setLineDash([9,9]);ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(150,0);ctx.stroke();ctx.restore();
+}
+function whiteBall(ctx){
+  ctx.save();
+  ctx.shadowColor='rgba(0,10,30,.55)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;
+  const g=ctx.createRadialGradient(-6,-7,1,0,0,16);
+  g.addColorStop(0,'#ffffff');g.addColorStop(.62,'#f5f7f4');g.addColorStop(.88,'#d7e0e6');g.addColorStop(1,'#9fb0bd');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle='rgba(255,255,255,.65)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(0,0,15.4,0,Math.PI*2);ctx.stroke();
+}
+function scene(canvas,scale,alpha){
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);cloth(ctx,w,h);
+  ctx.save();ctx.translate(w/2,h/2);ctx.scale(scale,scale);
+  aimLine(ctx);
+  if(showCue)cueStick(ctx);
+  // Same layer order as the real game: the hand lies over the ball.
+  whiteBall(ctx);
+  drawGlovedHand(ctx,0,0,alpha);
+  ctx.restore();
+}
+function render(){
+  scene($('main'),6.2,opacity);
+  scene($('a'),3.1,GLOVE_IDLE_ALPHA);
+  scene($('b'),3.1,GLOVE_DRAG_ALPHA);
+  $('idle').classList.toggle('on',opacity===GLOVE_IDLE_ALPHA);
+  $('drag').classList.toggle('on',opacity===GLOVE_DRAG_ALPHA);
+  $('stats').innerHTML=[
+    ['绘制方式','Canvas 2D 路径'],['白球半径','16 台面单位'],
+    ['主图放大','6.2×'],['当前不透明度',(opacity*100)+'%'],
+    ['球杆',showCue?'显示':'隐藏']
+  ].map(([k,v])=>'<div class="stat"><b>'+v+'</b><span>'+k+'</span></div>').join('');
+}
+$('idle').onclick=()=>{opacity=GLOVE_IDLE_ALPHA;render();};
+$('drag').onclick=()=>{opacity=GLOVE_DRAG_ALPHA;render();};
+$('cue').onclick=()=>{showCue=!showCue;render();};
+render();
+</script></div></body></html>

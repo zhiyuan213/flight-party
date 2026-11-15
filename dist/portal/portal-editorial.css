@@ -7,9 +7,9 @@
      (membership / terms / privacy / contact): one near-black base from
      legal.css / portal.css, with the shared ambient nebula on top. Only the
      lobby's own surfaces (cards, pills) stay lifted above it. */
-  --home-bg:#090d1c;
-  --home-bg-top:#090d1c;
-  --home-bg-bottom:#090d1c;
+  --home-bg:#0b1020;
+  --home-bg-top:#0b1020;
+  --home-bg-bottom:#0b1020;
   --home-surface:#283357;
   --home-line:#ffffff1f;
   --home-text:#f6f7ff;
@@ -109,9 +109,12 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
 #home .cards{
   display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;
   background:none;border:0;counter-reset:none;
+  /* The caption is a separate row BELOW the cover now, so the hover CTA is
+     centred on the artwork itself instead of the old squashed square card. */
+  --card-caption-half:0px;
 }
 #home .cards .game-card{
-  position:relative;display:flex;flex-direction:column;aspect-ratio:1/1;
+  position:relative;display:flex;flex-direction:column;
   overflow:hidden;counter-increment:none;
   border:1px solid var(--home-line);border-radius:12px;background:var(--home-surface);
   transition:transform .18s,border-color .18s,background .18s,box-shadow .18s;
@@ -125,20 +128,25 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
   transform:none;z-index:1;background:#323e6d;
   box-shadow:0 8px 22px #00000066;
 }
-/* The whole card stays square: the cover gives up a little height to the
-   caption row instead of pushing the second row below the fold. */
+/* The cover keeps its FULL square: the black caption row is below it, so
+   object-fit no longer crops the bottom of the artwork. */
 #home .cards .card-art{
-  position:relative;aspect-ratio:auto;flex:1 1 auto;min-height:0;
+  position:relative;aspect-ratio:1/1;flex:0 0 auto;
   display:grid;place-items:center;
   overflow:hidden;border-radius:0;isolation:isolate;
 }
 /* The old decorative ring from portal.css stays off. ::after is repurposed as
    a soft darkening veil that only appears while the card is hovered, so the
-   play prompt stays legible on both pale and busy covers. */
+   play prompt stays legible on both pale and busy covers. It also blurs its
+   backdrop: the veil sits above the artwork (and the blue card's CSS sky)
+   but BELOW .card-label (z-index:2), so the cover softens on hover while
+   "Play now" stays razor sharp. Blurring the veil instead of <img> keeps
+   the existing scale and the blue card's drop-shadow untouched. */
 #home .cards .card-art:before{display:none}
 #home .cards .card-art::after{
   content:'';position:absolute;inset:0;z-index:1;
   background:linear-gradient(180deg,#060a1826 0%,#060a1852 52%,#060a18b3 100%);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
   opacity:0;transition:opacity .24s ease;pointer-events:none;
 }
 #home .cards .game-card.live:hover .card-art::after,
@@ -154,16 +162,17 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
 #home .cards .game-card.blue.live:hover .card-art img{transform:scale(1.03)}
 /* Hover-only call to action. The reference site slaps a big orange button
    over the caption; ours is a compact deep-blue glass pill centred on the
-   cover (both axes), so the game title below stays visible. Locale text comes
-   from the existing .lang-en / .lang-cn spans. */
+   WHOLE card (cover + black caption row), so the game title below stays
+   visible. Locale text comes from the existing .lang-en / .lang-cn spans. */
 #home .cards .card-label{
-  position:absolute;z-index:2;left:50%;top:50%;bottom:auto;
+  position:absolute;z-index:2;left:50%;bottom:auto;
+  top:calc(50% + var(--card-caption-half,0px));
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:118px;padding:9px 18px;border-radius:999px;
+  min-width:128px;padding:10px 20px;border-radius:999px;
   background:linear-gradient(135deg,#3b5bd9 0%,#263f9e 100%);
   border:1px solid #8ea3ff;
   box-shadow:0 8px 20px #050a1ccc,inset 0 1px 0 #ffffff3d,0 0 0 4px #6f8bff1a;
-  color:#fff;font:800 13px/1.2 Nunito,system-ui,sans-serif;
+  color:#fff;font:800 14px/1.2 Nunito,system-ui,sans-serif;
   letter-spacing:.4px;white-space:nowrap;
   backdrop-filter:blur(6px);pointer-events:none;
   opacity:0;transform:translate(-50%,calc(-50% + 10px)) scale(.96);
@@ -182,7 +191,7 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
    the cover and the name are enough. The small grey description line
    ("2人 · 休闲台球") is intentionally gone too, and the p guard also
    neutralises an older cached script that might still inject it. */
-/* Caption bar: 1.5x the old 36px height, pure black, with the name centred. */
+/* Caption bar sits BELOW the full square cover (no longer eats into it). */
 #home .card-copy{
   display:flex;align-items:center;flex:0 0 auto;
   min-height:54px;padding:0 6px;border-top:1px solid #ffffff12;
@@ -256,8 +265,15 @@ body.playing>footer{display:none}
   #home .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   #home .card-copy{padding:0 6px;min-height:54px}
   #home .card-copy h3{font-size:19.5px}
-  #home .cards .card-label{min-width:104px;padding:8px 14px;font-size:12px}
+  #home .cards .card-label{min-width:112px;padding:9px 16px;font-size:13px}
   #home .section-heading p{display:none}
+}
+/* The 600px rule above outranks site-chrome.css and kept a 12px right
+   padding on the lobby home, pushing the cluster 9px off a 390px screen.
+   The lobby nav is wider than the in-game header, so keep 2px less than
+   the 4px shell padding to fit the signed-in cluster without overflow. */
+@media(max-width:480px){
+  body:not(.playing) .topbar{gap:2px;padding:0 2px}
 }
 @media(prefers-reduced-motion:reduce){
   #home .cards .game-card,#home .cards .card-art img,

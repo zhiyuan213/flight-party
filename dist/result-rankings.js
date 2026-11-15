@@ -1,6 +1,6 @@
 import {applyAvatar} from './avatar.js';
 // Keep result rows mounted while the committed ledger arrives; only patch their content.
-export function renderResultRankings(root,players,ranking,{key='',online=false,confirmed=null,t=(en)=>en}={}){
+export function renderResultRankings(root,players,ranking,{key='',online=false,confirmed=null,pointsBySeat=null,t=(en)=>en}={}){
  if(root.dataset.resultKey!==key){root.replaceChildren();root.dataset.resultKey=key;}
  const existing=new Map([...root.querySelectorAll('.rank-row')].map(row=>[Number(row.dataset.seat),row]));
  ranking.forEach((seat,index)=>{
@@ -10,9 +10,13 @@ export function renderResultRankings(root,players,ranking,{key='',online=false,c
   const set=(selector,value)=>{const node=row.querySelector(selector);if(node.textContent!==value)node.textContent=value;return node;};
   set('.rank-number',String(index+1));const name=set('b',player.name);name.dataset.member=String(player.member===true);name.dataset.annualMember=String(player.member===true&&player.annualMember===true);
   const frame=player.member&&['gold','cloud','night'].includes(player.avatarFrame)?player.avatarFrame:'none';
-  row.dataset.cardFrame=frame;const avatar=row.querySelector('.result-avatar');const avatarClass='result-avatar avatar-'+seat;if(avatar.className!==avatarClass)avatar.className=avatarClass;if(avatar.dataset.frame!==frame)avatar.dataset.frame=frame;applyAvatar(avatar,player.avatarUrl);
+  row.dataset.cardFrame=frame;const avatar=row.querySelector('.result-avatar');const avatarClass='result-avatar avatar-'+seat;if(avatar.className!==avatarClass)avatar.className=avatarClass;if(avatar.dataset.frame!==frame)avatar.dataset.frame=frame;applyAvatar(avatar,player);
   const result=confirmed?.find(entry=>entry.seatIndex===seat);
-  set('small',online?(result?`${result.pointsDelta>0?'+':''}${result.pointsDelta} ${t('points this game','本局积分')}`:t('Confirming score…','积分确认中…')):`${player.bumps} ${t('bumps','次撞机')} · ${player.rolls} ${t('rolls','次掷骰')}`);
+  const earned=online?(result?Number(result.pointsDelta)||0:null)
+   :pointsBySeat&&pointsBySeat[seat]!=null?Number(pointsBySeat[seat]):null;
+  set('small',online?(result?`${earned>0?'+':''}${earned} ${t('Joy Coins this game','本局 Joy Coins')}`:t('Confirming score…','Joy Coins 确认中…'))
+   :earned!=null?`+${earned} ${t('Joy Coins this game','本局 Joy Coins')}`
+   :`${player.bumps} ${t('bumps','次撞机')} · ${player.rolls} ${t('rolls','次掷骰')}`);
  });
  for(const [seat,row] of existing)if(!ranking.includes(seat))row.remove();
 }

@@ -19,7 +19,10 @@ public class RoomController {
     private final RoomPresence presence;
     public RoomController(RedisRoomStore store,RoomRollService rolls,org.springframework.jdbc.core.simple.JdbcClient db,ReactionService reactions,RoomViewService views,RoomPresence presence) { this.presence=presence;this.views=views; this.store=store;this.rolls=rolls;this.db=db;this.reactions=reactions; }
     private RoomSnapshot view(RoomRules.Room room,UUID user,Instant now){
-        presence.watch(room,now);return views.forMember(room,user,now);
+        /* Any authoritative read by the owner counts as presence: a hosted or
+           grace seat is handed back, so re-selecting an online match re-enters
+           the same game instead of creating a new one. */
+        return views.forMember(presence.resume(room,user,now),user,now);
     }
     public record ReactionInput(UUID commandId,String emoji) {}
     @PostMapping("/{id}/reaction")
@@ -131,6 +134,13 @@ public class RoomController {
     }
     @GetMapping("/{id}/snapshot")
     public RoomSnapshot snapshot(@PathVariable UUID id,HttpServletRequest request) {
+        UUID user=principal(request);return view(member(id,user).room(),user,Instant.now());
+    }
+    /** Explicit presence: a fresh page load, "在线对决" re-entry, or a real
+        pointer/key event. WS snapshots and pongs are deliberately not presence,
+        so an online-but-idle seat stays hosted until the player acts. */
+    @PostMapping("/{id}/activity")
+    public RoomSnapshot activity(@PathVariable UUID id,HttpServletRequest request) {
         UUID user=principal(request);return view(member(id,user).room(),user,Instant.now());
     }
     @GetMapping("/{id}/game")

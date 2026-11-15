@@ -1,0 +1,184 @@
+/* Shared four-level computer difficulty control (table intro, arcade, flight lobby).
+   Colour-agnostic on purpose: the three hosts use different light/dark skins. */
+.bot-difficulty{
+  margin:16px 0 2px;
+  padding:13px 14px 12px;
+  border-radius:14px;
+  border:1px solid color-mix(in srgb,currentColor 16%,transparent);
+  background:color-mix(in srgb,currentColor 5%,transparent);
+  color:inherit;
+  font:inherit;
+  max-width:100%;
+}
+.bot-difficulty-label{
+  display:block;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  opacity:.66;
+  margin-bottom:9px;
+}
+.bot-difficulty-options{display:flex;gap:6px;flex-wrap:wrap}
+.bot-difficulty-options button{
+  flex:1 1 0;
+  min-width:62px;
+  padding:8px 6px;
+  border-radius:9px;
+  border:1px solid color-mix(in srgb,currentColor 20%,transparent);
+  background:color-mix(in srgb,currentColor 6%,transparent);
+  color:inherit;
+  font:inherit;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.3;
+  cursor:pointer;
+  transition:background .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.bot-difficulty-options button:hover{
+  background:color-mix(in srgb,currentColor 13%,transparent);
+  transform:translateY(-1px);
+}
+.bot-difficulty-options button:focus-visible{outline:2px solid #6f9bff;outline-offset:2px}
+.bot-difficulty-options button[aria-pressed="true"]{
+  background:linear-gradient(135deg,#4f7cf7,#8b5cf6);
+  border-color:transparent;
+  color:#fff;
+  box-shadow:0 5px 16px #4f7cf755;
+}
+.bot-difficulty-options button[aria-pressed="true"]:hover{filter:brightness(1.07)}
+.bot-difficulty-note{display:block;margin-top:9px;font-size:11px;line-height:1.5;opacity:.6}
+/* The table intro gives every button a flat dark skin with a very specific
+   selector; restate the selected/unselected states so the four chips survive. */
+body.table-home-theme .intro-screen .launch-actions>.bot-difficulty{margin:6px 0 0;gap:0}
+body.table-home-theme .intro-screen .bot-difficulty-options button{
+  min-height:34px;padding:7px 5px;font-size:12px;
+  border:1px solid #46518a;background:#1b254a;color:#e7eeff;box-shadow:none;
+}
+body.table-home-theme .intro-screen .bot-difficulty-options button:hover{
+  background:#293657;border-color:#8d9dff;transform:none;
+}
+body.table-home-theme .intro-screen .bot-difficulty-options button[aria-pressed="true"]{
+  background:linear-gradient(135deg,#4f7cf7,#8b5cf6);
+  background-image:linear-gradient(135deg,#4f7cf7,#8b5cf6);
+  border-color:transparent;color:#fff;box-shadow:0 4px 14px #4f7cf755;
+}
+@media(max-width:520px){
+  .bot-difficulty{padding:11px}
+  .bot-difficulty-options button{min-width:56px;font-size:11px}
+}
+
+/* ------------------------------------------------------------------ *
+ * Modal variant: one compact trigger in the launch area, four choices in
+ * a native <dialog>. The dialog is appended to <body>, outside any hidden
+ * screen, so it works on the table intro, arcade and flight lobby alike.
+ * ------------------------------------------------------------------ */
+.bot-difficulty.bot-difficulty-slot{
+  margin:8px 0 2px;padding:0;border:0;border-radius:0;background:none;
+}
+.bot-difficulty-trigger{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  min-height:36px;padding:8px 12px;border-radius:10px;
+  border:1px solid color-mix(in srgb,currentColor 22%,transparent);
+  background:color-mix(in srgb,currentColor 6%,transparent);
+  color:inherit;font:inherit;font-size:12px;text-align:left;cursor:pointer;
+  transition:background .16s ease,border-color .16s ease;
+}
+.bot-difficulty-trigger:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
+.bot-difficulty-trigger:focus-visible{outline:2px solid #6f9bff;outline-offset:2px}
+.bd-trigger-label{opacity:.72;font-weight:700;letter-spacing:.02em}
+.bd-trigger-current{display:inline-flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap}
+.bd-trigger-value{color:#a8c4ff}
+.bd-trigger-chevron{font-size:16px;line-height:1;opacity:.7;transform:rotate(90deg)}
+
+/* The table intro paints every launch button with its own flat skin. The
+   trigger is wrapped in a <div>, so it never matched .launch-actions>button
+   and the intro's own (higher-specificity) `button` rule won instead: 12.5px /
+   36px, plus a 6px wrapper margin that doubled the gap above this row.
+   Mirror the launch button exactly and let the grid gap do the spacing. */
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions>.bot-difficulty.bot-difficulty-slot{
+  margin:0;padding:0;border:0;border-radius:0;background:none;gap:0;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions .bot-difficulty-trigger{
+  min-height:38px;margin:0;padding:8px 12px;border-radius:8px;
+  border:1px solid #46518a;background:#1b254a;color:#d3ddf5;
+  font-size:14px;font-weight:500;box-shadow:none;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions .bot-difficulty-trigger:hover{
+  background:#293657;border-color:#8d9dff;
+}
+/* The inner label/value/chevron must not reintroduce a second type style. */
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions .bd-trigger-label,
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions .bd-trigger-current{
+  opacity:1;font-weight:500;letter-spacing:normal;
+}
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions .bd-trigger-value{color:inherit}
+body.table-home-theme:not([data-screen="play"]) .intro-screen .launch-actions .bd-trigger-chevron{
+  font-size:14px;opacity:1;
+}
+
+/* !important on the shell: each host has its own (sometimes :has()-scoped)
+   global `dialog` rule, and the three pages must still look identical. */
+dialog.bot-difficulty-dialog{
+  position:relative;
+  width:min(420px,calc(100vw - 28px))!important;max-width:calc(100vw - 28px)!important;
+  max-height:calc(100dvh - 32px);overflow-y:auto;margin:auto;
+  padding:22px 22px 18px!important;border-radius:16px!important;
+  border:1px solid #3a4c78!important;background:#141c31!important;color:#eaf1ff!important;
+  box-shadow:0 22px 60px #000a;scrollbar-width:thin;text-align:left!important;
+}
+dialog.bot-difficulty-dialog::backdrop{background:#050a18c4;backdrop-filter:blur(5px)}
+/* The table intro themes every `button` (including :hover) with a hard
+   3px drop shadow; !important keeps the dialog identical on all three hosts. */
+dialog.bot-difficulty-dialog button.bd-close{
+  position:absolute;top:10px;right:10px;display:grid;place-items:center;
+  width:28px;height:28px;min-width:28px;min-height:28px;padding:0;margin:0;
+  border:0!important;border-radius:50%!important;background:transparent!important;
+  color:#9aa9cc!important;box-shadow:none!important;
+  font-size:20px;line-height:1;cursor:pointer;
+}
+dialog.bot-difficulty-dialog button.bd-close:hover{background:#26324f!important;color:#fff!important}
+.bot-difficulty-dialog .bd-eyebrow{
+  display:block;font-size:9px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:#8fa3ca;margin-bottom:5px;
+}
+.bot-difficulty-dialog .bd-title{
+  margin:0 0 5px;padding-right:26px;font-size:18px;font-weight:700;color:#f2f5ff;
+}
+.bot-difficulty-dialog .bd-sub{margin:0;font-size:11.5px;line-height:1.6;color:#94a6c8}
+.bot-difficulty-dialog .bd-options{display:grid;gap:8px;margin:16px 0 12px}
+dialog.bot-difficulty-dialog button.bd-option{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  padding:10px 12px!important;border-radius:10px!important;
+  border:1px solid #3a4b73!important;background:#1b2540!important;
+  color:#e7eeff!important;text-align:left;font:inherit;font-size:13px;
+  box-shadow:none!important;cursor:pointer;
+  transition:background .16s ease,border-color .16s ease;
+}
+dialog.bot-difficulty-dialog button.bd-option:hover{
+  background:#27375d!important;border-color:#7f97ff!important;
+}
+dialog.bot-difficulty-dialog button.bd-option:focus-visible{outline:2px solid #8fb0ff;outline-offset:2px}
+dialog.bot-difficulty-dialog button.bd-option[aria-pressed="true"]{
+  background:linear-gradient(135deg,#3d5fc4,#6d4bd0)!important;
+  border-color:#8fa6ff!important;color:#fff!important;
+  box-shadow:0 4px 14px #4f7cf744!important;
+}
+.bot-difficulty-dialog .bd-option-text{display:grid;gap:3px;min-width:0}
+.bot-difficulty-dialog .bd-option b{font-size:13px;font-weight:700}
+.bot-difficulty-dialog .bd-option small{font-size:11px;line-height:1.4;opacity:.72}
+.bot-difficulty-dialog .bd-check{font-size:15px;opacity:0;flex:0 0 auto}
+.bot-difficulty-dialog .bd-option[aria-pressed="true"] .bd-check{opacity:1}
+.bot-difficulty-dialog .bd-note{margin:0;font-size:10.5px;line-height:1.6;color:#8498bd}
+.bot-difficulty-dialog .bd-actions{display:flex;justify-content:flex-end;margin-top:14px}
+dialog.bot-difficulty-dialog button.primary{
+  min-height:32px;padding:7px 18px!important;border-radius:8px!important;
+  border:1px solid #7b93ff!important;background:#3c54bd!important;
+  color:#fff!important;font:inherit;font-size:12px;font-weight:700;
+  box-shadow:none!important;cursor:pointer;
+}
+dialog.bot-difficulty-dialog button.primary:hover{background:#4d66d8!important}
+@media(max-width:480px){
+  dialog.bot-difficulty-dialog{padding:18px 16px 15px!important}
+  dialog.bot-difficulty-dialog button.bd-option{padding:9px 10px!important}
+}

@@ -1,6 +1,6 @@
 import {pocketEntryPath,TABLE_PAD,TABLE_HOLES} from './pool-table.js';
-import {drawPoolBall,rollSphere,sphereIdentity} from './pool-ball.js';
-import {tracePocketBack,pocketIndex} from './pool-geometry.js';
+import {drawPoolBall,rollSphere,sphereIdentity} from './pool-ball.js?v=20261112-gamelanes1';
+import {tracePocketBack,pocketIndex,expandPocketPoint,pocketVisualContext,POCKET_VISUAL_EXPAND,snookerCirclePath} from './pool-geometry.js';
 const R=16,SPACING=33,ARC_RADIUS=40,LEAD_IN=28;
 const EXIT_X=TABLE_PAD+1044,EXIT_Y=TABLE_PAD+2,ARC_X=EXIT_X+LEAD_IN,ARC_Y=EXIT_Y+ARC_RADIUS;
 export const RETURN_X=ARC_X+ARC_RADIUS,RETURN_BOTTOM=TABLE_PAD+509;
@@ -53,12 +53,14 @@ export function returnPosition(itemOrIndex,elapsed){
 }
 const MOTION_STEP=4,motionCache=new WeakMap();
 function backWall(middle){
-  const points=[];
+  const points=[],p=(x,y)=>expandPocketPoint(x,y,middle);
+  // Follow the DRAWN mouth (visually widened), not the physical capture
+  // contour, so a rebound never appears to hit a wall 2 units inside the hole.
   tracePocketBack({
-    moveTo(x,y){points.push([x,y]);},lineTo(x,y){points.push([x,y]);},
+    moveTo(x,y){points.push(p(x,y));},lineTo(x,y){points.push(p(x,y));},
     bezierCurveTo(ax,ay,bx,by,cx,cy){
-      const [x,y]=points.at(-1);
-      for(let i=1;i<=32;i++){const t=i/32,u=1-t;points.push([u*u*u*x+3*u*u*t*ax+3*u*t*t*bx+t*t*t*cx,u*u*u*y+3*u*u*t*ay+3*u*t*t*by+t*t*t*cy]);}
+      const [x,y]=points.at(-1),[a,b]=p(ax,ay),[c,d]=p(bx,by),[e,f]=p(cx,cy);
+      for(let i=1;i<=32;i++){const t=i/32,u=1-t;points.push([u*u*u*x+3*u*u*t*a+3*u*t*t*c+t*t*t*e,u*u*u*y+3*u*u*t*b+3*u*t*t*d+t*t*t*f]);}
     }
   },middle);
   const center=middle?[0,-26]:[-17,-17];
@@ -70,10 +72,119 @@ function backWall(middle){
   });
 }
 const backWalls=[backWall(false),backWall(true)];
+// A hard, off-centre pot can rattle around the curved well before dropping.
+// This is a presentation-only branch: the pot itself was already decided by
+// pool.js, so it cannot change any state, replay frame or server parity.
+// One continuous "drive" level replaces the old pair of hard speed / stroke
+// gates. It blends the measured capture speed with the stroke power so a long
+// roll still belongs to the shot that produced it. Everything above the soft
+// floor is claimed by exactly one of the two effects; only a genuinely gentle
+// pot keeps the original single-contact descent.
+const DRIVE_SPEED=48,DRIVE_FLOOR=.30,POWER_FLOOR=55,POWER_WEIGHT=.62;
+const RATTLE_MIN_OFFSET=11;
+const RATTLE_RADIUS=16,RATTLE_EXIT_RADIUS=2.2,RATTLE_SINK=9,RATTLE_SPEED=.35,RATTLE_OMEGA=.031;
+function driveLevel(item,speed){
+  const fromSpeed=Math.max(0,Math.min(1,speed/DRIVE_SPEED));
+  const power=item.shotPower,fromPower=Number.isFinite(power)?Math.max(0,Math.min(1,(power-POWER_FLOOR)/(100-POWER_FLOOR))):0;
+  return Math.max(fromSpeed,POWER_WEIGHT*fromPower);
+}
+function rattlePlan(item,hole,x,y,vx,vy){
+  if(item.rattle===false||item.rebound===true)return null;
+  const speed=Math.hypot(item.vx??0,item.vy??0),drive=driveLevel(item,speed);
+  if(item.rattle!==true&&drive<DRIVE_FLOOR)return null;
+  const center=hole[0]===500?[0,-26]:[-17,-17],dx=center[0]-x,dy=center[1]-y;
+  const len=Math.hypot(vx,vy)||1e-9,dir0=[vx/len,vy/len];
+  const cross=dx*dir0[1]-dy*dir0[0],offset=Math.abs(cross),along=dx*dir0[0]+dy*dir0[1];
+  // Every glancing entry belongs to the orbit: a large impact parameter, or a
+  // ball that has already swept past the well centre. Near-axis pots are left
+  // to the rebound branch, so the two branches tile all animated entries.
+  if(item.rattle!==true&&offset<RATTLE_MIN_OFFSET&&along>=0)return null;
+  const level=item.rattle===true?Math.max(.6,Math.min(1,speed/48)):drive;
+  const dir=cross>=0?1:-1,theta0=Math.atan2(dir0[1],dir0[0])-dir*Math.PI/2;
+  const to=[center[0]+RATTLE_RADIUS*Math.cos(theta0),center[1]+RATTLE_RADIUS*Math.sin(theta0)];
+  const from=[x,y],lead=Math.hypot(to[0]-x,to[1]-y);
+  // Keep the Hermite lead proportional to its real length: clamping it short
+  // used to make a long diagonal approach sprint into the orbit on frame one.
+  const start=Math.max(44,Math.min(176,Math.round(lead/RATTLE_SPEED/MOTION_STEP)*MOTION_STEP));
+  // A soft graze turns barely half a lap and drops; a full-power one still
+  // completes two. The cube-free square keeps the low end short but visible.
+  const turns=.25+1.9*level*level+.15*Math.min(1,offset/24);
+  const span=Math.min(Math.round(2*Math.PI*turns/RATTLE_OMEGA/MOTION_STEP)*MOTION_STEP,500-start);
+  return {from,to,dir0,dir1:dir0,center,theta0,dir,omega:RATTLE_OMEGA,r0:RATTLE_RADIUS,r1:RATTLE_EXIT_RADIUS,
+    sink:RATTLE_SINK,speed:RATTLE_SPEED,start,end:start+span,turns:span*RATTLE_OMEGA/(2*Math.PI),level,offset,along};
+}
+function rattlePose(p,time){
+  if(time<=p.start){
+    const s=time/p.start,s2=s*s,s3=s2*s,tv=p.start*p.speed;
+    const h00=2*s3-3*s2+1,h10=(s3-2*s2+s)*tv,h01=-2*s3+3*s2,h11=(s3-s2)*tv;
+    return [h00*p.from[0]+h10*p.dir0[0]+h01*p.to[0]+h11*p.dir1[0],
+      h00*p.from[1]+h10*p.dir0[1]+h01*p.to[1]+h11*p.dir1[1]];
+  }
+  const u=Math.min(1,(time-p.start)/(p.end-p.start)),theta=p.theta0+p.dir*p.omega*(time-p.start);
+  const r=p.r0+(p.r1-p.r0)*Math.pow(u,1.3),cy=p.center[1]-p.sink*Math.pow(u,1.5);
+  return [p.center[0]+r*Math.cos(theta),cy+r*Math.sin(theta)];
+}
+function rattleContacts(p,h,sx,sy){
+  const count=1+Math.round(2*p.level),out=[];
+  for(let i=0;i<count;i++){
+    const time=Math.round((p.start+(i+.4)/(count+.3)*(p.end-p.start)*.66)/MOTION_STEP)*MOTION_STEP;
+    const [lx,ly]=rattlePose(p,time),rx=lx-p.center[0],ry=ly-p.center[1],d=Math.hypot(rx,ry)||1;
+    const nx=rx/d*sx,ny=ry/d*sy,strength=Math.min(1,(.5+.4*p.level)*Math.pow(.55,i)),incoming=.12*strength;
+    const vt=p.r0*p.omega,tx=-ny*p.dir,ty=nx*p.dir;
+    out.push({time,strength,normalSpeed:incoming*8,x:h[0]+lx*sx,y:h[1]+ly*sy,nx,ny,
+      before:[tx*vt-nx*incoming,ty*vt-ny*incoming],
+      after:[tx*vt*.9+nx*incoming*.32,ty*vt*.9+ny*incoming*.32]});
+  }
+  return out;
+}
+// A straight hard pot rattles back and forth between the back wall and the
+// jaws. How many times it comes back is driven by the measured entry speed.
+// Like the orbit above, this is presentation only: the pot is already settled
+// by pool.js, so no state, replay frame or server parity can be affected.
+const REBOUND_MAX_OFFSET=11,REBOUND_MAX_TIME=320;
+function reboundLimits(center,u,s0,walls){
+  let back=Math.max(s0+8,20);
+  for(let s=2;s<=60;s++){
+    const px=center[0]+u[0]*s,py=center[1]+u[1]*s;
+    let clearance=Infinity;
+    for(const w of walls){
+      const t=Math.max(0,Math.min(1,((px-w.a[0])*w.dx+(py-w.a[1])*w.dy)/(w.length*w.length)));
+      clearance=Math.min(clearance,Math.hypot(px-w.a[0]-w.dx*t,py-w.a[1]-w.dy*t));
+    }
+    // Stop where the sphere would first touch the real curved back wall.
+    if(clearance<R){back=Math.max(s0+8,s-1);break;}
+  }
+  return {front:Math.max(s0+2,back-30),back};
+}
+function reboundPlan(item,hole,x,y,vx,vy,walls){
+  if(item.rebound===false)return null;
+  const speed=Math.hypot(item.vx??0,item.vy??0),drive=driveLevel(item,speed);
+  if(item.rebound!==true&&drive<DRIVE_FLOOR)return null;
+  const center=hole[0]===500?[0,-26]:[-17,-17],len=Math.hypot(vx,vy)||1e-9,u=[vx/len,vy/len];
+  const dx=center[0]-x,dy=center[1]-y,offset=Math.abs(dx*u[1]-dy*u[0]),along=dx*u[0]+dy*u[1];
+  // The orbit owns glancing entries; this branch takes the near-axis ones.
+  // Because the orbit also claims every ball that has passed the centre, no
+  // animated pot can fall through the gap between the two branches.
+  if(item.rebound!==true&&(offset>REBOUND_MAX_OFFSET||along<0))return null;
+  const level=item.rebound===true?Math.max(.55,Math.min(1,speed/48)):drive;
+  const s0=(x-center[0])*u[0]+(y-center[1])*u[1];
+  // Keep the off-axis part of the real capture point: projecting onto the
+  // entry axis alone would teleport the sphere on the very first sample.
+  const perp=[x-center[0]-u[0]*s0,y-center[1]-u[1]*s0],limits=reboundLimits(center,u,s0,walls);
+  // The well narrows as the ball sinks: each lap is shorter than the last,
+  // while the rebound keeps most of its speed. Travel shrinks faster than
+  // velocity decays, so the impacts accelerate instead of dragging out.
+  // Cube the level so a gentle pot gets a single muted contact and only a
+  // near-full-power shot reaches the eight-hit rattle.
+  // The widened drawn mouth adds ~2 units to the first lap. Close the funnel
+  // slightly faster so the full-power volley keeps its original 240 ms finish.
+  return {center,u,perp,s0,...limits,v0:.45+.12*level,rest:.90+.04*level,shrink:.735-.04*level,
+    maxBounces:1+Math.round(7.4*level*level*level),level,start:0,end:REBOUND_MAX_TIME,bounces:0};
+}
 // Velocities use the same table units per 8 ms as the shot simulator. Only the
 // closed back of the actual well is a wall; its open mouth never invents a hit.
 export function pocketMotion(item){
-  const signature=[item.x,item.y,item.vx,item.vy,item.holeIndex,item.strength,item.orientation],cached=motionCache.get(item);
+  const signature=[item.x,item.y,item.vx,item.vy,item.holeIndex,item.strength,item.orientation,item.rattle,item.rebound,item.shotPower],cached=motionCache.get(item);
   if(cached&&signature.every((v,i)=>Object.is(v,cached.signature[i])))return cached.motion;
   const hole=pocket(item),h=[hole[0]+TABLE_PAD,hole[1]+TABLE_PAD],sx=hole[0]===1000?-1:1,sy=hole[1]===500?-1:1,middle=hole[0]===500;
   let x=((Number.isFinite(item.x)?item.x:h[0])-h[0])*sx,y=((Number.isFinite(item.y)?item.y:h[1])-h[1])*sy;
@@ -90,7 +201,59 @@ export function pocketMotion(item){
   let dropAt=380,touching=false,insideSeen=pocketIndex(h[0]+x*sx-TABLE_PAD,h[1]+y*sy-TABLE_PAD)===holeIndex;
   const sample=time=>({time,x:h[0]+x*sx,y:h[1]+y*sy,vx:vx*sx,vy:vy*sy,distance,orientation});
   samples.push(sample(0));
-  for(let time=MOTION_STEP;time<=POCKET_DURATION+MOTION_STEP;time+=MOTION_STEP){
+  const rattle=rattlePlan(item,hole,x,y,vx,vy);
+  if(rattle){
+    // The well is a bowl, not a flat wall: a glancing hard entry keeps its
+    // tangential speed and spirals down its inner face. Radius, sink depth
+    // and angular rate are analytic, so every 4 ms sample stays continuous.
+    for(let time=MOTION_STEP;time<=rattle.end;time+=MOTION_STEP){
+      const px=x,py=y,pose=rattlePose(rattle,time);
+      x=pose[0];y=pose[1];vx=(x-px)/MOTION_STEP;vy=(y-py)/MOTION_STEP;
+      const dx=(x-px)*sx,dy=(y-py)*sy;distance+=Math.hypot(dx,dy);
+      orientation=rollSphere(orientation,dx,dy,R);
+      samples.push(sample(time));
+    }
+    contacts.push(...rattleContacts(rattle,h,sx,sy));
+    dropAt=rattle.end;
+  }
+  const rebound=rattle?null:reboundPlan(item,hole,x,y,vx,vy,walls);
+  if(rebound){
+    // One-dimensional rattle along the measured entry axis. Both ends are
+    // real geometry: the back wall is probed above, the near end is the jaw
+    // just inside the open lip. Every reversal loses energy, so hard shots
+    // get more audible rebounds before the ball finally drops.
+    let s=rebound.s0,v=rebound.v0;
+    for(let time=MOTION_STEP;time<=rebound.end;time+=MOTION_STEP){
+      const px=x,py=y;s+=v*MOTION_STEP;
+      let hit=0;
+      // The incoming ball must reach the back wall first; only after that
+      // rebound can the near jaw turn it around again.
+      if(s>=rebound.back){s=rebound.back;hit=1;}
+      else if(rebound.bounces>0&&s<=rebound.front){s=rebound.front;hit=-1;}
+      const incoming=Math.abs(v);
+      if(hit){
+        v=-v*rebound.rest;rebound.bounces++;
+        // Anchor the new lap at the wall just struck and pull the opposite
+        // jaw inward: the funnel closes as the ball drops.
+        const span=(rebound.back-rebound.front)*rebound.shrink;
+        if(hit>0)rebound.front=rebound.back-span;else rebound.back=rebound.front+span;
+        const bx=rebound.center[0]+rebound.u[0]*s+rebound.perp[0],by=rebound.center[1]+rebound.u[1]*s+rebound.perp[1];
+        const before=[rebound.u[0]*hit*incoming*sx,rebound.u[1]*hit*incoming*sy],after=[rebound.u[0]*v*sx,rebound.u[1]*v*sy];
+        contacts.push({time,strength:Math.min(1,incoming/.6),normalSpeed:incoming*8/visualScale,
+          x:h[0]+bx*sx,y:h[1]+by*sy,nx:-hit*rebound.u[0]*sx,ny:-hit*rebound.u[1]*sy,before,after});
+      }
+      x=rebound.center[0]+rebound.u[0]*s+rebound.perp[0];y=rebound.center[1]+rebound.u[1]*s+rebound.perp[1];
+      vx=(x-px)/MOTION_STEP;vy=(y-py)/MOTION_STEP;
+      const ddx=(x-px)*sx,ddy=(y-py)*sy;distance+=Math.hypot(ddx,ddy);
+      orientation=rollSphere(orientation,ddx,ddy,R);
+      samples.push(sample(time));
+      if(hit&&(rebound.bounces>=rebound.maxBounces||Math.abs(v)<.05)){rebound.end=time;break;}
+      v*=Math.exp(-MOTION_STEP*.0012);
+      if(time>=REBOUND_MAX_TIME){rebound.end=time;break;}
+    }
+    dropAt=rebound.end;
+  }
+  for(let time=MOTION_STEP;!rattle&&!rebound&&time<=POCKET_DURATION+MOTION_STEP;time+=MOTION_STEP){
     const dt=Math.min(MOTION_STEP,POCKET_DURATION-(time-MOTION_STEP));if(dt<=0)break;
     const px=x,py=y;x+=vx*dt;y+=vy*dt;
     const insideWell=pocketIndex(h[0]+x*sx-TABLE_PAD,h[1]+y*sy-TABLE_PAD)===holeIndex;
@@ -116,11 +279,19 @@ export function pocketMotion(item){
         x+=nx*(inside?R-d:R+d);y+=ny*(inside?R-d:R+d);
         if(incoming>0){
           const before=[vx*sx,vy*sy],tangent=vx*-ny+vy*nx;
-          vx=.32*incoming*nx+.8*tangent*-ny;vy=.32*incoming*ny+.8*tangent*nx;
+          // Tangential retention is deliberately low: a high value made fast
+          // entries scrape around the curved well for the whole descent.
+          vx=.32*incoming*nx+.35*tangent*-ny;vy=.32*incoming*ny+.35*tangent*nx;
           if(incoming>.003&&!touching){
             const normalSpeed=incoming*8/visualScale;
             contacts.push({time:Math.min(time,POCKET_DURATION),strength:Math.min(1,normalSpeed/40),normalSpeed,x:h[0]+qx*sx,y:h[1]+qy*sy,nx:nx*sx,ny:ny*sy,before,after:[vx*sx,vy*sy]});
-            if(contacts.length===1)dropAt=Math.min(380,Math.max(220,time+140));
+            // Harder entries leave the lip sooner instead of orbiting the rim
+            // for a fixed 220 ms. Weak shots keep the longer, softer descent.
+            // Derive a continuous impact level from the measured entry vector;
+            // item.strength is clamped to 1 and cannot distinguish 90 from 100.
+            const impact=Math.max(0,Math.min(1,Math.hypot(item.vx??0,item.vy??0)/48));
+            const floor=Math.round(220-90*impact);
+            if(contacts.length===1)dropAt=Math.min(380,Math.max(floor,time+90));
           }
           touching=true;
         }
@@ -138,7 +309,11 @@ export function pocketMotion(item){
   const direction=holeIndex===5?[0,-1]:[1,0],turnTime=32,duration=POCKET_DURATION-dropAt;
   const end=direction[0]?(h[0]+(middle?26:sx===1?18:54)+R+20):h[1]-18-R-20;
   const alongVelocity=join.vx*direction[0]+join.vy*direction[1],alongDistance=direction[0]?(end-join.x):(join.y-end);
-  const turnDistance=turnTime*(1-Math.exp(-duration/turnTime)),speed=(alongDistance-alongVelocity*turnDistance)/(duration-turnDistance);
+  const turnDistance=turnTime*(1-Math.exp(-duration/turnTime));
+  // A long orbit leaves less time for the hidden chute. Cap its exit speed so
+  // the final frames stay continuous even when the effect ends near 500 ms.
+  const rawSpeed=(alongDistance-alongVelocity*turnDistance)/(duration-turnDistance);
+  const speed=Math.max(-.55,Math.min(.55,rawSpeed));
   const target=[direction[0]*speed,direction[1]*speed];
   for(let time=dropAt+MOTION_STEP;time<=POCKET_DURATION+MOTION_STEP;time+=MOTION_STEP){
     const t=Math.min(time,POCKET_DURATION),age=t-dropAt,turn=turnTime*(1-Math.exp(-age/turnTime));
@@ -147,23 +322,43 @@ export function pocketMotion(item){
     samples.push({time:t,x:wx,y:wy,vx:target[0]+(join.vx-target[0])*Math.exp(-age/turnTime),vy:target[1]+(join.vy-target[1])*Math.exp(-age/turnTime),distance,orientation});
     if(t===POCKET_DURATION)break;
   }
-  const motion={samples,contacts,dropAt,duration:POCKET_DURATION,h,sx,sy,middle,direction};motionCache.set(item,{signature,motion});return motion;
+  const motion={samples,contacts,dropAt,duration:POCKET_DURATION,h,sx,sy,middle,direction,rattle,rebound};motionCache.set(item,{signature,motion});return motion;
 }
 export function pocketPosition(item,elapsed){
   const motion=pocketMotion(item),time=Math.max(0,Math.min(POCKET_DURATION,elapsed)),index=Math.min(motion.samples.length-2,Math.floor(time/MOTION_STEP));
   const a=motion.samples[index],b=motion.samples[index+1],u=(time-a.time)/(b.time-a.time),x=a.x+(b.x-a.x)*u,y=a.y+(b.y-a.y)*u;
-  const depth=Math.max(0,Math.min(1,(time-motion.dropAt)/80));
-  return {x,y,h:motion.h,sx:motion.sx,sy:motion.sy,middle:motion.middle,angle:(a.distance+(b.distance-a.distance)*u)/R,heading:Math.atan2(a.vy,a.vx),orientation:rollSphere(a.orientation,x-a.x,y-a.y,R),depth,visible:time<POCKET_DURATION};
+  let depth=Math.max(0,Math.min(1,(time-motion.dropAt)/80));
+  if(motion.rattle){
+    const r=motion.rattle,s=Math.max(0,Math.min(1,(time-r.start)/(r.end-r.start)));
+    // Keep the whole orbit on this side of the lip. Closing the well while the
+    // ball is still circling used to hide the effect and read as "drilled in".
+    depth=Math.max(depth,.16*s*s);
+  }
+  if(motion.rebound){
+    const r=motion.rebound,s=Math.max(0,Math.min(1,(time-r.start)/(r.end-r.start)));
+    // Same for the rapid rebounds: the well closes in the 80 ms after the
+    // final impact, not during the visible rattling.
+    depth=Math.max(depth,.12*s*s);
+  }
+  return {x,y,h:motion.h,sx:motion.sx,sy:motion.sy,middle:motion.middle,angle:(a.distance+(b.distance-a.distance)*u)/R,heading:Math.atan2(a.vy,a.vx),orientation:rollSphere(a.orientation,x-a.x,y-a.y,R),depth,rattle:!!motion.rattle,turns:motion.rattle?.turns??0,rebound:!!motion.rebound,bounces:motion.rebound?.bounces??0,visible:time<POCKET_DURATION};
 }
-function descendingPocketPath(ctx,middle,depth){
+function descendingPocketPath(ctx,middle,depth,scale=1){
   // Close the open approach smoothly as the sphere goes below the rim. The
   // sphere itself stays opaque and full-size, then the well edge occludes it.
-  const t=depth*depth*(3-2*depth);ctx.beginPath();tracePocketBack(ctx,middle);
-  if(middle)ctx.bezierCurveTo(90-67*t,130-129*t,-90+67*t,130-129*t,-26,-20);
-  else ctx.bezierCurveTo(100-98*t,100-82*t,100-82*t,100-98*t,18,-20);
+  const t=depth*depth*(3-2*depth),v=pocketVisualContext(ctx,middle,POCKET_VISUAL_EXPAND,scale);
+  ctx.beginPath();tracePocketBack(v,middle);
+  if(middle)v.bezierCurveTo(90-67*t,130-129*t,-90+67*t,130-129*t,-26,-20);
+  else v.bezierCurveTo(100-98*t,100-82*t,100-82*t,100-98*t,18,-20);
   ctx.closePath();
 }
-export function drawReturnChannel(ctx,entries,now,layer='all',ballRadius=R){
+export function drawReturnChannel(ctx,entries,now,layer='all',ballRadius=R,paintBall=null,options={}){
+  // Solid-colour games (snooker) reuse the same pocket motion and return
+  // channel but need their own sphere painter. The default keeps Pool's
+  // numbered balls byte-for-byte unchanged. options.pocketScale squeezes the
+  // pocket silhouette (and the descending ball's orbit) toward the hole for
+  // snooker's tighter mouths; Pool leaves it at 1 and is byte-identical.
+  const sphere=paintBall||((c,id,x,y,r,angle,heading,orientation)=>drawPoolBall(c,id,x,y,r,angle,heading,orientation));
+  const pocketScaleFor=middle=>typeof options.pocketScale==='function'?options.pocketScale(middle):options.pocketScale??1;
   const ordered=scheduleReturns(entries);
   ctx.save();ctx.lineJoin='round';ctx.lineCap='round';
   if(layer!=='pockets'){
@@ -183,15 +378,26 @@ export function drawReturnChannel(ctx,entries,now,layer='all',ballRadius=R){
       }
     }
     ctx.restore();
-    for(const item of ordered){const p=returnPosition(item,now-item.start);if(p.visible)drawPoolBall(ctx,item.id,p.x,p.y,ballRadius,p.angle,p.heading);}
+    for(const item of ordered){const p=returnPosition(item,now-item.start);if(p.visible)sphere(ctx,item.id,p.x,p.y,ballRadius,p.angle,p.heading);}
   }
   if(layer!=='under')for(const item of entries){
     const elapsed=now-item.start;if(elapsed<0||elapsed>=POCKET_DURATION||item.x===undefined)continue;
     const p=pocketPosition(item,elapsed);if(!p.visible)continue;
+    const s=pocketScaleFor(p.middle);
     ctx.save();ctx.translate(p.h[0],p.h[1]);ctx.scale(p.sx,p.sy);
-    if(p.depth>0)descendingPocketPath(ctx,p.middle,p.depth);else pocketEntryPath(ctx,p.middle);
+    if(options.pocketShape==='circle')snookerCirclePath(ctx,p.middle,s,p.depth);
+    else if(p.depth>0)descendingPocketPath(ctx,p.middle,p.depth,s);else pocketEntryPath(ctx,p.middle,s);
     ctx.clip();ctx.scale(p.sx,p.sy);ctx.translate(-p.h[0],-p.h[1]);
-    drawPoolBall(ctx,item.id,p.x,p.y,ballRadius,p.angle,p.heading,p.orientation);ctx.restore();
+    // Shrink the ball as it sinks so it visibly recedes into the pocket
+    // instead of sliding behind a flat mouth. A smooth ease keeps the first
+    // moments at the lip near full size, then the sphere falls away quickly.
+    const sink=p.depth*p.depth*(3-2*p.depth);
+    const radius=ballRadius*(1-.4*sink);
+    // The motion was solved on the shared wide well. Squeeze its centre (not
+    // the ball radius) into the smaller snooker mouth so the ball stays inside
+    // the visible jaws while dropping.
+    const bx=p.h[0]+(p.x-p.h[0])*s,by=p.h[1]+(p.y-p.h[1])*s;
+    sphere(ctx,item.id,bx,by,radius,p.angle,p.heading,p.orientation);ctx.restore();
   }
   ctx.restore();
 }

@@ -23,4 +23,22 @@ html[data-theme="easter"]{--joy-cursor:url('/assets/cursor/easter.svg') 2 2, aut
   }
   input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
   textarea,[contenteditable="true"]{cursor:text!important}
+  /* The cue-ball spin selector is a <canvas role="button">. The generic
+     [role="button"] rule above would otherwise paint the gold-ring paper
+     plane (or an equipped shop cursor) on top of the white ball, which reads
+     as a stray shape. Game aim surfaces keep their plain crosshair. */
+  canvas.pool-spot{cursor:crosshair!important}
+}
+
+/* Animated shop editions retain a real arrow PNG underneath a 32px SVG layer.
+   The attribute is set only after BOTH assets load, while a mouse is inside a
+   supported surface. Failure, touch, leaving a frame and reduced motion restore
+   the ordinary complete static PNG. Never replace the system pointer with none. */
+.joy-cursor-effect{position:fixed;left:0;top:0;width:32px;height:32px;max-width:none;
+  pointer-events:none!important;user-select:none;z-index:2147483646;contain:layout style paint}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  html[data-shop-cursor][data-joy-cursor-animated]{--shop-cursor:var(--joy-cursor-underlay)!important}
+}
+@media(prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+  .joy-cursor-effect{display:none!important}
 }

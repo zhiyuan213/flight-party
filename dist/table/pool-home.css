@@ -75,7 +75,6 @@ body.pool-game:not([data-screen="play"]){
 .pool-game:not([data-screen="play"]) .intro-bottom>section{background:#121a2c;border-color:#2a3651}
 .pool-game:not([data-screen="play"]) .intro-bottom h2{color:#dfe7fb}
 .pool-game:not([data-screen="play"]) .intro-bottom p{color:#9cacc9}
-.pool-game:not([data-screen="play"]) .member-note a{color:#aebfff}
 .pool-game:not([data-screen="play"]) a:hover{color:#d2dcff}
 /* Matchmaking and account dialogs use the same surfaces without touching result dialogs. */
 .pool-game #waiting,.pool-game #auth{color:#edf1ff;background:linear-gradient(145deg,#1b2742,#111a2e);border-color:#405071;box-shadow:0 24px 80px #0007}

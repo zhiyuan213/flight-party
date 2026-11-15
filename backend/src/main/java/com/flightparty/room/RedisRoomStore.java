@@ -79,6 +79,21 @@ public class RedisRoomStore {
         if(fields.isEmpty()) return Optional.empty();
         return Optional.of(new Stored(Long.parseLong(fields.get("version").toString()),json.readValue(fields.get("snapshot").toString(),RoomRules.Room.class)));
     }
+    /* Custody transitions happen alongside dice/move commits, so they must be
+       version-checked like every other room write. A conflict simply retries
+       against the latest snapshot; a no-op transition costs no write at all.
+       Returns the room that is now authoritative (or null if it vanished). */
+    public RoomRules.Room mutate(UUID id, java.util.function.UnaryOperator<RoomRules.Room> change) {
+        for(int attempt=0;attempt<4;attempt++) {
+            var stored=load(id).orElse(null);
+            if(stored==null)return null;
+            var next=change.apply(stored.room());
+            if(next.equals(stored.room()))return next;
+            try{save(next,stored.version());return next;}
+            catch(IllegalStateException conflict){/* Concurrent move/roll/leave: re-read. */}
+        }
+        return null;
+    }
     public Optional<UUID> active(UUID principal) {
         Object id=redis.opsForHash().get("fp:{rooms}:active",principal.toString());
         return id==null?Optional.empty():Optional.of(UUID.fromString(id.toString()));
@@ -136,7 +151,7 @@ public class RedisRoomStore {
         var room=stored.room();
         var playing=new RoomRules.Room(room.id(),RoomRules.Phase.PLAYING,room.seats(),room.deadline(),room.origin());
         var game=com.flightparty.game.GameRules.start(room.seats().stream().map(RoomRules.Seat::index).toList());
-        return Long.valueOf(1).equals(redis.execute(ACTIVATE,List.of(key(room.id()),"fp:{rooms}:starting","fp:{rooms}:playing"),Long.toString(stored.version()),json.writeValueAsString(playing),json.writeValueAsString(game),room.id().toString(),Long.toString(System.currentTimeMillis()+15000)));
+        return Long.valueOf(1).equals(redis.execute(ACTIVATE,List.of(key(room.id()),"fp:{rooms}:starting","fp:{rooms}:playing"),Long.toString(stored.version()),json.writeValueAsString(playing),json.writeValueAsString(game),room.id().toString(),Long.toString(System.currentTimeMillis()+com.flightparty.online.CustodyPolicy.IDLE_MS)));
     }
     public com.flightparty.game.GameRules.State game(UUID id) {
         Object value=redis.opsForHash().get(key(id),"game");

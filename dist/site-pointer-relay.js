@@ -14,11 +14,13 @@
   var parent = window.parent, embedded = parent !== window;
   var HOT = 'a,button,select,summary,[role="button"],[data-control],.game-card,.rail-game';
 
-  /* data-screen is set by table.js on every screen change. The legacy flight
-     document has no such attribute; its #play stage is the in-game view. */
+  /* data-screen is set by table.js on every screen change. Flight Party now
+     publishes its own screen name on the body; results counts as in-match too,
+     so the portal's halo does not reappear over the victory board. */
   function inGame() {
     var b = document.body;
     if (!b) return false;
+    if (b.dataset.flightScreen) return b.dataset.flightScreen==='play'||b.dataset.flightScreen==='results';
     if (b.hasAttribute('data-screen')) return b.dataset.screen === 'play';
     var stage = document.getElementById('play');
     return !!stage && !stage.hidden && !stage.classList.contains('hidden');
@@ -34,7 +36,7 @@
     report();
     if (window.MutationObserver && document.body) {
       var watcher = new MutationObserver(function () { report(); });
-      watcher.observe(document.body, { attributes: true, attributeFilter: ['data-screen'] });
+      watcher.observe(document.body, { attributes: true, attributeFilter: ['data-screen','data-flight-screen'] });
       var stage = document.getElementById('play');
       if (stage) watcher.observe(stage, { attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
     }

@@ -14,6 +14,13 @@ public final class SnookerRules {
  private static final int ON_RED=-1,ON_COLOUR=-2;
  private static final double[][] SPOTS={{245,290},{260,330},{260,170},{260,250},{500,250},{752,250},{918,250}};
  private static final double[][] CUE_SPOTS={{240,250},{225,250},{210,250},{240,225},{240,275},{245,290},{235,290},{200,250}};
+ /* Room-authoritative Snooker is 30% softer than Pool, whose own .48 lives in
+    PoolRules.SHOT_SPEED. Mirrors SNOOKER_POWER_SCALE in dist/table/snooker.js;
+    PoolRules and the 8-ball pipeline are deliberately untouched. */
+ private static final double SNOOKER_SHOT_SPEED=.48*.7;
+ /* Mirrors BOT_POWER in snooker-duel.js: 62/.7, so the room bot keeps the
+    absolute cue speed its aim was calibrated against. */
+ private static final int BOT_POWER=89;
  private static int value(int id){return id>6?1:id+1;}
  private static boolean free(int[] c,int id,double x,double y){
   for(int i=0;i<BALLS;i++)if(i!=id&&c[i*3+2]!=0&&Math.hypot(c[i*3]/10.-x,c[i*3+1]/10.-y)<2*R)return false;
@@ -64,7 +71,7 @@ public final class SnookerRules {
   boolean[] alive=new boolean[BALLS];
   int[] c=Arrays.copyOf(before,SIZE);
   for(int i=0;i<BALLS;i++){x[i]=before[i*3]/10.;y[i]=before[i*3+1]/10.;alive[i]=before[i*3+2]==1;}
-  vx[0]=Math.cos(angle*Math.PI/1800)*power*.48;vy[0]=Math.sin(angle*Math.PI/1800)*power*.48;
+  vx[0]=Math.cos(angle*Math.PI/1800)*power*SNOOKER_SHOT_SPEED;vy[0]=Math.sin(angle*Math.PI/1800)*power*SNOOKER_SHOT_SPEED;
   var frames=new ArrayList<String>();var potted=new ArrayList<Integer>();
   boolean scratch=false;int firstContact=0;
   for(int step=0;step<4800;step++){
@@ -150,7 +157,7 @@ public final class SnookerRules {
   double angle=best==0?0:Math.atan2(c[best*3+1]/10.-y,c[best*3]/10.-x);
   int a=((int)Math.round(angle*1800/Math.PI)+3600)%3600;
   int nomination=c[S_ON]==ON_COLOUR&&best>=1&&best<=6?best:0;
-  return nomination*NOM_BASE+62*3600+a;
+  return nomination*NOM_BASE+BOT_POWER*3600+a;
  }
  public static List<Integer> legal(){return List.of();}
 }

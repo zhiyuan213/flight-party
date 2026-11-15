@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>斯诺克 · 集球槽回弹预览</title>
+<style>
+  :root{color-scheme:dark;font:14px/1.6 system-ui,sans-serif;color:#e9edf5;background:#0c1420}
+  body{margin:0;padding:24px;max-width:1250px}h1{margin:0;font-size:23px}p{color:#a8b8ca;margin:8px 0 20px;max-width:940px}
+  .controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  button,select{font:inherit;color:#e9edf5;background:#1c2d44;border:1px solid #49617e;border-radius:7px;padding:7px 13px;cursor:pointer}
+  button[aria-pressed=true]{border-color:#f3d08a;color:#ffe2a2;background:#403322}
+  label{display:flex;gap:10px;align-items:center}input{width:260px;accent-color:#e7bf71}
+  .live{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}.panel{border:1px solid #314154;border-radius:12px;background:#080f18;overflow:hidden}
+  .panel h2{font-size:14px;font-weight:500;margin:0;padding:10px 14px;border-bottom:1px solid #26384a;color:#c8d9ea}
+  canvas{display:block;max-width:100%;height:auto}.strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .frame{width:180px;border:1px solid #314154;border-radius:9px;overflow:hidden;background:#080f18}
+  .frame b{display:block;padding:8px 12px;font-size:13px;color:#e6c787}.frame canvas{width:180px}
+  #readout{color:#e7c47c;font-variant-numeric:tabular-nums;white-space:pre-line}#error{color:#ff9b9b}
+</style>
+</head>
+<body>
+<h1>集球槽：撞击后的回弹与缓冲</h1>
+<p>此页调用正式集球槽绘制与动作。球触底或碰到已收集的球后，先向上回弹，再小幅缓冲停稳；只改变收球表现，不参与比赛物理和计分。下面的固定帧便于逐段检查。</p>
+<div class="controls">
+  <button data-scene="floor">触底回弹</button><button data-scene="stack">撞到已有球</button><button data-scene="queue">连续收球</button>
+  <button id="play">暂停</button><button id="replay">重新播放</button>
+  <label>碰撞相对时间 <input id="time" type="range" min="-760" max="500" step="1" value="0"></label>
+</div>
+<div class="controls"><button data-time="-12">接触前</button><button data-time="0">碰撞</button><button data-time="80">第一次回弹</button><button data-time="205">轻微二次缓冲</button><button data-time="300">停稳</button></div>
+<div class="live">
+  <section class="panel"><h2>完整集球槽</h2><canvas id="track" width="180" height="650"></canvas></section>
+  <section class="panel"><h2>紧凑黄铜入口（4倍）</h2><canvas id="top" width="360" height="300"></canvas></section>
+  <section class="panel"><h2>槽底放大（4倍）</h2><canvas id="detail" width="360" height="360"></canvas></section>
+  <div><div id="readout" aria-live="polite"></div><div id="error" role="alert"></div></div>
+</div>
+<div class="strip" id="frames"></div>
+<script type="module">
+import {COLLECTION,collectionImpactTime,collectionPosition,syncSnookerCollection,drawSnookerCollectionTrack,drawSnookerCollectedBalls} from './snooker-collection.js?v=20261113-wellmotion1';
+import {drawPoolBall} from './pool-ball.js?v=20261113-pocketdepth1';
+import {colours} from './snooker.js?v=20261110-dotblack1';
+import {SNOOKER_LIGHT} from './snooker-light.js?v=20261113-reboundlight1';
+import {TABLE_PAD} from './pool-table.js';
+
+const params=new URLSearchParams(location.search),slider=document.querySelector('#time'),play=document.querySelector('#play');
+const contexts=['track','detail'].map(id=>document.querySelector('#'+id).getContext('2d'));
+const topContext=document.querySelector('#top').getContext('2d');
+const sphere=(ctx,id,x,y,r,roll,heading,orientation)=>drawPoolBall(ctx,1,x,y,r,roll,heading,orientation,{...SNOOKER_LIGHT,x:TABLE_PAD+500,y:TABLE_PAD+250},{plain:true,overhead:true,palette:colours});
+const phases={waiting:'等待进入',rolling:'正在滚落',rebound:'碰撞后回弹',settled:'已停稳'};
+let scene=['floor','stack','queue'].includes(params.get('scene'))?params.get('scene'):'stack';
+let running=!params.has('t'),start=performance.now(),relative=Number(params.get('t')||-760),entries=[],impactAt=0,focusSlot=0;
+
+function buildScene(){
+  const cells=Array.from({length:66},(_,i)=>i%3===2?1:0);
+  entries=scene==='stack'?[{id:7,start:-Infinity},{id:8,start:0}]:[{id:7,start:0}];
+  if(scene==='queue'){
+    for(const id of [7,8,9,10])cells[id*3+2]=0;
+    entries=syncSnookerCollection([],cells,0,{animate:true});
+  }
+  focusSlot=scene==='stack'?1:0;impactAt=collectionImpactTime(entries[focusSlot],focusSlot);
+  for(const button of document.querySelectorAll('[data-scene]'))button.setAttribute('aria-pressed',String(button.dataset.scene===scene));
+  rebuildFrames();
+}
+function paint(ctx,at,close=false){
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  if(close)ctx.setTransform(4,0,0,4,ctx.canvas.width/2-COLLECTION.x*4,ctx.canvas.height-25-590*4);
+  else ctx.setTransform(1,0,0,1,50-1139,12);
+  drawSnookerCollectionTrack(ctx);drawSnookerCollectedBalls(ctx,entries,at,8,sphere);
+}
+function rebuildFrames(){
+  const host=document.querySelector('#frames');host.replaceChildren();
+  for(const [time,label] of [[-12,'接触前'],[0,'碰撞'],[80,'向上回弹'],[205,'小幅缓冲'],[300,'停稳']]){
+    const frame=document.createElement('div');frame.className='frame';
+    const title=document.createElement('b');title.textContent=label+' · '+time+' ms';
+    const canvas=document.createElement('canvas');canvas.width=180;canvas.height=240;
+    frame.append(title,canvas);host.append(frame);paint(canvas.getContext('2d'),impactAt+time,true);
+  }
+}
+function render(){
+  const at=impactAt+relative;
+  paint(contexts[0],at);paint(contexts[1],at,true);
+  topContext.setTransform(1,0,0,1,0,0);topContext.clearRect(0,0,360,300);
+  topContext.setTransform(4,0,0,4,24-1138*4,32-54*4);
+  drawSnookerCollectionTrack(topContext);drawSnookerCollectedBalls(topContext,entries,at,8,sphere);
+  const p=collectionPosition(entries[focusSlot],focusSlot,at);
+  document.querySelector('#readout').textContent='碰撞相对时间：'+Math.round(relative)+' ms\n'+phases[p.phase]+'\n球心位置：'+p.y.toFixed(2)+'\n正常停稳位置：'+(COLLECTION.bottom-focusSlot*COLLECTION.spacing);
+  slider.value=String(relative);play.textContent=running?'暂停':'继续播放';
+}
+function loop(now){
+  if(running){const duration=scene==='queue'?2550:1450;relative=(now-start)%duration-760;render();}
+  requestAnimationFrame(loop);
+}
+for(const button of document.querySelectorAll('[data-scene]'))button.onclick=()=>{scene=button.dataset.scene;start=performance.now();relative=-760;buildScene();render();};
+for(const button of document.querySelectorAll('[data-time]'))button.onclick=()=>{running=false;relative=Number(button.dataset.time);render();};
+slider.oninput=()=>{running=false;relative=Number(slider.value);render();};
+play.onclick=()=>{running=!running;start=performance.now()-relative-760;render();};
+document.querySelector('#replay').onclick=()=>{running=true;start=performance.now();relative=-760;render();};
+window.addEventListener('error',event=>document.querySelector('#error').textContent=event.message);
+buildScene();render();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
