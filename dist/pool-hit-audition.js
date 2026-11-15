@@ -1,7 +1,7 @@
 // A was selected by the user. Candidates remain as a historical comparison;
 // the merged A example uses the exact production mixer and real rack events.
-import {mixImpactSamples,impactBurstSchedule} from './table/pool-audio.js?v=20261113-snookerrail1';
-import {poolStart,poolMove} from './table/pool.js?v=20261113-pooldiff1';
+import {mixImpactSamples,impactBurstSchedule} from './table/pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
+import {poolStart,poolMove} from './table/pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
 const ROOT='./assets/audio/pool/audition/';
 const choices=[
   {id:'A',name:'干脆短击',file:'juskiddink-108615.mp3',author:'juskiddink',sound:108615,ms:90,license:'CC BY 4.0',licenseUrl:'https://creativecommons.org/licenses/by/4.0/'},

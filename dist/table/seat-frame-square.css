@@ -34,10 +34,13 @@ body.table-home-theme[data-screen="play"] #seats .seat-avatar{
    generic image rule and renders an empty gold rectangle. */
 body.table-home-theme[data-screen="play"] #seats .member-label{
   display:inline-block!important;
-  width:40px;height:20px;flex-shrink:0;
+  width:64px;height:32px;flex-shrink:0;
   padding:0;border:0;box-shadow:none;font-size:0;color:transparent;
   background:url('/assets/member/vip-laurel-v3.png') center/contain no-repeat;
 }
 body.table-home-theme[data-screen="play"] #seats .member-label.annual{
   background-image:url('/assets/member/annual-vip-laurel-v3.png');
+}
+@media(max-width:760px){
+  body.table-home-theme[data-screen="play"] #seats .member-label{width:48px;height:24px}
 }

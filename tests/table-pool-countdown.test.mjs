@@ -10,6 +10,20 @@ const {unlockPoolAudio,setPoolMuted,countdownSamples}=await import(new URL(audio
 const shellCss=readFileSync(new URL('../dist/table/pool-shell.css',import.meta.url),'utf8');
 const snookerCss=readFileSync(new URL('../dist/table/snooker-shell.css',import.meta.url),'utf8');
 
+test('unlock silently primes output once and resumes it again on the real start gesture',()=>{
+ const src=readFileSync(new URL('../dist/table/pool-audio.js',import.meta.url),'utf8');
+ const unlock=src.slice(src.indexOf('export function unlockPoolAudio'),src.indexOf('async function loadRecording')).replace('export ','');
+ let resumes=0,starts=0,stops=0,level=-1,disconnected=0,instance;
+ class Audio{constructor(){instance=this;this.state='suspended';this.currentTime=10;this.destination={};}
+  resume(){resumes++;this.state='running';return Promise.resolve();}
+  createGain(){return{gain:{set value(v){level=v;}},connect(){},disconnect(){disconnected++;}};}
+  createOscillator(){return{connect(){},start(t){assert.equal(t,10);starts++;},stop(t){assert.equal(t,10.03);stops++;this.onended();},disconnect(){disconnected++;}};}
+ }
+ const unlockReal=new Function('globalThis','let context,audioPrimed=false;function loadRecording(){};'+unlock+';return unlockPoolAudio;')({AudioContext:Audio});
+ unlockReal();instance.state='suspended';unlockReal();
+ assert.equal(resumes,2);assert.equal(starts,1);assert.equal(stops,1);assert.equal(level,0);assert.equal(disconnected,2);
+});
+
 test('countdown exposes 3,2,1,GO with an exact opening deadline and no late-join GO',()=>{
  assert.equal(countdownPhase(3000,0),'3');assert.equal(countdownPhase(3000,1000),'2');assert.equal(countdownPhase(3000,2000),'1');
  assert.equal(countdownPhase(3000,3000,true),'GO');assert.equal(countdownPhase(3000,3449,true),'GO');assert.equal(countdownPhase(3000,3450,true),null);

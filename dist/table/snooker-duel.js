@@ -17,7 +17,7 @@
  * NOM_BASE is above Pool's largest spin-coded command, so the two never mix.
  * Local play and hosted play both call snookerMove; only the caller changes.
  */
-import {startSnooker,shootSnooker,snookerTargets,placeCue,radius,SNOOKER_POWER_SCALE} from './snooker.js?v=20261110-dotblack1';
+import {startSnooker,shootSnooker,snookerTargets,placeCue,radius,SNOOKER_POWER_SCALE} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1';
 import {POOL_HOLES} from './pool-geometry.js?v=20261114-pocketdepth1';
 import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1';
 

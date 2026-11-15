@@ -38,7 +38,7 @@ test('the old blue dashed guide, blue ghost ring and yellow object line are gone
 /* Execute the real functions from the shipped source against a canvas double.
    The slices deliberately exclude the ESM imports/exports, so the code that
    runs here is the same code the browser runs. */
-function runGuides() {
+function runGuides(blocker = false) {
   const strokeAim = poolView.slice(poolView.indexOf('function strokeAim('), poolView.indexOf('function drawTargetRings('));
   const rings = poolView.slice(poolView.indexOf('function drawTargetRings('), poolView.indexOf('// Preserve server positions'));
   const guide = poolView.slice(poolView.indexOf('function guide('), poolView.indexOf('\nexport function cancelPoolOpponentShot'));
@@ -71,6 +71,7 @@ function runGuides() {
   const cells = Array(48).fill(0);
   cells[0] = 2500; cells[1] = 2500; cells[2] = 1;
   cells[3] = 5000; cells[4] = 2500; cells[5] = 1;
+  if(blocker){cells[24]=5330;cells[25]=2500;cells[26]=1;}
 
   const context = vm.createContext({ctx, calls, cells,
     AIM_COLOUR: '#ffffff', AIM_WIDTH: 2.4, AIM_OUTLINE: '#102015', R: 16});
@@ -80,6 +81,13 @@ function runGuides() {
   `).runInContext(context);
   return calls;
 }
+
+test('object guide stops at the next ball instead of promising a path through a rack', () => {
+  const lines=runGuides(true).filter(c=>c.kind==='stroke'&&c.color==='#ffffff'&&c.path.some(p=>p[0]==='L'));
+  const outgoing=lines[1].path;
+  assert.equal(outgoing[0][1],500);
+  assert.equal(outgoing[1][1],501,'33-unit separation leaves one unit before a 32-unit contact');
+});
 
 test('live guide paint: solid pure white with a dark under-stroke, no dashes', () => {
   const calls = runGuides();

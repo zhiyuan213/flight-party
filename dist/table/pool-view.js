@@ -1,8 +1,8 @@
 import {makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './pool-table.js?v=20261112-gamelanes1';
 import {drawReturnChannel,returnTiming,pocketMotion,POCKET_DURATION,RETURN_SPEED} from './pool-return.js?v=20261110-glove2';
 import {pullPower,meterPower,spotCode,encodePoolShot,SPIN_STRIDE} from './pool-input.js?v=20261110-glove2';
-import {updatePoolCountdown,cancelPoolCountdown} from './pool-countdown.js';
-import {replayImpacts,poolImpact,poolImpactBurst,chainLevels,pocketSoundStages, poolMuted, setPoolMuted, unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1';
+import {updatePoolCountdown,cancelPoolCountdown} from './pool-countdown.js?release=20261115-polishrelease1';
+import {replayImpacts,poolImpact,poolImpactBurst,chainLevels,pocketSoundStages, poolMuted, setPoolMuted, unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
 import {drawPoolBall,rollSphere,rotateSphere,sphereIdentity} from './pool-ball.js?v=20261112-gamelanes1';
 import {ballSkin,cueSkin,tableSkin} from './billiard-cosmetics.js?v=20261112-gamelanes1';
 import {drawCue as cue} from './pool-cue.js';
@@ -84,7 +84,15 @@ function guide(ctx,c,angle,radius=R,now=0) {
   ctx.beginPath();ctx.arc(x+nx*length,y+ny*length,radius,0,Math.PI*2);
   ctx.fillStyle='#ffffff33';ctx.fill();strokeAim(ctx);
   if(target>=0&&length<wall){const tx=c[target*3]/10,ty=c[target*3+1]/10,dx=tx-(x+nx*length),dy=ty-(y+ny*length),d=Math.hypot(dx,dy);
-    ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+dx/d*72,ty+dy/d*72);strokeAim(ctx);}
+    // This is only the first object's free path, not a prediction through a
+    // rack. Stop at its next contact rather than drawing through the eight.
+    const ox=dx/d,oy=dy/d;let outgoing=72;
+    for(let i=1;i<16;i++)if(i!==target&&c[i*3+2]){
+      const bx=c[i*3]/10-tx,by=c[i*3+1]/10-ty,t=bx*ox+by*oy;
+      const side2=bx*bx+by*by-t*t;
+      if(t>0&&side2<32*32)outgoing=Math.min(outgoing,Math.max(0,t-Math.sqrt(32*32-side2)));
+    }
+    ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+ox*outgoing,ty+oy*outgoing);strokeAim(ctx);}
   ctx.restore();
 }
 

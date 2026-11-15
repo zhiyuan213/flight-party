@@ -25,7 +25,7 @@ test('pool audio requires a gesture unlock, respects mute and bounds every sourc
   const parameter={setValueAtTime(){},exponentialRampToValueAtTime(){},value:0};
   const node=()=>({connect(){},start(){},stop(time){ends.push(time);},gain:parameter,frequency:parameter});
   globalThis.AudioContext=class {state='running';currentTime=10;sampleRate=1000;destination={};createBuffer(_,n){return{getChannelData:()=>new Float32Array(n)};}createBufferSource(){return node();}createBiquadFilter(){return node();}createGain(){return node();}createOscillator(){return node();}};
-  try{setPoolMuted(false);assert.equal(poolImpact('ball',1),false);unlockPoolAudio();assert.equal(poolImpact('ball',1),true);assert.equal(ends.length,1);assert.ok(ends.every(t=>t>10&&t<10.2));setPoolMuted(true);assert.equal(poolImpact('cue'),false);assert.equal(ends.length,2);}finally{setPoolMuted(false);globalThis.AudioContext=original;}
+  try{setPoolMuted(false);assert.equal(poolImpact('ball',1),false);unlockPoolAudio();assert.equal(ends[0],10.03);assert.equal(poolImpact('ball',1),true);assert.equal(ends.length,2);assert.ok(ends.every(t=>t>10&&t<10.2));setPoolMuted(true);assert.equal(poolImpact('cue'),false);assert.equal(ends.length,3);}finally{setPoolMuted(false);globalThis.AudioContext=original;}
 });
 
 test('resin impacts have bounded 30–60ms envelopes, silence at end, and no clipping',async()=>{

@@ -1,4 +1,4 @@
-import {simulateCueShot,SHOT_SPEED} from './pool.js?v=20261113-pooldiff1';
+import {simulateCueShot,SHOT_SPEED} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
 
 /* 2026-11-13: Snooker felt as hard as 8-ball even though its table is longer
    and its ball is smaller. Keep the two games' power SEPARATE: Pool keeps the

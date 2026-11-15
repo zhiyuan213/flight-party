@@ -1,12 +1,12 @@
 import {createBubbles} from './bubbles.js?v=20261110-glove2';
-import {createSnooker} from './snooker-view.js?v=20261113-humanring1';
-import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1';
+import {createSnooker} from './snooker-view.js?v=20261113-humanring1&release=20261115-polishrelease1';
+import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2';
-import {start,move,bot} from './grid-rules.js?v=20261112-gamelanes1';
+import {start,move,bot} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
 import {bindBotDifficultyDialog,botLevelStore} from '../bot-difficulty.js?v=20261112-gamelanes1';
-import {viewState} from './snooker-duel.js?v=20261112-gamelanes1';
+import {viewState} from './snooker-duel.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
 import {S_SCORE1,S_SCORE2} from './bubbles-duel.js?v=20261112-gamelanes1';
-import {updatePoolCountdown,cancelPoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js';
+import {updatePoolCountdown,cancelPoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
 
 const $=selector=>document.querySelector(selector);
 const game=new URLSearchParams(location.search).get('game')==='snooker'?'snooker':'bubbles';

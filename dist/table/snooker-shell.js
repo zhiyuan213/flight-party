@@ -2,7 +2,7 @@
 // pool game), each seat shows the ball(s) that may legally be struck, and the
 // live score/turn line moves under the table.
 import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
-import {colours,snookerTargets} from './snooker.js?v=20261110-dotblack1';
+import {colours,snookerTargets} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1';
 const $=id=>document.getElementById(id);
 let built=false,latest=null,score=null,target=null;
 const zh=()=>document.documentElement.lang!=='en';

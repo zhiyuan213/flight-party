@@ -15,17 +15,17 @@ import {SNOOKER_LIGHT} from './snooker-light.js?v=20261113-reboundlight1';
  * the same format as before. Presentation-only callbacks (onShotResult /
  * onAnimating) let the shell announce a settled shot before the turn passes.
  */
-import {colours,radius,placeCue,snookerTargets} from './snooker.js?v=20261110-dotblack1';
-import {snookerStart,viewState,NOM_BASE} from './snooker-duel.js?v=20261112-gamelanes1';
+import {colours,radius,placeCue,snookerTargets} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1';
+import {snookerStart,viewState,NOM_BASE} from './snooker-duel.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
 import {TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './pool-table.js';
 import {makeSnookerTable} from './snooker-table.js?v=20261114-pocketdepth1';
 import {SNOOKER_POCKET_SCALE} from './pool-geometry.js?v=20261114-pocketdepth1';
 import {drawPoolBall,rollSphere,sphereIdentity} from './pool-ball.js?v=20261113-pocketdepth1';
 import {ballSkin,cueSkin,tableSkin} from './billiard-cosmetics.js?v=20261112-gamelanes1';
 import {drawCue} from './snooker-cue.js?v=20261112-natural1';
-import {drawSnookerPocketDrops,snookerPocketMotion,SNOOKER_POCKET_DURATION as POCKET_DURATION} from './snooker-pocket-motion.js?v=20261113-wellmotion1';
-import {syncSnookerCollection,collectionActive,drawSnookerCollectionTrack,drawSnookerCollectedBalls} from './snooker-collection.js?v=20261113-wellmotion1';
-import {chainLevels,poolImpact,poolImpactBurst,pocketSoundStages,replayImpacts,unlockPoolAudio,poolMuted,setPoolMuted,setImpactVoice} from './pool-audio.js?v=20261113-snookerrail1';
+import {drawSnookerPocketDrops,snookerPocketMotion,SNOOKER_POCKET_DURATION as POCKET_DURATION} from './snooker-pocket-motion.js?v=20261113-wellmotion1&release=20261115-polishrelease1';
+import {syncSnookerCollection,collectionActive,drawSnookerCollectionTrack,drawSnookerCollectedBalls} from './snooker-collection.js?v=20261113-wellmotion1&release=20261115-polishrelease1';
+import {chainLevels,poolImpact,poolImpactBurst,pocketSoundStages,replayImpacts,unlockPoolAudio,poolMuted,setPoolMuted,setImpactVoice} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
 import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2';
 
 const W=TABLE_WIDTH,H=TABLE_HEIGHT,PAD=TABLE_PAD,SCALE=2,R=radius,BALLS=22;

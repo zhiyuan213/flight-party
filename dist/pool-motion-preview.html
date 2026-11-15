@@ -12,12 +12,12 @@
 <output id="physics-check" aria-live="polite">袋口物理验收：请选择场景</output>
 <details open><summary>本次动作时间与槽位</summary><p id="timing-note">时间来自正式回球条目的计时；按实际到达出口顺序分配槽位。单位毫秒。</p><table><thead><tr><th>球 / 袋位</th><th>桌下路径</th><th>计划出槽</th><th>首次接触</th><th>完全停下</th><th>当前阶段</th></tr></thead><tbody id="timing"></tbody></table></details>
 <script type="module">
-import {poolStart,poolMove,poolBot,renderPool} from '/table/pool.js';
-import {animatePoolOpponentShot,cancelPoolOpponentShot} from '/table/pool-view.js?v=20261112-gamelanes1';
+import {poolStart,poolMove,poolBot,renderPool} from '/table/pool.js?release=20261115-polishrelease1';
+import {animatePoolOpponentShot,cancelPoolOpponentShot} from '/table/pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
 import {returnTiming,POCKET_DURATION} from '/table/pool-return.js';
 import {TABLE_PAD,TABLE_HOLES} from '/table/pool-table.js?v=20261112-gamelanes1';
-import {unlockPoolAudio} from '/table/pool-audio.js?v=20261113-snookerrail1';
-import {cancelPoolCountdown} from '/table/pool-countdown.js';
+import {unlockPoolAudio} from '/table/pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1';
+import {cancelPoolCountdown} from '/table/pool-countdown.js?release=20261115-polishrelease1';
 let host,state,watchToken=0,scenario='开局',scratchSeen=false,scratchStart=0;
 const status=document.querySelector('#status'),timing=document.querySelector('#timing'),names=['左上','上中','右上','左下','下中','右下'];
 function mount(initial=poolStart()){

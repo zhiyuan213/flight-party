@@ -441,3 +441,7 @@ body.table-home-theme:not([data-screen="play"]) #leaderboard{
 body.table-home-theme:not([data-screen="play"]) .ranking-columns span:not(:first-child){
   text-align:right;
 }
+/* Period tabs keep the same selected pointer as the surrounding page. */
+@media(hover:hover) and (pointer:fine){
+  body.table-home-theme .period-tabs button{cursor:var(--joy-cursor)!important}
+}

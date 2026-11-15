@@ -1236,3 +1236,8 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 ## 2026-11-15 — Match avatar decorations
 - User approved removing only the in-match avatar frame. dist/table/seat-frame-square.css now owns that scoped override and the explicit monthly/annual match membership badge images; table/index.html refreshes it via &d=20261115-nomatchframe1.
 - Empty annual VIP gold rectangle was the legacy .member-label.annual background gradient overriding the generic PNG rule. It is a CSS issue, not evidence of missing membership entitlement. Local browser fixture verified both badge PNGs, frame hidden, border/shadow removed; npm test 953/953. No JS changes. See QA latest entry for validation limits.
+
+## 2026-11-15 — Current static polish release
+- Prepared user's combined UI/audio fixes and full cache parent chain using release=20261115-polishrelease1. Final Node tests 960/960; 17 changed JS syntax checks passed. No physical rules, backend, schema or Bluetooth timing correction.
+- Independent operator guide: docs/PRODUCTION-DEPLOYMENT.md; entry link in deploy/README.md. It covers actual SSH/Compose paths, static vs backend releases, secrets, backups, JAR permissions, cache/ESM identity, verification and rollback boundaries.
+- Application release commit and final production validation follow in QA after publication.

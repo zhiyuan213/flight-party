@@ -1,5 +1,7 @@
 # JoyFlock deployment
 
+完整操作与注意事项见 [生产部署手册](../docs/PRODUCTION-DEPLOYMENT.md)，包含静态发布、后端／迁移、备份、回滚、缓存与验证步骤。
+
 Target: `flight.joyflock.com`, Ubuntu server `43.153.70.181`.
 The root and www hosts temporarily redirect to the game; a platform homepage can replace this later.
 

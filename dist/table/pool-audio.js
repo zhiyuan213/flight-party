@@ -4,7 +4,7 @@
 // whole 2026-11-12 "A / solid / dense" experiment stays on disk as reference
 // material but is no longer loaded by the game.
 import {cushionContact} from './pool-geometry.js';
-let context, muted=false,recorded,loading,master,lastVariant=-1;
+let context, muted=false,recorded,loading,master,lastVariant=-1,audioPrimed=false;
 const voices=new Set();
 // Snooker balls are smaller and lighter than pool balls, so the cushion voice
 // is chosen at playback time. 'auto' follows the table page's body class;
@@ -25,7 +25,19 @@ const RECORDED_TAIL=.11;
 try{muted=localStorage.getItem('joyflock.pool.muted')==='1';}catch{}
 export const poolMuted=()=>muted;
 export function setPoolMuted(value){muted=value;if(value)for(const v of voices){try{v.stop();}catch{}}try{localStorage.setItem('joyflock.pool.muted',value?'1':'0');}catch{}}
-export function unlockPoolAudio(){try{const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;if(!Audio)return;context||=new Audio();loadRecording();if(context.state==='suspended')context.resume().catch(()=>{});}catch{}}
+export function unlockPoolAudio(){try{
+ const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;if(!Audio)return;
+ context||=new Audio();loadRecording();
+ if(context.state==='suspended')context.resume().catch(()=>{});
+ // Open the device output during the user's gesture, before the first short
+ // countdown beep. A zero-gain voice warms the path without an extra sound.
+ if(!audioPrimed&&context.createOscillator&&context.createGain){
+  const tone=context.createOscillator(),silent=context.createGain();silent.gain.value=0;
+  tone.connect(silent);silent.connect(context.destination);
+  tone.onended=()=>{tone.disconnect();silent.disconnect();};
+  tone.start(context.currentTime);tone.stop(context.currentTime+.03);audioPrimed=true;
+ }
+}catch{}}
 async function loadRecording(){
  if(recorded||loading||!context?.decodeAudioData)return;
  loading=true;try{const res=await fetch(new URL('../assets/audio/pool/ball-clack.mp3?v=20261112-hitbefore1',import.meta.url));if(!res.ok)throw Error('audio');recorded=await context.decodeAudioData(await res.arrayBuffer());}catch{loading=false;}

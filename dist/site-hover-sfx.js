@@ -16,8 +16,7 @@
  * The broadband air hiss was removed: its filtered white noise read as a
  * crackle ("破音") on the home covers, so the grow keeps only the clean
  * sine/triangle swell and the sine sparkle.
- * Shop product cards reuse this exact home-cover voice (slightly softer and
- * throttled harder, because the shop grid is much denser than nine covers).
+ * Shop product cards reuse this exact home-cover voice (slightly softer, because the shop grid is denser than nine covers).
  *
  * Browser policy: AudioContext may only start once the document has seen a
  * real user gesture (pointerdown / keydown / touchend). Hover, pointermove
@@ -54,19 +53,16 @@
   * Add [data-sfx="on"] to opt a control back in if a zone ever needs one. */
  var MUTED_ZONES='.topbar,.game-card,.game-rail,.rail-game,.shop-card';
  var SKIP='[disabled],[aria-disabled="true"],.disabled,.unavailable,[data-sfx="off"],[inert]';
- var MIN_GAP=55,SAME_GAP=170,PROBE_GAP=300;
- /* Elements that visibly zoom on hover. Kept out of the tick voice above, but
-  * given their own swell; the dock is crossed continuously, so it is throttled
-  * harder than the nine home covers. Product cards use the SAME grow as the
-  * home covers so the shop sounds like the rest of the site. */
+ var PROBE_GAP=300;
+ /* Every distinct zooming-card entry plays; only child transitions are deduplicated. */
  var ZOOM_ZONES='.game-card.live,.rail-game,.shop-card';
- var ZOOM_GAP=110,ZOOM_DOCK_GAP=170,ZOOM_SAME_GAP=420,ZOOM_UNLOCK_GAP=150;
- /* Up to six cards per row in the shop: slow the sweep down a touch more. */
- var SHOP_ZOOM_GAP=150;
 
- var ctx=null,outNode=null,current=null,currentZoom=false,lastAt=0,lastEl=null,enabled=true,noiseCache=null;
- var lastZoomAt=0;
- var zoomAt=new WeakMap(),zoomOutputs=new WeakMap(),zoomGains=[];
+
+
+
+ var ctx=null,outNode=null,current=null,currentZoom=false,enabled=true,noiseCache=null;
+
+ var zoomOutputs=new WeakMap(),zoomGains=[];
  var volume=.8;
  var outputs=new WeakMap();
  var stats={hover:0,played:0,throttled:0,blocked:0,unlocks:0,firstTouch:0,zoom:0};
@@ -260,11 +256,9 @@
   // Hovers before this gesture were silent. If the pointer is still on a
   // control, play its blip now rather than waiting for a second hover.
   if(stats.blocked>0&&current&&!muted()){
-   var now=performance.now();
-   var gap=currentZoom?ZOOM_UNLOCK_GAP:MIN_GAP;
-   if(now-lastAt>=gap&&(currentZoom?playZoom(current):play(current))){
-    lastAt=now;lastEl=current;stats.played++;stats.firstTouch++;
-    if(currentZoom){lastZoomAt=now;zoomAt.set(current,now);stats.zoom=(stats.zoom||0)+1;}
+   if(currentZoom?playZoom(current):play(current)){
+    stats.played++;stats.firstTouch++;
+    if(currentZoom)stats.zoom=(stats.zoom||0)+1;
    }
   }
  }
@@ -291,19 +285,14 @@
   current=el;currentZoom=!!zoom;
   if(!el)return;
   stats.hover++;
-  var now=performance.now();
   if(zoom){
-   var gap=zoom.classList.contains('rail-game')?ZOOM_DOCK_GAP
-    :zoom.classList.contains('shop-card')?SHOP_ZOOM_GAP:ZOOM_GAP;
-   if(now-lastZoomAt<gap||now-(zoomAt.get(zoom)||0)<ZOOM_SAME_GAP){stats.throttled++;return;}
+   // Every real entry sounds; the current check above deduplicates children.
    if(playZoom(zoom)){
-    lastZoomAt=now;zoomAt.set(zoom,now);lastAt=now;lastEl=el;
     stats.played++;stats.zoom=(stats.zoom||0)+1;
    }else stats.blocked++;
    return;
   }
-  if(now-lastAt<MIN_GAP||(el===lastEl&&now-lastAt<SAME_GAP)){stats.throttled++;return;}
-  if(play(el)){lastAt=now;lastEl=el;stats.played++;}
+  if(play(el))stats.played++;
   else stats.blocked++;
  },{passive:true});
  document.addEventListener('pointerleave',function(){current=null;},{passive:true});

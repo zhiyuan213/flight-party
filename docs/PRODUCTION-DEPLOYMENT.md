@@ -1,0 +1,160 @@
+# JoyFlock 生产部署手册
+
+更新日期：2026-11-15。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
+
+## 环境与连接
+
+| 项目 | 当前配置 |
+| --- | --- |
+| GitHub | `https://github.com/zhiyuan213/flight-party`，私有仓库 |
+| 生产入口 | `https://flight.joyflock.com/portal/index.html` |
+| 主机、用户 | `43.153.70.181`，`ubuntu` |
+| 应用目录 | `/opt/joyflock/flight-party` |
+| 发布与备份 | `/opt/joyflock/releases/`、`/opt/joyflock/backups/` |
+| 服务 | `deploy-edge-1` Caddy、`deploy-web-1` nginx、`deploy-backend-1` Java、`deploy-postgres-1`、`deploy-redis-1` |
+| 内部入口 | backend `127.0.0.1:8080`；nginx `127.0.0.1:8081` |
+
+本机为 Windows PowerShell。当前专用密钥位置为 `$env:USERPROFILE\.ssh\joyflock_deploy`。密钥可能加密，需要使用已经解锁的 ssh-agent；密码、私钥、数据库口令、Creem 密钥不得放进 Git、本文或聊天日志。其他操作人员使用自己的已授权凭据，不复制他人的私钥。
+
+```powershell
+ssh -o BatchMode=yes -o ConnectTimeout=8 -i $env:USERPROFILE\.ssh\joyflock_deploy ubuntu@43.153.70.181 'whoami; sudo -n docker ps'
+```
+
+`Permission denied (publickey)` 要检查用户是否为 ubuntu、密钥及代理是否正确。不要把认证失败误判为服务器宕机。Git push 不会自动部署；服务器无需安装操作者的 GitHub 凭据。
+
+## 确定发布范围
+
+- 纯 UI、音频、样式改动：发布相应静态文件及缓存引用；通常无需重启后端、数据库或 nginx。
+- Java、服务端协议、物理参数变更：构建并验证后端 JAR，与对应前端同一窗口发布。台球前后端物理必须一致，发布前检查正在进行的对局及旧状态兼容性。
+- Flyway 迁移：先备份，核对所有已应用迁移校验和，再运行新版本。不要修改旧迁移、执行 `repair` 掩盖差异、删除迁移历史或因应用回滚直接恢复旧数据库。
+- 部署配置：生产 `.env`、计费配置、Caddyfile、nginx 配置可能带有线上专用设置，必须比较后合并。不要直接用本地配置覆盖。
+
+## 本地准备
+
+```powershell
+git status --short --branch
+git diff --check
+npm test
+# 对本次改动的 JS 逐个执行 node --check。
+```
+
+UI 修改需要浏览器验证。记录实际执行的检查及限制；自动化调度通过不代表真实音箱、蓝牙、手机或付款验证通过。蓝牙存在设备链路延迟，不能据此随意提前播放游戏碰撞音效。
+
+缓存要求：保留既有测试冻结的 `v=`、`d=` 等键，只追加明确的发布参数，例如 `release=20261115-polishrelease1`。修改共享 ES module 后，应更新所有导入者及其父链，直到 HTML 入口，保证同一页面的音频模块使用同一个完整 URL，否则会创建不同的 AudioContext。共享脚本在所有 shell 页的引用保持一致；修改 SEO 生成页引用时也检查生成器是否会覆盖。
+
+仅提交已审查的文件。设计参考、截图可能有大量未跟踪文件，不使用 `git add .` 盲目提交。提交、测试、推送后记录完整 commit ID，使用该提交打包，避免上传未提交的工作区代码。
+
+## 生产备份与预检
+
+下列命令在生产 SSH shell 中执行。使用唯一发布目录，并保留磁盘空间。
+
+```sh
+set -eu
+umask 077
+LIVE=/opt/joyflock/flight-party
+RELEASE=/opt/joyflock/releases/你的发布标识
+mkdir -p "$RELEASE"
+chmod 700 "$RELEASE"
+df -h /opt
+sudo -n docker ps
+sudo -n sh "$LIVE/deploy/backup.sh"
+tar -czf "$RELEASE/static.before.tgz" -C "$LIVE" dist
+cp -a "$LIVE/deploy" "$RELEASE/deploy.before"
+sudo -n docker inspect deploy-backend-1 > "$RELEASE/backend-before.private.json"
+sudo -n docker tag "$(sudo -n docker inspect deploy-backend-1 --format '{{.Image}}')" joyflock-backend:before-你的发布标识
+```
+
+`backup.sh` 输出的目录内包含 PostgreSQL dump 和 Redis RDB。使用 sudo 检查备份非空；这些是同机备份，不能代替异地备份和恢复演练。`deploy.before`、docker inspect 文件、有效 Compose 配置可能含凭据，保持目录私有，不能上传公共证据或 Git。
+
+记录当前镜像、迁移版本、服务状态以及活动房间情况。备份成功才切换。
+
+## 静态发布
+
+在本地从已提交版本生成制品。全量静态包示例：
+
+```powershell
+git archive --format=tar.gz -o .workbuddy/tmp/static-release.tar.gz HEAD dist
+Get-FileHash .workbuddy/tmp/static-release.tar.gz -Algorithm SHA256
+scp -i $env:USERPROFILE\.ssh\joyflock_deploy .workbuddy/tmp/static-release.tar.gz ubuntu@43.153.70.181:/opt/joyflock/releases/你的发布标识/static-release.tar.gz
+```
+
+也可用明确的已提交变更清单生成增量包，但必须包含所有入口、共享资源及缓存父链。归档路径统一相对仓库根目录（含 `dist/`），校验 SHA256，先解压到发布目录检查，不从未知归档直接覆盖线上。
+
+在生产执行：
+
+```sh
+set -eu
+LIVE=/opt/joyflock/flight-party
+RELEASE=/opt/joyflock/releases/你的发布标识
+sha256sum "$RELEASE/static-release.tar.gz"  # 与本地输出逐项比对
+mkdir -p "$RELEASE/candidate"
+tar -tzf "$RELEASE/static-release.tar.gz"    # 确认只有计划内路径
+tar -xzf "$RELEASE/static-release.tar.gz" -C "$RELEASE/candidate"
+cp -a "$RELEASE/candidate/dist/." "$LIVE/dist/"
+```
+
+nginx 挂载的是现有 `dist` 目录。必须复制内容进去，不能删除或重命名整个目录再换新目录，否则容器可能仍指向旧 inode。增量复制不会删除已移除的旧文件；如有删除需求，按审查清单单独处理，禁止对线上计算路径进行盲目递归删除。
+
+静态文件改变无需 nginx reload；配置改变时先 `sudo -n docker exec deploy-web-1 nginx -t`，成功后再 reload。配置文件也要保留挂载 inode，或明确重建对应容器。
+
+## 后端发布（只有 Java／协议／迁移变更时执行）
+
+本机 Docker 可用时，先在本地构建：
+
+```powershell
+docker build --target build -t flightparty-release-build:你的发布标识 backend
+# 该阶段执行 mvn -B verify；检查摘要，记录跳过的外部集成测试。
+docker create --name flightparty-release-extract flightparty-release-build:你的发布标识
+docker cp flightparty-release-extract:/app/target/flight-party-backend-0.1.0-SNAPSHOT.jar .workbuddy/tmp/release.jar
+docker rm flightparty-release-extract
+Get-FileHash .workbuddy/tmp/release.jar -Algorithm SHA256
+```
+
+源码构建上下文必须与发布提交一致。上传 JAR 并核对哈希；生产曾缺少 buildx，因此可在本机构建验证 JAR，在服务器仅构建运行镜像：
+
+```dockerfile
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY app.jar /app/app.jar
+RUN chmod 644 /app/app.jar
+USER 10001:10001
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+```
+
+JAR 必须可被容器内非 root 用户读取。2026-11-15 曾因私有发布目录的 umask 导致复制进镜像的 JAR 为 0600，出现 `Unable to access jarfile`；应在镜像内确保 0644，并在切换前检查权限。
+
+使用新镜像标签。复用现有 Compose 项目 `deploy`、网络和持久卷；保留所有有效生产环境变量。既有运行容器的环境可能与 `.env` 默认值不同，必须比较，不能无意关闭计费配置或更换数据库密码。可在私有目录保存精确的环境覆盖及回滚 Compose 文件。
+
+完成迁移校验及候选验证后，用现有配置加一个仅更换 backend image 的私有 override 执行：
+
+```sh
+sudo -n docker compose --env-file "$LIVE/deploy/.env" \
+  -f "$LIVE/deploy/compose.yaml" -f "$LIVE/deploy/compose.production.yaml" \
+  -f "$RELEASE/release.private.json" up -d --no-build --no-deps backend
+```
+
+先确认新镜像健康和迁移成功，再发布依赖它的静态文件；不在旧后端已恢复后继续误执行“新后端健康”的发布脚本。出现启动失败要停止本轮流程、明确恢复状态后重试，不能有两个发布脚本同时切换容器。
+
+## 验收
+
+1. `docker ps`：backend running、重启数稳定，PG／Redis healthy。
+2. `curl -fsS http://127.0.0.1:8080/api/csrf` 和 HTTPS `/api/csrf` 正常。按具体实现检查 `/api/me`；不要把未登录当服务故障。
+3. 若有迁移，查询 `flyway_schema_history` 的最新版本与 success；检查日志无校验失败。
+4. HTTPS 入口和本次变更资源 HTTP 200；把实际响应体 SHA256 与发布制品比对，确认缓存刷新参数。只看状态码不足以证明新内容上线。
+5. 浏览器打开门户、嵌入游戏页，检查本轮 UI、资源错误与控制台。iframe 的 `title` 必须正确闭合，`allow` 是独立属性；本项目曾因此丢失 autoplay 声明。
+6. 按本轮范围测试双游客入房／合法操作／完整结算、游客累计仍为零、WSS。WSS 101 只证明握手，不等于完整跨设备同步验证。
+7. 仅在明确授权的范围验证登录写分和支付；不伪造 Creem 事件或授予正式权益，不用真实账号造测试成绩。
+
+将部署 commit、制品哈希、镜像、迁移版本、备份位置、检查结果和未验证项写入 QA／HANDOFF，再推送记录。文档提交可以晚于部署的应用提交，必须分别写清。
+
+## 回滚
+
+- 纯静态：从 `static.before.tgz` 解压到私有暂存目录，再复制内容回现有 `dist`；若发布新增了文件，按发布清单处理。入口引用也一起恢复。必要时使用新的缓存参数，避免客户端继续持有失败版本。
+- 后端：使用已保存的镜像和精确环境覆盖重建 backend，验证健康；与之配套恢复前端。不要仅恢复一端的台球物理。
+- 数据库：应用回滚不能自动回滚已执行的迁移。先判断旧 JAR 是否兼容当前 schema／Flyway 历史；必要时构建兼容制品。恢复数据库会丢失备份后的数据，必须另行制定并授权恢复方案。
+- 永远不要执行 `docker compose down -v`，不要删除 PostgreSQL／Redis 持久卷，也不要把本地 `.env` 覆盖到生产。
+
+## 已知验证边界
+
+正式支付能力依赖已验证的 Creem live 配置与事件；配置文件或 UI 文案不是付款成功证据。浏览器必须获得用户手势才能启动声音，音量、静音、蓝牙设备缓冲也会影响试听。自动化和无头截图不证明真实 GPU、实体手机、音箱听感、容量或灾备恢复能力。
