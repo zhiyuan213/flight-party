@@ -21,7 +21,7 @@ export class OnlineSession extends EventTarget {
         high-latency link. A brand-new browser (kind "none") needs one more
         /api/me after the guest principal has been written. */
      this.csrf=await this.request('/api/csrf');
-     const [,identity]=await Promise.all([this.request('/api/session/guest',{}),this.request('/api/me')]);
+     const [,identity]=await Promise.all([this.guest(),this.request('/api/me')]);
      let me=identity;
      if(!me||me.kind==='none')me=await this.request('/api/me');
      this.apiDownUntil=0;this.apiDownError=null;this.identity=me;this.authState='ready';this.emit('identity',me);this.emit('authstate',this.authState);return me;
@@ -42,6 +42,18 @@ export class OnlineSession extends EventTarget {
   const down=this.down();if(down)throw down;
   try{const identity=await this.request('/api/me');this.identity=identity;this.authState='ready';this.emit('identity',identity);this.emit('authstate',this.authState);return identity;}
   catch(error){this.authState='error';this.emit('authstate',this.authState);throw error;}
+ }
+ /* Two tabs opened together can both ask for /api/csrf before a SESSION cookie
+    exists. The browser keeps only one of the two sessions, so the other tab's
+    token is rejected with 403. Re-read the token from the session the browser
+    actually kept and retry once instead of disabling online play for 30s. */
+ async guest(){
+  try{return await this.request('/api/session/guest',{});}
+  catch(error){
+   if(error.status!==403)throw error;
+   this.csrf=await this.request('/api/csrf');
+   return this.request('/api/session/guest',{});
+  }
  }
  async request(path,body) {
   const response=await fetch(new URL(path,this.origin),{credentials:'same-origin',cache:'no-store',method:body===undefined?'GET':'POST',headers:{...(body===undefined?{}:{'content-type':'application/json'}),...(this.csrf?{[this.csrf.headerName]:this.csrf.token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});

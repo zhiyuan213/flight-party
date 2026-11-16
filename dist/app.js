@@ -13,7 +13,7 @@ import {CanvasBoard} from './fallback.js';
 import {Die3D} from './die3d.js?v=20261110-glove2';
 import {SocialUI} from './social-ui.js?v=20261112-gamelanes1&d=20261115-selfrow1';
 import {ReactionPreview} from './reaction-preview.js';
-import {OnlineSession} from './online-session.js?v=20261116-roomleave1';
+import {OnlineSession} from './online-session.js?v=20261116-csrfretry1';
 import {bindLiveRooms} from './live-room-ui.js?v=20261116-roomleave1';
 import {bindQuickMatch} from './quick-match.js?v=20261110-home4';
 import {bindLiveAccount} from './live-account-ui.js?v=20261110-glove2&f=20261116-noframe1';

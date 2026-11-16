@@ -100,6 +100,44 @@ test('leave detaches before the request so a 1008 close cannot re-request /snaps
   } finally { restore(); }
 });
 
+test('a 403 on the guest probe refreshes the CSRF token instead of disabling play', async () => {
+  const paths = [];
+  let guestAttempts = 0;
+  let restore = patch({fetchImpl: async url => {
+    const path = pathOf(url); paths.push(path);
+    if (path === '/api/csrf') return json({headerName: 'X-CSRF-TOKEN', token: 'token-' + paths.filter(p => p === '/api/csrf').length});
+    if (path === '/api/session/guest') {
+      guestAttempts++;
+      if (guestAttempts === 1) return new Response('Forbidden', {status: 403});
+      return json({kind: 'guest'});
+    }
+    if (path === '/api/me') return json(identity);
+    throw new Error('unexpected ' + path);
+  }});
+  try {
+    const session = new OnlineSession({origin: 'https://example.test'});
+    assert.deepEqual(await session.initialize(), identity);
+    assert.equal(session.authState, 'ready');
+    assert.equal(guestAttempts, 2, 'one retry with the session the browser kept');
+    assert.equal(paths.filter(p => p === '/api/csrf').length, 2);
+    assert.equal(session.csrf.token, 'token-2');
+  } finally { restore(); }
+});
+
+test('a 403 on /api/csrf itself is still a definitive failure', async () => {
+  const paths = [];
+  let restore = patch({fetchImpl: async url => {
+    paths.push(pathOf(url));
+    return new Response('Forbidden', {status: 403});
+  }});
+  try {
+    const session = new OnlineSession({origin: 'https://example.test'});
+    await assert.rejects(session.initialize(), error => error.status === 403);
+    assert.equal(paths.length, 1, 'no retry storm on a definitive 4xx');
+    assert.equal(session.authState, 'error');
+  } finally { restore(); }
+});
+
 test('an expired room pointer is discarded instead of blocking the welcome screen', async () => {
   let restore = patch({fetchImpl: async () => new Response('Forbidden', {status: 403})});
   try {
@@ -146,11 +184,11 @@ test('shipped entry points use the new module versions and the app tolerates a s
   const app = read('dist/app.js');
   const index = read('dist/index.html');
   const native = read('dist/portal/native-flight.html');
-  assert.match(app, /online-session\.js\?v=20261116-roomleave1/);
+  assert.match(app, /online-session\.js\?v=20261116-csrfretry1/);
   assert.match(app, /live-room-ui\.js\?v=20261116-roomleave1/);
   assert.match(app, /audio=20261116-idle1/);
-  assert.match(index, /rl=20261116-roomleave1/);
-  assert.match(native, /rl=20261116-roomleave1&native=/);
+  assert.match(index, /rl=20261116-csrfretry1/);
+  assert.match(native, /rl=20261116-csrfretry1&native=/);
   assert.match(app, /try\{room=await onlineSession\.restore\(identity\.activeRoomId\);\}catch\(error\)\{room=null;\}/);
   assert.match(app, /Date\.now\(\)-lastIdentityRefresh<60000/);
 });
