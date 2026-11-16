@@ -3306,3 +3306,16 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 真机验收：1440 视口封面 158x158（同视口台球封面 158x158）、右栏 460x700、左栏 576 + 规则/会员 191px、10 行排行榜、名字完整、中英双态文案正确、390px 单列无横向溢出。本地 8080 的 404 仅为无后端时的 `/api/leaderboards`、`/api/csrf`，不是新增资源错误。
 - 已知差异：台球 `#intro` 自身带 `--intro-zoom` 与多档响应式列宽，在 >1500px 的大视口封会被整体放大（1898 视口实测 249px）；飞行棋封面固定 158px，在用户截图对应的桌面视口一致，超大视口会略小。
 - 截图 `docs/verification/flight-detail-{before,after,en,mobile}-20261116.*`、`pool-detail-reference-20261116.jpg`。纯静态改动，**未提交、未部署**；生产仍 `75441bd` + `ef208a4` / `deploy-backend:vip-18691ef`。
+
+
+## 2026-11-16 22:05 飞行棋 403 与详情页首屏修复（已部署生产 `b9cab3e`）
+- 用户截图：`joyflock.com/?game=flight` 弹窗「无法加入该房间／连接失败，请重试」；Network 中 `snapshot`、`start-now` 返回 403，多条 `online-session.js` 请求耗时 11–22s、4 条 pending，时间轴 85s，88 请求 / 17.1MB 资源。
+- 生产 Nginx 日志复现（12:38–12:41，Chrome/微信客户端）：每个 `POST /api/rooms/{id}/leave 200` 之后紧跟同一房间的 `GET /api/rooms/{id}/snapshot 403`，随后 `start-now 403`；后端 `RoomController.member()` 对非席位返回 403。根因是 `leave()` 先等网络请求再关 WS，席位移除触发 `RoomSocket` 1008 关闭，客户端重连逻辑立刻拿旧房间号重发 `snapshot`；弹窗在慢链路上仍开着，用户点「快速开始」又发 `start-now`。
+- 速度根因：服务器在新加坡，用户到站 TCP 约 0.33–0.37s、TLS 握手 0.8–3.5s，单个新连接 TTFB 1.5–5s（服务端本地 `/api/me` 仅 2–3ms，Nginx/Caddy 本地 2ms）。页面 88 个请求、`Cache-Control: no-cache` 使全部静态资源每次重验；`csrf→guest→me` 三次串行、焦点切换每 15s 再发 `/api/me`、首次点击并行拉 10 个 WAV。
+- 修复：`online-session.js` 在 `/leave` 前先 `close()` 提升 generation，1008 重连不再请求快照；`live()` 对已退出房间本地拒绝；`restore()` 403/404 丢弃陈旧指针并 emit `left`；`app.js` 恢复失败静默降级、`/api/me` 轮询改 60s；`live-room-ui.js` 立即关闭弹窗、403 显示「房间已失效，请重新创建房间」并给出重试按钮；`audio.js` 预取改 `requestIdleCallback` + 按音懒加载；引导阶段 `guest` 与 `/api/me` 并行，双标签会话竞争导致 `guest 403` 时重取 CSRF 重试一次。
+- `deploy/nginx.conf` 新增 `map "$uri:$args"`：带 `?v=` 静态资源 `public, max-age=86400`，HTML / `/api/` / 生产原有 `table|assets/pool` 正则 location 保持 `no-cache`；本地 nginx:1.28 容器 `nginx -t` 与 5 类 URL 缓存头验收通过，生产 reload 后挂载 inode `655846` 未变。**以后原地改静态文件必须同步升级 `?v=`**，否则 24 小时内可能是旧内容。
+- 顺带上线此前本地已完成但未发布的网格结算 900ms 停留与飞行棋详情两栏版式（HeroPlane 封面）。
+- 测试：`tests/online-room-leave-race.test.mjs` 11 条 + 更新 `online-session-404-failfast.test.mjs`；`npm test` **1019/1019**（连续 3 轮全绿）。
+- 生产验收：双域名 24/24 + 8/8 变更资源响应体 SHA256 与制品一致；生产 Chrome 建房→退出只有 `POST /api/rooms 200` 与 `leave 200`，零 `/snapshot`、`start-now` 403，零控制台错误；清空 Cookie 后双标签并发引导两页均 `csrf/guest/me 200`、零 4xx；冷/热缓存详情页静态请求 93 个中 49 个直接命中磁盘缓存；`Cache-Control` 抽样：版本化 JS `max-age=86400`、HTML/未版本化/`/table/`/`/api/` 均 `no-cache`。
+- 发布目录 `/opt/joyflock/releases/static-e54b2cf`、`static-b9cab3e`；数据备份 `20261116T133823Z`、`20261116T135534Z`；制品 SHA256 `038ac38e…995c7`、`9d482e8…6366`。后端 `deploy-backend:vip-18691ef`、数据库 V25、无迁移、容器未重启。
+- 仍需注意：43 个未带 `?v=` 的静态资源（visual-v*.css、封面图等）仍每次 304；跨境链路本身的高 RTT/TLS 抖动无法通过代码消除，若持续卡顿应考虑接入 CDN 或把静态资源放到离用户更近的节点。

@@ -1352,3 +1352,12 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 新增 `dist/flight-detail-layout.css`（仅 `?game=flight` 原生页）：两栏 `1fr + 460px`，左侧 158x158 的 HeroPlane 飞机+风线动画封面、标题与按钮、怎么玩/会员与支持；右侧飞行员排行榜。`/index.html` 与台球页不受影响。
 - 缓存 `flight-detail-layout.css?v=20261116-flightdetail1`，生成器已重跑。`npm test` 1008/1008（新增 5 条布局守卫），真机中英双态与 390px 窄屏验收通过。
 - 纯静态，**未提交、未部署**；生产仍 `75441bd` + `ef208a4` / `deploy-backend:vip-18691ef`。台球封面在超大视口会随自身 `--intro-zoom` 放大，飞行棋封面为固定 158px。
+
+
+## 2026-11-16 22:05 生产发布 `b9cab3e`：飞行棋 403 与详情页首屏
+- 应用提交 `fe7b2ef`（房间 403、首屏请求链、顺带上线网格 900ms 与飞行棋详情版式）→ `e54b2cf`（保留生产 nginx 静态正则 location）→ `b9cab3e`（双标签 CSRF 403 重试），均已推送 GitHub main；本段为发布记录文档。
+- 当前生产：静态 `b9cab3e`，后端 `deploy-backend:vip-18691ef`，数据库 Flyway V25，nginx 配置带 `map "$uri:$args"` 缓存规则。此前各段「未部署 / 生产仍 75441bd」为当时事实，以本段为准。
+- 关键约定：**原地修改任何带 `?v=` 的静态文件必须同步升级查询参数**，因为生产对版本化资源缓存 24 小时；HTML 文档始终 `no-cache`。`deploy/nginx.conf` 中的 `location ~ ^/(table/|assets/(pool/|audio/pool/))` 是生产特有规则，改动配置时不能删除。
+- 客户端 `OnlineSession` 新增 `leaving` 状态与 `live()`/`discard()`/`guest()`；`leave()` 现在是「先断开再发请求」，任何新增房间命令都应走 `live()`，不要再直接拼 `/api/rooms/{id}/...` 绕过状态检查。
+- 诊断留痕：生产访问日志显示 `leave 200 → snapshot 403 → start-now 403`，服务器本地 `/api/me` 2–3ms 而外部 TTFB 1.5–5s，说明「慢」主要来自跨境链路与请求串行，而非后端算力（容器 CPU 3.8%、load 0.13）。
+- 验收与回滚细节见 `PRODUCTION-DEPLOYMENT.md` 顶部发布记录与 `QA.md` 对应段落。
