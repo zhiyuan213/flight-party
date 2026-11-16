@@ -217,8 +217,8 @@ test('all three hosts and the home module pull the account-aware self row', () =
   }
   assert.match(read('dist/app.js'), /social-ui\.js\?v=20261112-gamelanes1&d=20261115-selfrow1/);
   assert.match(read('dist/index.html'), /app\.js\?v=20261112-gamelanes1&d=20261115-selfrow1/);
-  assert.match(read('dist/social-ui.js'), /signedIn:p\.signedIn!==false/,
-    'the home board trusts the scorer verdict instead of its preview account');
+  assert.match(read('dist/social-ui.js'), /signedIn:row\.signedIn!==false/,
+    'the flight board trusts the scorer verdict instead of its preview account');
 });
 
 test('both result pipelines call the single recorder, and the copy matches the new table', () => {
@@ -261,7 +261,7 @@ test('the visitor keeps a leaderboard seat even below ten demo standings', () =>
   assert.equal([...rows].length, 10);
   assert.equal([...rows][9].name, '你');
   assert.match(read('dist/table/table.js'), /rankRows\?\.\(merged,'winRate'\)/);
-  assert.match(read('dist/social-ui.js'), /rankRows\?\.\(rows\)/);
+  assert.match(read('dist/social-ui.js'), /rankRows\?\.\(merged,'winRate'\)/);
 });
 
 test('a login or logout in the same tab switches identity without adopting guest figures', () => {

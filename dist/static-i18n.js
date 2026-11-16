@@ -4,9 +4,10 @@ export const STATIC_COPY=[
  ['.hero-copy > .eyebrow','YOUR NEXT GAME NIGHT, CLEARED FOR TAKEOFF','好友已就位，欢乐即将起飞'],
  ['.hero-copy > h1','Little planes.<br>Big <em>feelings.</em>','小小飞机，<br>大大<em>欢乐。</em>','html'],
  ['.hero-copy > p:not(.legal-links)','Roll. Fly. Bump your friends back home.<br>A playful board game for your favorite people.','掷骰、起飞，把好友撞回基地。<br>和喜欢的人，一起玩欢乐飞行棋。','html'],
- ['.hero-notes span:nth-child(1)','◉ 2–4 players','◉ 2–4 人游玩'],
- ['.hero-notes span:nth-child(2)','◷ Quick rounds','◷ 轻松快节奏'],
- ['.hero-notes span:nth-child(3)','✓ No sign-up','✓ 无需注册'],
+ ['.hero-notes span:nth-child(1)','2–4 players','2–4 位玩家'],
+ ['.hero-notes span:nth-child(2)','Browser play','浏览器直接玩'],
+ ['.hero-notes span:nth-child(3)','No sign-up','无需注册'],
+ ['#quick-match-preview','Quick start <span>↗</span>','快速开始 <span>↗</span>','html'],
  ['.legal-links a[href="/membership.html"]','Membership & support','会员与帮助'],
  ['.legal-links a[href="/terms.html"]','Terms','服务条款'],
  ['.legal-links a[href="/privacy.html"]','Privacy','隐私政策'],
@@ -48,7 +49,7 @@ export function translateStaticUI(language,root=document){
   if(kind==='label'){if(node.firstChild?.nodeType===3)node.firstChild.textContent=value+' ';}
   else if(kind==='html')node.innerHTML=value;else node.textContent=value;
  }
- const attrs=[['#settings-dialog .close','aria-label','Close','关闭'],['#leaderboard-shell','aria-label','Pilot leaderboard','飞行员排行榜'],['#settings','aria-label','Settings','设置'],['#sound','aria-label','Toggle sound','开关音效'],['#camera-reset','title','Reset camera','重置视角'],['#back-mid','title','Back to game','返回游戏页'],['#back-mid','aria-label','Back to game','返回游戏页'],['#language','title','Switch language','切换语言']];
+ const attrs=[['#settings-dialog .close','aria-label','Close','关闭'],['#leaderboard-shell','aria-label','Standings','玩家排行'],['#settings','aria-label','Settings','设置'],['#sound','aria-label','Toggle sound','开关音效'],['#camera-reset','title','Reset camera','重置视角'],['#back-mid','title','Back to game','返回游戏页'],['#back-mid','aria-label','Back to game','返回游戏页'],['#language','title','Switch language','切换语言']];
  for(const [selector,attr,en,zh] of attrs)root.querySelector(selector)?.setAttribute(attr,language==='zh'?zh:en);
 }
 STATIC_COPY.push(

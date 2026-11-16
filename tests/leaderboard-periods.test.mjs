@@ -1,38 +1,138 @@
-import {avatarStyle} from '../dist/avatar.js';
 import {SocialUI} from '../dist/social-ui.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
-test('period boards show three point tabs and omit sample labels from display rows',()=>{
- const source=readFileSync(new URL('../dist/social-ui.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('export class SocialUI','class SocialUI');
- for(const period of ['month','week','day']){
-  const badge={textContent:''};const panel={innerHTML:'',querySelector:()=>badge,querySelectorAll:()=>[]};
-  const context=vm.createContext({panel,period,avatarStyle});
-  vm.runInContext(source+`;const ui=new SocialUI();ui.leaderboard=panel;ui.boardTab=period;ui.liveBoards={[period]:[{name:'Real <pilot>',points:-1,games:1,avatar:0,member:true,annualMember:true,avatarFrame:'night'}]};ui.liveBoardStatus={[period]:'loaded'};ui.renderLeaderboard();`,context);
-  assert.equal((panel.innerHTML.match(/data-leaderboard-tab=/g)||[]).length,3);
-  assert.equal((panel.innerHTML.match(/<small>Sample<\/small>/g)||[]).length,0);
-  assert.ok(panel.innerHTML.includes('Real &lt;pilot&gt;'));
-  assert.ok(panel.innerHTML.includes('<span class="membership-name-value">Real &lt;pilot&gt;</span>'));
-  assert.ok(panel.innerHTML.includes('data-frame="night"'));
-  assert.ok(panel.innerHTML.includes('data-member="true"')); 
-  assert.ok(panel.innerHTML.includes('data-annual-member="true"'));
-  assert.ok(!panel.innerHTML.includes('Games played'));
-  assert.equal(badge.textContent,'PILOT RANKINGS');
- }
+
+const source = readFileSync(new URL('../dist/social-ui.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+
+/* A tiny DOM mock is enough: the row builder only uses createElement, append,
+   textContent, className, dataset and setAttribute. */
+function element() {
+  return {
+    children: [], className: '', textContent: '', dataset: {}, attrs: {}, style: {},
+    append(...items) { this.children.push(...items); },
+    setAttribute(key, value) { this.attrs[key] = value; },
+    addEventListener() {},
+    getAttribute(key) { return this.attrs[key]; },
+    replaceChildren(...items) { this.children = items; }
+  };
+}
+
+function panelFor(period, rows) {
+  const list = element();
+  const tag = element();
+  const tabs = ['month', 'week', 'day'].map(key => {
+    const button = element(); button.attrs['data-period'] = key; button.dataset.period = key; return button;
+  });
+  const panel = {
+    innerHTML: '', ownerDocument: {createElement: () => element()},
+    querySelector(selector) {
+      if (selector === '#leaderboard') return list;
+      if (selector === '.demo-tag') return tag;
+      return null;
+    },
+    querySelectorAll(selector) { return selector === '[data-period]' ? tabs : []; },
+    addEventListener() {}
+  };
+  const ui = new SocialUI({getLanguage: () => 'en'});
+  ui.leaderboard = panel;
+  ui.boardTab = period;
+  ui.boardsLoaded = true;                 // skip the network batch
+  ui.boardCache.set(period, rows);
+  return {ui, panel, list, tag, tabs};
+}
+
+test('the three period tabs are a win-rate board with games + rate only', () => {
+  const ui = new SocialUI();
+  const html = ui.boardShell('zh');
+  assert.equal((html.match(/data-period=/g) || []).length, 3);
+  for (const label of ['月胜率榜', '周胜率榜', '日胜率榜']) assert.ok(html.includes(label), label);
+  assert.ok(html.includes('<span>玩家</span><span>局数</span><span>胜率</span>'));
+  assert.ok(!html.includes('Joy Coins 榜'), 'no Joy Coins board label remains');
+  assert.ok(!html.includes('data-leaderboard-tab'), 'old tab attribute retired');
+  assert.ok(html.includes('demo-tag'), 'sample rows are advertised');
+  const en = ui.boardShell('en');
+  assert.ok(en.includes('Standings') && en.includes('Win rate'));
 });
 
-test('leaderboard scrollbar measurement follows visibility and replaces its observer with the list',()=>{
- const previous=globalThis.ResizeObserver,observers=[];
- globalThis.ResizeObserver=class{constructor(callback){this.callback=callback;observers.push(this);}observe(value){this.target=value;}disconnect(){this.disconnected=true;}};
- try{
-  let list={offsetWidth:220,clientWidth:200},gutter;
-  const ui=new SocialUI();ui.leaderboard={querySelector:()=>list,style:{setProperty(key,value){assert.equal(key,'--lb-scrollbar');gutter=value;}}};
-  ui.syncLeaderboardGutter();assert.equal(gutter,'20px');assert.equal(observers.length,1);assert.equal(observers[0].target,list);
-  list.clientWidth=205;observers[0].callback();assert.equal(gutter,'15px');
-  ui.syncLeaderboardGutter();assert.equal(observers.length,1,'same list reuses its observer');
-  list={offsetWidth:0,clientWidth:0};ui.syncLeaderboardGutter();assert.equal(observers[0].disconnected,true);assert.equal(gutter,'0px');
-  list.offsetWidth=220;list.clientWidth=208;observers[1].callback();assert.equal(gutter,'12px','becoming visible recalculates the shared header gutter');
-  observers[0].callback();assert.equal(gutter,'12px','a queued callback from the old list cannot overwrite the new gutter');
- }finally{if(previous===undefined)delete globalThis.ResizeObserver;else globalThis.ResizeObserver=previous;}
+test('real server rows win and the board prints games + a one-decimal win rate', () => {
+  for (const period of ['month', 'week', 'day']) {
+    const rows = [{name: 'Real <pilot>', games: 9, wins: 2, points: 200,
+      member: true, annualMember: true, avatarUrl: '/api/avatars/system/1'}];
+    const {ui, list, tag, tabs} = panelFor(period, rows);
+    ui.renderLeaderboard();
+    assert.equal(list.children.length, 10, period + ': ten rows');
+    const nameOf = li => li.children[1].children[1].children[0].children[0].textContent;
+    const real = list.children.find(li => nameOf(li) === 'Real <pilot>');
+    assert.ok(real, period + ': the real server row is on the board');
+    assert.equal(real.children[2].className, 'ranking-points');
+    assert.equal(real.children[2].textContent, '9', period + ': games only, no wins/games');
+    assert.equal(real.children[3].className, 'ranking-games');
+    assert.equal(real.children[3].textContent, '22.2%', period + ': derived win rate');
+    assert.equal(nameOf(real), 'Real <pilot>', period + ': name is text, never innerHTML');
+    assert.equal(tag.hidden, false, period + ': demo rows are on the board');
+    assert.equal(tabs.find(t => t.attrs['data-period'] === period).attrs['aria-pressed'], 'true');
+  }
+});
+
+test('ten real rows suppress the sample rows and the demo tag', () => {
+  const rows = Array.from({length: 10}, (_, i) => ({name: 'Pilot ' + i, games: 20 - i, wins: 10 - i, points: 100}));
+  const {ui, list, tag} = panelFor('month', rows);
+  ui.renderLeaderboard();
+  assert.equal(list.children.length, 10);
+  assert.equal(tag.hidden, true, 'live standings are never labelled as samples');
+  assert.ok(!list.children.some(li => li.children[1].children[1].children[0].children[0].textContent.startsWith('Ava')));
+});
+
+test('switching periods only repaints from the cache, without a fetch', () => {
+  const calls = [];
+  class OfflineSocial extends SocialUI {}
+  const ui = new OfflineSocial({getLanguage: () => 'en'});
+  const list = element(), tag = element();
+  const tabs = ['month', 'week', 'day'].map(key => { const b = element(); b.attrs['data-period'] = key; b.dataset.period = key; return b; });
+  ui.leaderboard = {
+    innerHTML: '', ownerDocument: {createElement: () => element()},
+    querySelector: s => s === '#leaderboard' ? list : s === '.demo-tag' ? tag : null,
+    querySelectorAll: s => s === '[data-period]' ? tabs : [],
+    addEventListener() {}
+  };
+  ui.boardsLoaded = true;
+  ui.boardCache.set('week', [{name: 'Week pilot', games: 4, wins: 1}]);
+  globalThis.fetch = () => { calls.push('fetch'); return Promise.reject(new Error('offline')); };
+  try {
+    ui.boardTab = 'week'; ui.renderLeaderboard();
+    ui.boardTab = 'day'; ui.renderLeaderboard();
+    ui.boardTab = 'month'; ui.renderLeaderboard();
+    assert.equal(calls.length, 0, 'three switches, zero requests');
+    assert.equal(list.children.length, 10, 'every period keeps ten rows');
+  } finally { delete globalThis.fetch; }
+});
+
+test('the batch fetches each period exactly once', async () => {
+  const calls = [];
+  const saved = globalThis.fetch;
+  globalThis.fetch = url => {
+    calls.push(String(url));
+    return Promise.resolve(new Response('[]', {status: 200, headers: {'content-type': 'application/json'}}));
+  };
+  try {
+    const ui = new SocialUI({getLanguage: () => 'en'});
+    const list = element(), tag = element();
+    ui.leaderboard = {
+      innerHTML: '', ownerDocument: {createElement: () => element()},
+      querySelector: s => s === '#leaderboard' ? list : s === '.demo-tag' ? tag : null,
+      querySelectorAll: () => [], addEventListener() {}
+    };
+    ui.boardsLoaded = true;
+    await ui.loadAllLeaderboards();
+    assert.equal(calls.length, 3, 'month + week + day in one parallel batch');
+    for (const period of ['month', 'week', 'day'])
+      assert.equal(calls.filter(url => url.endsWith('period=' + period)).length, 1);
+  } finally { globalThis.fetch = saved; }
+});
+
+test('the shared source keeps the tab contract free of the retired markup', () => {
+  assert.doesNotMatch(source, /data-leaderboard-tab|leaderboard-list|lb-tab-/);
+  assert.doesNotMatch(source, /Pilot leaderboard|Joy Coins 榜/);
+  assert.match(source, /const PERIODS=\['month','week','day'\]/);
 });

@@ -35,7 +35,7 @@ test('fallback preview markup is labelled, not mistaken for shipped behaviour', 
   assert.ok(!social.includes('No network, account storage, password storage, or real quotas'),
     'the old "no network" claim is gone: loadLeaderboard does fetch /api/leaderboards');
   assert.match(social, /UI PREVIEW/, 'the fallback string stays honest for the degraded path');
-  assert.match(social, /fetch\(`\/api\/leaderboards/, 'the real leaderboard fetch remains');
+  assert.match(social, /fetch\('\/api\/table\/leaderboards\/flight\?period='/, 'the real leaderboard fetch remains');
   assert.ok(!homeHtml.includes('Account interface preview'),
     'the homepage account button no longer describes a live account as a preview');
 });

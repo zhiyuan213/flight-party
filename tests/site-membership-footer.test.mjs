@@ -66,10 +66,12 @@ test('all five shell pages load the same bumped chrome stylesheet',()=>{
     'stylesheet documents the new footer link');
 });
 
-test('out-of-scope membership links are untouched: flight home legal-links and the in-game header',()=>{
+test('the flight detail keeps a membership block; the in-game header shortcut is untouched',()=>{
   const home=read('../dist/index.html');
-  assert.ok(home.includes('<p class="local-note legal-links"><a href="/membership.html">Membership &amp; support</a>'),
-    'flight home keeps its own legal-links membership entry');
+  assert.ok(home.includes('<section class="member-note">') && home.includes('会员与支持'),
+    'flight detail keeps the membership & support section in the pool composition');
+  assert.ok(!home.includes('class="local-note legal-links"'),
+    'the retired jumbo-hero legal link row went away with that composition');
   const table=read('../dist/table/index.html');
   assert.ok(table.includes('<a href="/membership.html" target="_blank" rel="noopener">会员</a>'),
     'the in-game toolbar keeps its membership shortcut (game pages hide the footer)');

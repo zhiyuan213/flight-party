@@ -98,7 +98,7 @@ test('rankRows sorts by win rate only on the detail board; home stays on Joy Coi
   assert.match(gp, /wins:state\.wins,winRate:snapshot\(\)\.winRate/, 'self row carries wins');
   assert.match(gp, /rankRows\(rows,byRate\?'winRate':'points'\)/);
   assert.match(gp, /document\.querySelector\('\.home-ranking'\)/);
-  assert.match(read('dist/social-ui.js'), /rankRows\?\.\(rows\)/, 'home board keeps the default call');
+  assert.match(read('dist/social-ui.js'), /rankRows\?\.\(merged,'winRate'\)/, 'the flight board now uses the win-rate ordering too');
 });
 
 test('the async refresh derives win rate from server wins and asks for the rate ordering', () => {

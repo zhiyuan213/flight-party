@@ -1,4 +1,47 @@
 import {avatarStyle} from './avatar.js';
+
+/* The pool detail page owns this board composition. Flight uses the same
+   three-period win-rate standings: real server rows first, explicit sample
+   rows only to keep ten seats, one decimal win rate, games on the left. */
+const PERIODS=['month','week','day'];
+const DEMO_PLAYERS=[
+ ['Ava Mitchell',[96,27,6],[62,18,5],true,true],['Leo Park',[91,24,5],[55,15,4],true,false],
+ ['Mia Chen',[88,22,5],[50,13,3],false,false],['Noah Kim',[82,20,4],[44,11,2],false,false],
+ ['Zoe Walker',[78,18,4],[38,9,2],true,false],['Kai Nakamura',[71,16,3],[32,7,1],false,false],
+ ['Iris Dubois',[66,14,3],[26,5,1],false,false],['Evan Silva',[59,12,2],[18,3,0],false,false],
+ ['Nora Bennett',[51,10,2],[12,2,0],false,false],['Sam Rivera',[43,8,1],[8,1,0],false,false]
+];
+function demoRows(period){
+ const p=Math.max(0,PERIODS.indexOf(period));
+ return DEMO_PLAYERS.map((d,i)=>{
+  const games=d[1][p],wins=Math.max(0,Math.min(games,d[2][p]));
+  return {name:d[0],games,wins,winRate:games?wins/games*100:0,points:games*5,
+   member:d[3],annualMember:d[4],avatarUrl:'/api/avatars/system/'+(i%4)};
+ });
+}
+const rate=r=>Number(r.winRate)||0;
+function avatarNode(doc,row){
+ if(globalThis.__joyflockAvatarDisplay?.create)
+  return globalThis.__joyflockAvatarDisplay.create(doc,{avatarUrl:row.avatarUrl,isSelf:row.self===true,signedIn:row.signedIn!==false});
+ const node=doc.createElement('span');node.className='seat-avatar';return node;
+}
+function rankRow(doc,row,i){
+ const li=doc.createElement('li');
+ const rank=doc.createElement('span');rank.className='rank-medal rank-'+(i+1);rank.textContent=String(i+1).padStart(2,'0');
+ const seat=doc.createElement('div');seat.className='seat'+(row.member?' member':'');
+ const shell=doc.createElement('span');shell.className='avatar-shell';shell.append(avatarNode(doc,row));
+ const copy=doc.createElement('div');copy.className='seat-copy';
+ const line=doc.createElement('div');line.className='seat-name';
+ const name=doc.createElement('strong');name.textContent=row.name||'玩家';line.append(name);
+ if(row.member){const badge=doc.createElement('span');badge.className='member-label'+(row.annualMember?' annual':'');badge.setAttribute('role','img');badge.setAttribute('aria-label',row.annualMember?'YEAR VIP':'VIP');line.append(badge);}
+ copy.append(line);seat.append(shell,copy);
+ /* Left number = completed games only; right number = one-decimal win rate. */
+ const games=doc.createElement('b');games.className='ranking-points';games.textContent=String(Math.max(0,Number(row.games)||0));
+ const pct=doc.createElement('span');pct.className='ranking-games';pct.textContent=(Number(row.winRate)||0).toFixed(1)+'%';
+ li.append(rank,seat,games,pct);
+ if(row.self===true)li.dataset.self='1';
+ return li;
+}
 // Fallback presentation layer (2026-10-31 preview scope). The shipped app
 // overrides renderRoom / renderDialog / renderAccountButton / openRoom through
 // app.js's bindLiveRooms / bindLiveAccount / bindQuickMatch (live-room-ui.js,
@@ -10,7 +53,7 @@ const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const MODES=['guest','free'];
 export class SocialUI{
  constructor({getLanguage=()=> 'en',onChange=()=>{}}={}){
-  this.getLanguage=getLanguage;this.onChange=onChange;this.mode='guest';this.displayName='You';this.boardTab='month';this.authTab='login';this._takeoverPreview=false;this.initialized=false;this.result=null;this.showResultPreview=false;this.authNotice='';this.roomTab='quick';this.roomState='waiting';this.roomNotice='';this.roomDeadline=0;this.roomTimer=null;this.friendSample=false;this.friendReady=false;this.youReady=false;this.fullSample=false;
+  this.getLanguage=getLanguage;this.onChange=onChange;this.mode='guest';this.displayName='You';this.boardTab='month';this.authTab='login';this._takeoverPreview=false;this.initialized=false;this.result=null;this.showResultPreview=false;this.authNotice='';this.roomTab='quick';this.roomState='waiting';this.roomNotice='';this.roomDeadline=0;this.roomTimer=null;this.friendSample=false;this.friendReady=false;this.youReady=false;this.fullSample=false;this.boardCache=new Map();this.boardsLoaded=false;this.boardLoadToken=0;this._boardLocale=null;
  }
  t(en,zh){return this.getLanguage()==='zh'?zh:en;}
  get profile(){return this.viewer;}
@@ -20,7 +63,8 @@ export class SocialUI{
   if(this.initialized)return this;this.initialized=true;
   this.accountButton=document.getElementById('account-open');this.dialog=document.getElementById('account-dialog');this.leaderboard=document.getElementById('leaderboard-shell');this.roomDialog=document.getElementById('room-preview-dialog');
   this.accountButton.addEventListener('click',()=>this.open());
-  this.leaderboard.addEventListener('click',e=>{const tab=e.target.closest('[data-leaderboard-tab]');if(tab){this.boardTab=tab.dataset.leaderboardTab;this.renderLeaderboard();}});
+  this.leaderboard?.addEventListener('click',e=>{const tab=e.target.closest('[data-period]');if(tab&&PERIODS.includes(tab.dataset.period)){this.boardTab=tab.dataset.period;this.renderLeaderboard();}});
+  this.leaderboard?.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;if(!e.target.closest('[data-period]'))return;e.preventDefault();const i=PERIODS.indexOf(this.boardTab);const next=e.key==='Home'?'month':e.key==='End'?'day':PERIODS[(i+(e.key==='ArrowRight'?1:PERIODS.length-1))%PERIODS.length];this.boardTab=next;this.renderLeaderboard();this.leaderboard.querySelector(`[data-period="${next}"]`)?.focus();});
   this.dialog.addEventListener('click',e=>{
    if(e.target.closest('[data-account-close]'))this.dialog.close();
    const auth=e.target.closest('[data-auth-tab]');if(auth){this.authTab=auth.dataset.authTab;this.authNotice='';this.renderDialog();}
@@ -60,54 +104,77 @@ export class SocialUI{
  renderAccountButton(){const guest=this.viewer.isGuest;this.accountButton.innerHTML=`<span class="account-button-avatar avatar-0" aria-hidden="true">${guest?'':this.mode==='member'?'★':''}</span><span class="account-button-label">${guest?this.t('Sign in','登录'):esc(this.displayName)}</span><span class="account-button-mode">${this.t('PREVIEW','预览')}</span>`;this.accountButton.setAttribute('aria-label',this.t('Account interface preview','账号界面预览'));}
  renderHomeAccess(){
   const el=document.getElementById('home-access'),v=this.viewer;
-  const title=this.t('Unlimited flights for everyone','所有玩家不限次数');
-  const detail=this.t('Play without limits. Only signed-in games add account statistics.','不限次数游玩，只有登录后参与的对局累计账号成绩。');
-  el.innerHTML=`<span class="access-symbol" aria-hidden="true">${v.isGuest?'✈':v.isMember?'★':this.mode==='exhausted'?'◷':'✓'}</span><div><b>${title}</b><span>${detail}</span></div><button type="button" id="home-account-open">${this.t('Account','查看账号')} <span aria-hidden="true">↗</span></button>`;
-  el.querySelector('button').addEventListener('click',()=>this.open());
-  document.getElementById('social-preview-note').textContent=this.t('Unlimited guest play. Email accounts and server results are connected. Google/GitHub sign-in is not configured.','匿名不限次数游玩，邮箱账号和服务器成绩已接入；Google/GitHub 登录暂未配置。');
-  document.getElementById('quick-match-preview').innerHTML=this.t('Quick match <span>↗</span>','快速匹配 <span>↗</span>');
-  const invite=document.getElementById('invite-preview');if(invite)invite.textContent=this.t('Create a friend room · Preview','创建好友房 · 预览');
+  if(el){
+   const title=this.t('Unlimited flights for everyone','所有玩家不限次数');
+   const detail=this.t('Play without limits. Only signed-in games add account statistics.','不限次数游玩，只有登录后参与的对局累计账号成绩。');
+   el.innerHTML=`<span class="access-symbol" aria-hidden="true">${v.isGuest?'✈':v.isMember?'★':this.mode==='exhausted'?'◷':'✓'}</span><div><b>${title}</b><span>${detail}</span></div><button type="button" id="home-account-open">${this.t('Account','查看账号')} <span aria-hidden="true">↗</span></button>`;
+   el.querySelector('button').addEventListener('click',()=>this.open());
+  }
+  const note=document.getElementById('social-preview-note');
+  if(note)note.textContent=this.t('Unlimited guest play. Email accounts and server results are connected. Google/GitHub sign-in is not configured.','匿名不限次数游玩，邮箱账号和服务器成绩已接入；Google/GitHub 登录暂未配置。');
+  const invite=document.getElementById('invite-preview');
+  if(invite)invite.textContent=this.t('Create a friend room · Preview','创建好友房 · 预览');
  }
-
+ boardShell(locale){
+  const zh=locale==='zh',t=(en,cn)=>zh?cn:en;
+  return `<div class="ranking-heading"><h2>${t('Standings','玩家排行')}</h2></div>`+
+   `<div class="period-tabs" role="group" aria-label="${t('Ranking period','排行榜周期')}">`+
+   [['month','Monthly win rate','月胜率榜'],['week','Weekly win rate','周胜率榜'],['day','Daily win rate','日胜率榜']]
+    .map(([key,en,cn])=>`<button type="button" data-period="${key}" aria-pressed="${key==='month'}">${t(en,cn)}</button>`).join('')+
+   `</div><div class="ranking-columns"><span>${t('Player','玩家')}</span><span>${t('Games','局数')}</span><span>${t('Win rate','胜率')}</span></div>`+
+   `<ol id="leaderboard"></ol>`+
+   `<p class="ranking-footnote">${t('Signed-in online results · UTC · Top 10','登录联机可记录 · UTC时间 · 前10')}<span class="demo-tag">${t(' · Sample data',' · 示例数据')}</span></p>`+
+   `<p id="stats">${t('My record: 0 Joy Coins · 0 games','我的战绩：0 Joy Coins · 0 局')}</p>`;
+ }
+ async loadAllLeaderboards(){
+  const token=++this.boardLoadToken;
+  const results=await Promise.all(PERIODS.map(async period=>{
+   try{
+    const response=await fetch('/api/table/leaderboards/flight?period='+period,
+     {credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(12000)});
+    if(!response.ok)return [];
+    const values=await response.json();return Array.isArray(values)?values:[];
+   }catch{return [];}
+  }));
+  if(token!==this.boardLoadToken)return;
+  PERIODS.forEach((period,i)=>this.boardCache.set(period,results[i]));
+  this.renderLeaderboard();
+  if(typeof document!=='undefined'&&document.readyState!=='complete'&&typeof globalThis.addEventListener==='function')
+   globalThis.addEventListener('load',()=>{if(token===this.boardLoadToken)this.renderLeaderboard();},{once:true});
+ }
  renderLeaderboard(){
-  const tab=['month','week','day'].includes(this.boardTab)?this.boardTab:'month';
-  this.liveBoards??={};this.liveBoardStatus??={};
-  if(!this.liveBoardStatus[tab])this.loadLeaderboard(tab);
-  const real=this.liveBoards[tab]||[];
-  const fillers=['Cloud Captain','Sky Mango','Luna Wing','Blue Comet','Sunny Ace','Wind Rider','Star Finch','Coco Jet','Moon Pilot','Happy Nimbus'].filter(name=>!real.some(p=>p.name===name)).map((name,i)=>({name,points:5-i,games:8+i,avatar:i%4,synthetic:true,member:i===0,annualMember:i===0}));
-  let rows=[...real,...fillers.slice(0,Math.max(0,10-real.length))];
-  /* Finished games are dynamic data: the visitor enters the board with the
-     points actually earned, even while playing anonymously. */
+  if(!this.leaderboard)return;
+  const tab=PERIODS.includes(this.boardTab)?this.boardTab:'month';
+  /* All three periods are fetched once on entry; switching tabs only repaints
+     from the cache, exactly like dist/table/table.js. */
+  if(!this.boardsLoaded){this.boardsLoaded=true;this.loadAllLeaderboards();}
+  const locale=this.getLanguage()==='zh'?'zh':'en';
+  if(this._boardLocale!==locale||!this.leaderboard.querySelector('#leaderboard')){
+   this._boardLocale=locale;this.leaderboard.innerHTML=this.boardShell(locale);
+  }
+  this.leaderboard.querySelectorAll('[data-period]').forEach(button=>
+   button.setAttribute('aria-pressed',String(button.dataset.period===tab)));
+  const real=(this.boardCache.get(tab)||[]).slice(0,10).filter(row=>row&&typeof row==='object').map(row=>{
+   const games=Number(row.games)||0,wins=Math.max(0,Math.min(games,Number(row.wins)||0));
+   return {name:row.name||row.displayName||'玩家',points:Number(row.points)||0,games,wins,
+    winRate:games?wins/games*100:0,avatarUrl:row.avatarUrl,member:!!row.member,
+    annualMember:!!row.annualMember};
+  });
+  const merged=real.slice();let usedDemo=false;
+  for(const entry of demoRows(tab)){
+   if(merged.length>=10)break;
+   if(merged.some(row=>row.name===entry.name))continue;
+   merged.push(entry);usedDemo=true;
+  }
   const self=globalThis.__joyflockGamePoints?.leaderboardRow?.();
-  if(self)rows=[...rows,self];
-  /* rankRows keeps the visitor visible even below ten demo standings. */
-  rows=globalThis.__joyflockGamePoints?.rankRows?.(rows)
-    ||rows.sort((a,b)=>b.points-a.points||b.games-a.games).slice(0,10);
-  this.leaderboard.innerHTML=`<div class="leaderboard-heading"><div><span class="eyebrow">${this.t('A LITTLE FRIENDLY COMPETITION','和飞行伙伴一起，争取好成绩')}</span><h2>${this.t('Pilot leaderboard','飞行员排行榜')}</h2></div><span class="leaderboard-trophy" aria-hidden="true"><img src="assets/member/trophy.svg" alt=""></span></div><div class="leaderboard-meta"><span class="sample-pill">${this.t('PILOT RANKINGS','飞行员排名')}</span><span>${this.t('TOP 10 · UTC','前10名 · UTC时间')}</span></div><div class="leaderboard-tabs" role="tablist" aria-label="${this.t('Ranking type','排行榜类型')}">${[ ["month","Monthly points","月 Joy Coins 榜"],["week","Weekly points","周 Joy Coins 榜"],["day","Daily points","日 Joy Coins 榜"] ].map(([key,en,zh])=>`<button type="button" id="lb-tab-${key}" role="tab" aria-controls="lb-panel" aria-selected="${tab===key}" data-leaderboard-tab="${key}">${this.t(en,zh)}</button>`).join('')}</div><div id="lb-panel" role="tabpanel" aria-labelledby="lb-tab-${tab}"><div class="leaderboard-columns"><span>${this.t('PILOT','飞行员')}</span><span>${this.t('JOY COINS','Joy Coins')}</span><span>${this.t('GAMES','已完成局数')}</span></div><ol class="leaderboard-list">${rows.map((p,i)=>`<li class="leaderboard-row ${i<3?'podium podium-'+i:''}" ${p.self===true?'data-self="1"':''}><span class="leaderboard-rank">${String(i+1).padStart(2,'0')}</span><span class="leaderboard-avatar avatar-${p.avatar}" ${avatarStyle({...p,isSelf:p.self===true,signedIn:p.signedIn!==false})} data-frame="${esc(p.avatarFrame||'none')}" aria-hidden="true"></span><b data-member="${p.member===true}" data-annual-member="${p.member===true&&p.annualMember===true}"><span class="membership-name-value">${esc(p.name)}</span></b><strong class="ranking-value-active">${p.points}</strong><strong class="">${p.games}</strong></li>`).join('')}</ol></div><p class="leaderboard-foot">${this.t('Signed-in results save automatically. Guest games are not recorded.','登录后自动保存成绩；匿名对局不记入排行榜。')}</p>`;
-  this.leaderboard.querySelector('.sample-pill').textContent=this.t('PILOT RANKINGS','飞行员排名');
-  this.syncLeaderboardGutter();
-  if(!rows.length){const note=document.createElement('p');note.className='leaderboard-foot';note.setAttribute('role','status');note.textContent=this.liveBoardStatus[tab]==='error'?this.t('Leaderboard unavailable. Try again later.','排行榜暂不可用，请稍后重试。'):this.liveBoardStatus[tab]==='loaded'?this.t('No completed signed-in games yet.','暂无已完成的登录账号对局。'):this.t('Loading leaderboard…','正在读取排行榜…');this.leaderboard.querySelector('#lb-panel').append(note);}
-  const tabs=[...this.leaderboard.querySelectorAll('[role=tab]')];tabs.forEach(button=>button.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['month','week','day'];const next=e.key==='Home'?'month':e.key==='End'?'day':keys[(keys.indexOf(tab)+(e.key==='ArrowRight'?1:2))%3];this.boardTab=next;this.renderLeaderboard();this.leaderboard.querySelector(`[data-leaderboard-tab="${next}"]`).focus();}));
+  if(self)merged.push({...self,winRate:Number(self.winRate)||0});
+  const top=globalThis.__joyflockGamePoints?.rankRows?.(merged,'winRate')
+   ||merged.sort((a,b)=>rate(b)-rate(a)||(Number(b.games)||0)-(Number(a.games)||0)).slice(0,10);
+  const doc=this.leaderboard.ownerDocument,list=this.leaderboard.querySelector('#leaderboard');
+  list.replaceChildren(...top.map((entry,i)=>rankRow(doc,entry,i)));
+  const tag=this.leaderboard.querySelector('.demo-tag');if(tag)tag.hidden=!usedDemo;
  }
- syncLeaderboardGutter(){
-  const list=this.leaderboard.querySelector('.leaderboard-list');
-  if(list===this.leaderboardScrollList){this.leaderboardUpdateGutter?.();return;}
-  this.leaderboardResizeObserver?.disconnect();this.leaderboardResizeObserver=null;this.leaderboardScrollList=list;
-  const update=()=>{if(this.leaderboardScrollList!==list)return;const measured=(list?.offsetWidth??0)-(list?.clientWidth??0),gutter=Number.isFinite(measured)?Math.max(0,measured):0;this.leaderboard.style?.setProperty('--lb-scrollbar',gutter+'px');};
-  this.leaderboardUpdateGutter=update;
-  if(list&&typeof ResizeObserver!=='undefined'){this.leaderboardResizeObserver=new ResizeObserver(update);this.leaderboardResizeObserver.observe(list);}
-  update();
- }
- async loadLeaderboard(tab){
-  this.liveBoardStatus[tab]='loading';
-  try{
-   const response=await fetch(`/api/leaderboards?type=${tab}`,{credentials:'same-origin',signal:AbortSignal.timeout(10000)});
-   if(!response.ok)throw new Error('leaderboard unavailable');
-   const values=await response.json();if(!Array.isArray(values))throw new Error('invalid leaderboard');
-   this.liveBoards[tab]=values.slice(0,10).map((p,i)=>({name:p.displayName,points:p.points,games:p.completedGames,avatar:i%4,member:p.member===true,annualMember:p.member===true&&p.annualMember===true,avatarFrame:p.avatarFrame,avatarUrl:p.avatarUrl,avatarId:p.avatarId}));this.liveBoardStatus[tab]='loaded';
-  }catch(error){this.liveBoards[tab]=[];this.liveBoardStatus[tab]='error';}
-  if(this.boardTab===tab)this.renderLeaderboard();
- }
+ syncLeaderboardGutter(){/* The pool board has no scroll gutter. */}
  renderDialog(){
   const openDetails=this.dialog.querySelector('#account-preview-states')?.open??false,v=this.viewer,register=this.authTab==='register';
   const modeLabel={guest:this.t('Guest','匿名'),free:this.t('Free account','普通账号'),member:this.t('Member','会员'),exhausted:this.t('Limit reached','额度用尽')};

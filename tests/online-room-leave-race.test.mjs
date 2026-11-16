@@ -187,8 +187,8 @@ test('shipped entry points use the new module versions and the app tolerates a s
   assert.match(app, /online-session\.js\?v=20261116-csrfretry1/);
   assert.match(app, /live-room-ui\.js\?v=20261116-roomleave1/);
   assert.match(app, /audio=20261116-idle1/);
-  assert.match(index, /rl=20261116-csrfretry1/);
-  assert.match(native, /rl=20261116-csrfretry1&native=/);
+  assert.match(index, /rl=20261116-poolshell1/);
+  assert.match(native, /rl=20261116-poolshell1&native=/);
   assert.match(app, /try\{room=await onlineSession\.restore\(identity\.activeRoomId\);\}catch\(error\)\{room=null;\}/);
   assert.match(app, /Date\.now\(\)-lastIdentityRefresh<60000/);
 });
