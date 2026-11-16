@@ -1370,4 +1370,4 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 后端 `TableService.leaderboard("flight", period)` 的真实胜率分支已于 23:52 通过差量重建发布（镜像 `deploy-backend:poolshell-7b74f87`）：旧 JAR 与新版只差一个 `TableService.class`，生产端用旧 JAR 重建完整 JAR 并校验条目级摘要；`flight/month` 现返回真实战绩，`week/day` 与 pool 暂为空数组，前端按台球同款规则补示例行并标 Sample data。发布细节与回滚见 `PRODUCTION-DEPLOYMENT.md` 顶部。
 - 所有原地修改的静态文件都升了缓存键（`&rl=20261116-poolshell1`、`flight-detail-layout.css?v=20261116-poolshell1`、`&p=20261116-poolshell1`），因为生产对带 `?v=` 资源缓存 24 小时。
 - 验收与回滚细节见 `PRODUCTION-DEPLOYMENT.md` 顶部发布记录和 `QA.md` 对应段落。
-- 2026-11-16 23:52 收尾：GitHub `41941cd..1106b83` 全部推送完成；生产仅重建 backend 容器，web/edge/postgres/redis 未动，Flyway 仍 V25；双域名 6/6 榜单接口 200、生产 Chrome 零控制台错误。SSH 曾于 23:39–23:51 在握手前拒绝连接，等待窗口恢复后一次发布成功。
+- 2026-11-16 23:52 收尾：GitHub 应用提交与发布记录全部推送完成；生产仅重建 backend 容器，web/edge/postgres/redis 未动，Flyway 仍 V25；双域名 6/6 榜单接口 200、生产 Chrome 零控制台错误。SSH 曾于 23:39–23:51 在握手前拒绝连接，等待窗口恢复后一次发布成功。

@@ -3331,7 +3331,7 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 测试：重写 `tests/flight-detail-layout.test.mjs`（6 条）与 `tests/leaderboard-periods.test.mjs`（6 条），更新 `game-points` / `winrate-leaderboard` / `site-membership-footer` / `scope-copy-sync` / `online-room-leave-race` 中依赖旧结构的断言；`npm test` **1024/1024**。后端 `docker build --target build` 的 `mvn -B verify` BUILD SUCCESS。
 - 真机验收：本地 8080 与生产 Chrome 均确认封面 182x182、`.game-hero` 274px、`.launch-actions` 3 按钮、10 行胜率榜（96 / 64.6%）、中文态「玩家排行 / 月胜率榜 / 玩家 局数 胜率 / 快速开始 ↗」、390px `scrollWidth=clientWidth=390` 且榜单名字不再挤成省略号、三次切换周期新增 API 请求 0；生产零控制台错误。
 - 发布：双域名 12/12 静态资源响应体哈希与制品一致；备份 `20261116T145217Z`、`static.before.tgz`、`deploy.before`、`backend-before.private.json`、回滚镜像 `joyflock-backend:before-7b74f87`；活动房间 0 时才操作，容器全程未重启。
-- 收尾（23:52）：44MB JAR 直传失败后改用差量重建并在生产发布 `deploy-backend:poolshell-7b74f87`，`flight/month` 已返回真实胜率；GitHub `41941cd..1106b83` 全部推送成功，远端 `main` = `1106b83`（`7b74f87` 应用、`da8000c` 发布记录、`645da8b` QA 修正、`1106b83` 推送状态修正）。本轮无未完成项，详见下节。
+- 收尾（23:52）：44MB JAR 直传失败后改用差量重建并在生产发布 `deploy-backend:poolshell-7b74f87`，`flight/month` 已返回真实胜率；GitHub 已全部推送成功（`7b74f87` 应用、`da8000c` 发布记录及后续 QA / 交接 / 部署文档提交），远端 `main` 与本地一致。本轮无未完成项，详见下节。
 
 ## 2026-11-16 23:52 后端补齐发布（差量重建，生产 `7b74f87`）
 - 背景：23:05 只发了静态，`TableService` 的 flight 真实胜率分支未上线；44MB JAR 直传与 11MB 分片上传均被跨境链路掐断，生产 SSH 随后在握手前短时限流（23:39–23:51）。
