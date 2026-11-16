@@ -3340,3 +3340,11 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 验收：双域名 `flight` month/week/day 6/6 `200`，`month` 含真实行 `Midgame test pilot`(1 局/100%) 与 `大卫`(24 局/25%)，`week/day` 及 pool 三周期为 `[]`；`/api/me` 200、`/api/csrf` 200；生产 Chrome（1440px）封面 182x182、`.game-hero` 274px、榜单 460px、10 行（真实行优先 + 示例补齐并标 Sample data）、三周期进入各一次 `/api/table/leaderboards/flight 200`、切周期零请求沿用既有守卫、零控制台错误；nginx 近 10 分钟无 4xx/5xx，后端仅一条由旧接口探测触发的预期 WARN。
 - 回滚：`/opt/joyflock/releases/app-7b74f87/rollback.private.json`（`deploy-backend:vip-18691ef`）与镜像标签 `joyflock-backend:before-7b74f87`；`backend-before.private.json`、`static.before.tgz`、`deploy.before`、数据备份 `20261116T145217Z` 均在。
 - 约束：生产对带 `?v=` 的静态资源缓存 24 小时，原地改静态文件必须同步升缓存键；大 JAR 发布优先差量重建，避免 44MB 单文件跨境上传。
+
+## 2026-11-17 00:30 统一登录入口与访客余额（`a425237`）
+- 问题：未登录顶栏显示 `100,720 Joy Coins`；`/` 显示「登录」、`/?game=pool` 显示「登录 / 注册」，点击分别打开共享面板 / 台球旧表单 / 飞行棋旧表单三套 UI。实测全新浏览器未登录访问首页即显示 `10,000 Joy Coin`，`joyflock.accountName=0`。
+- 根因：Joy Coins 是 `localStorage` 本地钱包（`START_POINTS=10000`），之前登录触发一次性 `GRANT_TOTAL=100000` 演示赠送并写入本地，退出登录只清账号名缓存不清钱包；nginx 把 `?game=pool|flight` 重写到 `native-table.html|native-flight.html`，`native-game.js` 把内层 `#account-open` 文案原样复制到共享顶栏。
+- 实现：`site-points.js` 的 `shownTotal()` 用共享账号缓存判定访客并只在展示层归零，`get()` 增 `display` 字段供 `site-shop.js` 显示；`site-account.js` 的 `joyflock:account-changed` 触发重绘。生成器给两个原生页引入 `site-account.js` 与首帧 boot，`native-game.js` 删除镜像/转发并广播 `joyflock:auth-changed` 给同文档 `table.js`。所有原地修改文件同步升缓存键。
+- 测试：`npm test` 1029/1029；新增守卫覆盖「访客 0 / 登录恢复 / 退出归零 / 钱包不删除 / 三入口共享组件 / 缓存键」；`site-points.test.mjs`、`site-cursor-usable.test.mjs` 的版本断言演进为只比较主版本键并校验新 `&z=` 后缀。
+- 验收：双域名 28/28 哈希；本地 Chrome 四入口中英双态；生产 Chrome 三入口统一 `.chrome-auth` 且余额 0，零控制台错误。生产首次加载受跨境 defer 排队影响约 50 秒才出现 pill，资源缓存后恢复。
+- 备份与回滚：`/opt/joyflock/releases/static-a425237`（`static.before.tgz`、`deploy.before`、`candidate.sha256`）、数据备份 `20261116T163022Z`；后端与数据库未改动。

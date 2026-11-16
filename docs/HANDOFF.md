@@ -1371,3 +1371,5 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 所有原地修改的静态文件都升了缓存键（`&rl=20261116-poolshell1`、`flight-detail-layout.css?v=20261116-poolshell1`、`&p=20261116-poolshell1`），因为生产对带 `?v=` 资源缓存 24 小时。
 - 验收与回滚细节见 `PRODUCTION-DEPLOYMENT.md` 顶部发布记录和 `QA.md` 对应段落。
 - 2026-11-16 23:52 收尾：GitHub 应用提交与发布记录全部推送完成；生产仅重建 backend 容器，web/edge/postgres/redis 未动，Flyway 仍 V25；双域名 6/6 榜单接口 200、生产 Chrome 零控制台错误。SSH 曾于 23:39–23:51 在握手前拒绝连接，等待窗口恢复后一次发布成功。
+- 2026-11-17 00:30 `a425237`（纯静态）：三个登录入口统一到 `site-account.js` 的 `.chrome-auth` 共享面板，原生详情页不再镜像内层 `#account-open`；未登录时顶栏与商城 Joy Coins 显示 0，本地钱包保留，登录后恢复。缓存键 `&z=20261117-guestzero1` / `native-game.js?v=20261117-chrome1`。后端仍 `deploy-backend:poolshell-7b74f87`、V25。详见 `PRODUCTION-DEPLOYMENT.md` 顶部与 `QA.md`。
+- 约定：改 `site-points.js` 或 `site-shop.js` 必须同步升所有 shell 的 `&z=`；两个 `native-*.html` 由 `scripts/build-native-games.mjs` 生成，改生成器后必须重跑并一起提交。
