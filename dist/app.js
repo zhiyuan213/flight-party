@@ -8,13 +8,13 @@ import {renderResultRankings} from './result-rankings.js?v=20261112-gamelanes1';
 import {renderVictory} from './victory-effects.js';
 import {Game,COLORS,FINISH,secureDie} from './engine.js';
 import {PALETTE} from './scene.js';
-import {AudioFX} from './audio.js?v=20261110-glove2&audio=20261115-levels1';
+import {AudioFX} from './audio.js?v=20261110-glove2&audio=20261116-idle1';
 import {CanvasBoard} from './fallback.js';
 import {Die3D} from './die3d.js?v=20261110-glove2';
 import {SocialUI} from './social-ui.js?v=20261112-gamelanes1&d=20261115-selfrow1';
 import {ReactionPreview} from './reaction-preview.js';
-import {OnlineSession} from './online-session.js?v=20261111-csrffailfast1';
-import {bindLiveRooms} from './live-room-ui.js?v=20261110-invite4';
+import {OnlineSession} from './online-session.js?v=20261116-roomleave1';
+import {bindLiveRooms} from './live-room-ui.js?v=20261116-roomleave1';
 import {bindQuickMatch} from './quick-match.js?v=20261110-home4';
 import {bindLiveAccount} from './live-account-ui.js?v=20261110-glove2&f=20261116-noframe1';
 import {track} from './analytics.js';
@@ -407,8 +407,12 @@ onlineSession.initialize().then(async identity=>{
  if(epoch!==restoreEpoch||screen!=='welcome')return;
  const invitation=new URL(location.href).searchParams.get('room');
  if(identity.activeRoomId){
-  const room=await onlineSession.restore(identity.activeRoomId);
-  if(!invitation){
+  /* A stale activeRoomId (the room was left in another tab, expired, or the
+     session rotated) returns 403/404 from /snapshot. That is not a failed page
+     load: the welcome screen stays usable and the next CTA creates a new room. */
+  let room=null;
+  try{room=await onlineSession.restore(identity.activeRoomId);}catch(error){room=null;}
+  if(room&&!invitation){
    if(room.origin==='QUICK'&&room.phase==='MATCHING')quickMatch.restore(room);
    else if(['WAITING_FRIENDS','MATCHING','STARTING'].includes(room.phase))await social.openRoom('invite');
   }
@@ -452,7 +456,10 @@ for(const button of document.querySelectorAll('.reactions button')){
 }
 
 let lastIdentityRefresh=Date.now();
-const refreshLogin=()=>{if(document.hidden||Date.now()-lastIdentityRefresh<15000)return;lastIdentityRefresh=Date.now();(onlineSession.authState==='ready'?onlineSession.refreshIdentity():onlineSession.initialize()).catch(()=>{});};
+/* On a slow link each /api/me costs a full round trip. DevTools focus and tab
+   switches fire visibilitychange repeatedly, so keep the identity refresh well
+   spaced instead of adding another queued request every few seconds. */
+const refreshLogin=()=>{if(document.hidden||Date.now()-lastIdentityRefresh<60000)return;lastIdentityRefresh=Date.now();(onlineSession.authState==='ready'?onlineSession.refreshIdentity():onlineSession.initialize()).catch(()=>{});};
 window.addEventListener('online',refreshLogin);window.addEventListener('focus',refreshLogin);document.addEventListener('visibilitychange',refreshLogin);
 
 

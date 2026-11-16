@@ -35,7 +35,7 @@ export function bindLiveRooms(social,session) {
      stable and update only the ticking clock. */
   const markup=`<button type="button" class="close" data-live="close" aria-label="${t('Close room','关闭房间')}">×</button>
    <span class="sample-pill">${t('ONLINE ROOM','在线房间')}</span><h2>${t('Your flight crew','飞行伙伴')}</h2>
-   ${!room?`<p class="room-connecting">${notice?t('Could not join this room','无法加入该房间'):t('Joining the room…','正在加入房间…')}</p>`:`
+   ${!room?`<p class="room-connecting">${notice?t('Could not join this room','无法加入该房间'):t('Joining the room…','正在加入房间…')}</p>${notice?`<button type="button" class="secondary room-invite-standalone" data-live="retry">${t('Create a fresh room','重新创建房间')}</button>`:''}`:`
    <div class="simple-room-meta"><span>${t('CLASSIC · 4 SEATS','经典模式 · 4 个席位')}</span><span>${esc(phase)}</span></div>
    <ol class="simple-room-seats">${Array.from({length:4},(_,i)=>{const seat=room.seats.find(s=>s.index===i);return `<li class="room-seat ${seat?'occupied':'empty'}"><span class="room-seat-avatar avatar-${i}" ${avatarStyle({...seat,isSelf:!!seat&&i===room.yourSeat,signedIn:!!session.identity?.account})} data-frame="${esc(seat?.avatarFrame||'none')}"></span><div><b data-member="${seat?.member===true}" data-annual-member="${seat?.member===true&&seat?.annualMember===true}">${seat?(seat.bot?'BOT':seat.displayName?esc(seat.displayName):i===room.yourSeat?t('You','你'):t('Pilot','飞行员')+' '+(i+1)):t('Open seat','空闲席位')}</b><span>${custodyTag(seat)||(seat?.ready?t('Ready','已准备'):t('Waiting','等待'))}</span></div></li>`;}).join('')}</ol>
    ${matching?`<div class="room-countdown-panel"><div><b>${t('Taking off soon','即将起飞')}</b><button type="button" class="secondary room-start-now" data-live="start-now" ${starting?'disabled':''}>${starting?t('Starting…','正在开始…'):t('Start now','快速开始')}</button></div><strong data-countdown></strong></div>`:''}
@@ -52,8 +52,12 @@ export function bindLiveRooms(social,session) {
   const clock=find('[data-countdown]');
   if(clock&&clock.textContent!==countdown)clock.textContent=countdown;
  }
- function errorMessage(error){return error.status===404?t('This room was not found. Check the invitation.','未找到房间，请检查邀请链接或房间码。'):error.status===409?t('The room has started, is full, or you are already in another room.','房间已开始、已满，或你已在其他房间中。'):t('Connection failed. Please retry.','连接失败，请重试。');}
- async function action(work) {try{notice='';await work();render();}catch(error){notice=errorMessage(error);render();}}
+ function errorMessage(error){return error.status===404?t('This room was not found. Check the invitation.','未找到房间，请检查邀请链接或房间码。'):error.status===403?t('This room has ended. Create a fresh one.','房间已失效，请重新创建房间。'):error.status===409?t('The room has started, is full, or you are already in another room.','房间已开始、已满，或你已在其他房间中。'):t('Connection failed. Please retry.','连接失败，请重试。');}
+ async function action(work) {try{notice='';await work();render();}catch(error){
+  /* A 403/404 means the room pointer is gone. Drop the stale state so the
+     "Create a fresh room" button is offered instead of a dead-end dialog. */
+  if([403,404].includes(error.status))session.discard?.();
+  notice=errorMessage(error);render();}}
  async function join(value){const code=roomCode(value);if(!code){notice=t('Enter a valid room code or invitation link.','请输入有效房间码或邀请链接。');render();return;}await action(async()=>{await session.join(code);const url=new URL(location.href);url.searchParams.delete('room');history.replaceState(null,'',url);});}
  /* An invitation link carries the room, so open the crew view immediately and
     join behind it. There is no join-by-code form to fill in any more. */
@@ -70,6 +74,7 @@ export function bindLiveRooms(social,session) {
  social.renderRoom=()=>dialog.open?render():originalRender();
  dialog.addEventListener('click',event=>{
   if(!dialog.open)return;event.stopImmediatePropagation();const button=event.target.closest('[data-live]');if(!button)return;
+  if(button.dataset.live==='retry'){action(()=>session.create());return;}
   if(button.dataset.live==='ready')action(()=>session.ready());
   if(button.dataset.live==='start-now'&&!starting){starting=true;render();action(()=>session.startNow()).finally(()=>{starting=false;if(dialog.open)render();});}
   if(button.dataset.live==='share-wechat'&&!sharing&&shareEligible()&&isChineseMobile({language:language()})){
@@ -98,7 +103,14 @@ export function bindLiveRooms(social,session) {
    if(navigator.clipboard?.writeText)navigator.clipboard.writeText(value).then(()=>{if(current()){notice=copied;render();}}).catch(()=>{if(current()){notice=manual;render();}});
    else{notice=manual;render();}
   }
-  if(['close','leave'].includes(button.dataset.live)){invalidateShare();action(async()=>{if(session.room&&['WAITING_FRIENDS','MATCHING'].includes(session.room.phase))await session.leave();clearSharedPage();dialog.close();});}
+  if(['close','leave'].includes(button.dataset.live)){
+   invalidateShare();const room=session.room;
+   /* Dismiss immediately. Awaiting /leave on a slow link used to keep the
+      dialog and its buttons alive for seconds: a tap on "Start now" or a 1008
+      reconnect then raced the leave and produced the 403 dead end. */
+   dialog.close();clearSharedPage();
+   if(room&&['WAITING_FRIENDS','MATCHING'].includes(room.phase))session.leave().catch(()=>{});
+  }
  },true);
  session.addEventListener('snapshot',event=>{snapshot=event.detail;if(!shareEligible()||sharing&&sharingRoomId!==session.room?.roomId)invalidateShare();if(sharedPageRoomId&&session.room?.roomId!==sharedPageRoomId)clearSharedPage();if(dialog.open)render();document.dispatchEvent(new CustomEvent('flight-party-online-snapshot',{detail:snapshot}));});
  session.addEventListener('connection',()=>{notice=t('Connection lost. Reconnecting…','连接中断，正在重连…');if(dialog.open)render();});

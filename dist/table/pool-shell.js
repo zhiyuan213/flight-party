@@ -358,7 +358,15 @@ function updateResult(options) {
   const preview=(isPool&&!archived||connectFour)&&details.kind!=='draw';
   // Let the landing, connected counters and win jingle finish on the board.
   const previewDuration=connectFour?1600:3000;
-  let celebrationStartedAt=null;
+  /* Grid games (gomoku, chess, ...) reach updateResult() straight from
+     render(): updateGridResult() is synchronous, gridResult makes isFour
+     true and isPool false, and none of the canvas/drop animation guards
+     below apply. The dialog therefore covered the board on the very next
+     frame (~16ms), before the winning stone or five-in-a-row could be seen.
+     Hold the finished board for 900ms on a win or a loss. Pool keeps its
+     3000ms preview, Connect Four its 1600ms drop, and a draw stays instant. */
+  const gridHoldMs=gridResult&&!connectFour&&details.kind!=='draw'?900:0;
+  let celebrationStartedAt=null,holdStartedAt=null;
   const reveal=now=>{
     resultFrame=0;if(resultKey!==key||!current?.board?.over||document.body.dataset.screen!=='play')return;
     // Let the winning shot, pocket movement and return-channel rebound finish before covering the table.
@@ -369,6 +377,10 @@ function updateResult(options) {
       celebrationStartedAt=now;
     }
     if(preview&&now-celebrationStartedAt<previewDuration){resultFrame=requestAnimationFrame(reveal);return;}
+    if(gridHoldMs){
+      if(holdStartedAt===null)holdStartedAt=now;
+      if(now-holdStartedAt<gridHoldMs){resultFrame=requestAnimationFrame(reveal);return;}
+    }
     resultShown=true;shell.resultReopen.hidden=false;openResult(!archived,preview);
   };
   resultFrame=requestAnimationFrame(reveal);

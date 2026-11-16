@@ -10,7 +10,7 @@ import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
 import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
 import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1';

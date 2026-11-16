@@ -3287,3 +3287,22 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 手机端补充验证：生产浏览器 CSSOM 含 `@media(max-width:860px)` 的 `.snooker-matchup #seats{display:contents}` / `.snooker-centre{position:static}`，以及 `@media(max-width:760px)` 的 `aspect-ratio:1440/765`；390px DOM 探针实测 board `aspectRatio=1440/765`、高 206px（原 23px），891px 仍 `auto` / 16px 且桌面计分牌 computed `position:absolute`、`#seats` 为 `grid`（桌面未变）。
 - 限制：未登录会话无法在生产页面进入对局（点「单机·电脑对战」后的开始按钮依赖登录态），因此手机端对局内的精确几何以本地同版本真机验收为准（390/430/445/520/760px 重叠 -6px、891/1280px -22px、泡泡龙画布 372×198）。仍未验证已登录 WSS 101、跨设备同步、完整结算、真实支付/webhook、移动端真实设备与容量。
 - 截图 `docs/verification/production-75441bd-{home,board,table}.png`。回滚：解压 `static.before.tgz` 覆盖 `dist` 即可，无需数据库回滚或镜像切换。
+
+## 2026-11-16 20:15 网格游戏胜利结算节奏（900ms 停留）
+- 反馈：五子棋赢了之后结算弹窗「跳得特别快」。定位为 `dist/table/pool-shell.js:updateResult()` 的 `preview` 分支：`table.js:642` 对非台球/非开场游戏同步调用 `updateGridResult()`，而 `isFour=gridResult||four-game` 使 `isPool=false`，`preview=(isPool&&!archived||connectFour)&&kind!=='draw'` 对五子棋为 false；`reveal()` 的动画 guard（四子棋落子 / 台球击球）均不命中，于是下一帧约 16ms 就 `showModal()`，弹窗卡片入场仅 0.32s。对比台球 3000ms、四子棋 1600ms 预览。
+- 修复：`gridHoldMs=gridResult&&!connectFour&&details.kind!=='draw'?900:0`，在动画 guard 之后用 `holdStartedAt` 计时，rAF 循环未满 900ms 不打开弹窗。所有走 `updateGridResult` 的网格游戏（五子棋、国际象棋、拼图、涂鸦等）统一；胜/负停留 900ms，平局仍即时；台球 3000ms、四子棋 1600ms、draw 逻辑完全不变。无彩带、无音效改动。
+- 缓存 `&g=20261116-gridhold1` 追加到 `dist/table/table.js` 的 `pool-shell.js` import、`dist/pool-result-preview.html` 的 import、`dist/table/index.html` 的 `table.js` 引用；重跑 `scripts/build-native-games.mjs` 同步 `dist/portal/native-table.html`。冻结 `v=`、`&d/&r/&native/&c/&b` 不动。
+- 新增 `tests/grid-result-hold.test.mjs` 4 条守卫：用 vm 抽取真实 `reveal()` 尾部并驱动 rAF 时间戳，验证 win/loss 900ms、draw 立即、pool 3000ms、connect-four 1600ms、hold 计时在动画 guard 之后、缓存链完整。`npm test` **1003/1003**。
+- 真机 Chrome（本地 8080，动态 import 页面同一 `pool-shell.js` 实例并注入结算状态）：胜利 `openedAt=932ms`「你获胜了！」、失败 `948ms`「本局失利」、平局 `19ms`「本局平局」，零控制台异常；8080 已下发含 `gridHoldMs` 的新模块。
+- 纯静态改动，**未提交、未部署**；生产仍为 `ef208a4` 文档提交 / 应用 `75441bd`，后端 `deploy-backend:vip-18691ef`。后续发布只需静态增量包（3 个源文件 + 生成器输出），不涉及 JAR 或 Flyway。
+
+## 2026-11-16 20:45 飞行棋详情页改为台球式结构（本地已验证）
+- 需求：`?game=flight` 的欢迎页改成 `?game=pool` 的两栏结构；中间封面不用静态图，改用现有蓝色飞机动画，尺寸与台球封面一致。用户参考图 `docs/verification/flight-detail-before-20261116.jpg`、`pool-detail-reference-20261116.jpg`。
+- 调研（真机 CDP）：台球 `#intro` 为 `minmax(0,1fr) 460px` 两栏，`.game-hero` 为 `165px + 1fr`，封面 `.hero-art` 在 1440 视口为 **158x158**；下方 `.intro-bottom` 含「怎么玩 / 会员与支持」；右栏 `.home-ranking` 为 460px 列。飞行棋原 `#welcome` 为 `582px + 553px`，hero 大标题 + 独立 `.leaderboard-shell`。
+- 实现：新增 `dist/flight-detail-layout.css`，仅对 `html[data-native-game="flight"]` 生效。`#welcome` 改为 `minmax(0,1fr) 460px` 两栏；`.hero-copy` 改为 `165px + 1fr`，`.hero-plane-model`（HeroPlane canvas + `hero-wind.css` 两层飘动风线）变成 158x158 深蓝圆角封面，飞机 `scale(.78)` 上移，底部复刻「好友已就位，欢乐即将起飞 / READY FOR TAKEOFF」文案；新增 `.intro-bottom`（怎么玩 / 会员与支持，`.lang-cn`/`.lang-en` 双语）；排行榜跨两行占右栏。
+- 首次真机发现两个问题并修正：封面文案压住飞机（改为飞机缩小上移 + caption 定位 `top:138px`）、排行榜首行名字被会员徽章挤成省略号（收紧 `--lb-rank/avatar/points/games/gap/pad` 并把徽章缩到 40x18）。≤900px 回退单列、封面居中。
+- 刻意未改：`dist/app.js`、`social-ui.js`、`static-i18n.js`、任何按钮/容器 ID 与排行榜数据源；`/index.html`（非原生页）通过 `html:not([data-native-game="flight"])` 隐藏新区块，保持原布局。缓存 `flight-detail-layout.css?v=20261116-flightdetail1`，重跑 `scripts/build-native-games.mjs` 同步 `dist/portal/native-flight.html`；`native-table.html` 不含该样式表。
+- 新增 `tests/flight-detail-layout.test.mjs` 5 条守卫（结构、158px 封面与动画、排行榜列宽、原 ID/窄屏回退、缓存链）。`npm test` **1008/1008**、`git diff --check` 通过。
+- 真机验收：1440 视口封面 158x158（同视口台球封面 158x158）、右栏 460x700、左栏 576 + 规则/会员 191px、10 行排行榜、名字完整、中英双态文案正确、390px 单列无横向溢出。本地 8080 的 404 仅为无后端时的 `/api/leaderboards`、`/api/csrf`，不是新增资源错误。
+- 已知差异：台球 `#intro` 自身带 `--intro-zoom` 与多档响应式列宽，在 >1500px 的大视口封会被整体放大（1898 视口实测 249px）；飞行棋封面固定 158px，在用户截图对应的桌面视口一致，超大视口会略小。
+- 截图 `docs/verification/flight-detail-{before,after,en,mobile}-20261116.*`、`pool-detail-reference-20261116.jpg`。纯静态改动，**未提交、未部署**；生产仍 `75441bd` + `ef208a4` / `deploy-backend:vip-18691ef`。

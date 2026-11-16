@@ -1,0 +1,133 @@
+/* 2026-11-16: the ?game=flight detail page now mirrors the pool detail page.
+   Pool: a 158px square cover at the top left, a compact title / description /
+   launch buttons beside it, rules and membership below, and the standings in a
+   fixed right column. Flight keeps every existing node (app.js, static-i18n.js
+   and social-ui.js address them by id/class), so this sheet only re-lays them
+   out. Only the native game page is affected; /index.html keeps its old hero.
+
+   The "cover" is not a still image: it is the existing HeroPlane canvas plus
+   the two drifting wind layers from hero-wind.css, framed in the same 158px
+   rounded square as pool's #hero-image. */
+
+/* Extra blocks are native-page only. */
+html:not([data-native-game="flight"]) #welcome > .intro-bottom,
+html:not([data-native-game="flight"]) .flight-hero-caption{display:none}
+
+html[data-native-game="flight"] #welcome:not(.hidden){
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 460px;
+  grid-template-rows:auto 1fr;
+  gap:22px 24px;
+  align-items:start;
+  max-width:1100px;
+  margin:0 auto;
+  padding:30px 20px 44px;
+}
+
+/* Left column: cover + copy, then rules/membership. */
+html[data-native-game="flight"] #welcome > .hero-copy{
+  grid-column:1;grid-row:1;
+  position:relative;
+  display:grid;
+  grid-template-columns:165px minmax(0,1fr);
+  column-gap:22px;row-gap:0;
+  align-content:start;align-items:start;
+  min-width:0;padding-top:0;
+}
+html[data-native-game="flight"] #welcome > .hero-copy::before{display:none}
+html[data-native-game="flight"] #welcome > .hero-copy > .hero-plane-model{
+  grid-column:1;grid-row:1 / span 14;
+  justify-self:center;align-self:start;
+  width:158px;height:158px;max-width:none;margin:0;
+  border:1px solid #ffffff12;border-radius:14px;
+  background:radial-gradient(circle at 28% 22%,#223b6b 0%,#101c38 58%,#0b142c 100%);
+  box-shadow:inset 0 1px #ffffff0a;
+  overflow:hidden;isolation:isolate;
+}
+/* Wind lines fill the square instead of bleeding out of a free-floating model. */
+html[data-native-game="flight"] #welcome > .hero-copy > .hero-plane-model::before,
+html[data-native-game="flight"] #welcome > .hero-copy > .hero-plane-model::after{
+  inset:0;border-radius:14px;z-index:0;
+}
+html[data-native-game="flight"] #welcome > .hero-copy > .hero-plane-model canvas{
+  position:relative;z-index:1;width:100%;height:100%;
+  /* Lift and shrink the aircraft slightly so the caption below stays legible,
+     exactly like the supplied animated still. */
+  transform:scale(.78) translateY(-9%);transform-origin:50% 42%;
+}
+/* Caption from the supplied animation still, bottom of the square.
+   It is absolutely positioned against .hero-copy (whose top edge is the
+   cover's top edge), not against the cover itself, so use a top offset. */
+html[data-native-game="flight"] .flight-hero-caption{
+  position:absolute;left:0;top:138px;width:158px;
+  text-align:center;font-size:10px;line-height:1.2;letter-spacing:.02em;
+  white-space:nowrap;color:#c7d5f7;z-index:2;pointer-events:none;
+  text-shadow:0 1px 4px #081229;
+}
+html[data-native-game="flight"] #welcome > .hero-copy > *:not(.hero-plane-model):not(.flight-hero-caption){grid-column:2}
+html[data-native-game="flight"] #welcome > .hero-copy > .eyebrow{display:none}
+html[data-native-game="flight"] #welcome > .hero-copy > h1{
+  font-size:30px;line-height:1.25;margin:2px 0 8px;letter-spacing:-.01em;
+}
+html[data-native-game="flight"] #welcome > .hero-copy > p:not(.legal-links){
+  font-size:12px;line-height:1.7;margin:0 0 10px;
+}
+html[data-native-game="flight"] #welcome > .hero-copy > .hero-notes{
+  margin-top:10px;font-size:10px;
+}
+html[data-native-game="flight"] #welcome > .hero-copy > .home-actions{margin-top:0}
+html[data-native-game="flight"] #welcome > .hero-copy > #home-access{margin-top:12px}
+html[data-native-game="flight"] #welcome > .hero-copy > #social-preview-note,
+html[data-native-game="flight"] #welcome > .hero-copy > .legal-links{
+  font-size:10px;margin-top:8px;
+}
+
+/* Right column: standings span both rows, like pool's .home-ranking. */
+html[data-native-game="flight"] #welcome > .leaderboard-shell{
+  grid-column:2;grid-row:1 / span 2;
+  width:100%;max-width:460px;align-self:start;
+  /* The flight board used to be 542px wide. At the pool column width the
+     member badge squeezed player names down to an ellipsis, so tighten the
+     fixed columns and give the name column the space back. */
+  --lb-rank:30px;--lb-avatar:45px;--lb-points:50px;--lb-games:50px;
+  --lb-gap:10px;--lb-pad:14px;
+}
+html[data-native-game="flight"] .leaderboard-shell .leaderboard-row b[data-member="true"]::after,
+html[data-native-game="flight"] .leaderboard-shell .leaderboard-row b[data-annual-member="true"]::after{
+  width:40px;height:18px;flex:none;
+}
+
+/* Bottom left column: the two informational sections. */
+html[data-native-game="flight"] #welcome > .intro-bottom{
+  grid-column:1;grid-row:2;
+  display:grid;grid-template-columns:1fr;gap:16px;
+  min-width:0;padding-top:18px;border-top:1px solid #ffffff12;
+}
+html[data-native-game="flight"] #welcome > .intro-bottom h2{
+  margin:0 0 8px;font-size:14px;font-weight:800;color:#e7edff;
+}
+html[data-native-game="flight"] #welcome > .intro-bottom p{
+  margin:0;font-size:11px;line-height:1.85;color:#9fafd2;
+}
+html[data-native-game="flight"] #welcome > .intro-bottom .member-note a{
+  color:#b5c2e3;text-decoration:underline;text-underline-offset:2px;
+}
+
+/* Narrow screens: single column, cover centred on top. */
+@media(max-width:900px){
+  html[data-native-game="flight"] #welcome:not(.hidden){
+    grid-template-columns:minmax(0,1fr);gap:18px;padding:20px 14px 34px;
+  }
+  html[data-native-game="flight"] #welcome > .hero-copy{
+    grid-template-columns:minmax(0,1fr);row-gap:10px;
+  }
+  html[data-native-game="flight"] #welcome > .hero-copy > .hero-plane-model{
+    grid-column:1;grid-row:1;justify-self:center;
+  }
+  html[data-native-game="flight"] .flight-hero-caption{left:50%;transform:translateX(-50%)}
+  html[data-native-game="flight"] #welcome > .hero-copy > *:not(.hero-plane-model):not(.flight-hero-caption){grid-column:1}
+  html[data-native-game="flight"] #welcome > .leaderboard-shell,
+  html[data-native-game="flight"] #welcome > .intro-bottom{
+    grid-column:1;grid-row:auto;max-width:none;
+  }
+}

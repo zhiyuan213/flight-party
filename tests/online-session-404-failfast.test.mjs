@@ -68,7 +68,7 @@ test('a healthy backend still succeeds in one pass', async () => {
 test('the shell loads the guarded module version', () => {
   const app = read('dist/app.js');
   const source = read('dist/online-session.js');
-  assert.match(app, /online-session\.js\?v=20261111-csrffailfast1/);
+  assert.match(app, /online-session\.js\?v=20261116-roomleave1/);
   assert.match(source, /error\.status>=400&&error\.status<500\)\{this\.apiDownUntil=Date\.now\(\)\+30000;/);
   assert.match(source, /const down=this\.down\(\);if\(down\)throw down;/, 'repeat probes short-circuit');
   assert.ok(!/fetch\('\/api\/csrf'\)/.test(source), 'no separate csrf probe was added');

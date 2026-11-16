@@ -966,3 +966,13 @@ CDP **36/36**、0 异常 0 意外 4xx。共享键 `20261114-rematch1`，需 **Ct
 - 生产截图 `docs/verification/production-75441bd-home.png`（门户九宫格）、`production-75441bd-board.png`（飞行员榜 10 行头像已无白边/金银铜描边/会员翅膀框，脸周围为透明深色背景，笑脸方形来自 SVG 图片自身）、`production-75441bd-table.png`（详情页胜率榜）。
 - 真机计算样式：首页 10 个头像 `border-width:0px`、`box-shadow:none`、`background-color:transparent`、`border-radius:0px`，`background-image` 保留；四组缓存键 `&f/&m/&c/&b=20261116-*` 在生产页面均命中。
 - 窄屏：生产浏览器 390px 探针 board `aspect-ratio:1440/765` 生效、高度 206px；桌面 891px 为 `auto`/16px，斯诺克桌面计分牌仍 `position:absolute`、`#seats` 仍 `grid`。生产未登录无法进入对局，对局内精确几何以本地真机（390–760px 重叠 -6px、泡泡龙画布 372×198）为准。
+
+## 2026-11-16 20:15 胜利结算节奏验收（网格游戏）
+- 反馈「五子棋赢了之后跳框特别快」：改前最后一子落下后下一帧（约 16ms）即 `showModal()`，棋子与五连来不及看清；改后棋盘停留 900ms 再弹。台球 3000ms、四子棋 1600ms 预览保持不变，平局仍即时。
+- 真机 Chrome 注入结算事件：`你获胜了！` 932ms、`本局失利` 948ms、`本局平局` 19ms，零控制台异常；`npm test` 1003/1003。缓存 `&g=20261116-gridhold1`。纯静态，未提交、未部署。
+
+## 2026-11-16 20:45 飞行棋详情页改版对照
+- 改前 `docs/verification/flight-detail-before-20261116.jpg`：窄居中 hero（大标题「小小飞机，大大欢乐。」+ 飞机小图 + 右侧 Joy Coins 榜）。改后 `flight-detail-after-20261116.png`（中文）/ `flight-detail-en-20261116.png`（英文）：与 `pool-detail-reference-20261116.jpg` 一致的两栏结构。
+- 封面复用现有 HeroPlane canvas + `hero-wind.css` 风线动画（螺旋桨旋转 + 风线飘动，非静态图），158x158 深蓝圆角、底部「好友已就位，欢乐即将起飞」；飞机 `scale(.78)` 上移避免压字。
+- 排行榜首行名字由省略号恢复完整（收紧 `--lb-*` 列宽 + 徽章 40x18）；`flight-detail-mobile-20261116.png` 显示 390px 单列、封面居中无溢出。
+- 真机 CDP：1440 视口封面 158x158 与台球封面一致、右栏 460px；`npm test` 1008/1008。纯静态，未提交、未部署。

@@ -1342,3 +1342,13 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 生产：21 个静态文件以 `git archive` 增量包发布（SHA256 `f20c2dbf…`），双域名各 21/21 响应体哈希一致；后端仍 `deploy-backend:vip-18691ef`、Flyway 仍 V25、容器零重启。发布目录 `/opt/joyflock/releases/static-75441bd`，数据备份 `/opt/joyflock/backups/20261116T114952Z`，回滚包 `static.before.tgz` 73MB。
 - 生产浏览器验收：头像无框计算样式正确、四组缓存键生效、排行榜进入 3 请求 / 切换 0 请求、零控制台错误；390px CSSOM 探针确认泡泡龙 board 206px、桌面布局不变。进入对局需登录态，故对局内几何沿用本地真机结论。
 - 文档提交与发布记录单独推送；此前各段「production still on 5ca2b40」均为当时事实记录，当前状态以本段为准。
+
+## 2026-11-16 20:15 网格游戏结算弹窗节奏（本地已验证，未部署）
+- 五子棋等网格游戏此前在最后一子落下后约 16ms 就弹出结算框：`updateGridResult()` 同步触发 `updateResult()`，`preview` 因 `isPool=false` 被禁用，而台球/四子棋分别有 3000ms/1600ms 棋盘预览。
+- 现在 `pool-shell.js` 用 `gridHoldMs=900`（胜/负）在动画 guard 之后停留，平局即时；台球与四子棋保持原时长。缓存 `&g=20261116-gridhold1` 已同步两个 import、两个 HTML 宿主并重跑原生页生成器。
+- `npm test` 1003/1003（新增 4 条 vm 时序守卫）；真机实测 932ms / 948ms / 19ms，零异常。纯静态，**未提交、未部署**；生产仍 `75441bd` + `ef208a4` / `deploy-backend:vip-18691ef`。
+
+## 2026-11-16 20:45 飞行棋详情页版式对齐台球（本地已验证，未部署）
+- 新增 `dist/flight-detail-layout.css`（仅 `?game=flight` 原生页）：两栏 `1fr + 460px`，左侧 158x158 的 HeroPlane 飞机+风线动画封面、标题与按钮、怎么玩/会员与支持；右侧飞行员排行榜。`/index.html` 与台球页不受影响。
+- 缓存 `flight-detail-layout.css?v=20261116-flightdetail1`，生成器已重跑。`npm test` 1008/1008（新增 5 条布局守卫），真机中英双态与 390px 窄屏验收通过。
+- 纯静态，**未提交、未部署**；生产仍 `75441bd` + `ef208a4` / `deploy-backend:vip-18691ef`。台球封面在超大视口会随自身 `--intro-zoom` 放大，飞行棋封面为固定 158px。
