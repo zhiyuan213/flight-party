@@ -3276,3 +3276,14 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - New `tests/leaderboard-prefetch.test.mjs` (5 guards): a vm harness proves three parallel requests and one paint, stale-batch rejection, the load repaint, cache-only tab switching and the fresh asset chain. `npm test` **999/999**.
 - Real Chrome (CDP, mocked /api so init completes): exactly 3 leaderboard requests on entry (`month`, `week`, `day`), **0 new requests after six tab switches** across two full sweeps, each period rendering its own cached standings, real data visible from 300ms, no page errors. Script `C:/Users/Administrator/.workbuddy/clipboard-images/cdp-leaderboard-prefetch.mjs`.
 - Static-only change; **not committed, not deployed**. Production remains `5ca2b40` / `deploy-backend:vip-18691ef`.
+
+## 2026-11-16 20:05 生产发布 `75441bd`（纯静态）
+- 四轮未提交改动合并提交并推送 GitHub：`75441bd`（37 文件 / 3.15MB，含 21 个静态文件、6 个测试文件、3 份文档与 6 张本轮截图）；745 个未跟踪设计素材按手册要求未批量加入。发布记录另起一个文档提交。
+- 制品：`git archive HEAD` 生成仅含 21 个变更静态文件的 `static-75441bd-incremental.tar.gz`（117KB，SHA256 `f20c2dbfdcc111d8d13d4d68d1a58123487f5c4371935baebad7f785e6556dbb`），逐文件 SHA256 清单 `expected-75441bd.sha256` 21 行。
+- 备份：`/opt/joyflock/backups/20261116T114952Z`（PG dump + Redis RDB 8.4MB）、`/opt/joyflock/releases/static-75441bd/static.before.tgz`（73MB）、`deploy.before`、web/backend `docker inspect`。发布前服务器为 `deploy-backend:vip-18691ef` / deployed-commit `18691ef3e…`，2 个 WAITING 房间，磁盘剩 45G。
+- 发布：`cp -a candidate/dist/. LIVE/dist/`（写入现有文件、保留 nginx bind-mount inode），`nginx -t` 通过，本次无 nginx 配置改动、未 reload、未重启任何容器。生产 21 个文件与清单逐项 `sha256sum -c` 全 OK；四个新特性标记由 0 变为命中。
+- 线上验收：本机与 HTTPS 的 `/api/csrf` 均 200；`joyflock.com` 与 `flight.joyflock.com` 的 21 个变更资源响应体 SHA256 **各 21/21 一致**；nginx 错误日志无 error/crit；容器状态与发布前相同。
+- 真实 Chrome（生产）：门户首页 9 张游戏卡、新 `site-chrome.css` 缓存链生效；`/index.html` 飞行员榜 10 个头像计算样式 `border-width:0px` / `box-shadow:none` / `background-color:rgba(0,0,0,0)` / `border-radius:0px` 且 `background-image` 仍在；详情页四个缓存键 `f/m/c/b` 全部生效，进入时 `/api/table/leaderboards/` 恰好 3 个请求（month/week/day）、连续切换 3 个标签新增 0 请求、10 行榜单正确；控制台错误 0、网络失败 0。
+- 手机端补充验证：生产浏览器 CSSOM 含 `@media(max-width:860px)` 的 `.snooker-matchup #seats{display:contents}` / `.snooker-centre{position:static}`，以及 `@media(max-width:760px)` 的 `aspect-ratio:1440/765`；390px DOM 探针实测 board `aspectRatio=1440/765`、高 206px（原 23px），891px 仍 `auto` / 16px 且桌面计分牌 computed `position:absolute`、`#seats` 为 `grid`（桌面未变）。
+- 限制：未登录会话无法在生产页面进入对局（点「单机·电脑对战」后的开始按钮依赖登录态），因此手机端对局内的精确几何以本地同版本真机验收为准（390/430/445/520/760px 重叠 -6px、891/1280px -22px、泡泡龙画布 372×198）。仍未验证已登录 WSS 101、跨设备同步、完整结算、真实支付/webhook、移动端真实设备与容量。
+- 截图 `docs/verification/production-75441bd-{home,board,table}.png`。回滚：解压 `static.before.tgz` 覆盖 `dist` 即可，无需数据库回滚或镜像切换。

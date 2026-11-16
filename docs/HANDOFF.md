@@ -1336,3 +1336,9 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 
 - 2026-11-16 18:10: detail-page win-rate tabs now preload month/week/day in one parallel pass on entry and switch purely from `boardCache`; hover/click no longer issues requests. `&b=20261116-prefetch1`, `npm test` 999/999, real Chrome 3 requests on entry / 0 on six switches.
 - Static-only change; **production still on 5ca2b40 / deploy-backend:vip-18691ef**. A release needs only a static incremental package (no JAR, no Flyway migration).
+
+## 2026-11-16 20:05 生产已发布 `75441bd`（纯静态，取代此前所有「未提交/未部署」记录）
+- GitHub `main` 应用提交 `75441bd`：全站无头像框、手机窄屏斯诺克/泡泡龙布局、Joy Coins 计数墙钟化、胜率榜三周期并行预取。`npm test` 999/999、`git diff --check` 通过；未跟踪设计素材 745 个仍保留未提交。
+- 生产：21 个静态文件以 `git archive` 增量包发布（SHA256 `f20c2dbf…`），双域名各 21/21 响应体哈希一致；后端仍 `deploy-backend:vip-18691ef`、Flyway 仍 V25、容器零重启。发布目录 `/opt/joyflock/releases/static-75441bd`，数据备份 `/opt/joyflock/backups/20261116T114952Z`，回滚包 `static.before.tgz` 73MB。
+- 生产浏览器验收：头像无框计算样式正确、四组缓存键生效、排行榜进入 3 请求 / 切换 0 请求、零控制台错误；390px CSSOM 探针确认泡泡龙 board 206px、桌面布局不变。进入对局需登录态，故对局内几何沿用本地真机结论。
+- 文档提交与发布记录单独推送；此前各段「production still on 5ca2b40」均为当时事实记录，当前状态以本段为准。

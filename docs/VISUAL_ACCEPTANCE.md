@@ -961,3 +961,8 @@ CDP **36/36**、0 异常 0 意外 4xx。共享键 `20261114-rematch1`，需 **Ct
 - 根因：`dist/table/table.js` 的 `selectPeriod()` 在鼠标 `pointerenter` 与 click 时都调用 `refreshLeaderboard()`，而该函数每次都会请求 `/api/table/leaderboards/<game>?period=当前周期`；划过三个标签即三次请求。
 - 修复：新增 `PERIODS` / `boardCache` / `loadAllLeaderboards()`，进入时用 `Promise.all` 并行取三个周期并缓存；`refreshLeaderboard()` 改为纯缓存渲染；联机结算后整批刷新一次；`load` 兜底防止首帧 demo 覆盖真实数据。标签切换零请求，首帧与十行布局不变。
 - 验收：`npm test` 999/999（新增 `tests/leaderboard-prefetch.test.mjs` 5 条）；真机 Chrome 进入 3 请求、连续 6 次切换 0 新请求、各周期均显示各自缓存数据、300ms 起真实数据可见、无页面异常。缓存 `&b=20261116-prefetch1`。纯静态改动，未部署生产。
+
+## 2026-11-16 20:05 生产发布后的线上视觉复核（`75441bd`）
+- 生产截图 `docs/verification/production-75441bd-home.png`（门户九宫格）、`production-75441bd-board.png`（飞行员榜 10 行头像已无白边/金银铜描边/会员翅膀框，脸周围为透明深色背景，笑脸方形来自 SVG 图片自身）、`production-75441bd-table.png`（详情页胜率榜）。
+- 真机计算样式：首页 10 个头像 `border-width:0px`、`box-shadow:none`、`background-color:transparent`、`border-radius:0px`，`background-image` 保留；四组缓存键 `&f/&m/&c/&b=20261116-*` 在生产页面均命中。
+- 窄屏：生产浏览器 390px 探针 board `aspect-ratio:1440/765` 生效、高度 206px；桌面 891px 为 `auto`/16px，斯诺克桌面计分牌仍 `position:absolute`、`#seats` 仍 `grid`。生产未登录无法进入对局，对局内精确几何以本地真机（390–760px 重叠 -6px、泡泡龙画布 372×198）为准。
