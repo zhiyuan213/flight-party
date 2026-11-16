@@ -179,5 +179,7 @@ test('versioned static assets are cached; HTML documents still revalidate', () =
   assert.match(conf, /default "no-cache"/);
   assert.match(conf, /add_header Cache-Control \$joyflock_static_cache/);
   assert.match(conf, /location = \/portal\/index\.html \{\s*add_header Cache-Control "no-cache"/);
+  assert.match(conf, /location ~ \^\/\(table\/\|assets\/\(pool\/\|audio\/pool\/\)\)/,
+    'the production-only static regex location must be preserved');
   assert.ok(!/^\s*\/\*/m.test(conf), 'nginx comments use #, never C block comments');
 });
