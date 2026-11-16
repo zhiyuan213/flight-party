@@ -3327,8 +3327,16 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 实现：`dist/index.html` 的 `#welcome` 改 `.intro-grid`（display:contents）/ `.game-hero.hero-copy` / `.home-ranking#leaderboard-shell` / `.intro-bottom`；`flight-detail-layout.css` 重写为自包含的台球同款样式（不依赖 table.css / table-home-theme，避免污染对局页），封面列 194px × 94% = 182px，与生产台球实测一致；`hero-plane.js` 仍 `prepend` 到 `.hero-copy`，动画封面和「好友已就位，欢乐即将起飞」caption 保留。
 - 排行榜：`social-ui.js` 的 Joy Coins 榜整体换成台球同款——`boardShell`、三周期 `Promise.all` 一次预取、`boardCache` 缓存切换零请求、真实行优先 + 10 行 demo 补齐、`demo-tag` 仅在示例行在榜时显示、行用 DOM API 生成（名字走 textContent 不做 innerHTML）；`static-i18n.js` / `app.js` 补按钮与标签文案。头像复用 `/avatar-display.js`。
 - 旧元素删除后 `renderHomeAccess()` 改为可选节点，避免 `/index.html` 等旧宿主报错；`app.js` 的 `copy` 数组改「创建房间 ↗ / 单机 · 电脑对战」。
-- 后端 `TableService.leaderboard()` 增 `flight` 分支，从 `account_match_results` + `matches` 按 `rank=1` 统计 wins/games 并按胜率排序，返回与台球同款 `Ranking`；**本轮 JAR 未发布**（上传中断），已在部署文档写明后续窗口动作。
+- 后端 `TableService.leaderboard()` 增 `flight` 分支，从 `account_match_results` + `matches` 按 `rank=1` 统计 wins/games 并按胜率排序，返回与台球同款 `Ranking`；**23:52 已发布**（差量重建，见下方 23:52 段落与部署文档）。
 - 测试：重写 `tests/flight-detail-layout.test.mjs`（6 条）与 `tests/leaderboard-periods.test.mjs`（6 条），更新 `game-points` / `winrate-leaderboard` / `site-membership-footer` / `scope-copy-sync` / `online-room-leave-race` 中依赖旧结构的断言；`npm test` **1024/1024**。后端 `docker build --target build` 的 `mvn -B verify` BUILD SUCCESS。
 - 真机验收：本地 8080 与生产 Chrome 均确认封面 182x182、`.game-hero` 274px、`.launch-actions` 3 按钮、10 行胜率榜（96 / 64.6%）、中文态「玩家排行 / 月胜率榜 / 玩家 局数 胜率 / 快速开始 ↗」、390px `scrollWidth=clientWidth=390` 且榜单名字不再挤成省略号、三次切换周期新增 API 请求 0；生产零控制台错误。
 - 发布：双域名 12/12 静态资源响应体哈希与制品一致；备份 `20261116T145217Z`、`static.before.tgz`、`deploy.before`、`backend-before.private.json`、回滚镜像 `joyflock-backend:before-7b74f87`；活动房间 0 时才操作，容器全程未重启。
-- 未完成项：44MB 后端 JAR 因跨境链路多次中断未发布（旧后端对 flight/pool 榜均返回 `200 []`，两页示例数据一致，不影响本轮诉求）；GitHub 推送当时被本机代理 502 / 连接超时阻断，23:42 网络恢复后已执行 `git push origin main`，`41941cd..645da8b` 全部推送成功，远端 `main` 现为 `645da8b`（`7b74f87` 应用、`da8000c` 发布记录、`645da8b` QA 修正）。
+- 收尾（23:52）：44MB JAR 直传失败后改用差量重建并在生产发布 `deploy-backend:poolshell-7b74f87`，`flight/month` 已返回真实胜率；GitHub `41941cd..1106b83` 全部推送成功，远端 `main` = `1106b83`（`7b74f87` 应用、`da8000c` 发布记录、`645da8b` QA 修正、`1106b83` 推送状态修正）。本轮无未完成项，详见下节。
+
+## 2026-11-16 23:52 后端补齐发布（差量重建，生产 `7b74f87`）
+- 背景：23:05 只发了静态，`TableService` 的 flight 真实胜率分支未上线；44MB JAR 直传与 11MB 分片上传均被跨境链路掐断，生产 SSH 随后在握手前短时限流（23:39–23:51）。
+- 方案：本地新旧 JAR 逐条目比对，378 个条目中只有 `BOOT-INF/classes/com/flightparty/table/TableService.class` 变化；用运行容器里的旧 JAR（`12ade40c…`）在生产端重建，上传量从 44MB 降到 `delta-release.tar.gz` 17,597 字节 + `deploy.sh` 2,821 字节。`rebuild.py` 校验旧 JAR SHA256、替换条目、保留全部 ZipInfo 元数据与压缩方式，并核对条目级摘要 `8e37db88…`。本地 Docker 以 `maven:3.9-eclipse-temurin-21` 预启动重建 JAR，Spring Boot 4.1.2 / Tomcat 11 正常加载，仅因本地无数据源停止。
+- 发布：运行镜像 `deploy-backend:poolshell-7b74f87`（541MB）经 `compose.yaml` + `compose.production.yaml` + `release.private.json` 只重建 backend；`nginx -t` 无需 reload，静态文件未改动。Flyway 25 个迁移校验通过、schema 版本仍 25，容器 5.037s 启动。
+- 验收：双域名 `flight` month/week/day 6/6 `200`，`month` 含真实行 `Midgame test pilot`(1 局/100%) 与 `大卫`(24 局/25%)，`week/day` 及 pool 三周期为 `[]`；`/api/me` 200、`/api/csrf` 200；生产 Chrome（1440px）封面 182x182、`.game-hero` 274px、榜单 460px、10 行（真实行优先 + 示例补齐并标 Sample data）、三周期进入各一次 `/api/table/leaderboards/flight 200`、切周期零请求沿用既有守卫、零控制台错误；nginx 近 10 分钟无 4xx/5xx，后端仅一条由旧接口探测触发的预期 WARN。
+- 回滚：`/opt/joyflock/releases/app-7b74f87/rollback.private.json`（`deploy-backend:vip-18691ef`）与镜像标签 `joyflock-backend:before-7b74f87`；`backend-before.private.json`、`static.before.tgz`、`deploy.before`、数据备份 `20261116T145217Z` 均在。
+- 约束：生产对带 `?v=` 的静态资源缓存 24 小时，原地改静态文件必须同步升缓存键；大 JAR 发布优先差量重建，避免 44MB 单文件跨境上传。
