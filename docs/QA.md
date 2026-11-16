@@ -3319,3 +3319,16 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 生产验收：双域名 24/24 + 8/8 变更资源响应体 SHA256 与制品一致；生产 Chrome 建房→退出只有 `POST /api/rooms 200` 与 `leave 200`，零 `/snapshot`、`start-now` 403，零控制台错误；清空 Cookie 后双标签并发引导两页均 `csrf/guest/me 200`、零 4xx；冷/热缓存详情页静态请求 93 个中 49 个直接命中磁盘缓存；`Cache-Control` 抽样：版本化 JS `max-age=86400`、HTML/未版本化/`/table/`/`/api/` 均 `no-cache`。
 - 发布目录 `/opt/joyflock/releases/static-e54b2cf`、`static-b9cab3e`；数据备份 `20261116T133823Z`、`20261116T135534Z`；制品 SHA256 `038ac38e…995c7`、`9d482e8…6366`。后端 `deploy-backend:vip-18691ef`、数据库 V25、无迁移、容器未重启。
 - 仍需注意：43 个未带 `?v=` 的静态资源（visual-v*.css、封面图等）仍每次 304；跨境链路本身的高 RTT/TLS 抖动无法通过代码消除，若持续卡顿应考虑接入 CDN 或把静态资源放到离用户更近的节点。
+
+
+## 2026-11-16 23:05 飞行棋详情页与台球同版式（已部署生产 `7b74f87`）
+- 用户截图红框圈住左栏「快速匹配大按钮 + 三个小按钮 + 所有玩家不限次数卡片 + 脚注」，并指出「结构，排行都不用这套了，跟台球做同一套」。
+- 先截生产 `?game=pool` 作为标尺：`#intro` 为两栏，`.game-hero` 为 `230px + 1fr`，封面 182x182，3 个竖排扁平按钮；右栏 `.home-ranking` 为「玩家排行 / 月周日胜率榜 / 玩家·局数·胜率」细线表格 10 行；底部单列怎么玩 / 会员与支持 + 四格 member-facts；无奖杯、无大按钮、无促销卡片。
+- 实现：`dist/index.html` 的 `#welcome` 改 `.intro-grid`（display:contents）/ `.game-hero.hero-copy` / `.home-ranking#leaderboard-shell` / `.intro-bottom`；`flight-detail-layout.css` 重写为自包含的台球同款样式（不依赖 table.css / table-home-theme，避免污染对局页），封面列 194px × 94% = 182px，与生产台球实测一致；`hero-plane.js` 仍 `prepend` 到 `.hero-copy`，动画封面和「好友已就位，欢乐即将起飞」caption 保留。
+- 排行榜：`social-ui.js` 的 Joy Coins 榜整体换成台球同款——`boardShell`、三周期 `Promise.all` 一次预取、`boardCache` 缓存切换零请求、真实行优先 + 10 行 demo 补齐、`demo-tag` 仅在示例行在榜时显示、行用 DOM API 生成（名字走 textContent 不做 innerHTML）；`static-i18n.js` / `app.js` 补按钮与标签文案。头像复用 `/avatar-display.js`。
+- 旧元素删除后 `renderHomeAccess()` 改为可选节点，避免 `/index.html` 等旧宿主报错；`app.js` 的 `copy` 数组改「创建房间 ↗ / 单机 · 电脑对战」。
+- 后端 `TableService.leaderboard()` 增 `flight` 分支，从 `account_match_results` + `matches` 按 `rank=1` 统计 wins/games 并按胜率排序，返回与台球同款 `Ranking`；**本轮 JAR 未发布**（上传中断），已在部署文档写明后续窗口动作。
+- 测试：重写 `tests/flight-detail-layout.test.mjs`（6 条）与 `tests/leaderboard-periods.test.mjs`（6 条），更新 `game-points` / `winrate-leaderboard` / `site-membership-footer` / `scope-copy-sync` / `online-room-leave-race` 中依赖旧结构的断言；`npm test` **1024/1024**。后端 `docker build --target build` 的 `mvn -B verify` BUILD SUCCESS。
+- 真机验收：本地 8080 与生产 Chrome 均确认封面 182x182、`.game-hero` 274px、`.launch-actions` 3 按钮、10 行胜率榜（96 / 64.6%）、中文态「玩家排行 / 月胜率榜 / 玩家 局数 胜率 / 快速开始 ↗」、390px `scrollWidth=clientWidth=390` 且榜单名字不再挤成省略号、三次切换周期新增 API 请求 0；生产零控制台错误。
+- 发布：双域名 12/12 静态资源响应体哈希与制品一致；备份 `20261116T145217Z`、`static.before.tgz`、`deploy.before`、`backend-before.private.json`、回滚镜像 `joyflock-backend:before-7b74f87`；活动房间 0 时才操作，容器全程未重启。
+- 未完成项：44MB 后端 JAR 因跨境链路多次中断未发布（旧后端对 flight/pool 榜均返回 `200 []`，两页示例数据一致，不影响本轮诉求）；GitHub 推送当时被本机代理 502 阻断，本地 commit `7b74f87` 已就绪待补推。

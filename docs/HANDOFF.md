@@ -1361,3 +1361,12 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 客户端 `OnlineSession` 新增 `leaving` 状态与 `live()`/`discard()`/`guest()`；`leave()` 现在是「先断开再发请求」，任何新增房间命令都应走 `live()`，不要再直接拼 `/api/rooms/{id}/...` 绕过状态检查。
 - 诊断留痕：生产访问日志显示 `leave 200 → snapshot 403 → start-now 403`，服务器本地 `/api/me` 2–3ms 而外部 TTFB 1.5–5s，说明「慢」主要来自跨境链路与请求串行，而非后端算力（容器 CPU 3.8%、load 0.13）。
 - 验收与回滚细节见 `PRODUCTION-DEPLOYMENT.md` 顶部发布记录与 `QA.md` 对应段落。
+
+
+## 2026-11-16 23:05 生产发布 `7b74f87`：飞行棋详情页对齐台球
+- 当前生产：静态 `7b74f87`，后端仍 `deploy-backend:vip-18691ef`，数据库无新迁移，nginx 配置未变（沿用 `map "$uri:$args"` 缓存规则），容器未重启。此前各段「最新 `b9cab3e`」为当时事实，以本段为准。
+- 飞行棋 `?game=flight` 与台球 `?game=pool` 现在共用同一套详情页结构：`.intro-grid` 两栏、`.game-hero` 动画封面 + 3 个扁平按钮、`.home-ranking` 月/周/日胜率榜（玩家 / 局数 / 胜率，只显示局数）、`.intro-bottom` + `.member-facts`。飞行棋封面仍是 HeroPlane 动画，尺寸 182x182（与台球封面实测一致）。
+- 关键约定：飞行棋排行榜走 `/api/table/leaderboards/flight?period=`，**三周期一次预取、切换读 `boardCache` 零请求**；`social-ui.js` 里 `renderLeaderboard()` 不再重建整个面板（只更新 `aria-pressed` 与 `#leaderboard` 行），避免悬停效果重播。以后改榜单请沿用 `boardShell / loadAllLeaderboards / rankRow` 三层。
+- 后端 `TableService.leaderboard("flight", period)` 已实现真实胜率（`account_match_results.rank=1` 胜、每行为一局），但**本轮 JAR 未上线**：44MB 上传在弱链路中断。旧 JAR 对 flight 与 pool 都返回 `200 []`，所以两页现在都显示 10 行示例数据并标「示例数据」。下次后端窗口只需发布该 JAR，前端无需改动即可切换为真实战绩；发布后应复核「示例数据」标记自动消失。
+- 所有原地修改的静态文件都升了缓存键（`&rl=20261116-poolshell1`、`flight-detail-layout.css?v=20261116-poolshell1`、`&p=20261116-poolshell1`），因为生产对带 `?v=` 资源缓存 24 小时。
+- 验收与回滚细节见 `PRODUCTION-DEPLOYMENT.md` 顶部发布记录和 `QA.md` 对应段落。
