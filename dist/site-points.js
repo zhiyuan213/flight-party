@@ -414,14 +414,34 @@
   host.append(pill);
  }
 
+ /* A guest has no account balance to display. The shared header stores the
+    server-confirmed nickname (or "0" for a confirmed guest) in localStorage
+    and a host cookie, so every shell agrees on the very first frame. The local
+    wallet itself is kept intact: signing back in reveals the same balance.
+    Unit harnesses have no location object and keep the legacy preview value. */
+ function accountName(){
+  var n='';
+  try{n=localStorage.getItem('joyflock.accountName')||'';}catch(e){}
+  if(!n||n==='0'){
+   try{var c=document.cookie||'';var parts=c.split(';');
+    for(var i=0;i<parts.length;i++){var part=parts[i].trim();
+     if(part.indexOf('joyflock_account=')===0){n=decodeURIComponent(part.slice(17));break;}}}catch(e){n='';}
+  }
+  return n&&n!=='0'?n:'';
+ }
+ function shownTotal(){
+  if(typeof location==='undefined'||!location||!location.hostname)return state.total;
+  return accountName()?state.total:0;
+ }
  function render(){
   if(!pill)return;
+  var shown=shownTotal();
   /* The header pill stays compact (✦ + amount only). Hover / keyboard focus
      spells out the CURRENT balance in the currency's plural form, e.g.
      "9,000 Joy Coins"; the hidden label and accessible name give the balance. */
-  pill.dataset.coin=fmt(state.total)+' '+CURRENCY_PLURAL;
-  pill.setAttribute('aria-label',t('Joy Coin balance: '+fmt(state.total),'Joy Coin 余额：'+fmt(state.total)));
-  pill.querySelector('[data-jp=amount]').textContent=fmt(state.total);
+  pill.dataset.coin=fmt(shown)+' '+CURRENCY_PLURAL;
+  pill.setAttribute('aria-label',t('Joy Coin balance: '+fmt(shown),'Joy Coin 余额：'+fmt(shown)));
+  pill.querySelector('[data-jp=amount]').textContent=fmt(shown);
   pill.querySelector('[data-jp=label]').textContent=CURRENCY;
  }
 
@@ -450,6 +470,7 @@
    host=document.querySelector('header > div');
   if(host&&!document.getElementById('jp-pill'))buildPill(host);
   render();
+  window.addEventListener('joyflock:account-changed',render);
   if(typeof MutationObserver!=='undefined'){
    observer=new MutationObserver(render);
    observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-locale','lang']});
@@ -481,7 +502,7 @@
    if(state.annualVip)state.vip=true;
    render();emit();
   },
-  get:function(){return {total:state.total,game:state.game,vip:state.vip,annualVip:state.annualVip,live:state.live,
+  get:function(){return {total:state.total,display:shownTotal(),game:state.game,vip:state.vip,annualVip:state.annualVip,live:state.live,
    owned:Object.assign({},state.owned),equipped:Object.assign({},state.equipped)};},
   refresh:render
  };

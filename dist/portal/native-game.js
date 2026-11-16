@@ -1,14 +1,14 @@
 // One document: share the game's existing account UI, language, wallet and audio.
 const root=document.documentElement,stage=document.getElementById('native-game-stage');
-const language=document.getElementById('portal-language'),account=document.getElementById('chrome-account');
+const language=document.getElementById('portal-language');
 const fullscreen=document.getElementById('fullscreen');
 const kind=root.dataset.nativeGame,game=kind==='flight'?'flight':new URLSearchParams(location.search).get('game')||'four';
 for(const link of document.querySelectorAll('[data-native-link]'))if(link.dataset.nativeLink===game)link.setAttribute('aria-current','page');
 function sync(){
  const locale=root.dataset.locale==='zh'?'zh':'en';language.value=locale;
  language.setAttribute('aria-label',locale==='zh'?'语言':'Language');
- const name=document.getElementById('account-open')?.textContent.trim()||'—';
- account.textContent=name;document.body.classList.toggle('chrome-signed',!['—','登录','登录 / 注册','Sign in','Sign in / Register'].includes(name));
+ /* The site-account.js header owns the account pill on native pages too:
+    one label and one dialog set across the portal, pool and flight shells. */
  document.querySelector('.native-rail').setAttribute('aria-label',locale==='zh'?'游戏列表':'Game list');
  for(const link of document.querySelectorAll('[data-native-link]'))link.setAttribute('aria-label',link.querySelector(locale==='zh'?'.native-zh':'.native-en').textContent);
  const current=document.querySelector('[data-native-link][aria-current="page"]');
@@ -21,11 +21,13 @@ language.addEventListener('change',()=>{
  window.dispatchEvent(new CustomEvent('joyflock:native-locale',{detail:locale}));
  sync();
 });
-account.addEventListener('click',()=>document.getElementById('account-open')?.click());
+/* A sign-in completed in the shared dialog must still reach the game in
+   this same document: table.js listens for joyflock:auth-changed. */
+window.addEventListener('joyflock:account-changed',()=>{
+ try{window.postMessage({type:'joyflock:auth-changed'},location.origin);}catch(e){}
+});
 const observer=new MutationObserver(sync);
 observer.observe(root,{attributes:true,attributeFilter:['data-locale']});
-const nativeAccount=document.getElementById('account-open');
-if(nativeAccount)observer.observe(nativeAccount,{subtree:true,childList:true,characterData:true});
 let expanded=false,lastScreen;
 function syncFullscreen(){
  const full=Boolean(document.fullscreenElement)||expanded;

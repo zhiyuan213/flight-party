@@ -73,14 +73,15 @@ test('the game homepage and arcade page load the shared cosmetics chain', () => 
     assert.ok(text.indexOf('site-cursor.css') < text.indexOf('site-points.css'),
       `${p} loads the wallet styles after the cursor theme`);
     assert.equal(text.match(/site-points\.css\?v=([^"'&]+)/)[1], version);
-    assert.equal(text.match(/site-points\.js\?v=([^"']+)/)[1], version);
+    assert.equal(text.match(/site-points\.js\?v=([^"'&]+)/)[1], version);
     assert.ok(text.indexOf('site-points.js') < text.indexOf('</head>'));
   }
   for (const p of ['dist/portal/index.html', 'dist/membership.html', 'dist/terms.html',
     'dist/privacy.html', 'dist/contact.html', 'dist/shop.html', 'dist/table/index.html']) {
     const text = read(p);
-    assert.equal(text.match(/site-points\.js\?v=([^"']+)/)[1], version, `${p} version`);
+    assert.equal(text.match(/site-points\.js\?v=([^"'&]+)/)[1], version, `${p} version`);
     assert.ok(!/20261111-defaultcursor1|20261111-aircraft1|20261111-cursorusable1/.test(text), `${p} has no stale key`);
+    assert.match(text, /site-points\.js\?v=[^"']*&z=20261117-guestzero1/, `${p} ships the guest-zero wallet`);
   }
 });
 

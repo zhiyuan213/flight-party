@@ -69,9 +69,10 @@ test('every shell loads the shared wallet with one version tag', () => {
   assert.ok(version, 'the script declares a cache key');
   for (const {p, text} of hosts) {
     assert.match(text, /site-points\.css\?v=([^"'&]+)/, `${p} needs the stylesheet`);
-    assert.match(text, /site-points\.js\?v=([^"']+)/, `${p} needs the script`);
+    assert.match(text, /site-points\.js\?v=([^"'&]+)/, `${p} needs the script`);
     const a = text.match(/site-points\.css\?v=([^"'&]+)/)[1];
-    const b = text.match(/site-points\.js\?v=([^"']+)/)[1];
+    const b = text.match(/site-points\.js\?v=([^"'&]+)/)[1];
+    assert.match(text, /site-points\.js\?v=[^"']*&z=20261117-guestzero1/, `${p} ships the guest-zero wallet`);
     assert.equal(a, b, `${p} must use one cache key`);
     assert.equal(a, version, `${p} must reference the shipped script version`);
   }

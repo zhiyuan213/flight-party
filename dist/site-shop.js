@@ -429,7 +429,7 @@
   var s=state();
   if(heroWallet){
    heroWallet.innerHTML='<span class="shop-wallet-label">'+esc(t(COIN+' balance',COIN+' 余额'))+'</span>'+
-    '<span class="shop-wallet-value">'+mark()+fmt(s.total)+'</span>'+
+    '<span class="shop-wallet-value">'+mark()+fmt(s.display===undefined?s.total:s.display)+'</span>'+
     (s.vip?'<span class="shop-wallet-vip">VIP</span>':'')+
     (s.annualVip?'<span class="shop-wallet-vip shop-wallet-annual">ANNUAL VIP</span>':'');
   }
@@ -532,7 +532,7 @@
      '<span class="shop-buy-caption">'+esc(t('Payment method','支付方式'))+'</span>'+
      '<div class="shop-pay-option'+(free?' is-vip':'')+'">'+
       '<span>'+esc(payLabel)+'</span><b>'+payValue+'</b>'+
-      '<small>'+esc(t('You have ','你有 ')+fmt(s.total))+'</small></div>'+
+      '<small>'+esc(t('You have ','你有 ')+fmt(s.display===undefined?s.total:s.display))+'</small></div>'+
      (routeNote?'<p class="shop-buy-vip-note">'+esc(routeNote)+'</p>':'')+
      '<div class="shop-buy-actions">'+
       '<button type="button" class="shop-buy-submit" data-shop-confirm'+(blocked||equipped?' disabled':'')+'>'+esc(button)+'</button>'+
