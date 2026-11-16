@@ -275,3 +275,26 @@
 
 /* Ash and ebony cue, shared visual direction with the table cue. */
 .snooker-rail .power-cue{background-image:url('../assets/pool/snooker-power-cue.svg?v=20261112-natural1')}
+
+/* 2026-11-16 mobile fix: the score plaque is absolutely centred ON TOP of the
+   two-seat grid. Below 861px its width (96px at <=520, 120px at <=860) is
+   wider than the space left between the two avatars, so it covered both faces:
+   measured 12px per side at 390/430/520px, 5px per side at 760px. Keep every
+   existing size (avatars, score/target type, plaque dimensions and the
+   860/520 breakpoints) and lay the bar out as three REAL columns instead:
+   seat | plaque | seat. #seats becomes display:contents so its two seats are
+   flex items of .snooker-matchup; the plaque becomes a normal third column.
+   The >=861px desktop composition stays byte-for-byte unchanged. */
+@media(max-width:860px){
+ .snooker-matchup{display:flex;align-items:center;gap:6px;height:auto;min-height:0}
+ .snooker-matchup #seats{display:contents}
+ .snooker-matchup .seat{flex:1 1 0;min-width:0;gap:6px;padding:2px 0}
+ .snooker-matchup .seat:first-child{order:1}
+ .snooker-matchup .snooker-centre{position:static;left:auto;top:auto;transform:none;order:2;flex:0 0 auto}
+ .snooker-matchup .seat:nth-child(2){order:3}
+ .snooker-matchup .seat-name strong{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .snooker-matchup .snooker-targets{gap:3px;padding:1px 5px;min-height:22px;max-width:100%;overflow:hidden}
+ .snooker-matchup .snooker-targets-label{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .snooker-matchup .snooker-target-ball{width:18px;height:18px;flex-basis:18px}
+ .snooker-matchup .snooker-targets-note{font-size:9px}
+}

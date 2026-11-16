@@ -38,7 +38,11 @@ test('circular VIP crest portraits keep their round inner portrait', () => {
   for (const frame of ['gold', 'cloud', 'night']) {
     assert.match(css, new RegExp(`\\.leaderboard-avatar\\[data-frame="${frame}"\\]`));
   }
-  const exception = css.slice(css.indexOf('.leaderboard-avatar[data-frame="gold"]'));
+  /* Historical layer only. The no-frame override appended at the end of this
+     sheet re-lists the intro standings selector on purpose, so scope the
+     old VIP-exception assertion to the block before that override. */
+  const exception = css.slice(css.indexOf('.leaderboard-avatar[data-frame="gold"]'),
+    css.indexOf('NO portrait frames at all'));
   assert.match(exception, /border-radius:\s*50%/, 'the circular crest still needs a round portrait');
   assert.ok(!/body\.table-home-theme #leaderboard \.seat-avatar/.test(exception),
     'the VIP exception must not re-round the intro standings');

@@ -10,7 +10,7 @@ import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
 import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
 import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
@@ -110,14 +110,34 @@ $('title').textContent=title;if(!document.documentElement.hasAttribute('data-int
    global hover sfx already honours [data-sfx="off"] via closest(), so mark the
    whole chess board once instead of bumping the shared script/version chain. */if(game==='chess')$('board').setAttribute('data-sfx','off');$('promotion-setting').hidden=game!=='chess';if(game==='chess')$('rules').textContent='白棋先行。点击自己的棋子，再点击目标格。支持王车易位、吃过路兵及升变；将死获胜，逼和、重复局面、50回合及子力不足判和。电脑为基础难度。';$('board').classList.toggle('gomoku',game==='gomoku');$('board').classList.toggle('puzzle',game==='puzzle');if(game==='puzzle'){$('score-note').textContent='两人对局：胜者 200 Joy Coins、败者 100 Joy Coins；匿名只显示不保存，登录账号自动累计。';$('rules').textContent='交换两块拼图，还原完整的飞行棋画面。点击两块图片交换位置，也可以拖动交换。联机时与好友轮流协作；完成后按胜负结算 200 / 100 Joy Coins。';$('computer').textContent='单机 · 电脑协作';}
 async function request(path,body){const response=await fetch(path,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',headers:{...(body===undefined?{}:{'content-type':'application/json'}),...(csrf?{[csrf.headerName]:csrf.token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});if(!response.ok){const error=Error('请求失败 ('+response.status+')');error.status=response.status;throw error;}const text=await response.text();return text?JSON.parse(text):null;}
-async function init(){if(!csrf){csrf=await request('/api/csrf');await request('/api/session/guest',{});}me=await request('/api/me');paintMemberFacts();$('profile').textContent=(me.account?.displayName||'游客')+(me.appearance?.annualMember?' · YEAR VIP':me.appearance?.member?' · VIP':'');$('profile').classList.toggle('vip',!!me.appearance?.member);$('account-open').textContent=me.account?me.account.displayName:'登录 / 注册';await refreshStats();refreshLeaderboard();render();}
+async function init(){if(!csrf){csrf=await request('/api/csrf');await request('/api/session/guest',{});}me=await request('/api/me');paintMemberFacts();$('profile').textContent=(me.account?.displayName||'游客')+(me.appearance?.annualMember?' · YEAR VIP':me.appearance?.member?' · VIP':'');$('profile').classList.toggle('vip',!!me.appearance?.member);$('account-open').textContent=me.account?me.account.displayName:'登录 / 注册';await refreshStats();loadAllLeaderboards();render();}
+/* All three period tabs are fetched together on entry (and once more after a
+   completed online match), never on hover / click. Switching a tab only
+   re-renders from boardCache, so sweeping the pointer over the tabs costs
+   zero requests. A load token discards a stale batch if a settlement refresh
+   overtakes the entry request. */
+const PERIODS=['month','week','day'];
+const boardCache=new Map();
+let boardLoadToken=0;
+async function loadAllLeaderboards(){
+ const token=++boardLoadToken;
+ const results=await Promise.all(PERIODS.map(async p=>{
+  try{const response=await request('/api/table/leaderboards/'+game+'?period='+p);
+   return Array.isArray(response)?response:[];}catch{return [];}
+ }));
+ if(token!==boardLoadToken)return;
+ PERIODS.forEach((p,i)=>boardCache.set(p,results[i]));
+ refreshLeaderboard();
+ /* A very fast batch (local / cached) can land before the first-paint boot
+    fills the standings with demo rows. Repaint once the document settles so
+    the preloaded real rows are not lost. */
+ if(typeof document!=='undefined'&&document.readyState!=='complete'&&typeof globalThis.addEventListener==='function')
+  globalThis.addEventListener('load',()=>{if(token===boardLoadToken)refreshLeaderboard();},{once:true});
+}
 /* Real standings come first; demo rows fill the board up to ten seats so the
-   panel keeps a fixed height on a fresh deployment with no online results. */async function refreshLeaderboard(){
- const selected=period;
+   panel keeps a fixed height on a fresh deployment with no online results. */function refreshLeaderboard(){
  const rate=r=>Number(r.winRate)||0;
- let rows=[];
- try{const response=await request('/api/table/leaderboards/'+game+'?period='+period);if(Array.isArray(response))rows=response;}catch{}
- if(selected!==period)return;
+ const rows=boardCache.get(period)||[];
  const real=rows.slice(0,10).filter(row=>row&&typeof row==='object').map(row=>{
   const games=Number(row.games)||0,wins=Math.max(0,Math.min(games,Number(row.wins)||0));
   return {name:row.name||row.displayName||'玩家',points:Number(row.points)||0,games,wins,
@@ -361,7 +381,7 @@ function apply(value){if(room&&value.id!==room.id){rematchPending=false;autoRead
   /* Re-selecting 在线对决 re-enters this exact room. The key is per game, so a
      `four` room can never be used to resume `pool`. Finished rooms are dropped. */
   if(['OVER','CLOSED'].includes(value.phase))clearRoomHint();else{writeRoomHint(value.id);syncRoomUrl(value.id);}
-  syncRoomCosmetics();$('board')._serverOffset=value.serverNow-Date.now();board=value.board;local=false;document.body.dataset.noGuide='';screen=playStartDelay?'waiting':screenForRoom(value);render();autoReadyFriendsRoom(value);if(board.over&&settledRoom!==room.id){settledRoom=room.id;refreshStats();refreshLeaderboard();delete $('stats').dataset.demo;$('stats').textContent=me?.account?'已完成的联机结果由服务器保存；本游戏独立计分。':'游客成绩仅本次显示，刷新后不保留。';}}
+  syncRoomCosmetics();$('board')._serverOffset=value.serverNow-Date.now();board=value.board;local=false;document.body.dataset.noGuide='';screen=playStartDelay?'waiting':screenForRoom(value);render();autoReadyFriendsRoom(value);if(board.over&&settledRoom!==room.id){settledRoom=room.id;refreshStats();loadAllLeaderboards();delete $('stats').dataset.demo;$('stats').textContent=me?.account?'已完成的联机结果由服务器保存；本游戏独立计分。':'游客成绩仅本次显示，刷新后不保留。';}}
 /* Manual ready replaced the silent auto-vote: a friends room must NOT start
    until BOTH players click "准备". The symbol stays because legacy test
    harnesses slice apply(), which still calls it. */function autoReadyFriendsRoom(value){/* no-op: the waiting dialog casts the vote */}
@@ -632,9 +652,10 @@ if(usesOpening)updateFourResult(options);}
 $('back-home').onclick=()=>$('home-link').click();$('leave-play').onclick=()=>room?$('leave').click():$('home-link').click();$('cancel-waiting').onclick=()=>$('leave').click();$('waiting').addEventListener('cancel',event=>{event.preventDefault();$('leave').click();});
 /* Period tabs switch on hover as well as on click. Only #leaderboard is
    re-rendered (the tabs themselves never move), so pointerenter stays stable.
-   The same-period guard prevents repeat requests while the pointer rests on
-   the active tab; click / keyboard still work, and touch / pen devices that
-   cannot hover keep tap-to-switch. */const periodTabs=[...document.querySelectorAll('[data-period]')];
+   selectPeriod() now reads the preloaded boardCache, so neither hovering nor
+   clicking issues a request; the same-period guard just avoids a repaint.
+   Click / keyboard still work, and touch / pen devices that cannot hover keep
+   tap-to-switch. */const periodTabs=[...document.querySelectorAll('[data-period]')];
 function selectPeriod(tab){
   if(!tab||period===tab.dataset.period)return;
   period=tab.dataset.period;

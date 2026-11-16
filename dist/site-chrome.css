@@ -320,3 +320,18 @@ html[data-locale="en"] .lang-cn,
 html[data-locale="zh"] .lang-en{display:none!important}
 html[data-locale="en"] article[lang="zh-CN"],
 html[data-locale="zh"] article[lang="en"]{display:none!important}
+
+/* ---------------------------------------------------------------------------
+   NO portrait frames at all (2026-11-16): the signed-in account dialog
+   portrait loses its border, radius and shadow as well. Its background
+   image is set inline by site-account.js, so background-image is left
+   alone deliberately - overriding it would hide the uploaded avatar.
+   --------------------------------------------------------------------------- */
+.chrome-auth-avatar{
+  border:0!important;box-shadow:none!important;
+  background-color:transparent!important;border-radius:0!important;
+}
+[data-frame="gold"]::after,[data-frame="cloud"]::after,[data-frame="night"]::after{
+  content:none!important;background-image:none!important;
+}
+.avatar-frame{display:none!important}

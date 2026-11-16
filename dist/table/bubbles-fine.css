@@ -83,3 +83,21 @@
   .bubble-score{font-size:19px}
   .bubble-seat{font-size:10px}
 }
+
+/* 2026-11-16 mobile fix: createBubbles() sets the host to height:100% with
+   flex:1 1 auto, but on the narrow single-column layout .game-panel has an
+   AUTO height (24.8px measured at 390px), so the percentage resolved against
+   that and collapsed the board/canvas to a 23px sliver -- the bubble field was
+   invisible. Give the board a definite aspect-derived height instead. The
+   world is WW=W*2=1440 by H=765 (bubbles-duel.js R=20, COLS=18), hence
+   1440/765. The !important is required to outrank the inline height:100%
+   written by bubbles.js; ResizeObserver(layout) then resizes the canvas.
+   Desktop layouts keep their explicit viewport-derived height. */
+@media(max-width:760px){
+  .table-chat-layout .game-panel>.board.arcade-board.bubbles{
+    height:auto!important;
+    min-height:0;
+    flex:none;
+    aspect-ratio:1440/765;
+  }
+}

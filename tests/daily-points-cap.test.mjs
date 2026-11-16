@@ -324,8 +324,10 @@ test('the UPPER row counts up first, then 当前积分 BELOW it, both with coin 
   assert.ok(dailyFrames.every(s => s.total === '7,750'),
     'the lower total waits at its pre-award value while the upper row counts');
   const dailyValues = [...new Set(samples.map(s => s.daily))];
-  assert.ok(dailyValues.length > 50, 'the upper figure prints every integer, not a single jump');
-  assert.ok(dailyValues.includes('1,180 / 2,000'));
+  assert.ok(dailyValues.length > 8, 'the upper figure climbs in visible steps, not a single jump');
+  const midValues = [...new Set(dailyFrames.map(s =>
+    Number(s.daily.split(' / ')[0].replace(/,/g, ''))))].filter(v => v > 1120 && v < 1240);
+  assert.ok(midValues.length >= 3, 'several intermediate values are painted while counting');
   assert.ok(dailyFrames.at(-1).coins > dailyFrames[0].coins,
     'coin ticks keep firing during the upper count-up');
   const totalFrames = samples.filter(s => s.phase === 'counting');
@@ -384,8 +386,8 @@ test('the scorer owns the cap, the CSS equalises four rows and the chain is bump
      lower 'counting' stage. A swap back to the old order fails this guard. */
   assert.match(ticker, /panel\.dataset\.phase = daily && dailyEndValue\(\) > dailyStartValue\(\) \? 'daily' : 'counting'/);
   assert.match(ticker, /if \(award\.after > award\.before\) \{\s*\n\s*panel\.dataset\.phase = 'counting';/);
-  assert.match(ticker, /coinSfx\(\); dailyElapsed \+= dailyStepSize/);
-  assert.match(ticker, /dailyStepSize = pointsStepMs\(dailyEndValue\(\) - dailyStartValue\(\)\)/);
+  assert.match(ticker, /coinSfx\(\); frame = raf\(step\); return; \}/);
+  assert.match(ticker, /dailyDuration = pointsDurationMs\(dailyEndValue\(\) - dailyStartValue\(\)\)/);
   assert.doesNotMatch(ticker, /dailyNote|dailyCaption/);
   assert.match(css, /\.pool-result-points\{[^}]*gap:14px/);
   assert.match(css, /\.pool-result-points-row\{[^}]*align-items:center[^}]*min-height:22px/s);

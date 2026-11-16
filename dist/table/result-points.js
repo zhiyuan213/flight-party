@@ -1,5 +1,5 @@
 /* Result-dialog points reward — one award per finished game, shown as a
-   "+N" badge first and then as a digit-by-digit count-up of the running total.
+   "+N" badge first and then as a count-up of the running total.
 
    The shared result dialog (pool-shell.js) covers all nine table games, so the
    reward cannot be hardcoded per game. game-points.js is the ONLY scorer: its
@@ -12,12 +12,13 @@
 
    Nothing here calls record(), so re-renders, dialog reopens, confetti reveals
    and the "查看本局结算" button can never add a second award. The badge is
-   revealed immediately; the total row follows ~380ms later and ticks up one
-   integer per frame until it reaches the post-award score.
+   revealed immediately; the total row follows ~380ms later and counts up on
+   a fixed wall-clock budget, so a slow mobile frame rate can no longer
+   stretch the reveal into a 10-30 second crawl.
 
    The scorer (game-points.js) also sends `daily` = {date, earned, cap, ...}.
    "今日 Joy Coins 上限" is displayed ABOVE "当前 Joy Coins". Both figures use the SAME
-   one-coin-per-integer animation and sound, and they count up in READING
+   wall-clock count-up and sound, and they count up in READING
    ORDER: the UPPER row lands first (phase daily), then the LOWER row lands
    (phase counting -> done). This is deliberately a foreground effect:
    receive()/reveal() only play while the dialog is actually open.
@@ -55,17 +56,23 @@ const LABELS = {
 export const formatPoints = n =>
   String(Math.max(0, Math.round(Number(n) || 0))).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-/* ~16ms per integer keeps every value visible on a 60Hz display (200 steps
-   ≈ 3.2s for a win). Smaller awards are stretched so the count-up still
-   reads as a sequence instead of a single jump. */
-export function pointsStepMs(delta) {
-  if (!(delta > 0)) return 16;
-  return Math.max(16, Math.min(28, 1800 / delta));
+/* Fixed wall-clock budget per stage. The old ticker advanced a VIRTUAL clock
+   by exactly one integer per animation frame, so a +240 award needed 480
+   frames: 8.6s at 60Hz, 16.3s at 30Hz (a common throttled mobile cadence)
+   and 24s+ at 20Hz. Both stages now interpolate against REAL elapsed time,
+   so a slower display simply skips intermediate integers instead of making
+   the player wait. Small awards still land step by step. */
+export function pointsDurationMs(delta) {
+  const n = Math.max(0, Math.round(Number(delta) || 0));
+  if (!n) return 0;
+  return Math.max(400, Math.min(700, 300 + n));
 }
-export function pointsValueAt(before, after, elapsed, stepMs = pointsStepMs(after - before)) {
+export function pointsValueAt(before, after, elapsed, duration = pointsDurationMs(after - before)) {
   const delta = Math.max(0, after - before);
-  if (!delta) return after;
-  return Math.min(after, before + Math.floor(Math.max(0, elapsed) / stepMs));
+  if (!delta || !(duration > 0)) return after;
+  const p = Math.min(1, Math.max(0, elapsed) / duration);
+  const eased = 1 - (1 - p) * (1 - p);
+  return Math.min(after, before + Math.round(delta * eased));
 }
 
 /* Read the award straight out of the recorder's snapshot. `last` is set only
@@ -143,13 +150,12 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
   panel.append(rewardRow, breakdownRow, dailyWrap, totalRow);
 
   let award = null, daily = null, capInfo = null, seq = 0, played = 0, frame = 0, timer = 0;
-  /* A virtual clock rather than wall time: a real rAF cadence is 16.7ms (and
-     can stall), so floor(elapsed / 16) would skip 201, 204, ... Advancing the
-     virtual clock by exactly one step per frame prints EVERY integer from the
-     old total to the rewarded total, which is the whole point of the effect.
-     BOTH stages use the same virtual clock; the wall-clock guard is per stage
-     (two sequential count-ups need roughly twice the budget of one). */
-  let elapsed = 0, stepSize = 16, dailyElapsed = 0, dailyStepSize = 16, wallStart = 0;
+  /* Wall clock, not a per-frame virtual clock: elapsed comes from the rAF
+     timestamp, so 30Hz / 20Hz mobile displays finish in the same number of
+     milliseconds as a 60Hz desktop. Each stage gets its own start time;
+     WALL_CAP is only a runaway guard (a hidden tab has no frames at all, and
+     finish() snaps to the final value when the dialog closes). */
+  let stageStart = 0, stageDuration = 0, dailyDuration = 0, wallStart = 0;
   const WALL_CAP = 20000;
   const reduced = () => !!env.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const raf = fn => env.requestAnimationFrame
@@ -212,7 +218,7 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
   function cancel() {
     cancelFrame(frame); frame = 0;
     cancelLater(timer); timer = 0;
-    elapsed = 0; dailyElapsed = 0; wallStart = 0;
+    stageStart = 0; wallStart = 0;
   }
   function showFinal() {
     cancel();
@@ -231,28 +237,31 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
   }
   /* STAGE 1 "daily": add the round reward to TODAY'S allowance — the row
      ABOVE. STAGE 2 "counting": only AFTER that lands, add the same reward to
-     the running total — the row BELOW. Both print every integer and fire one
-     coin tick per integer, so the two figures arrive in reading order. */
+     the running total — the row BELOW. Both interpolate on a fixed wall-clock
+     budget and fire one coin tick per frame, so the two figures arrive in
+     reading order without stalling on low-frame-rate phones. */
   function step(now) {
     if (!award) return;
     if (!wallStart) wallStart = now;
     if (now - wallStart > WALL_CAP) { showFinal(); paint(); return; }
+    if (!stageStart) stageStart = now;
+    const elapsed = now - stageStart;
     if (panel.dataset.phase === 'daily') {
       const from = dailyStartValue(), to = dailyEndValue();
-      const value = pointsValueAt(from, to, dailyElapsed, dailyStepSize);
+      const value = pointsValueAt(from, to, elapsed, dailyDuration);
       paintDailyValue(value);
-      if (value < to) { coinSfx(); dailyElapsed += dailyStepSize; frame = raf(step); return; }
+      if (value < to) { coinSfx(); frame = raf(step); return; }
       /* The upper figure has landed — now the total BELOW it starts adding. */
       if (award.after > award.before) {
         panel.dataset.phase = 'counting';
-        elapsed = 0; wallStart = 0;
+        stageStart = 0; wallStart = 0;
         frame = raf(step); return;
       }
       complete(); return;
     }
-    const value = pointsValueAt(award.before, award.after, elapsed, stepSize);
+    const value = pointsValueAt(award.before, award.after, elapsed, stageDuration);
     totalValue.textContent = formatPoints(value);
-    if (value < award.after) { coinSfx(); elapsed += stepSize; frame = raf(step); return; }
+    if (value < award.after) { coinSfx(); frame = raf(step); return; }
     complete();
   }
   function play() {
@@ -261,15 +270,15 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
     played = seq;
     cancel();
     paint();
-    stepSize = pointsStepMs(award.after - award.before);
-    dailyStepSize = pointsStepMs(dailyEndValue() - dailyStartValue());
+    stageDuration = pointsDurationMs(award.after - award.before);
+    dailyDuration = pointsDurationMs(dailyEndValue() - dailyStartValue());
     panel.hidden = false;
     panel.dataset.phase = 'reward';
     totalValue.textContent = formatPoints(award.before);
     paintDailyValue(dailyStartValue());
     if (reduced()) { showFinal(); return; }
     timer = later(() => {
-      timer = 0; elapsed = 0; dailyElapsed = 0; wallStart = 0;
+      timer = 0; stageStart = 0; wallStart = 0;
       if (panel.hidden || !panel.isConnected) { showFinal(); return; }
       /* Read top-to-bottom: 今日 Joy Coins 上限 sits ABOVE 当前 Joy Coins, so it is the
          first stage. Legacy / capped snapshots with no daily increment go

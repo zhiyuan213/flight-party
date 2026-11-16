@@ -929,3 +929,35 @@ CDP **36/36**、0 异常 0 意外 4xx。共享键 `20261114-rematch1`，需 **Ct
 - 周榜对应改动前红框里的 `18/27 → 27`、`15/24 → 24`，胜率 `66.7% / 62.5%` 不变；英文态列头 `Player / Games / Win rate`，榜名仍是 Monthly / Weekly / Daily win rate。
 - 胜场数据没有删除，只是不打印：它仍决定胜率与排序。首页 Pilot leaderboard 使用独立渲染，不受影响。
 - `npm test` 948/948、CDP 月/周/英文三态通过。普通刷新生效（`&g=20261115-gamesonly1`）。未提交、未部署生产。
+
+## 2026-11-16 17:20 手机对局页布局（斯诺克计分牌 / 泡泡龙画布）
+- 反馈：手机上斯诺克「0 : 0」计分牌压住两侧头像；泡泡龙游戏区只剩顶部一条细带。修复前后截图 `docs/verification/mobile-snooker-score-{before-,}20261116.png`、`mobile-bubbles-board-{before-,}20261116.png`。
+- 斯诺克根因：`.snooker-centre` 是绝对定位覆盖层（≤520px 宽 96px、≤860px 宽 120px），而 `#seats` 只留 72px/110px 空隙。CDP 实测 390/430/445/520px 每侧重叠 12px、760px 重叠 5px；≥891px 本就有 22px 间隙。pool 的 `.pool-match-clock` 全程 -7px，未动。
+- 修复：窄屏把 `.snooker-matchup` 改成 flex 三列（座位 | 计分牌 | 座位），`#seats{display:contents}`、计分牌 `position:static`。头像宽 42px、计分牌尺寸、全部字号与 860/520 断点均不变，桌面 ≥861px 完全不改。
+- 泡泡龙根因：`bubbles.js` 给 `#board` 写内联 `height:100%`，但窄屏 `.game-panel` 是 AUTO 高（实测 24.8px），百分比塌缩，画布只剩 23px。修复：≤760px 给 board `height:auto!important;flex:none;aspect-ratio:1440/765`（世界 WW=1440/H=765），`ResizeObserver` 会重算画布。
+- 缓存 `&m=20261116-mobileplay1` 追加到三个 HTML 的两个样式表引用，冻结 `v=` 不变；重跑 `scripts/build-native-games.mjs`。新增 `tests/mobile-table-play-layout.test.mjs` 5 条守卫，`npm test` **985/985**。
+- 真机验收（不再注入 CSS）：斯诺克 390/430/445/520/760px `position:static`、重叠 `-6,-6`、头像 42px、姓名无溢出；891/1280px 仍 `position:absolute`、重叠 `-22,-22`、头像 58px。泡泡龙画布 390px 为 372×198（原 372×23），430/520/760px 分别 412×219 / 502×267 / 465×382。`/table/index.html?game=` 与 `/?game=`（原生页）两条入口均已验证。
+- 排行榜问询：确有写死的 10 行 `DEMO_PLAYERS`（Ava Mitchell 96/64.6% … Nora Bennett 51/19.6%，数值与截图完全一致），仅在真实 API 行数不足 10 时补齐；自己那行来自 `game-points.js`；脚注「示例数据」只在使用 demo 时显示。本轮未改数据来源。本轮为纯静态改动，未部署生产。
+
+
+## 2026-11-16 17:30 全站头像框移除
+- 反馈：飞行员排行榜第 2 行大卫头像带蓝色圆环/白色翅膀装饰；用户确认「连基础边框底板也去掉」——会员头像框 + 白色描边 + 前三名金银铜描边 + 浅米黄方形底色 + 圆角裁切全部移除，头像只显示图片本身。截图 `docs/verification/avatar-frame-before-20261116.png`、`avatar-noframe-20261116.png`。
+- 实现：`dist/rank-badges.css` 末尾追加最终覆盖层（`[data-frame]::after{content:none}`、`.avatar-frame{display:none}`、所有头像元素 `border:0/box-shadow:none/background-color:transparent/border-radius:0`，均 `!important`）；`html body...#seats .seat-avatar` 提高特异性压过 `seat-frame-square.css` 的 `!important` 半径；空座位虚线占位保留。历史框规则不删，便于回滚。`dist/site-chrome.css` 补壳页同名覆盖，但刻意不动 `background-image`（`site-account.js` 用 inline 设置上传头像）。
+- `dist/live-account-ui.js`：账号「飞行员外观」不再提供金翼/云端/星夜三个头像框按钮与「可预览全部头像框」文案，保留 style 面板并改为停用说明；已购数据不动。
+- 缓存 `&f=20261116-noframe1` 同步 4 个 rank-badges 宿主、8 个壳页、`app.js` 与其 `live-account-ui.js` import；重跑 `scripts/build-native-games.mjs`。新增 `tests/avatar-no-frame.test.mjs` 7 条，`npm test` **992/992**。
+- 真机 CDP：`/index.html`、`/`、`/table/index.html?game=pool` 三处实测头像 `border-width:0`、`box-shadow:none`、`background-color:rgba(0,0,0,0)`、`border-radius:0`，图片 `background-image` 与尺寸（45×45 / 30×30）不变；探针 `::after.content=none`、`.avatar-frame` 隐藏、play 态半径 `0px`、空座位虚线仍在。
+- 注意：改后的 peach 圆角方脸是 16 张头像 SVG 图片自身绘制的内容（`rect x=16 y=16 w=224 h=224 rx=27 fill=#F3D2AD`），不是 CSS 框；若要连这个形状也换，需要改图片资源。纯静态改动，未部署生产。
+
+
+## 2026-11-16 18:00 手机结算计数动画提速
+- 反馈：手机上「本局结束」弹窗里 Joy Coins 余额与「480 / 5,000」加得很慢，电脑正常。
+- 根因：`dist/table/result-points.js` 用虚拟时钟每帧只加 1 个整数；+240 奖励的两个阶段共需 480 帧，帧数决定时长。复现实测 60fps 8.6 秒、30fps 16.3 秒、20fps 24.5 秒、15fps 32.6 秒。
+- 修复：改为按真实时间计时的固定预算（每阶段 400–700ms，+240 为 540ms）＋ ease-out 插值；低帧率跳过中间整数而不再拉长动画，小奖励仍逐步递增，数字滚动与金币音效保留，`done` 终值不变。
+- 验收：`npm test` 994/994；确定性 harness 在 60/30/20/15Hz 均为 ~1.5 秒；真实 Chrome 正常 1451ms、CPU 6 倍节流 1530ms，均有 30+ 个可见中间值。缓存 `&c=20261116-fastcount1`。纯静态改动，未部署生产。
+
+
+## 2026-11-16 18:10 排行榜三周期预取
+- 反馈：月/周/日 三个胜率榜标签，进入时一次性全部加载，不要每经过一次就请求一次。
+- 根因：`dist/table/table.js` 的 `selectPeriod()` 在鼠标 `pointerenter` 与 click 时都调用 `refreshLeaderboard()`，而该函数每次都会请求 `/api/table/leaderboards/<game>?period=当前周期`；划过三个标签即三次请求。
+- 修复：新增 `PERIODS` / `boardCache` / `loadAllLeaderboards()`，进入时用 `Promise.all` 并行取三个周期并缓存；`refreshLeaderboard()` 改为纯缓存渲染；联机结算后整批刷新一次；`load` 兜底防止首帧 demo 覆盖真实数据。标签切换零请求，首帧与十行布局不变。
+- 验收：`npm test` 999/999（新增 `tests/leaderboard-prefetch.test.mjs` 5 条）；真机 Chrome 进入 3 请求、连续 6 次切换 0 新请求、各周期均显示各自缓存数据、300ms 起真实数据可见、无页面异常。缓存 `&b=20261116-prefetch1`。纯静态改动，未部署生产。

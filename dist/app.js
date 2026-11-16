@@ -16,7 +16,7 @@ import {ReactionPreview} from './reaction-preview.js';
 import {OnlineSession} from './online-session.js?v=20261111-csrffailfast1';
 import {bindLiveRooms} from './live-room-ui.js?v=20261110-invite4';
 import {bindQuickMatch} from './quick-match.js?v=20261110-home4';
-import {bindLiveAccount} from './live-account-ui.js?v=20261110-glove2';
+import {bindLiveAccount} from './live-account-ui.js?v=20261110-glove2&f=20261116-noframe1';
 import {track} from './analytics.js';
 /* ONLINE CUSTODY — same state machine as the 10 table games. See
    docs/ONLINE-GAME-MANAGEMENT.md: 30s grace / idle turn -> easy bot with NO

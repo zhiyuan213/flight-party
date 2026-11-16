@@ -129,3 +129,57 @@ body.table-home-theme #leaderboard .seat-avatar,
   border-radius:22%;
   background-color:#F3D2AD;
 }
+
+/* ---------------------------------------------------------------------------
+   NO portrait frames at all (2026-11-16 17:30).
+   The user asked to remove EVERY existing avatar frame: the gold / cloud /
+   night member crests, the injected .avatar-frame artwork, the white 2px
+   ring, podium gold/silver/bronze outlines, the 22% soft square AND the
+   peach #F3D2AD backing. Portraits now show only the artwork itself on a
+   transparent background, at exactly the same sizes as before.
+   The historical frame rules above stay in this file so the look can be
+   restored later; this block is the shipped look on every host that loads
+   rank-badges.css (flight home, native flight, native table, table home).
+   !important is needed because visual-v2/v3/v5/v7, table.css, pool-shell,
+   snooker-shell, room-dialog and flight-home-theme each declare their own
+   borders / radii, and seat-frame-square.css uses an !important radius.
+   --------------------------------------------------------------------------- */
+[data-frame="gold"]::after,
+[data-frame="cloud"]::after,
+[data-frame="night"]::after{
+  content:none!important;background-image:none!important;
+}
+.avatar-frame{display:none!important}
+.leaderboard-avatar,
+body.table-home-theme #leaderboard .seat-avatar,
+#players .player-avatar,
+#seat-grid .seat-avatar,
+.seat-avatar,
+.player-avatar,
+.account-button-avatar,
+.account-dialog-avatar,
+.room-seat-avatar,
+.appearance-preview,
+.result-avatar,
+.victory-portrait,
+.header-account-avatar,
+.system-avatar-image,
+.reaction-avatar,
+.pool-matchup .seat-avatar,
+.snooker-matchup .seat-avatar{
+  border:0!important;
+  box-shadow:none!important;
+  background-color:transparent!important;
+  border-radius:0!important;
+}
+/* seat-frame-square.css loads AFTER this sheet and uses an !important
+   play-state radius; raise specificity with html to win that one too. */
+html body.table-home-theme[data-screen="play"] #seats .seat-avatar{
+  border-radius:0!important;
+}
+/* The "waiting for player" placeholder is a seat marker, not a portrait. */
+.room-seat-avatar.empty-seat-avatar{
+  border:1px dashed #b3d2eb!important;
+  background-color:#e4f1fc!important;
+  border-radius:50%!important;
+}

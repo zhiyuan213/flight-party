@@ -15,7 +15,7 @@ export function composeNativeGame(source,kind){
  });
  html=html.replace('<html ',`<html data-native-game="${kind}" `)
   .replace('<head>','<head>'+bootstrap)
-  .replace('</head>','<link rel="stylesheet" href="/portal/native-game.css?v=20261115-restore1"><link rel="stylesheet" href="/site-chrome.css?v=20261112-gamelanes1&d=20261115-topbar1&r=20261115-squareall1&p=20261116-nospace1"><link rel="stylesheet" href="/site-language.css?v=20261114-noarrow1"><link rel="stylesheet" href="/site-fullscreen.css?v=20261115-joincoin1&d=20261115-fspill1"><script defer src="/portal-language-ui.js?v=20261114-noarrow1&audio=20261115-levels1"></script><script defer src="/site-pointer-fx.js?v=20261110-glove2"></script></head>')
+  .replace('</head>','<link rel="stylesheet" href="/portal/native-game.css?v=20261115-restore1"><link rel="stylesheet" href="/site-chrome.css?v=20261112-gamelanes1&d=20261115-topbar1&r=20261115-squareall1&p=20261116-nospace1&f=20261116-noframe1"><link rel="stylesheet" href="/site-language.css?v=20261114-noarrow1"><link rel="stylesheet" href="/site-fullscreen.css?v=20261115-joincoin1&d=20261115-fspill1"><script defer src="/portal-language-ui.js?v=20261114-noarrow1&audio=20261115-levels1"></script><script defer src="/site-pointer-fx.js?v=20261110-glove2"></script></head>')
   .replace(/<body([^>]*)>/,`<body$1>${shell}<div id="native-game-stage">`)
   .replace(/<header>/,'<header class="native-game-header" aria-hidden="true" inert>')
   .replace('</body>','</div><script type="module" src="/portal/native-game.js?v=20261115-restore1"></script></body>');

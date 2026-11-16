@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, resolve} from 'node:path';
 import {
-  RESULT_POINTS_VERSION, formatPoints, pointsStepMs, pointsValueAt,
+  RESULT_POINTS_VERSION, formatPoints, pointsDurationMs, pointsValueAt,
   awardFromSnapshot, createResultPointsTicker
 } from '../dist/table/result-points.js';
 
@@ -43,10 +43,10 @@ function harness({reduced = false, locale = 'zh'} = {}) {
   const api = {
     ticker, doc, env, observers,
     fire(detail) {(listeners['joyflock:game-points'] || []).forEach(fn => fn({detail}));},
-    tick(ms) {
-      const steps = Math.ceil(ms / 16);
+    tick(ms, frameMs = 16) {
+      const steps = Math.ceil(ms / frameMs);
       for (let i = 0; i < steps; i++) {
-        now += 16;
+        now += frameMs;
         for (const [id, item] of [...timers]) if (item.at <= now) {timers.delete(id); item.fn();}
         const due = [...frames]; frames.clear();
         for (const [, fn] of due) fn(now);
@@ -73,21 +73,21 @@ test('the award comes only from the recorder snapshot, never from a plain render
   assert.equal(formatPoints(0), '0');
 });
 
-test('the counter visits every integer from the old total to the rewarded total', () => {
-  assert.equal(pointsStepMs(200), 16);
-  assert.equal(pointsStepMs(100), 18);
-  assert.equal(pointsStepMs(50), 28);
+test('the count-up runs on a fixed wall clock at any frame rate', () => {
+  assert.equal(pointsDurationMs(0), 0);
+  assert.equal(pointsDurationMs(50), 400);
+  assert.equal(pointsDurationMs(240), 540);
+  assert.equal(pointsDurationMs(2000), 700, 'the budget is capped');
   assert.equal(pointsValueAt(200, 400, 0), 200);
-  assert.equal(pointsValueAt(200, 400, 16), 201);
-  assert.equal(pointsValueAt(200, 400, 32), 202);
-  assert.equal(pointsValueAt(200, 400, 3200), 400);
+  assert.ok(pointsValueAt(200, 400, 250) > 200 && pointsValueAt(200, 400, 250) < 400);
+  assert.equal(pointsValueAt(200, 400, 500), 400);
   assert.equal(pointsValueAt(200, 400, 99999), 400);
+  assert.equal(pointsValueAt(200, 200, 500), 200);
 
   const h = harness();
   h.fire({points: 400, last: {points: 200}, signedIn: true});
   assert.equal(h.ticker.panel.hidden, true, 'an award alone never reveals the panel');
   assert.equal(h.ticker.seq, 1);
-
   h.ticker.reveal();
   assert.equal(h.ticker.panel.hidden, false);
   assert.equal(h.ticker.panel.dataset.phase, 'reward');
@@ -101,19 +101,53 @@ test('the counter visits every integer from the old total to the rewarded total'
   for (let i = 0; i < 20; i++) {h.tick(16); early.push(h.ticker.totalValue.textContent);}
   assert.equal(h.ticker.panel.dataset.phase, 'reward', 'the reward badge leads the sequence');
   assert.ok(early.every(value => value === '200'), 'the total waits while the reward badge shows');
-  const values = [];
-  for (let i = 0; i < 240; i++) {h.tick(16); values.push(h.ticker.totalValue.textContent);}
-  assert.equal(values[0], '200');
-  assert.ok(values.includes('201'));
-  assert.ok(values.includes('202'));
-  assert.ok(values.includes('202'));
-  assert.ok(values.includes('399'));
-  assert.equal(values.at(-1), '400');
+  const climbed = [];
+  for (let i = 0; i < 60; i++) {h.tick(16); climbed.push(h.ticker.totalValue.textContent);}
+  assert.ok(new Set(climbed).size > 8, 'the number still climbs in visible steps');
+  assert.equal(climbed.at(-1), '400');
   assert.equal(h.ticker.panel.dataset.phase, 'done');
-  for (let n = 200; n <= 400; n++) assert.ok(values.includes(String(n)), `missing ${n}`);
   assert.equal(h.ticker.totalValue.textContent, '400');
 });
 
+test('a +240 mobile award finishes in ~1.5s at 60 / 30 / 20 / 15 Hz', () => {
+  const run = frameMs => {
+    const h = harness();
+    h.fire({points: 100720,
+      last: {points: 240, base: 200, bonus: 40, bonusPct: 20},
+      daily: {date: '2026-11-16', earned: 480, cap: 5000}, signedIn: true});
+    h.ticker.reveal();
+    const values = [];
+    let wall = 0;
+    while (h.ticker.panel.dataset.phase !== 'done' && wall < 6000) {
+      h.tick(frameMs, frameMs);
+      wall += frameMs;
+      values.push(h.ticker.totalValue.textContent);
+    }
+    return {wall, phase: h.ticker.panel.dataset.phase,
+      total: h.ticker.totalValue.textContent,
+      daily: h.ticker.dailyValue.textContent,
+      distinct: new Set(values).size};
+  };
+  const results = [17, 33, 50, 67].map(run);
+  for (const r of results) {
+    assert.equal(r.phase, 'done');
+    assert.equal(r.total, '100,720');
+    assert.equal(r.daily, '480 / 5,000');
+    assert.ok(r.distinct > 5, 'the balance still counts up, it does not jump');
+    assert.ok(r.wall < 2000, 'no 8-30 second wait on a throttled phone');
+  }
+  assert.ok(Math.abs(results[0].wall - results[1].wall) < 200, '60Hz and 30Hz finish together');
+  assert.ok(Math.abs(results[0].wall - results[2].wall) < 250, '20Hz too');
+  assert.ok(Math.abs(results[0].wall - results[3].wall) < 250, '15Hz too');
+});
+
+test('the ticker no longer advances a per-frame virtual clock', () => {
+  const source = read('dist/table/result-points.js');
+  assert.doesNotMatch(source, /dailyElapsed|dailyStepSize|pointsStepMs/);
+  assert.match(source, /const elapsed = now - stageStart;/);
+  assert.match(source, /stageDuration = pointsDurationMs\(award\.after - award\.before\)/);
+  assert.match(source, /WALL_CAP = 20000/, 'the runaway guard is kept');
+});
 test('closing, reopening and a second result never replay or double count', () => {
   const h = harness();
   h.fire({points: 400, last: {points: 200}, signedIn: true});

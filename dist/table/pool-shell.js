@@ -1,7 +1,7 @@
 import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
 import {poolTargets,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261110-glove2';
 import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2&audio=20261115-levels1';
-import {createResultPointsTicker} from './result-points.js?v=20261115-joincoin1';
+import {createResultPointsTicker} from './result-points.js?v=20261115-joincoin1&c=20261116-fastcount1';
 // Pool-only presentation. Existing account, turn and reaction nodes keep their handlers.
 /* One ticker per document: it listens for the scorer's award event from module
    evaluation time, so a result that settles before createResult() still has its
