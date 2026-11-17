@@ -3356,3 +3356,9 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - `deploy/switch-to-live.sh`：4 类凭据校验（沙盒 key、沙盒商品复用、secret 复用、多余键）、`--dry-run`、正式 API `GET /v1/products/{id}` 实查 `mode=live`/USD 900/5900/recurring、`--confirm-merchant-approved` 人工确认、备份与回滚标签、只重建 backend。本地隔离测试 4 类拒绝分支通过，本地模拟 Creem API 验证 live/test 商品判定通过。
 - 验收：`npm test` 1033/1033；本地 Chrome 沙盒中文/正式英文/已取消三态 7/7；生产 Chrome 沙盒中文态面板文案与取消按钮正确；双域名 20/20 哈希；`nginx -t` 通过；后端未重启、Flyway V25、`CREEM_LIVE=false` 复核一致。脚本已上传生产 `deploy/` 目录但未执行。
 - 未完成：live 凭据与商户批准；完整支付续订时间推进仍未验证。GitHub 推送当时被代理 502 阻断，本地提交待补推。
+
+## 2026-11-17 18:05 飞行棋详情页左边缘白线（生产 d609b73，纯静态）
+- 截图为窄屏深色页面，左侧竖排游戏图标列、最左一条白色细线。CDP 按视口实测：`?game=flight` @768/980 时 `.native-rail.game-rail` 为 `position:fixed;left:0;width:132px;flex-direction:column`，`border-left:2px solid rgb(255,255,255)`；@387 时为 `border-top:2px solid #fff`。
+- 来源：`visual-v2.css:3` 与 `visual-v3.css:7` 的 `aside{border-left:2px solid #fff}`（旧浅色主题装饰），窄屏 media 改成 `border-top`。深色 `native-game.css` 的 `.native-rail` 只覆盖 `background`，`portal.css` 的 `.game-rail` 只写了 `border-right:0`，都没重置左边框。
+- 修复：`.native-rail{border:0;box-shadow:none}` + `html[data-native-game] aside{border-left:0;border-top:0}` + WebKit 滚动条隐藏；`native-game.css` 缓存键升 `&nl=20261117-noline1`，`build-native-games.mjs` 与两个页面同步。
+- 验收：`npm test` 1036/1036（新增 3 条守卫）；本地/生产 CDP 768、387px 两种视口边框均归零，768px 截图无白线；`?game=pool` rail 同样归零；双域名 6/6 哈希；nginx 校验通过；支付模式与后端容器未动。备份 `20261117T100238Z`。

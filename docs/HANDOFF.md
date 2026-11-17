@@ -1375,3 +1375,5 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 约定：改 `site-points.js` 或 `site-shop.js` 必须同步升所有 shell 的 `&z=`；两个 `native-*.html` 由 `scripts/build-native-games.mjs` 生成，改生成器后必须重跑并一起提交。
 - 2026-11-17 16:45 `ed632b9`（纯静态）：为切正式收款做准备，**生产仍为沙盒**（`CREEM_LIVE=false`）。共享账号面板补「取消自动续费」按钮、沙盒文案改为不声称真实续订；新增 `deploy/switch-to-live.sh` 强校验切换脚本（已上传生产、未执行）；`&pre=20261117-prelive1` 升键。缺 live API key / webhook secret / live 商品 ID 与商户批准，本次不切换，凭据到位后按 `docs/PRODUCTION-DEPLOYMENT.md` 顶部步骤执行。
 - 约定：改 `site-account.js` 或 `site-chrome.css` 必须同步升所有 HTML 与 `scripts/build-native-games.mjs` 的 `&pre=`（生产对 `?v=` 缓存 24 小时）；正式支付开关只能通过 `switch-to-live.sh` 修改，禁止手改 `.env` 的 `CREEM_LIVE`。
+- 2026-11-17 18:05 `d609b73`（纯静态）：修掉飞行棋/台球详情页左边缘白线。根因是 `visual-v2/v3.css` 的 `aside{border-left:2px solid #fff}` 被深色 `.native-rail` 继承；已显式 `border:0` 并升 `&nl=20261117-noline1`。本地与生产 CDP 768/387px 验证边框归零，npm test 1036/1036，双域名 6/6。
+- 约定：以后改 `dist/portal/native-game.css` 必须同步升 `native-flight.html` / `native-table.html` / `scripts/build-native-games.mjs` 的缓存键；深色主题新增 `<aside>` 容器时先确认旧版 `visual-v*.css` 的白色边框已被覆盖。
