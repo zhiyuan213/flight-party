@@ -14,7 +14,15 @@ body>.native-topbar.topbar .top-actions .chrome-account:hover{background:#3a4b91
 body>.native-topbar .brand:hover{transform:translateY(-1px);text-shadow:0 0 18px #a8b8ff80}
 body>.native-topbar .brand:hover .brand-mark{transform:rotate(90deg) scale(1.15);color:#fff;text-shadow:0 0 18px #b0c2ff}
 html[data-locale="en"] .native-zh,html[data-locale="zh"] .native-en{display:none!important}
-.native-rail{position:fixed;z-index:90;left:0;top:var(--native-header);bottom:0;width:132px;padding:14px 9px;overflow-x:hidden;overflow-y:auto;background:transparent;scrollbar-width:none;pointer-events:none}
+/* Legacy light-theme sheets (visual-v2/v3) style every <aside> with
+   border-left:2px solid #fff and, on narrow screens, border-top:2px solid
+   #fff. On the dark native shell that reads as a stray white line at x=0.
+   The class selector outranks those element selectors, so one explicit
+   reset here removes the line at every viewport width. */
+html[data-native-game] aside{border-left:0;border-top:0}
+.native-rail{position:fixed;z-index:90;left:0;top:var(--native-header);bottom:0;width:132px;padding:14px 9px;overflow-x:hidden;overflow-y:auto;background:transparent;border:0;box-shadow:none;scrollbar-width:none;pointer-events:none}
+/* Hide the WebKit scrollbar too: scrollbar-width alone does not cover older Chrome. */
+.native-rail::-webkit-scrollbar{display:none;width:0;height:0}
 .native-rail #rail-items{position:relative;display:grid;gap:12px;width:54px;padding-top:10px;padding-bottom:66px;pointer-events:auto}
 .native-rail-game{position:relative;display:block;width:54px;height:54px;border-radius:13px;text-decoration:none;transform:translateY(var(--dock-shift,0px)) scale(var(--dock-scale,1));transform-origin:left center;transition:transform 120ms ease-out;z-index:var(--dock-layer,1);pointer-events:auto}
 .native-rail-game img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
