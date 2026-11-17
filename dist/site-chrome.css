@@ -284,6 +284,9 @@ body.playing>.topbar #portal-controls{display:none!important}
 .chrome-vip a{color:#bdcaff}
 .chrome-vip-membership{display:flex;flex-direction:column;gap:5px;margin-top:10px;padding:12px;border:1px solid #62719a;border-radius:8px;background:#ffffff07;font-size:12px;color:#b7c4df}
 .chrome-vip-membership strong{color:#f3d891;font-size:15px}
+.chrome-vip-cancel{align-self:flex-start;margin-top:6px;padding:6px 12px;border:1px solid #6676b7;border-radius:6px;background:#ffffff0a;color:#cdd9f5;font:inherit;font-size:11px;cursor:pointer}
+.chrome-vip-cancel:hover:enabled{background:#34466e;border-color:#e9cd85}
+.chrome-vip-cancel:disabled{opacity:.55;cursor:default}
 @media(max-width:760px){
   .account-extra{display:none}
   /* Narrow header keeps one entry; registration is reachable from the

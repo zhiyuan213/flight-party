@@ -126,7 +126,7 @@
      '<p class="chrome-auth-who"></p><section class="chrome-vip"><h3>'+L('VIP membership','VIP 会员')+'</h3><div class="chrome-vip-membership" role="status"></div><p>'+L('Cosmetic membership. All games stay free and unlimited.','会员装扮权益，所有游戏仍可免费无限畅玩。')+'</p><div class="chrome-vip-plans">'+
      /* The billing period belongs to the price, not to its own flex row:
         keep "$9 USD/月" on one line, with no space around the slash. */     ['MONTHLY','ANNUAL'].map(function(plan){return '<button type="button" data-vip-plan="'+plan+'" disabled><b>'+ (plan==='MONTHLY'?L('Monthly VIP','月度 VIP'):L('Annual VIP','年度 VIP'))+'</b><strong>'+(plan==='MONTHLY'?'$9':'$59')+' <small>USD</small><span class="vip-period">'+(plan==='MONTHLY'?L('/month','/月'):L('/year','/年'))+'</span></strong><em>'+L('Subscribe','开通')+'</em></button>';}).join('')+
-     '</div><p class="chrome-vip-status" role="status">'+L('Checking availability…','正在确认开通状态…')+'</p><small>'+L('Renews automatically until canceled. Taxes shown at checkout. ','自动续订，可取消续订；税费以结账页为准。')+'<a href="/membership.html">'+L('Plan terms','套餐条款')+'</a></small></section><button type="button" class="chrome-auth-signout">'+
+     '</div><p class="chrome-vip-status" role="status">'+L('Checking availability…','正在确认开通状态…')+'</p><small>'+L('Subscriptions renew until canceled; cancel any time in Account. Taxes shown at checkout. ','订阅将自动续订，可随时在账号中取消；税费以结账页为准。')+'<a href="/membership.html">'+L('Plan terms','套餐条款')+'</a></small></section><button type="button" class="chrome-auth-signout">'+
      L('Sign out','退出登录')+'</button></div>')+
    '<form class="chrome-auth-form" novalidate>'+
     (reg?field('displayName',L('Nickname','昵称'),'text','maxlength="64" autocomplete="nickname"'):'')+
@@ -151,6 +151,19 @@
   var so=d.querySelector('.chrome-auth-signout');
   if(so)so.addEventListener('click',signout);
   d.querySelectorAll('[data-vip-plan]').forEach(function(button){button.addEventListener('click',function(){checkout(d,button.dataset.vipPlan);});});
+  d.addEventListener('click',function(e){
+   var cancel=e.target.closest&&e.target.closest('[data-cancel-subscription]');
+   if(!cancel||billingBusy)return;
+   e.stopImmediatePropagation();
+   billingBusy=true;renderBilling(d);
+   /* session() also primes the CSRF token when the panel was opened cold. */
+   session()
+    .then(function(){return api('/api/billing/subscriptions/'+encodeURIComponent(cancel.dataset.cancelSubscription)+'/cancel',{});})
+    .then(function(){return session();})
+    .then(function(me){billingState=me.recording;billingBusy=false;renderBilling(d);})
+    .catch(function(){billingBusy=false;renderBilling(d);var status=d.querySelector('.chrome-vip-status');
+     if(status)status.textContent=t('Cancellation was not confirmed. Please retry or contact support.','尚未确认取消成功，请重试或联系客服。');});
+  });
   return d;
  }
 
@@ -163,7 +176,17 @@
    var details=document.createElement('span');
    var until=new Date(active.validUntil).toLocaleString(zh()?'zh-CN':'en-US',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',timeZoneName:'short'});
    details.textContent=(active.plan==='ANNUAL'?t('Annual VIP','年度 VIP'):active.plan==='MONTHLY'?t('Monthly VIP','月度 VIP'):t('VIP','VIP'))+' · '+t('Valid until: ','有效期至：')+until;box.append(details);
-   var renewal=document.createElement('span');renewal.textContent=active.cancelScheduled?t('Auto-renewal canceled. Access remains until expiry.','已取消自动续订，到期前仍有效。'):t('Auto-renewal is on. Do not purchase another subscription.','自动续订已开启，无需重复开通。');box.append(renewal);
+   var renewal=document.createElement('span');
+   renewal.textContent=active.cancelScheduled?t('Auto-renewal canceled. Access remains until expiry.','已取消自动续订，到期前仍有效。')
+    :r.testMode?t('Sandbox test subscription. No real charge or automatic renewal.','沙盒测试订阅，不产生真实扣费，也不会自动续费。')
+    :t('Auto-renewal is on. Do not purchase another subscription.','自动续订已开启，无需重复开通。');
+   box.append(renewal);
+   var cancel=document.createElement('button');
+   cancel.type='button';cancel.className='chrome-vip-cancel';
+   cancel.dataset.cancelSubscription=active.id;
+   cancel.disabled=billingBusy||!!active.cancelScheduled;
+   cancel.textContent=active.cancelScheduled?t('Renewal canceled','已取消自动续费'):t('Cancel auto-renewal','取消自动续费');
+   box.append(cancel);
   }else if(r&&r.complimentaryUntil&&r.member){var grant=document.createElement('span');grant.textContent=t('Valid until: ','有效期至：')+new Date(r.complimentaryUntil).toLocaleString();box.append(grant);}
   d.querySelectorAll('[data-vip-plan]').forEach(function(b){b.disabled=billingBusy||!r||!r.paymentConfigured||!!active;b.querySelector('em').textContent=active?t('Already subscribed','已开通，无需重复购买'):r&&r.testMode?t('Test checkout','测试开通'):t('Subscribe','开通');});
   var status=d.querySelector('.chrome-vip-status');
