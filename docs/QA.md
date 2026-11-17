@@ -3348,3 +3348,11 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 测试：`npm test` 1029/1029；新增守卫覆盖「访客 0 / 登录恢复 / 退出归零 / 钱包不删除 / 三入口共享组件 / 缓存键」；`site-points.test.mjs`、`site-cursor-usable.test.mjs` 的版本断言演进为只比较主版本键并校验新 `&z=` 后缀。
 - 验收：双域名 28/28 哈希；本地 Chrome 四入口中英双态；生产 Chrome 三入口统一 `.chrome-auth` 且余额 0，零控制台错误。生产首次加载受跨境 defer 排队影响约 50 秒才出现 pill，资源缓存后恢复。
 - 备份与回滚：`/opt/joyflock/releases/static-a425237`（`static.before.tgz`、`deploy.before`、`candidate.sha256`）、数据备份 `20261116T163022Z`；后端与数据库未改动。
+
+## 2026-11-17 16:45 正式收款切换前置（生产 ed632b9，纯静态）
+- 用户要求「把生产支付修改成正式环境支付」。核查生产 `deploy/.env`：`CREEM_LIVE=false`、`CREEM_CHECKOUT_ENABLED=true`、`CREEM_TEST_ACCOUNTS=*`，API key 含 `test`（33 字符，`creem_test_` 前缀），商品为沙盒 `prod_ZgfEOcdg…` / `prod_vdNtdXt…`；5 个 release 备份里的 .env 均为同一份 419 字节沙盒配置，服务器无 live 凭据副本。
+- **结论：本次未切换**，缺少 live API key、live webhook secret、两个 live product ID，且 `docs/QA.md` 历史记录「未配置正式 API 密钥或启用公共收款」「正式收款、身份审核/商户批准及正式商品放行尚未完成」。只改 `CREEM_LIVE=true` 会导致 live API 401、live 商品不存在、正式 webhook 验签失败，存在真实付款不落权益的风险。
+- 前置修复：共享账号面板新增「取消自动续费」按钮（调用既有 cancel 接口、成功后重取 /api/me 重绘）；沙盒态文案改为「沙盒测试订阅，不产生真实扣费，也不会自动续费」；脚注改为「订阅将自动续订，可随时在账号中取消」；`.chrome-vip-cancel` 样式；10 个 HTML 与生成器缓存键统一升 `&pre=20261117-prelive1`。
+- `deploy/switch-to-live.sh`：4 类凭据校验（沙盒 key、沙盒商品复用、secret 复用、多余键）、`--dry-run`、正式 API `GET /v1/products/{id}` 实查 `mode=live`/USD 900/5900/recurring、`--confirm-merchant-approved` 人工确认、备份与回滚标签、只重建 backend。本地隔离测试 4 类拒绝分支通过，本地模拟 Creem API 验证 live/test 商品判定通过。
+- 验收：`npm test` 1033/1033；本地 Chrome 沙盒中文/正式英文/已取消三态 7/7；生产 Chrome 沙盒中文态面板文案与取消按钮正确；双域名 20/20 哈希；`nginx -t` 通过；后端未重启、Flyway V25、`CREEM_LIVE=false` 复核一致。脚本已上传生产 `deploy/` 目录但未执行。
+- 未完成：live 凭据与商户批准；完整支付续订时间推进仍未验证。GitHub 推送当时被代理 502 阻断，本地提交待补推。
