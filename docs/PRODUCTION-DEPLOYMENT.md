@@ -1,3 +1,7 @@
+2026-11-20 21:20 最新生产发布：`8109a62`，**纯静态**，30 个 dist 文件，把「欢乐九球」移到所有游戏列表最后一位，无后端变更。
+
+制品：总包 `release-8109a62.tar.gz`（462 KB）含 `static-8109a62.tar.gz`、`expected.sha256`（30 行，从 git archive 解压内容计算）、`filelist.txt`、`release-all.sh`。发布目录 `/opt/joyflock/releases/static-8109a62`，整包 `dist` 备份 `static.before.tgz`，回滚见 `rollback.private.txt`。`sha256sum -c` 30/30 OK，`nginx -t` 通过，未 reload，5 容器 Up、后端镜像未变、`/api/csrf` 200；双域名 HTTPS 16/16（资源哈希与页面末位顺序）。GitHub `HEAD` = `origin/main` = `8109a62`（文档提交另计）。
+
 2026-11-20 21:00 最新生产发布：`54c11fb`（九球专属封面）+ `40f9358`（首次手势音频解锁），**纯静态**，40 个 dist 文件，无后端变更。
 
 制品：总包 `release-40f9358.tar.gz`（1.5 MB）含 `static-40f9358.tar.gz`、`expected.sha256`（40 行，从 git archive 解压内容计算，规避 CRLF 误判）、`filelist.txt`、`release-all.sh`。发布目录 `/opt/joyflock/releases/static-40f9358`，整包 `dist` 备份为 `static.before.tgz`，回滚命令见 `rollback.private.txt`。执行 `sha256sum -c` 40/40 OK，`nginx -t` 通过，未 reload（文件路径不变、缓存键已升），5 容器 Up、后端镜像未变、`/api/csrf` 200。双域名 HTTPS 18/18 响应体哈希一致。GitHub `HEAD` = `origin/main` = `40f9358`。
