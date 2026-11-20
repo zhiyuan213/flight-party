@@ -24,11 +24,19 @@
   gate.gain.value=muted?0:1;gate.connect(c.destination);
   outputs.push({ctx:c,gate:gate});map[category]=input;return input;
  }
- window.__joyflockAudio={get muted(){return muted;},setMuted:setMuted,output:output};
+ function unlockOutputs(){
+  var pending=false;
+  outputs.forEach(function(o){try{if(o.ctx.state!=='running'){pending=true;var p=o.ctx.resume();if(p&&p.catch)p.catch(function(){});}}catch(e){}});
+  if(pending)window.dispatchEvent(new CustomEvent('joyflock:audio-unlock'));
+  return pending;
+ }
+ window.__joyflockAudio={get muted(){return muted;},setMuted:setMuted,output:output,unlock:unlockOutputs};
  function mount(){
-  var host=document.querySelector('body>.topbar .top-actions');if(host&&!host.querySelector('[data-site-mute]')){var b=document.createElement('button');b.type='button';b.className='site-mute';b.setAttribute('data-site-mute','');b.setAttribute('data-sfx','off');host.prepend(b);b.addEventListener('click',function(){setMuted(!muted);});}
+  var host=document.querySelector('body>.topbar .top-actions');if(host&&!host.querySelector('[data-site-mute]')){var b=document.createElement('button');b.type='button';b.className='site-mute';b.setAttribute('data-site-mute','');b.setAttribute('data-sfx','off');host.prepend(b);b.addEventListener('click',function(){unlockOutputs();setMuted(!muted);});}
   syncButtons();new MutationObserver(syncButtons).observe(document.documentElement,{attributes:true,attributeFilter:['data-locale','lang']});
  }
+ ['pointerdown','mousedown','touchend','keydown','click']
+  .forEach(function(type){window.addEventListener(type,unlockOutputs,{capture:true,passive:true});});
  window.addEventListener('storage',function(e){if(e.key===KEY&&(e.newValue==='true'||e.newValue==='false'))setMuted(e.newValue==='true');});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();

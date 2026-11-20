@@ -291,6 +291,7 @@
  }
  function onGesture(){
   ensure(true);
+  if(ctx&&ctx.state!=='running')try{var p=ctx.resume();if(p&&p.catch)p.catch(function(){});}catch(e){}
   broadcast();
   if(ctx&&ctx.state==='running'){markUnlocked();return;}
   // Chrome often resolves the pending resume() just *after* the gesture
