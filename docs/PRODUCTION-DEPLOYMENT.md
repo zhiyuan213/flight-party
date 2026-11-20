@@ -1,3 +1,9 @@
+2026-11-20 21:00 最新生产发布：`54c11fb`（九球专属封面）+ `40f9358`（首次手势音频解锁），**纯静态**，40 个 dist 文件，无后端变更。
+
+制品：总包 `release-40f9358.tar.gz`（1.5 MB）含 `static-40f9358.tar.gz`、`expected.sha256`（40 行，从 git archive 解压内容计算，规避 CRLF 误判）、`filelist.txt`、`release-all.sh`。发布目录 `/opt/joyflock/releases/static-40f9358`，整包 `dist` 备份为 `static.before.tgz`，回滚命令见 `rollback.private.txt`。执行 `sha256sum -c` 40/40 OK，`nginx -t` 通过，未 reload（文件路径不变、缓存键已升），5 容器 Up、后端镜像未变、`/api/csrf` 200。双域名 HTTPS 18/18 响应体哈希一致。GitHub `HEAD` = `origin/main` = `40f9358`。
+
+注意：生产 `/opt/joyflock/backups` 对 ubuntu 不可写，备份目录统一放在 `releases/<tag>/` 内；静态覆盖沿用「解压到 `candidate/` 再 `cp -a` 到 `dist/`」以保留文件权限。大体积 OG 图（829 KB）跨境下载需 120s 超时，30s 会截断导致哈希误判。
+
 2026-11-20 17:35 最新生产发布：`b4d77dd`，**静态 + 后端 JAR + nginx 配置**同窗口发布，新增第 10 款游戏「欢乐九球」。规则沿用台球全部渲染与托管链路，只分叉 9 颗菱形摆球、最小号首碰与 9 号即胜；前后端分别改 `dist/table/pool-rules.js` / `pool.js` 与 `PoolRules.java` / `GridRules.java` / `TableService.java`，八球路径逐字不变。
 
 制品：静态增量包 `static-nineball-b4d77dd.tar.gz` SHA256 `9efed42a2871a0c26848ff0fc852a5a04bbd8d8dbe25757731044ab597eb4ce0`（74 个 dist 文件，1.6 MB）；差量重建包 `delta-nineball.tar.gz` SHA256 `dd79dc16a689652ede5b07e9c54d8130577134293496cb79a2a3bd7b318b0bab`（31 KB，替换 `PoolRules.class` / `GridRules.class` / `TableService.class` 三个条目）。生产端用运行容器旧 JAR（SHA256 `99bd7408…5303`）重建完整 JAR 44,283,265 B、378 条目、条目摘要 `46b77e2b…c468`，构建运行镜像 `deploy-backend:nineball-b4d77dd`（541 MB），只重建 backend；web/edge/postgres/redis 未动。
