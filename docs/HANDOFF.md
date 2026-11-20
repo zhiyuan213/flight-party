@@ -1388,3 +1388,6 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 约定：调整游戏顺序必须同时改门户卡片、`portal.js`、原生页生成器 `games` 数组、`seo-games.js` 的 `GAMES`，并重跑 `build-game-seo.mjs` / `build-native-games.mjs` / `build-game-og.py`；`game-seo-meta.js` 内容会随顺序变化，其 URL 必须追加新的 `&order=` 键。站点默认 OG 拼贴固定取前 9 款，末位游戏不会出现在其中。
 - 2026-11-20 21:32 `3fb5cb7`（纯静态）：修复九球回球槽误把未摆放的 10–15 号球当落袋球展示。发布目录 `/opt/joyflock/releases/static-3fb5cb7`，备份 `static.before.tgz`，回滚见 `rollback.private.txt`；后端仍 `deploy-backend:nineball-b4d77dd`。生产 17/17、双域名 10/10、`npm test` 1058/1058。
 - 约定：九球复用 16 球状态数组，10–15 恒为 dead；任何「遍历 1..15 判断 dead 即视为落袋」的展示逻辑都必须按 `s.game` 限制到 1–9。改 `/table/` 下共享模块时，`pool-view.js` ↔ `pool.js` ↔ `table.js` 的引用链要一起升 `&fix=` 参数。
+- 2026-11-20 22:16 `3d42d41`（纯静态）：台球类装扮改用商城主题白名单，crystal/galaxy 款球杆、球组、球台不再被过滤；台球与九球显示同一款已装备皮肤。发布目录 `/opt/joyflock/releases/static-3d42d41`，备份 `static.before.tgz`，回滚见 `rollback.private.txt`；后端仍 `deploy-backend:nineball-b4d77dd`。生产 9/9、双域名 10/10、`npm test` 1061/1061。
+- 约定：`game-cosmetics.js` 里棋子/棋盘装扮与台球装扮是两套主题表，新增商城主题必须同时检查 `ALL_PIECE_THEMES`、`BILLIARD_SKIN_THEMES` 与 `cosmetics-rules.js` 的 `THEMES`；改 `/table/` 共享模块时 `game-cosmetics.js` → `four-drop/four-seat-piece/table.js` 的引用链要一起升 `&skin=` 参数。
+- 商城装扮是全局 `localStorage['joyflock.shop.v1'].equipped`，不按游戏区分；对手球杆仍刻意保持原木质（`billiard-cosmetics.js` 的 `cueSkin(false)`），只有玩家自己的球杆跟随装扮。

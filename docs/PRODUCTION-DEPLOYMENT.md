@@ -1,3 +1,7 @@
+2026-11-20 22:16 最新生产发布：`3d42d41`，**纯静态**，9 个 dist 文件，修复商城球杆/球组/球台装扮在台球类游戏未生效（crystal 与 galaxy 主题被棋子白名单过滤），无后端变更。
+
+制品：总包 `release-3d42d41.tar.gz`（51 KB）含 `static-3d42d41.tar.gz`、`expected.sha256`（9 行）、`filelist.txt`、`release-all.sh`。发布目录 `/opt/joyflock/releases/static-3d42d41`，整包 `dist` 备份 `static.before.tgz`，回滚见 `rollback.private.txt`。`sha256sum -c` 9/9 OK，`nginx -t` 通过，未 reload，5 容器 Up、后端镜像未变、`/api/csrf` 200；双域名 HTTPS 10/10。GitHub `HEAD` = `origin/main` = `3d42d41`（文档提交另计）。
+
 2026-11-20 21:32 最新生产发布：`3fb5cb7`，**纯静态**，17 个 dist 文件，修复九球右侧回球槽误显示 10–15 号球，无后端变更。
 
 制品：总包 `release-3fb5cb7.tar.gz`（80 KB）含 `static-3fb5cb7.tar.gz`、`expected.sha256`（17 行）、`filelist.txt`、`release-all.sh`。发布目录 `/opt/joyflock/releases/static-3fb5cb7`，整包 `dist` 备份 `static.before.tgz`，回滚见 `rollback.private.txt`。`sha256sum -c` 17/17 OK，`nginx -t` 通过，未 reload，5 容器 Up、后端镜像未变、`/api/csrf` 200；双域名 HTTPS 10/10。GitHub `HEAD` = `origin/main` = `3fb5cb7`（文档提交另计）。
