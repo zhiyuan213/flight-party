@@ -1414,3 +1414,14 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 结算弹窗有两张 `.pool-result-points` 卡片，顺序**积分在前、Joy Coins 在后**（`pool-shell.js` 的 `cardKids`）。`result-points.css` 的 `.pool-result-description:has(+ .pool-result-points:not([hidden]))` 依赖「紧跟 description 的是 `.pool-result-points`」，插卡顺序不能反；飞行棋结算页复用 `.pool-result-points` 皮肤，靠 `data-phase="done"` 让两行可见。
 - 缓存键：本次统一 `&score=20261120-score1`，追加在 17 处 URL 末尾；三个 touched-assets 守卫只比较 `v=` 值，所以 `presentation.js` 仍不追加参数。教训：批量追加缓存键的正则里 `\s`（两个反斜杠）会被正则当成字面 `s`，把 URL 截断在第一个 `s`；清理时又不能用 `replace('&&','&')` 作用于整个 JS 文件（会把逻辑与改成位与）。后续一律用 `[^"\'\s<>]*` 并只对 URL 片段做替换。
 - GitHub 代理已恢复：此前积压的 3 个提交已随 `36b8e68` 推送，`origin/main` 同步。
+
+## 2026-11-21 02:00 — 玩家席位改用账号昵称（`e83aa20`）
+
+- 需求：结算弹窗、房间玩家面板等位置的「你 / You」改成账号昵称（截图示例 `zhiyuanC`）。游客仍保留中性占位词。
+- 新增 `dist/account-name.js` 是唯一显示名解析入口：`normalizeDisplayName()` 过滤占位词，`cachedDisplayName()` 按 `localStorage['joyflock.accountName']` → `joyflock.displayName` 父域 cookie → `joyflock_account` 旧 cookie 读取，`trustedParentOrigin()` 严格限制父窗口来源。改显示名逻辑优先改这里，不要在各游戏里各写一套。
+- `site-account.js` 的 `cache()` 现在写 `Domain=joyflock.com` 的 `joyflock.displayName`（仅昵称、不是会话），`setLabel()/resetLabel()` 统一触发 `notifyGame()`；`notifyGame()` 必须用 `#game-frame.src` 的 origin 作为 `postMessage` targetOrigin，不能再用 `location.origin`。`portal.js` 在 iframe load / 登录退出 / storage 事件转发 `joyflock:account-name`。
+- 同文档原生页没有 iframe：走 `site-account.js` 的 `joyflock:account-changed` 自定义事件；`table.js` / `app.js` 都监听它并更新 `sharedAccountName`。跨域 iframe 路径则靠父域 cookie + `joyflock:account-name` 消息。两条路径都不能删。
+- `table.js` 的 `names()` 是桌游席位、结算卡、聊天、表情、系统播报的唯一名字来源；`options.selfName` 传给 `pool-shell.js` 用来生成中英双语文案。以后新增玩家名展示必须复用 `names()` / `selfName`，不要重新硬编码「你」。
+- 缓存键 `&name=20261121-accountname1` 已追加到 18 个 dist 文件、`scripts/build-native-games.mjs` 及两个生成器产物；改 `site-account.js`、`portal.js`、`table.js`、`pool-shell.js`、`app.js`、`live-room-ui.js` 任一个都要同步升所有父链 URL 并重跑 `node scripts/build-native-games.mjs`。
+- 验收：`npm test` 1081/1081，生产静态 18/18 哈希、双域名 62/62，CDP 在 `https://joyflock.com/?game=pool&locale=zh` / `?game=four` / `flight.joyflock.com` 独立页均确认 `zhiyuanC`、零占位词、零 JS 异常；发布目录 `/opt/joyflock/releases/static-e83aa20`，后端仍 `deploy-backend:score-36b8e68`、V25。详见 `QA.md` 末节。
+- 边界：CDP 用 stub `/api/me` 模拟登录，未做真实账号跨设备结算；`joyflock.displayName` 只是显示名 cookie，不能据此判断已登录。正式支付仍为沙盒。
