@@ -37,6 +37,15 @@ let syncFullscreen=()=>{
 // Mirror the header's first-frame account state so the floating in-game
 // control never flashes "Sign in" for a visitor who is already signed in.
 const cachedAccount=()=>{try{const n=localStorage.getItem('joyflock.accountName');return n&&n!=='0'?n:null;}catch{return null;}};
+/* The embedded game has its own origin and cannot read this document's
+   localStorage. Forward the server-confirmed nickname so its seats, chat and
+   result cards print the account name instead of 你 / You. Display-only: the
+   backend session still belongs to the game origin. */
+const sendAccountName=()=>{
+ const name=cachedAccount();
+ const frame=document.getElementById('game-frame');
+ try{frame?.contentWindow?.postMessage({type:'joyflock:account-name',name},gameOrigin);}catch{}
+};
 // The embedded game reports connection states ("Restoring…" / "Reconnect")
 // while its session lookup is offline. They are not account names: fall back
 // to the server-confirmed cached nickname instead of echoing them in the shell.
@@ -62,7 +71,7 @@ function updateLanguage(){
 }
 // The shared header announces a confirmed sign-in/out; keep the floating
 // control in step without waiting for the iframe to re-report its state.
-const syncAccountLabel=name=>{accountLabel=name||'登录';updateLanguage();};
+const syncAccountLabel=name=>{accountLabel=name||'登录';updateLanguage();sendAccountName();};
 window.addEventListener('joyflock:account-changed',event=>syncAccountLabel(event.detail?.name));
 window.addEventListener('storage',event=>{
  if(event.key!=='joyflock.accountName')return;
@@ -127,7 +136,7 @@ if(active){
   matchBox.querySelector('.pm-eta').textContent=String(data.eta??'-').slice(0,12);
   matchBox.hidden=false;
  });
- const hello=()=>{frame.contentWindow?.postMessage({type:'joyflock:hello',locale:language},gameOrigin);frame.contentWindow?.postMessage({type:'joyflock:match-host'},gameOrigin);};frame.addEventListener('load',hello);
+ const hello=()=>{frame.contentWindow?.postMessage({type:'joyflock:hello',locale:language},gameOrigin);frame.contentWindow?.postMessage({type:'joyflock:match-host'},gameOrigin);sendAccountName();};frame.addEventListener('load',hello);
  controls.addEventListener('click',event=>{const action=event.target.closest('[data-control]')?.dataset.control;if(action)frame.contentWindow?.postMessage({type:'joyflock:control',action},gameOrigin);});
  window.addEventListener('message',event=>{if(event.origin!==gameOrigin||event.source!==frame.contentWindow||event.data?.type!=='joyflock:controls')return;const data=event.data;if(typeof data.account==='string'){const raw=data.account.slice(0,80);const next=TRANSIENT_ACCOUNT.test(raw)?(cachedAccount()||'登录'):raw;if(accountLabel!==next){accountLabel=next;updateLanguage();}}if(typeof data.language==='string')controls.querySelector('[data-control=language]').textContent=data.language.slice(0,80);const sound=controls.querySelector('[data-control="sound"]');sound.textContent=data.sound?'♫':'♩';sound.setAttribute('aria-pressed',String(data.sound===true));});
  hello();

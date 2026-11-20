@@ -14,10 +14,13 @@ import {Die3D} from './die3d.js?v=20261110-glove2';
 import {SocialUI} from './social-ui.js?v=20261112-gamelanes1&d=20261115-selfrow1&p=20261116-poolshell1&score=20261120-score1';
 import {ReactionPreview} from './reaction-preview.js';
 import {OnlineSession} from './online-session.js?v=20261116-csrfretry1';
-import {bindLiveRooms} from './live-room-ui.js?v=20261116-roomleave1';
+import {bindLiveRooms} from './live-room-ui.js?v=20261116-roomleave1&name=20261121-accountname1';
 import {bindQuickMatch} from './quick-match.js?v=20261110-home4';
 import {bindLiveAccount} from './live-account-ui.js?v=20261110-glove2&f=20261116-noframe1';
 import {track} from './analytics.js';
+/* Signed-in nickname mirrored by the shared header. The portal and game can be
+   on different JoyFlock hosts, so /api/me inside this document is not enough. */
+import {cachedDisplayName,normalizeDisplayName,trustedParentOrigin} from './account-name.js?v=20261121-accountname1';
 /* ONLINE CUSTODY — same state machine as the 10 table games. See
    docs/ONLINE-GAME-MANAGEMENT.md: 30s grace / idle turn -> easy bot with NO
    countdown -> reconnect or pointer activity reclaims the seat, and a hosted
@@ -26,7 +29,8 @@ import {seatCustody,shouldRecordResult,serverClock,custodyStorageKey,reconnectTa
 import {custodyBadgeHTML,updateCustodyBadges,noScoreNotice,ensureCustodyStyles} from './online-custody-ui.js?v=20261115-joincoin1';
 const $=id=>document.getElementById(id),fx=new AudioFX();
 $('play').addEventListener('contextmenu',event=>event.preventDefault());
-let seats=[{type:'human',name:'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
+let sharedAccountName=cachedDisplayName();
+let seats=[{type:'human',name:sharedAccountName||'You'},{type:'human',name:'Alex'},{type:'bot',name:'Milo'},{type:'bot',name:'Coco'}],party=false,game,scene,screen='welcome',clock,seconds=15,epoch=0,jobs=new Set(),toastJob,voteQueue=[],votes={},voteIndex=0;
 let prefs;try{prefs=JSON.parse(localStorage.getItem('flight-party-prefs'))||{};}catch{prefs={};}prefs={sound:true,volume:45,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,lang:'en',music:false,...prefs,visual:'illustrated'};
 const inviteLanguage=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(inviteLanguage))prefs.lang=inviteLanguage;
 const embeddedLocale=document.documentElement.hasAttribute('data-native-game')?document.documentElement.getAttribute('data-locale'):new URL(location.href).searchParams.get('embed')==='joyflock'?new URL(location.href).searchParams.get('locale'):null;
@@ -65,6 +69,28 @@ let diceBusy=false,dieValue=1,dieHasResult=false;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const t=(en,zh)=>prefs.lang==='zh'?zh:en;
 const social=new SocialUI({getLanguage:()=>prefs.lang,onChange:()=>{if(game&&screen==='play')render();}});
+/* Prefer the live account identity, then the parent-mirrored nickname. Guests
+   keep the neutral "You" placeholder. */
+const ownDisplayName=()=>normalizeDisplayName(social.viewer?.name)||sharedAccountName||'';
+/* Import-stripped vm harnesses do not evaluate the ESM helpers. typeof keeps
+   the neutral guest label available when those snippets run in isolation. */
+function safeOwnName(){return typeof ownDisplayName==='function'?ownDisplayName()||'You':'You';}
+function adoptAccountName(value){
+ const previous=sharedAccountName,next=normalizeDisplayName(value);
+ if(next===previous)return;
+ sharedAccountName=next;
+ const name=next||'You';
+ if(seats[0]&&['You','你',previous].includes(seats[0].name))seats[0].name=name;
+ const player=game?.players?.[0];
+ if(player&&['You','你',previous].includes(player.name))player.name=name;
+ if(screen==='lobby')renderSeats();
+ if(game&&screen==='play')render();
+}
+window.addEventListener('joyflock:account-changed',event=>adoptAccountName(event.detail?.name));
+window.addEventListener('message',event=>{
+ if(event.source!==window.parent||!trustedParentOrigin(event.origin))return;
+ if(event.data?.type==='joyflock:account-name')adoptAccountName(event.data.name);
+});
 const reactions=new ReactionPreview({getLanguage:()=>prefs.lang,reduced:()=>prefs.reduced});
 const onlineSession=new OnlineSession();
 /* Quick match no longer opens a room dialog: the shared top-centre matching
@@ -117,7 +143,7 @@ for(const type of ['pointermove','pointerdown','keydown','wheel','touchstart'])
  document.addEventListener(type,()=>reportFlightActivity('pointer'),{passive:true});
 function authoritativeView(state,room){
  const view=Object.create(Game.prototype);
- view.players=state.players.map(p=>({color:p.seat,pieces:[...p.planes],rank:p.rank,planeStyle:room.seats.find(s=>s.index===p.seat)?.planeStyle||'classic',member:room.seats.find(s=>s.index===p.seat)?.member===true,annualMember:room.seats.find(s=>s.index===p.seat)?.member===true&&room.seats.find(s=>s.index===p.seat)?.annualMember===true,avatarUrl:room.seats.find(s=>s.index===p.seat)?.avatarUrl,avatarFrame:room.seats.find(s=>s.index===p.seat)?.avatarFrame||'none',flightTrail:room.seats.find(s=>s.index===p.seat)?.flightTrail||'none',victoryEffect:room.seats.find(s=>s.index===p.seat)?.victoryEffect||'none',name:room.seats.find(s=>s.index===p.seat)?.displayName||(p.seat===room.yourSeat?'You':`Pilot ${p.seat+1}`),type:p.seat===room.yourSeat?'human':room.seats.find(s=>s.index===p.seat)?.bot?'bot':'remote',bumps:0,rolls:0,custody:room.seats.find(s=>s.index===p.seat)?.custody||'active',graceUntil:room.seats.find(s=>s.index===p.seat)?.graceUntil||0}));
+ view.players=state.players.map(p=>({color:p.seat,pieces:[...p.planes],rank:p.rank,planeStyle:room.seats.find(s=>s.index===p.seat)?.planeStyle||'classic',member:room.seats.find(s=>s.index===p.seat)?.member===true,annualMember:room.seats.find(s=>s.index===p.seat)?.member===true&&room.seats.find(s=>s.index===p.seat)?.annualMember===true,avatarUrl:room.seats.find(s=>s.index===p.seat)?.avatarUrl,avatarFrame:room.seats.find(s=>s.index===p.seat)?.avatarFrame||'none',flightTrail:room.seats.find(s=>s.index===p.seat)?.flightTrail||'none',victoryEffect:room.seats.find(s=>s.index===p.seat)?.victoryEffect||'none',name:room.seats.find(s=>s.index===p.seat)?.displayName||(p.seat===room.yourSeat?safeOwnName():`Pilot ${p.seat+1}`),type:p.seat===room.yourSeat?'human':room.seats.find(s=>s.index===p.seat)?.bot?'bot':'remote',bumps:0,rolls:0,custody:room.seats.find(s=>s.index===p.seat)?.custody||'active',graceUntil:room.seats.find(s=>s.index===p.seat)?.graceUntil||0}));
  view.active=view.players;view.turn=state.turn;view.phase=state.phase.toLowerCase();view.die=state.die;view.ranking=[...state.ranking];view.round=1;view.party=false;view.event=null;return view;
 }
 async function applyOnlineSnapshot(message){
@@ -131,7 +157,7 @@ async function applyOnlineSnapshot(message){
  const restoring=!onlineMode||!game||onlineRoomId!==message.room.roomId||!['play','results'].includes(screen);
  if(!restoring&&onlineRoomId===message.room.roomId&&Number(message.gameVersion)<=onlineVersion){
   let changed=false;
-  for(const player of game.players){const name=message.room.seats.find(s=>s.index===player.color)?.displayName||(player.color===message.room.yourSeat?'You':`Pilot ${player.color+1}`);const appearance=message.room.seats.find(s=>s.index===player.color);
+  for(const player of game.players){const name=message.room.seats.find(s=>s.index===player.color)?.displayName||(player.color===message.room.yourSeat?safeOwnName():`Pilot ${player.color+1}`);const appearance=message.room.seats.find(s=>s.index===player.color);
    /* Custody can change without a game-version bump (30s grace -> hosted). */
    const custody=appearance?.custody||'active';if(player.custody!==custody){player.custody=custody;changed=true;}player.graceUntil=appearance?.graceUntil||0;
    if(player.avatarUrl!==appearance?.avatarUrl){player.avatarUrl=appearance?.avatarUrl;changed=true;}if(player.planeStyle!==(appearance?.planeStyle||'classic')){player.planeStyle=appearance?.planeStyle||'classic';changed=true;}player.flightTrail=appearance?.flightTrail||'none';player.victoryEffect=appearance?.victoryEffect||'none';if(player.annualMember!==(appearance?.member===true&&appearance?.annualMember===true)){player.annualMember=appearance?.member===true&&appearance?.annualMember===true;changed=true;}if(player.member!==!!appearance?.member||player.avatarFrame!==(appearance?.avatarFrame||'none')){player.member=!!appearance?.member;player.avatarFrame=appearance?.avatarFrame||'none';changed=true;}if(name!==player.name){player.name=name;changed=true;}}
@@ -206,7 +232,7 @@ function discardLocalGame(){
  $('rematch').disabled=false;$('rematch').textContent=t('Fly again ↗','再来一局 ↗');
  drawDie(1,false);
 }
-function playComputer(){discardLocalGame();seats=[{name:social.viewer.name||'You',type:'human'},{name:'Alex',type:'bot'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}];party=false;start();}
+function playComputer(){discardLocalGame();const own=typeof ownDisplayName==='function'?ownDisplayName():String(social.viewer?.name||'').trim();seats=[{name:own&&!['You','你'].includes(own)?own:'You',type:'human'},{name:'Alex',type:'bot'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}];party=false;start();}
 function leaveFlight(){
  if($('confirm-dialog').open)$('confirm-dialog').close();
  clearInterval(onlineTimer);
@@ -393,7 +419,7 @@ function castVote(event){votes[event]++;voteIndex++;nextVote();}document.querySe
 function finishLocal(){cancel();show('results');const localPlayer=game.active.find(p=>p.type==='human');const localWon=!localPlayer||localPlayer.rank===1;social.setResult(localPlayer?{rank:localPlayer.rank,name:localPlayer.name}:null);if(localWon)fx.win();else fx.lose();const winner=game.players[game.ranking[0]];renderVictory($('results'),playerAvatarProfile(winner),{reduced:prefs.reduced,label:t('Golden Wings Celebration','金翼庆典')});$('winner-name').textContent=t(`${winner.name} sticks the landing!`,`${winner.name} 完美降落！`);$('winner-name').dataset.member=String(winner.member===true);$('winner-name').dataset.annualMember=String(winner.member===true&&winner.annualMember===true);/* A hosted finish awards nothing, so the results board shows zero as well. */
 const scoreTable=hostedResult?game.active.map(()=>0):(globalThis.__joyflockGamePoints?.table?.(game.active.length)||[200,100,50,50]);const pointsBySeat={};game.ranking.forEach((seat,i)=>{pointsBySeat[seat]=scoreTable[Math.min(i,scoreTable.length-1)];});renderResultRankings($('rankings'),game.players.map(playerAvatarProfile),game.ranking,{key:onlineMode?onlineRoomId:'local-'+epoch,online:onlineMode,t,pointsBySeat});if(!prefs.reduced)for(let i=0;i<45;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background=winner.member&&winner.victoryEffect==='gold'?['#f6ca54','#4d88ff','#fff0b0'][i%3]:'#'+PALETTE[i%4].toString(16).padStart(6,'0');c.style.animationDelay=Math.random()*.7+'s';document.body.append(c);setTimeout(()=>c.remove(),4000);}}
 const pause=ms=>new Promise(r=>setTimeout(r,prefs.reduced?Math.min(ms,100):ms));
-async function demoFlight(){if(game.phase!=='roll'||game.current.type!=='human')return;cancel();const id=epoch,saved=game;const demo=new Game([{name:'You',type:'human'},{name:'Alex',type:'human'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}]);demo.players[0].pieces=[41,-1];demo.players[3].pieces=[6,-1];scene.setGame(demo);game=demo;game.phase='animating';render();updateClock(true);$('demo-status').classList.remove('hidden');await pause(650);if(epoch!==id)return;fx.unlock();await fx.ready;fx.roll();diceBusy=true;syncDieLabel();render();await die.rollTo(4);if(epoch!==id)return;diceBusy=false;demo.phase='roll';demo.roll(4);drawDie(4);const result=demo.move(0);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t('You bumped Coco!','你撞飞了 Coco！'));});if(epoch!==id)return;fx.land();await pause(1100);if(epoch!==id)return;game=saved;scene.setGame(game);$('demo-status').classList.add('hidden');beginTurn();toast(t('Back to your flight.','已恢复你的对局。'));}
+async function demoFlight(){if(game.phase!=='roll'||game.current.type!=='human')return;cancel();const id=epoch,saved=game;const demo=new Game([{name:safeOwnName(),type:'human'},{name:'Alex',type:'human'},{name:'Milo',type:'bot'},{name:'Coco',type:'bot'}]);demo.players[0].pieces=[41,-1];demo.players[3].pieces=[6,-1];scene.setGame(demo);game=demo;game.phase='animating';render();updateClock(true);$('demo-status').classList.remove('hidden');await pause(650);if(epoch!==id)return;fx.unlock();await fx.ready;fx.roll();diceBusy=true;syncDieLabel();render();await die.rollTo(4);if(epoch!==id)return;diceBusy=false;demo.phase='roll';demo.roll(4);drawDie(4);const result=demo.move(0);render();updateClock(true);fx.move();await scene.move(result,(point)=>{if(point){$('impact').style.left=Math.min(point.x,scene.wrap.clientWidth-120)+'px';$('impact').style.top=Math.max(30,point.y-100)+'px';}fx.bump();$('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');toast(t('You bumped Coco!','你撞飞了 Coco！'));});if(epoch!==id)return;fx.land();await pause(1100);if(epoch!==id)return;game=saved;scene.setGame(game);$('demo-status').classList.add('hidden');beginTurn();toast(t('Back to your flight.','已恢复你的对局。'));}
 $('demo').onclick=demoFlight;
 $('record-demo').onclick=async()=>{if(game.phase!=='roll'||game.current.type!=='human')return;fx.unlock();await fx.ready;const canvas=$('canvas-wrap').querySelector('canvas');if(!canvas.captureStream||!window.MediaRecorder){toast(t('Recording is not available in this browser.','当前浏览器不支持录制。'));return;}const stream=canvas.captureStream(30);for(const track of fx.mediaDestination.stream.getAudioTracks())stream.addTrack(track);const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));if(!mime){toast(t('WebM recording is unavailable.','当前浏览器不支持 WebM。'));return;}const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6000000}),chunks=[];rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};rec.onstop=()=>{const blob=new Blob(chunks,{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='FlightParty_collision_preview.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);for(const tr of stream.getVideoTracks())tr.stop();};rec.start();try{await demoFlight();}finally{rec.stop();}};
 for(const b of document.querySelectorAll('.reactions button'))b.onclick=()=>{if(!game||screen!=='play')return;fx.click();const sender=game.current.type==='human'?game.current:game.active.find(p=>p.type==='human');reactions.show({color:sender.color,name:sender.name,profile:playerAvatarProfile(sender),emoji:b.textContent.trim()});};

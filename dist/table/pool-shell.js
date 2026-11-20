@@ -43,7 +43,25 @@ const $ = id => document.getElementById(id);
    and mirrors the state the parent broadcasts back. Standalone pages use
    their own native fullscreen. */
 let chatFullscreenState = false;
-function chatEnglish(){return document.documentElement.lang.toLowerCase().indexOf('en')===0;}
+function chatEnglish(){return typeof document!=='undefined'&&document.documentElement.lang.toLowerCase().indexOf('en')===0;}
+/* Own seat is room.you in an online match, otherwise the local mySeat. The
+   parent shell forwards the signed-in nickname as options.selfName, so the
+   chat / feedback / result cards never fall back to 你 / You for an account. */
+function viewerIndex(options){
+ return options?.room?Number(options.room.you):Math.max(0,(Number(options?.mySeat)||1)-1);
+}
+function viewerName(options){
+ return options?.selfName||options?.me?.account?.displayName||
+  options?.names?.[viewerIndex(options)]||(chatEnglish()?'You':'你');
+}
+function feedbackNames(options){
+ if(options?.room?.names)return [options.room.names,options.room.names];
+ const ownIndex=viewerIndex(options);
+ const own=options?.selfName||options?.me?.account?.displayName||'';
+ const ownZh=own||'你',ownEn=own||'You';
+ const botZh=options?.computer?'电脑':'好友',botEn=options?.computer?'Computer':'Friend';
+ return ownIndex===0?[[ownZh,botZh],[ownEn,botEn]]:[[botZh,ownZh],[botEn,ownEn]];
+}
 function chatFullscreenCopy(full){
   const en=chatEnglish();
   return full
@@ -488,7 +506,7 @@ async function sendChatText(text) {
       // A local game has no server room: publish to the shared device room so
       // every open window sees the line at once, deduped by clientId.
       const event={id:-(Date.now()*1000+(++clientSeq%1000)),clientId:clientId+':'+clientSeq,
-        name:current.me?.account?.displayName||'你',text,time:Date.now()};
+        name:viewerName(current),text,time:Date.now()};
       acceptMessages([event]);broadcast([event]);
     }
     shell.note.textContent='消息在本房间实时同步。';
@@ -512,7 +530,8 @@ export function appendPoolChatReaction(event){
 
 let feedbackTimer, feedbackKey, lastPoolBoard, feedbackFrame=0, feedbackPromptUntil=0;
 let pendingFeedback=[];
-function updatePoolFeedback({board,room,me,computer}) {
+function updatePoolFeedback(options) {
+  const {board,room,computer}=options;
   if(feedbackKey!==chatKey||document.body.dataset.screen!=='play'){
     feedbackKey=chatKey;
     clearTimeout(feedbackTimer);shell.feedback?.replaceChildren();
@@ -527,9 +546,7 @@ function updatePoolFeedback({board,room,me,computer}) {
   const previous=lastPoolBoard;
   lastPoolBoard=board;
   const tell=(text,english,kind,seat)=>pendingFeedback.push({system:true,text,english,kind,seat});
-  const name=me?.account?.displayName;
-  const zh=room?.names||[name||'你',computer?'电脑':'好友'];
-  const en=room?.names||[name||'You',computer?'Computer':'Friend'];
+  const [zh,en]=feedbackNames(options);
   const player=seat=>[zh[seat],en[seat]].map(value=>value?'['+value+']':'');
   const [next,nextEn]=player(board.turn-1);
   if(board.moves===0){

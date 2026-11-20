@@ -2,8 +2,15 @@ import {avatarStyle} from './avatar.js';
 import {roomInvitationUrl,isChineseMobile,shareRoomInvitation} from './room-share.js';
 import {CUSTODY_LABELS} from './online-custody.js?v=20261115-joincoin1';
 import {ensureCustodyStyles} from './online-custody-ui.js?v=20261115-joincoin1';
+import {cachedDisplayName} from './account-name.js?v=20261121-accountname1';
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roomCode=value=>{try{const input=value.trim();const code=input.includes('://')?new URL(input).searchParams.get('room'):input;return /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(code||'')?code:null;}catch{return null;}};
+/* Import-stripped unit harnesses run this module without its ESM helpers;
+   typeof keeps the guest fallback available there too. */
+function ownSeatLabel(fallback){
+ const shared=typeof cachedDisplayName==='function'?cachedDisplayName():'';
+ return esc(shared||fallback);
+}
 export function bindLiveRooms(social,session) {
  let notice='',snapshot=null,starting=false,sharing=false,sharingRoomId=null,shareFallback='',sharedPageRoomId=null,shareGeneration=0,lastMarkup='';
  ensureCustodyStyles(document);
@@ -37,7 +44,7 @@ export function bindLiveRooms(social,session) {
    <span class="sample-pill">${t('ONLINE ROOM','在线房间')}</span><h2>${t('Your flight crew','飞行伙伴')}</h2>
    ${!room?`<p class="room-connecting">${notice?t('Could not join this room','无法加入该房间'):t('Joining the room…','正在加入房间…')}</p>${notice?`<button type="button" class="secondary room-invite-standalone" data-live="retry">${t('Create a fresh room','重新创建房间')}</button>`:''}`:`
    <div class="simple-room-meta"><span>${t('CLASSIC · 4 SEATS','经典模式 · 4 个席位')}</span><span>${esc(phase)}</span></div>
-   <ol class="simple-room-seats">${Array.from({length:4},(_,i)=>{const seat=room.seats.find(s=>s.index===i);return `<li class="room-seat ${seat?'occupied':'empty'}"><span class="room-seat-avatar avatar-${i}" ${avatarStyle({...seat,isSelf:!!seat&&i===room.yourSeat,signedIn:!!session.identity?.account})} data-frame="${esc(seat?.avatarFrame||'none')}"></span><div><b data-member="${seat?.member===true}" data-annual-member="${seat?.member===true&&seat?.annualMember===true}">${seat?(seat.bot?'BOT':seat.displayName?esc(seat.displayName):i===room.yourSeat?t('You','你'):t('Pilot','飞行员')+' '+(i+1)):t('Open seat','空闲席位')}</b><span>${custodyTag(seat)||(seat?.ready?t('Ready','已准备'):t('Waiting','等待'))}</span></div></li>`;}).join('')}</ol>
+   <ol class="simple-room-seats">${Array.from({length:4},(_,i)=>{const seat=room.seats.find(s=>s.index===i);return `<li class="room-seat ${seat?'occupied':'empty'}"><span class="room-seat-avatar avatar-${i}" ${avatarStyle({...seat,isSelf:!!seat&&i===room.yourSeat,signedIn:!!session.identity?.account})} data-frame="${esc(seat?.avatarFrame||'none')}"></span><div><b data-member="${seat?.member===true}" data-annual-member="${seat?.member===true&&seat?.annualMember===true}">${seat?(seat.bot?'BOT':seat.displayName?esc(seat.displayName):i===room.yourSeat?ownSeatLabel(t('You','你')):t('Pilot','飞行员')+' '+(i+1)):t('Open seat','空闲席位')}</b><span>${custodyTag(seat)||(seat?.ready?t('Ready','已准备'):t('Waiting','等待'))}</span></div></li>`;}).join('')}</ol>
    ${matching?`<div class="room-countdown-panel"><div><b>${t('Taking off soon','即将起飞')}</b><button type="button" class="secondary room-start-now" data-live="start-now" ${starting?'disabled':''}>${starting?t('Starting…','正在开始…'):t('Start now','快速开始')}</button></div><strong data-countdown></strong></div>`:''}
    ${waiting&&room.origin==='FRIENDS'?`${mobileShare?`<button type="button" class="secondary room-invite-standalone" data-live="share-wechat" ${sharing?'disabled':''}>${sharing?'正在打开分享…':'邀请好友'}</button>`:''}<button type="button" class="secondary room-invite-standalone" data-live="copy-link">${t('Copy invitation link','复制邀请链接')}</button>`:''}
    ${waiting?`<button type="button" class="secondary room-invite-standalone" data-live="ready">${room.seats.find(s=>s.index===room.yourSeat)?.ready?t('Ready · Waiting for friends','已准备 · 等待好友'):t('Ready for takeoff','准备起飞')}</button>`:''}

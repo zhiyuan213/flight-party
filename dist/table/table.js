@@ -10,7 +10,7 @@ import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1&power=20261120-poolpower30&score=20261120-score1';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1&power=20261120-poolpower30&score=20261120-score1&name=20261121-accountname1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
 import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
 import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
@@ -26,12 +26,18 @@ import {createRoomCosmeticSync} from './room-cosmetics.js';
    badge and the "no data / no points" notice. See docs/ONLINE-GAME-MANAGEMENT.md. */
 import {custodyStorageKey,serverClock,seatCustody,shouldRecordResult,reconnectTarget,CUSTODY_LABELS,CUSTODY_GRACE,CUSTODY_HOSTED,turnClockVisible,needsPresenceSignal} from '../online-custody.js?v=20261115-joincoin1';
 import {custodyBadge,updateCustodyBadges,noScoreNotice,ensureCustodyStyles} from '../online-custody-ui.js?v=20261115-joincoin1';
+/* Cross-origin account nickname: the portal shell on joyflock.com owns the
+   confirmed display name, while this iframe can be on flight.joyflock.com. */
+import {cachedDisplayName,normalizeDisplayName,trustedParentOrigin} from '../account-name.js?v=20261121-accountname1';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),game=['gomoku','puzzle','chess','draw','cards','pool','nineball','xo','snooker','bubbles'].includes(params.get('game'))?params.get('game'):'four',title=game==='snooker'?'斯诺克':game==='bubbles'?'泡泡射击':game==='xo'?'井字棋':game==='four'?'四子连珠':game==='gomoku'?'五子棋':game==='chess'?'国际象棋':game==='draw'?'你画我猜':game==='cards'?'欢乐纸牌':game==='nineball'?'欢乐九球':game==='pool'?'欢乐台球':'趣味拼图';
 /* Each table game remembers its own computer difficulty:
    localStorage['joyflock.bot.level.<game>'], with the legacy shared key only
    as a one-way migration fallback. */
 const botLevels=botLevelStore(game);
 let board=start(game),room=null,csrf=null,pending=false,computer=false,local=true,me=null,poll=null,generation=0,last=-1,rematchPending=false,puzzleSelection=null,screen='home',period='month',reactionCursor=0,reactionRoom=null,reactionBusy=false,settledRoom=null,autoReadyFor=null,mySeat=1;
+/* Server-confirmed nickname mirrored from the parent shell. Display only:
+   a missing backend session in this iframe never turns it into an account. */
+let sharedAccountName=cachedDisplayName();
 /* The authoritative clock is serverNow + local elapsed time, so a client with
    a wrong system clock still shows the correct 30s reconnect countdown. */
 let roomReceivedAt=0,roomServerNow=0,custodyTimer=null,lastRoomHint='',hostedResult=false;
@@ -196,9 +202,13 @@ async function refreshStats(){
  try{const stats=await request('/api/table/stats/'+game);delete $('stats').dataset.demo;const score=Math.max(0,Number(globalThis.__joyflockGamePoints?.get?.()?.score)||0);$('stats').textContent=document.documentElement.lang==='en'?'My score: '+score+' · '+stats.completedGames+' games':'我的积分：'+score+' · '+stats.completedGames+' 局';memberStats={points:Number(stats?.points)||0,completedGames:Number(stats?.completedGames)||0,winRate:null};paintMemberFacts();}
  catch{demo();reset();}
 }
+/* The viewer's own seat: /api/me wins when this origin has the session, then
+   the parent-mirrored nickname, then the neutral guest label. */
+const ownAccountName=()=>normalizeDisplayName(me?.account?.displayName)||sharedAccountName||'';
+const selfIndex=()=>room?Number(room.you):(Number(mySeat)||1)-1;
 const names=()=>{
   if(room?.names)return room.names;
-  const human=me?.account?.displayName||tableLabel('你'),bot=tableLabel(computer?'电脑':'好友');
+  const human=ownAccountName()||tableLabel('你'),bot=tableLabel(computer?'电脑':'好友');
   return mySeat===2?[bot,human]:[human,bot];
 };
 /* Every game in this shell reports its finished board here, including the ones
@@ -305,7 +315,7 @@ const arcade=isCanvasGame?mountArcade($('board'),game,text=>{
   arcadeStatus=text;
   renderStatus(text);
 },{onShoot:position=>commitMove(position),canPlay:canShoot,board:()=>board,
-  selfLabel:()=>names()[0]||'玩家 1',opponentLabel:()=>names()[1]||'电脑'}):null;
+  selfLabel:()=>names()[selfIndex()]||'玩家 1',opponentLabel:()=>names()[1-selfIndex()]||'电脑'}):null;
 if(isCanvasGame&&!$('rules').textContent)$('rules').textContent=CATALOG[game].instruction;
 const updateFourDrop=game==='four'?attachFourDrop($('board'),$('board').parentElement):null;
 const updateFourFeedback=game==='four'?attachFourFeedback($('board'),$('board').parentElement):null;
@@ -579,8 +589,22 @@ const applyTableLocale=bindTableLocale();
 arcade?.refresh?.();
 bindPortalControls({onLocale:locale=>{applyTableLocale(locale);paintMemberFacts();if($('stats').dataset.demo==='1')$('stats').textContent=globalThis.__joyflockDemoStats?globalThis.__joyflockDemoStats(locale):'';else refreshStats();arcade?.refresh?.();render();}});
 // The shell owns the account dialogs now. When it signs in/out, refresh the
-// embedded game's own session view so the profile stats stay in sync.
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='joyflock:auth-changed')return;init().catch(()=>{});});
+// embedded game's own session view so the profile stats stay in sync. The two
+// hosts can differ (joyflock.com -> flight.joyflock.com), so validate the
+// parent origin explicitly instead of requiring event.origin===location.origin.
+function acceptAccountName(value){
+ const next=normalizeDisplayName(value);
+ if(next===sharedAccountName)return;
+ sharedAccountName=next;
+ render();
+}
+window.addEventListener('joyflock:account-changed',event=>acceptAccountName(event.detail?.name));
+window.addEventListener('message',event=>{
+ if(event.source!==window.parent||!trustedParentOrigin(event.origin))return;
+ const data=event.data;
+ if(data?.type==='joyflock:account-name'){acceptAccountName(data.name);return;}
+ if(data?.type==='joyflock:auth-changed')init().catch(()=>{});
+});
 $('home-link').onclick=async event=>{event.preventDefault();if(arcade&&!room){arcade.stop();generation++;screen='home';render();return;}if(room&&['WAITING','PLAYING'].includes(room.phase)){if(!confirm('返回游戏首页？当前席位将由电脑托管。'))return;try{await request('/api/table/rooms/'+room.id+'/leave',{});}catch{$('message').textContent='退出未成功，请重试。';return;}}localStart(false);screen='home';$('message').textContent='';render();};
 let draggedTile=null;$('board').addEventListener('dragstart',event=>{const tile=event.target.closest('[data-position]');if(game!=='puzzle'||!tile||tile.disabled){event.preventDefault();return;}draggedTile=Number(tile.dataset.position);});$('board').addEventListener('dragover',event=>{if(game==='puzzle')event.preventDefault();});$('board').addEventListener('drop',event=>{event.preventDefault();const tile=event.target.closest('[data-position]');if(tile&&draggedTile!==null&&!tile.disabled){puzzleSelection=draggedTile;tile.click();}draggedTile=null;});
 
@@ -609,7 +633,7 @@ const clockUntil=room?.phase==='PLAYING'
  ? (Number.isFinite(room.turnClockUntil)?room.turnClockUntil
    :turnClockVisible(Array.isArray(room.custody)?room.custody[turnIndex]:null)?room.deadline:0)
  : 0;
-$('turn-clock').textContent=clockUntil>room?.serverNow?Math.max(0,Math.ceil((clockUntil-room.serverNow)/1000))+'s':'';const options={room,me,board,local,computer,names:names(),request,generation,mySeat,
+$('turn-clock').textContent=clockUntil>room?.serverNow?Math.max(0,Math.ceil((clockUntil-room.serverNow)/1000))+'s':'';const options={room,me,board,local,computer,names:names(),selfName:ownAccountName(),request,generation,mySeat,
   scores:isBubbles&&board?.cells?bubblesScore(board.cells):null};if(isPoolLike)updatePoolShell(options);else{if(game!=='snooker')$('arena').classList.add('table-chat-layout');updateTableChat(options);if(game==='snooker')mountSnookerShell();}
 if(usesCountdown){
   if(screen!=='play'){
@@ -675,5 +699,5 @@ for(const tab of periodTabs){
 function showReaction(event){if(document.querySelector('.pool-chat-panel')){appendPoolChatReaction(event);return;}const bubble=document.createElement('div');bubble.className='reaction-bubble';const emoji=document.createElement('span'),name=document.createElement('small');emoji.textContent=event.emoji;name.textContent=event.name;bubble.append(emoji,name);$('reaction-stage').append(bubble);const line=document.createElement('p');line.textContent=event.name+' '+event.emoji;$('reaction-feed').prepend(line);while($('reaction-feed').children.length>3)$('reaction-feed').lastElementChild.remove();setTimeout(()=>bubble.remove(),3200);}
 function acceptReactions(events){for(const event of events){if(event.id<=reactionCursor)continue;reactionCursor=event.id;showReaction(event);}}
 async function pollReactions(){if(!room||reactionBusy)return;if(reactionRoom!==room.id){reactionRoom=room.id;reactionCursor=0;$('reaction-feed').replaceChildren();}reactionBusy=true;const roomId=room.id;try{const events=await request('/api/table/rooms/'+roomId+'/reactions?after='+reactionCursor);if(room?.id===roomId)acceptReactions(events);}catch{}finally{reactionBusy=false;}}
-for(const button of document.querySelectorAll('[data-emoji]'))button.onclick=async()=>{if(button.disabled)return;button.disabled=true;try{if(document.querySelector('.pool-chat-panel')){await sendPoolChatEmoji(button.dataset.emoji);return;}if(room){if(reactionRoom!==room.id){reactionRoom=room.id;reactionCursor=0;}const roomId=room.id;const events=await request('/api/table/rooms/'+roomId+'/reactions',{commandId:crypto.randomUUID(),emoji:button.dataset.emoji});if(room?.id===roomId)acceptReactions(events);}else showReaction({name:me?.account?.displayName||'你',emoji:button.dataset.emoji});}catch{$('reaction-note').textContent='表情发送太快或连接中断，请稍后重试。';}finally{setTimeout(()=>button.disabled=false,1500);}};
+for(const button of document.querySelectorAll('[data-emoji]'))button.onclick=async()=>{if(button.disabled)return;button.disabled=true;try{if(document.querySelector('.pool-chat-panel')){await sendPoolChatEmoji(button.dataset.emoji);return;}if(room){if(reactionRoom!==room.id){reactionRoom=room.id;reactionCursor=0;}const roomId=room.id;const events=await request('/api/table/rooms/'+roomId+'/reactions',{commandId:crypto.randomUUID(),emoji:button.dataset.emoji});if(room?.id===roomId)acceptReactions(events);}else showReaction({name:ownAccountName()||tableLabel('你'),emoji:button.dataset.emoji});}catch{$('reaction-note').textContent='表情发送太快或连接中断，请稍后重试。';}finally{setTimeout(()=>button.disabled=false,1500);}};
 render();

@@ -30,6 +30,16 @@
   // same site is also reached on another port. Store the display name only.
   try{document.cookie=COOKIE_KEY+'='+(name?encodeURIComponent(name):'0')+
    '; path=/; Max-Age=2592000; SameSite=Lax';}catch(e){}
+  /* The games run on flight.joyflock.com while the shared header can live on
+     joyflock.com. Mirror the same server-confirmed DISPLAY name (never a
+     session token) into a parent-domain cookie so the iframe can print the
+     real nickname instead of 你 / You on its very first frame. Local previews
+     on localhost keep a host-only cookie; Domain=joyflock.com is invalid there. */
+  try{
+   var domain=/(^|\.)joyflock\.com$/i.test(location.hostname)?'; Domain=joyflock.com':'';
+   document.cookie='joyflock.displayName='+(name?encodeURIComponent(name):'0')+
+    '; path=/; Max-Age=2592000; SameSite=Lax'+domain;
+  }catch(e){}
  }
  function renderSigned(name){
   signin.style.removeProperty('--shop-avatar');
@@ -54,8 +64,12 @@
  function announce(name){
   try{window.dispatchEvent(new CustomEvent('joyflock:account-changed',{detail:{name:name||null}}));}catch(e){}
  }
- function setLabel(name){cache(name);renderSigned(name);announce(name);}
- function resetLabel(){cache('');renderGuest();announce(null);}
+ /* Every confirmed identity change reaches the embedded game too, including
+    the quiet /api/me reconciliation on page load. The iframe can be on a
+    different JoyFlock host, so notifyGame() derives its target from the frame
+    URL rather than assuming location.origin. */
+ function setLabel(name){cache(name);renderSigned(name);announce(name);notifyGame();}
+ function resetLabel(){cache('');renderGuest();announce(null);notifyGame();}
 
  function api(path,body){
   var headers={};
@@ -83,7 +97,19 @@
  }
  function notifyGame(){
   var frame=document.getElementById('game-frame');
-  if(frame&&frame.contentWindow)frame.contentWindow.postMessage({type:'joyflock:auth-changed'},location.origin);
+  if(!frame||!frame.contentWindow)return;
+  /* postMessage targetOrigin must be the FRAME's origin, not the parent's.
+     portal.js sets #game-frame.src to https://flight.joyflock.com on the live
+     site, while the parent may be https://joyflock.com. */
+  var target=location.origin;
+  try{if(frame.src)target=new URL(frame.src,location.href).origin;}catch(e){}
+  var name='';
+  try{name=localStorage.getItem(CACHE_KEY)||'';}catch(e){}
+  name=name&&name!=='0'?name:null;
+  try{
+   frame.contentWindow.postMessage({type:'joyflock:auth-changed'},target);
+   frame.contentWindow.postMessage({type:'joyflock:account-name',name:name},target);
+  }catch(e){}
  }
 
  var PLACEHOLDERS={
@@ -280,7 +306,7 @@
    .then(function(){return session();})
    .then(function(me){
     setLabel(me.account?me.account.displayName:t('Account','账号'));
-    closeAll();form.reset();notifyGame();
+    closeAll();form.reset();
    })
    .catch(function(e){
     var status=e&&e.message==='HTTP 409'?'409':e&&e.message==='HTTP 401'?'401':'';
@@ -292,7 +318,7 @@
  }
  function signout(){
   api('/api/auth/logout',{}).catch(function(){}).then(function(){
-   resetLabel();closeAll();notifyGame();
+   resetLabel();closeAll();
   });
  }
 
