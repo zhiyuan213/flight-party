@@ -1,3 +1,4 @@
+2026-11-20 23:05 最新生产发布：`0886eba`，**静态 51 文件 + 后端差量 JAR**。台球/九球击球力量 +30%（`POOL_SHOT_SPEED=0.624` / 后端 `SHOT_SPEED=.624`），斯诺克保持 `0.336`；落袋动画速度分级同步缩放，物理 golden fixtures 全量重标定。后端镜像 `deploy-backend:power30-0886eba`，回滚镜像 `deploy-backend:nineball-b4d77dd`，无新 Flyway 迁移。
 2026-11-20 22:16 最新生产发布：`3d42d41`，**纯静态**，9 个 dist 文件，修复商城球杆/球组/球台装扮在台球类游戏未生效（crystal 与 galaxy 主题被棋子白名单过滤），无后端变更。
 
 制品：总包 `release-3d42d41.tar.gz`（51 KB）含 `static-3d42d41.tar.gz`、`expected.sha256`（9 行）、`filelist.txt`、`release-all.sh`。发布目录 `/opt/joyflock/releases/static-3d42d41`，整包 `dist` 备份 `static.before.tgz`，回滚见 `rollback.private.txt`。`sha256sum -c` 9/9 OK，`nginx -t` 通过，未 reload，5 容器 Up、后端镜像未变、`/api/csrf` 200；双域名 HTTPS 10/10。GitHub `HEAD` = `origin/main` = `3d42d41`（文档提交另计）。

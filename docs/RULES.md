@@ -111,3 +111,11 @@ Existing casual pool target/win/scoring rules are retained. Added selectable cen
 - 犯规与罚杆沿用台球的额外一杆状态 `PENALTY_VISIT`；白球落袋自动复位，200 杆上限保留（九球两席位落袋计数相同，超时判平局）。
 - 机器人：按 `s.game` 选择合法目标，四档难度、无引导线 +20% Joy Coins 与托管 `easyBot` 全部沿用台球分支；`ballGroup` 分组逻辑只在八球路径执行。
 - 前后端：`dist/table/pool-rules.js` 与 `backend/.../PoolRules.java` 的摆球、目标与结算分支必须逐项一致；八球路径（含黄金轨迹 fixture）逐字未变。新增 `tests/nineball-rules.test.mjs` 与 `NineBallRulesTest.java` 守卫。
+
+
+## 2026-11-20 23:05 击球力量 +30%（`0886eba`）
+
+- 欢乐台球与欢乐九球的 power→速度比例由 `0.48` 提高到 `0.624`（+30%），力度条仍显示 0–100；八球/九球共用 `POOL_SHOT_SPEED`，前后端镜像一致。
+- 斯诺克保持原有 `0.48*0.7=0.336` 的 softer 手感，不随本次增强变化（对应 2026-11-13「斯诺克力量减少30%」的历史设定）。
+- 只改初速度，阻尼、摩擦、碰撞、旋转、袋口几何与结算规则全部不动；落袋动画的速度分级同步提高 30% 以保持原有弹跳/螺旋表现。机器人与玩家同步增强，未单独补偿。
+- 物理 golden fixtures 已按新速度整体重算（前后端 26 条 Java 测试与 1061 条前端测试），规则判定本身未变。

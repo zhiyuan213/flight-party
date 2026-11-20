@@ -3394,3 +3394,14 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 2026-11-20 22:16 `3d42d41`（**纯静态**，9 个 dist 文件）：修复商城球杆装扮在台球类游戏不生效。根因是 `dist/table/game-cosmetics.js` 的 `skinTheme()` 用 `ALL_PIECE_THEMES`（棋子主题 default/neon/jade/aurora/coral/pearl…）过滤所有装扮，而商城台球类主题是 `THEMES=['neon','crystal','jade','galaxy','aurora']`——`crystal`（冰晶玻璃）与 `galaxy`（星云星河）被过滤成空，`data-cosmetic-cue/ball/table` 不设置，球杆、球组、球台全部退回默认。装备 `neon/jade/aurora` 恰好能通过，所以问题只在这两款主题上出现。
 - 修复：新增 `BILLIARD_SKIN_THEMES=['default','neon','crystal','jade','galaxy','aurora']`，`skinTheme(id,billiards)` 按来源选白名单；`applyCosmetics()` 的台球分支（`ball`/`cue`/`table`）传 `true`，棋子与棋盘仍用 `ALL_PIECE_THEMES`。因为装扮来源是全局 `joyflock.shop.v1` 且不按 game 区分，台球、九球、斯诺克会同时应用同一款已装备皮肤。缓存键给 `game-cosmetics.js` → `four-drop/four-seat-piece/table.js` 链追加 `&skin=20261120-billiardskins1`（9 个 dist 文件）。
 - 验收：`npm test` **1061/1061**（新增 `tests/billiard-skin-themes.test.mjs` 3 条守卫）；CDP 注入 `{equipped:{cue:'cue-crystal'}}` 后，`?game=pool` 与 `?game=nineball` 的 `data-cosmetic-cue`、`__joyflockCosmeticsState.cueTheme`、`cueSkin(true).theme` 均为 `crystal`，截图两款游戏白球左侧都是同一根白色冰晶玻璃杆；生产 9/9 磁盘 SHA256 一致、双域名 HTTPS **10/10**、`nginx -t` 通过、5 容器 Up、`/api/csrf` 200。未动后端、容器与 `.env`。
+
+## 2026-11-20 23:05 台球击球力量 +30%（生产 `0886eba`，静态 + 后端 JAR）
+
+- 需求：「台球增加30%的力量」。力度由共享常量 `SHOT_SPEED` 控制，前端 `dist/table/pool.js` 与后端 `backend/.../PoolRules.java` 镜像，必须双端同步。
+- 实现：前端新增 `POOL_SHOT_SPEED=0.624`（`0.48*1.3`），`simulateCueShot()` 默认改用新常量；后端 `SHOT_SPEED=.624`。**欢乐台球与欢乐九球同步增强**（共用同一套 53 格状态与物理），斯诺克刻意保持原 `0.48*.7=.336`：前端 `snooker.js` 仍从基准 `SHOT_SPEED=0.48` 派生，后端 `SnookerRules` 常量不变。力度条仍为 0–100，只改 power→速度的比例。
+- 配套：`dist/table/pool-return.js` 的 `DRIVE_SPEED` 48→62.4、两处 `speed/48`→`speed/62.4`，使落袋弹跳/螺旋分支仍按原分级触发（否则提速后所有直球都进螺旋分支）；音效强度归一化保持 32/40 不变，随球速自然增强。前端 50 个 dist 文件、90 处 URL 追加 `&power=20261120-poolpower30`（`presentation.js` 按既有守卫不追加）。
+- 物理基准重标定：8 个旋转 golden 白球位置、16ms 自由飞行 95→124.1、满力行程 ~4.9→~5.6 台长、spinScene 跟随/缩杆/库边镜像数值、真实进袋力度 58→50、8 球胜负场景 50→30、袋口 jaw 力度组 [10,30,80]→[5,10,25]、开球音频链 100→80、碰撞公式 `.48`→`.624` / `.012`→`.0156`。后端 `PoolRulesTest` 与 `NineBallRulesTest` 同步刷新，九球合法打 9 场景 50→30。
+- 验收：`npm test` **1061/1061**；Docker + Maven 后端 `PoolRulesTest`+`NineBallRulesTest` **26/26**；本地 Chrome CDP 读得 `POOL_SHOT_SPEED=0.624`、`SHOT_SPEED=0.48`、16ms 位移 124.1、九球 1–9 号球开局正常、零异常。
+- 生产：51 个 dist 文件 `sha256sum -c` **51/51 OK**；差量重建 JAR 44,283,266 B / 378 条目（仅替换 `PoolRules.class`），镜像 `deploy-backend:power30-0886eba`，Flyway 校验 25 个迁移通过、`nginx -t` 通过、5 容器 Up、`/api/me` 3 次探测 READY、`/api/csrf` 200；双域名 HTTPS **22/22**（4 个带新键模块 + 2 个页面响应体哈希、页面含新键、physics 常量）；生产建房冒烟九球/八球均 200 且已清理。
+- 回滚：`/opt/joyflock/releases/app-power30-0886eba`，`static.before.tgz` 整包 + `backend-rollback.private.json` 指向 `deploy-backend:nineball-b4d77dd`。
+- 边界：机器人按原 power 数值出杆，绝对速度同样 +30%，与玩家同步增强，未做单独补偿；正式收款仍为沙盒，GA4 全站覆盖与 GSC 复核仍为待办。
