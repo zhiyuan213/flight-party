@@ -1386,3 +1386,5 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 音频架构：所有游戏音频经 `window.__joyflockAudio.output(ctx, category)` 汇入统一 gate；新增音频模块务必走该出口，否则 `unlockOutputs()` 无法在首次手势中恢复它。
 - 2026-11-20 21:20 `8109a62`（纯静态）：九球在所有游戏列表排第 10 位。发布目录 `/opt/joyflock/releases/static-8109a62`，备份 `static.before.tgz`，回滚见 `rollback.private.txt`；后端仍 `deploy-backend:nineball-b4d77dd`。生产 30/30、双域名 16/16、`npm test` 1055/1055。
 - 约定：调整游戏顺序必须同时改门户卡片、`portal.js`、原生页生成器 `games` 数组、`seo-games.js` 的 `GAMES`，并重跑 `build-game-seo.mjs` / `build-native-games.mjs` / `build-game-og.py`；`game-seo-meta.js` 内容会随顺序变化，其 URL 必须追加新的 `&order=` 键。站点默认 OG 拼贴固定取前 9 款，末位游戏不会出现在其中。
+- 2026-11-20 21:32 `3fb5cb7`（纯静态）：修复九球回球槽误把未摆放的 10–15 号球当落袋球展示。发布目录 `/opt/joyflock/releases/static-3fb5cb7`，备份 `static.before.tgz`，回滚见 `rollback.private.txt`；后端仍 `deploy-backend:nineball-b4d77dd`。生产 17/17、双域名 10/10、`npm test` 1058/1058。
+- 约定：九球复用 16 球状态数组，10–15 恒为 dead；任何「遍历 1..15 判断 dead 即视为落袋」的展示逻辑都必须按 `s.game` 限制到 1–9。改 `/table/` 下共享模块时，`pool-view.js` ↔ `pool.js` ↔ `table.js` 的引用链要一起升 `&fix=` 参数。
