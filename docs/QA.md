@@ -3415,3 +3415,12 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 验收：`npm test` **1064/1064**；Chrome CDP 中文态（`localStorage['joyflock-portal-language']='zh'`）三个分区均显示中文说明、`small` 无溢出、各 6 张卡、零异常，英文态也确认三条英文说明显示正常；生产磁盘 `sha256sum -c` **2/2 OK**；双域名 HTTPS **6/6**（shop.html / site-shop.js 响应体哈希 + 线上页面含新键）；`nginx -t` 通过、5 容器 Up、`/api/csrf` 200，后端镜像与 `.env` 未动。
 - 发布目录 `/opt/joyflock/releases/static-05b382b`，整包备份 `static.before.tgz`，回滚见 `rollback.private.txt`。
 - 阻塞：GitHub HTTPS 代理持续 502，本地 `HEAD` 领先 `origin/main`（`e340306` 文档、`05b382b` 应用、本次文档提交），需在网络恢复后 `git push origin main` 补推；生产静态文件已与本地一致。
+## 2026-11-20 · 积分系统（应用提交 `36b8e68`）
+
+- 需求：新增独立于 Joy Coins 的积分；两人局胜 +40 / 负 +20（平局 +20），四人局 40 / 20 / 10 / 10；排行榜只统计积分并保留月 / 周 / 日；详情页「会员与支持」增加当前用户积分；结算页在 Joy Coins 卡片上方增加同款积分卡片（本局奖励积分 +N、总积分）。
+- 实现：`dist/game-points.js` 新增 `SCORE_KEY='joyflock.score.v1'`、`scoreFor(rank)`、`state.score` / `last.score`，积分单独 localStorage 持久化，不受每日 5000 Joy Coins 上限、难度加成、商城消费影响；游客也累计，但成绩记录仍按登录态隔离。`dist/table/result-points.js` 新增 `createResultScoreTicker()`，`pool-shell.js` 把它插在 Joy Coins 卡片之前。飞行棋结算页用 `#result-score-panel` 复用同一套 `.pool-result-points` 皮肤（中英标签由 `game-points.js` 的 render 写入）。
+- 排行榜：`dist/social-ui.js` / `dist/table/table.js` / `dist/table/intro-boot.js` 改为三列「玩家 / 局数 / 积分」、按 `points` 降序；tab 改「月 / 周 / 日积分榜」；`TableService.java` 两个 SQL 改按名次聚合 40/20/10 并 `order by 3 desc`，**不改结算写入、不需要 Flyway 迁移**。账本 `points_delta`（3/2/0+飞机数）保持原义。
+- 验收：`npm test` **1073/1073**（新增 `tests/score-ladder.test.mjs` 9 条守卫）；后端 `PoolRulesTest` + `NineBallRulesTest` **26/26**（Docker + Maven）；Chrome CDP 中文态 5 格 facts / 积分列 / 三周期 / 结算弹窗两卡片（积分在上、`本局奖励积分+40`、`总积分40`）/ 英文态（`Round score+20`、`Total score60`、`Player / Games / Score`）/ 零 JS 异常（本地静态服务的 `/api/*` 404 已排除）；截图 `docs/verification/score-ladder-20261120.png`。
+- 生产：静态 18 文件 `sha256sum -c` **18/18 OK**；差量重建 JAR 44,283,253 B / 378 条目（仅替换 `TableService.class`，`rebuild.py` 先断言生产基线 class 哈希与九球版一致）；新镜像 `deploy-backend:score-36b8e68`，Flyway 25 迁移校验通过、`nginx -t` 通过、5 容器 Up、`/api/me` 3 次探测 READY、`/api/csrf` 200；排行榜 day/week/month 接口全部 200。双域名 HTTPS **34/34**（8 个带新键资源的响应体哈希 + 6 个页面标记 + 6 次积分榜 API）。生产月榜真实数据已按新规则聚合为 `[490, 40, 10]`（旧分制为 `[2]` 等），证明 SQL 生效。
+- 发布目录 `/opt/joyflock/releases/app-score-36b8e68`，整包备份 `static.before.tgz`，后端回滚镜像 `deploy-backend:power30-0886eba`。GitHub 代理恢复，积压的 `e340306` / `05b382b` / `efe5396` 随 `36b8e68` 一并推送，`HEAD` = `origin/main` = `36b8e68`。
+- 边界：本地「总积分 / 当前用户积分」含机器人与游客局，服务端排行榜只统计已登录在线联机局（沿用既有 Joy Coins 与排行榜的双口径），两者数值不必相等；真人双设备完整对局与托管结算未做端到端验证。

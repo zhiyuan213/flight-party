@@ -1405,3 +1405,12 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 装扮实际是全局装备：`BILLIARDS` 含 pool / nineball / snooker，斯诺克视图也读同一套 skin；本次文案按用户指示只写「欢乐台球与欢乐九球共用」。若以后要如实标注斯诺克，需同时确认「按编号设计」的球组文案是否适用。
 - 商城页语言由 `localStorage['joyflock-portal-language']` 控制（`zh` 为中文），CDP 验收要先设置再 `Page.reload`；`?locale=zh` 对商城页不生效。
 - GitHub 代理 502 未恢复，本地三个提交待补推：`e340306`、`05b382b` 与本次文档提交。生产与本地静态已一致，不阻塞线上。
+## 2026-11-20 · 积分系统约束（`36b8e68`）
+
+- 积分是**第二套独立阶梯**，不是 Joy Coins：`SCORE_KEY='joyflock.score.v1'` 单独持久化，`state.points` 仍是钱包余额；改钱包/商城/每日上限时不要动 `state.score`。`scoreFor(rank)` = 1st 40、2nd 20、平局 20、其余 10；排名来自 `rankOf(r)`，与 Joy Coins 的 `TABLE` 分表无关。
+- 排行榜三周期 month/week/day 不变，但排序与右列改为 `points`（积分）；左列仍是 `games`（场次参考，用户历史要求保留局数）。若以后要去掉局数列，需同步 `social-ui.js`、`table.js`、`intro-boot.js`、两个 `index.html` 的 `.ranking-columns`、两套 CSS 的 grid 与 `tests/winrate-leaderboard.test.mjs`。
+- 服务端 `TableService` 的两个 leaderboard SQL 用 `sum(case when rank=1 then 40 ...)` **在查询时把账本名次折算成积分**；`SettlementService` / `MatchScoring` / `account_match_results.points_delta` 完全没动，所以不需要 V26 迁移。若将来改成持久化学分，必须另起列/表并同步结算与所有后端测试。
+- 双口径（重要）：前端 `snapshot().score` 覆盖所有本地结算（含机器人、游客），是详情页「当前积分」与结算弹窗「总积分」的唯一来源；`/api/table/leaderboards/{game}` 只聚合已登录在线局的账本记录。两者设计上不相等，不要在 UI 上承诺一致。
+- 结算弹窗有两张 `.pool-result-points` 卡片，顺序**积分在前、Joy Coins 在后**（`pool-shell.js` 的 `cardKids`）。`result-points.css` 的 `.pool-result-description:has(+ .pool-result-points:not([hidden]))` 依赖「紧跟 description 的是 `.pool-result-points`」，插卡顺序不能反；飞行棋结算页复用 `.pool-result-points` 皮肤，靠 `data-phase="done"` 让两行可见。
+- 缓存键：本次统一 `&score=20261120-score1`，追加在 17 处 URL 末尾；三个 touched-assets 守卫只比较 `v=` 值，所以 `presentation.js` 仍不追加参数。教训：批量追加缓存键的正则里 `\s`（两个反斜杠）会被正则当成字面 `s`，把 URL 截断在第一个 `s`；清理时又不能用 `replace('&&','&')` 作用于整个 JS 文件（会把逻辑与改成位与）。后续一律用 `[^"\'\s<>]*` 并只对 URL 片段做替换。
+- GitHub 代理已恢复：此前积压的 3 个提交已随 `36b8e68` 推送，`origin/main` 同步。
