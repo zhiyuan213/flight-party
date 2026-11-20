@@ -235,8 +235,10 @@ export function renderPool(host,s,can,options={}) {
     // the stroke power or those pots would silently use the old quiet drop.
     const strokePower=Number.isFinite(s.shotCommand)?Math.floor((s.shotCommand%363600)/3600):undefined;
     host._returns=host._returns.filter(e=>!e.scratch||now<returnTiming(e).completeAt);
+    if(s.game==='nineball')host._returns=host._returns.filter(e=>e.scratch||e.id<=9);
     if(prev?.[2]&&!c[2]&&!reduced()&&!host._returns.some(e=>e.scratch))host._returns.push({id:0,scratch:true,shotPower:strokePower,orientation:host._orientation?.[0]?.slice(),x:c[0]/10+PAD,y:c[1]/10+PAD,start:now});
-    for(let id=1;id<16;id++){if(c[id*3+2])host._returns=host._returns.filter(e=>e.id!==id);else if(!host._returns.some(e=>e.id===id))host._returns.push({id,shotPower:strokePower,orientation:host._orientation?.[id]?.slice(),x:c[id*3]/10+PAD,y:c[id*3+1]/10+PAD,start:prev?.[id*3+2]&&!reduced()?now:now-10000});}
+    const returnLimit=s.game==='nineball'?10:16;
+    for(let id=1;id<returnLimit;id++){if(c[id*3+2])host._returns=host._returns.filter(e=>e.id!==id);else if(!host._returns.some(e=>e.id===id))host._returns.push({id,shotPower:strokePower,orientation:host._orientation?.[id]?.slice(),x:c[id*3]/10+PAD,y:c[id*3+1]/10+PAD,start:prev?.[id*3+2]&&!reduced()?now:now-10000});}
     host._scratchVisible=host._returns.some(e=>e.scratch&&now<returnTiming(e).completeAt);
     // The glove is an interaction affordance, not part of the board state:
     // never offer the ball while a replay, a strike, the opponent's cue or a

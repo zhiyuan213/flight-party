@@ -342,4 +342,4 @@ export function poolBot(s,level,rng=Math.random){
  const power=Math.max(28,Math.min(100,best.power+Math.round(jitter(tune.power,rng))));
  return best.spot*363600+power*3600+a;
 }
-export {renderPool} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
+export {renderPool} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';

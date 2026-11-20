@@ -1,5 +1,5 @@
 import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
-import {poolStart,poolMove,poolBot} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1';
+import {poolStart,poolMove,poolBot} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';
 import {cardsStart,cardsMove,cardsLegal,cardsBot} from './cards.js?v=20261112-gamelanes1';
 import {sketchStart} from './sketch.js?v=20261110-glove2';
 import {chessStart,chessMove,chessLegal,chessBot} from './chess-rules.js?v=20261110-glove2';
