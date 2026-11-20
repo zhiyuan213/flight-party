@@ -1,7 +1,7 @@
 import {botLevelStore,BOT_BONUS,botLabel} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
-import {attachFourDrop} from './four-drop.js?v=20261113-fourfx1';
+import {attachFourDrop} from './four-drop.js?v=20261113-fourfx1&skin=20261120-billiardskins1';
 import {attachFourFeedback} from './four-feedback.js?v=20261113-fourfx1';
-import {fourSeatPiece} from './four-seat-piece.js?v=20261113-gomokuseat1';
+import {fourSeatPiece} from './four-seat-piece.js?v=20261113-gomokuseat1&skin=20261120-billiardskins1';
 import {openThemePicker,getTheme,setTheme,instanceId as themeInstanceId} from './four-theme.js?v=20261110-glove2';
 import {showMatchBox,hideMatchBox,updateMatchBox} from './match-box.js?v=20261110-glove2';
 import {mountArcade} from './arcade-table.js?v=20261112-natural1&release=20261115-polishrelease1';
@@ -19,7 +19,7 @@ import {drawSketch,sketchNext} from './sketch.js?v=20261110-glove2';
 import {start,move,bot,legal} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
 import {bubblesScore} from './bubbles-duel.js?v=20261112-gamelanes1';
 import {renderGomoku} from './gomoku-view.js?v=20261112-natural1';
-import {applyCosmetics,decoratePieces,localSelection,profiles} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1';
+import {applyCosmetics,decoratePieces,localSelection,profiles} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1';
 import {createRoomCosmeticSync} from './room-cosmetics.js';
 /* ONLINE CUSTODY — the shared, per-game state machine. The server owns the
    authoritative copy; this shell only paints the 30s countdown, the hosted

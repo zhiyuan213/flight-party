@@ -20,7 +20,8 @@ const PERSONAL_THEMES=['default','neon','jade','aurora','coral','pearl'];
    team base (--four-two). They never apply to Gomoku stones or XO marks. */
 const PINK_THEMES=['default','blossom','heart','bow','diamond','candy'];
 const ALL_PIECE_THEMES=[...PERSONAL_THEMES,...PINK_THEMES.filter(t=>t!=='default')];
-const skinTheme=id=>{const t=themeOf(id);return ALL_PIECE_THEMES.includes(t)&&t!=='default'?t:'';};
+const BILLIARD_SKIN_THEMES=['default','neon','crystal','jade','galaxy','aurora'];
+const skinTheme=(id,billiards=false)=>{const t=themeOf(id);const list=billiards?BILLIARD_SKIN_THEMES:ALL_PIECE_THEMES;return list.includes(t)&&t!=='default'?t:'';};
 const validId=(id,game,role)=>PERSONAL_THEMES.some(t=>id===game+'-'+role+'-'+t);
 const validPinkId=(id,game)=>PINK_THEMES.some(t=>id===game+'-pink-piece-'+t);
 const selected=(id,game,role)=>validId(id,game,role)?id:game+'-'+role+'-default';
@@ -152,7 +153,7 @@ export function applyCosmetics(options={}){
   root.setAttribute('data-cosmetic-reason',lastDecision.reason);
   root.setAttribute('data-cosmetic-winner',lastDecision.winner||'');
   if(billiards){
-    const ballTheme=skinTheme(equip.ball),cueTheme=skinTheme(equip.cue),tableTheme=skinTheme(lastDecision.id);
+    const ballTheme=skinTheme(equip.ball,true),cueTheme=skinTheme(equip.cue,true),tableTheme=skinTheme(lastDecision.id,true);
     setTheme(root,'data-cosmetic-ball',ballTheme);setTheme(root,'data-cosmetic-cue',cueTheme);setTheme(root,'data-cosmetic-table',tableTheme);
     lastState={game,ball:equip.ball,cue:equip.cue,table:equip.table,ballTheme,cueTheme,tableTheme,mySeat,decision:lastDecision,me,opponent,matchKey};
   }else{
