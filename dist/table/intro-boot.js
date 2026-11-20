@@ -54,16 +54,13 @@
       var badge=doc.createElement('span');badge.className='member-label'+(annual?' annual':'');
       badge.setAttribute('role','img');badge.setAttribute('aria-label',annual?'Annual VIP':'VIP');line.append(badge);}
     copy.append(line);seat.append(shell,copy);
-    /* The left column shows only completed games; the "wins / games" record
-       was retired. The right column keeps the one-decimal win rate, so wins
-       still drive sorting and winRate -- they are just not printed. Rows from
-       an older server payload without wins degrade to 0.0%, never a made-up
-       figure. */
+    /* Left column = completed games; right column = cumulative SCORE. The
+       win-rate figure is no longer printed or used for ordering. */
     var total=Math.max(0,Number(row.games)||0);
     var record=doc.createElement('b');record.className='ranking-points';record.textContent=String(total);
-    var rate=doc.createElement('span');rate.className='ranking-games';
-    rate.textContent=(Number(row.winRate)||0).toFixed(1)+'%';
-    li.append(rank,seat,record,rate);return li;
+    var score=doc.createElement('span');score.className='ranking-games';
+    score.textContent=String(Math.max(0,Number(row.points)||0));
+    li.append(rank,seat,record,score);return li;
   };
   window.__joyflockDemoBoard=function(lb,period,game){
     if(!lb)return;
@@ -75,8 +72,8 @@
      once the real session resolves; the member-facts block stays at zero. */
   window.__joyflockDemoStats=function(locale){
     return (locale||document.documentElement.getAttribute('data-locale'))==='en'
-      ?'My record: 0 Joy Coins · 0 games'
-      :'我的战绩：0 Joy Coins · 0 局';
+      ?'My score: 0 · 0 games'
+      :'我的积分：0 · 0 局';
   };
   var VALID=['four','gomoku','chess','puzzle','draw','cards','pool','nineball','snooker','bubbles','xo'];
   var g=new URLSearchParams(location.search).get('game');

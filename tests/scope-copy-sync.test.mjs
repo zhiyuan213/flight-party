@@ -47,7 +47,7 @@ test('the demo footnote only shows while sample rows are actually on the board',
   assert.match(tableHtml, /ranking-footnote[^<]*<span class="demo-tag"/);
   assert.match(tableHtml, /table\.js\?v=20261115-joincoin1&d=20261115-winrate1&u=20261115-scope1/,
     'the rebuilt refresh logic is cache-busted');
-  assert.match(tableHtml, /月胜率榜/, 'the win-rate board itself is unchanged');
+  assert.match(tableHtml, /月积分榜/, 'the board now counts score only');
 });
 
 /* 18:36 review of 7b06ed8: three stale statements were still able to make a

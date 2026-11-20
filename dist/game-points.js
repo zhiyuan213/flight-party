@@ -27,14 +27,24 @@
  var VERSION='20261112-gamelanes1';
  var KEY='joyflock.gamepoints.v1';
  var WALLET_KEY='joyflock.shop.v1';
+ var SCORE_KEY='joyflock.score.v1';
  var TABLE={2:[200,100],3:[200,100,50],4:[200,100,50,50]};
+ /* SCORE is a second, independent ladder: 1st 40, 2nd 20, all other seats 10.
+    Two-seat games therefore pay 40 / 20 (a draw also pays 20), while a four
+    seat game pays 40 / 20 / 10 / 10. It has NO daily cap, NO difficulty bonus
+    and is never spent in the shop; it only drives the standings and the two
+    "score" read-outs (member facts + result dialog). */
+ /* A draw (rank 0) is worth the same as second place: 20. */
+ function scoreFor(rank){return rank===1?40:rank===2||rank===0?20:10;}
+ function readScore(){try{return Math.max(0,Math.round(Number(localStorage.getItem(SCORE_KEY))||0));}catch(e){return 0;}}
+ function writeScore(n){try{localStorage.setItem(SCORE_KEY,String(Math.max(0,Math.round(n))));}catch(e){}}
  /* DAILY CAP: at most 5000 Joy Coins can be EARNED per local calendar day.
     The counter lives in the persisted game record and rolls over at local
     midnight. Only the credited part joins the shared wallet balance; the
     result dialog still learns the original award through last.full / capped. */
  var DAILY_CAP=5000;
  var seen=Object.create(null);
- var state={games:0,wins:0,points:0,byGame:{},last:null,daily:null};
+ var state={games:0,wins:0,points:0,score:0,byGame:{},last:null,daily:null};
  var signedIn=false;
 
  function fmt(n){return String(Math.max(0,Number(n)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
@@ -76,7 +86,7 @@
   /* The balance always starts from the shared wallet, NOT from a second
      accumulated total. Games / wins / the daily allowance are still a clean
      per-session record. */
-  state={games:0,wins:0,points:walletTotal()||0,byGame:{},last:null,daily:null};
+  state={games:0,wins:0,points:walletTotal()||0,score:readScore(),byGame:{},last:null,daily:null};
   /* Anonymous sessions never read a stored game record either. */
   if(!signedIn)return;
   try{
@@ -159,7 +169,7 @@
  }
 
  function snapshot(){
-  return {games:state.games,wins:state.wins,points:state.points,winRate:state.games?state.wins/state.games*100:0,
+  return {games:state.games,wins:state.wins,points:state.points,score:state.score,winRate:state.games?state.wins/state.games*100:0,
    byGame:JSON.parse(JSON.stringify(state.byGame)),last:state.last?Object.assign({},state.last):null,
    daily:dailyView(),signedIn:signedIn};
  }
@@ -172,7 +182,7 @@
      but shares localStorage, which resolve() already falls back to. Guests
      keep the neutral label, signedIn:false and therefore the default face. */
   var name=accountName();
-  return {name:name||(en()?'You':'你'),points:state.points,games:state.games,wins:state.wins,winRate:snapshot().winRate,
+  return {name:name||(en()?'You':'你'),points:state.score,score:state.score,coins:state.points,games:state.games,wins:state.wins,winRate:snapshot().winRate,
    avatar:0,avatarUrl:'',avatarFrame:'none',member:false,annualMember:false,
    self:true,isSelf:true,signedIn:!!name};
  }
@@ -201,6 +211,7 @@
   if(key&&seen[key])return null;
   if(key)seen[key]=true;
   var p=pointsFor(r);
+  var sc=scoreFor(p.rank);
   var g=String(r.game||'game');
   /* Only the part still allowed today is credited. After 5000 points the game
      still counts as played (games / wins / per-game split), but adds 0 points.
@@ -217,8 +228,12 @@
   var b=state.byGame[g]||{games:0,wins:0,points:0};
   b.games++;b.points+=credited;if(p.rank===1)b.wins++;
   state.byGame[g]=b;
+  /* Score lives in its own storage key so a guest, a sign-out or a wallet
+     purchase can never distort the cumulative standings figure. */
+  state.score=readScore()+sc;writeScore(state.score);
   state.last={game:g,rank:p.rank,points:credited,full:p.points,capped:credited<p.points,
-   base:p.base,bonus:p.bonus,bonusPct:p.bonusPct,players:p.players,at:Date.now()};
+   base:p.base,bonus:p.bonus,bonusPct:p.bonusPct,players:p.players,
+   score:sc,scoreTotal:state.score,at:Date.now()};
   persist();render(p);
   try{window.dispatchEvent(new CustomEvent('joyflock:game-points',{detail:snapshot()}));}catch(e){}
   try{if(window.parent!==window)window.parent.postMessage(
@@ -233,14 +248,25 @@
   var box=document.querySelector('.member-facts');
   if(box){
    var set=function(k,v){var n=box.querySelector('[data-member-fact="'+k+'"]');if(n){n.textContent=v;n.dataset.systemEnglish=v;}};
-   set('points',fmt(s.points));set('games',fmt(s.games));set('winrate',Math.round(s.winRate)+'%');
+   set('points',fmt(s.points));set('score',fmt(s.score));set('games',fmt(s.games));set('winrate',Math.round(s.winRate)+'%');
+   var scoreCell=box.querySelector('[data-member-fact="score"]');
+   if(scoreCell&&scoreCell.nextElementSibling)scoreCell.nextElementSibling.textContent=zh?'当前积分':'My score';
+  }
+  var scorePanel=document.getElementById('result-score-panel');
+  if(scorePanel){
+   var labels=scorePanel.querySelectorAll('.pool-result-points-label');
+   if(labels[0])labels[0].textContent=zh?'本局奖励积分':'Round score';
+   if(labels[1])labels[1].textContent=zh?'总积分':'Total score';
+   var reward=scorePanel.querySelector('#result-score-reward'),total=scorePanel.querySelector('#result-score-total');
+   if(reward)reward.textContent='+'+fmt(s.last&&s.last.score);
+   if(total)total.textContent=fmt(s.score);
   }
   var stats=document.getElementById('stats');
   if(stats){
    stats.dataset.gamePoints='1';delete stats.dataset.demo;
    stats.textContent=zh
-    ?'我的战绩：'+fmt(s.points)+' Joy Coins · '+fmt(s.games)+' 局'+(signedIn?'':' · 匿名战绩仅显示，不保存')
-    :'My record: '+fmt(s.points)+' Joy Coins · '+fmt(s.games)+' games'+(signedIn?'':' · guest stats not saved');
+    ?'我的积分：'+fmt(s.score)+' · '+fmt(s.games)+' 局'+(signedIn?'':' · 匿名战绩仅显示，不保存')
+    :'My score: '+fmt(s.score)+' · '+fmt(s.games)+' games'+(signedIn?'':' · guest stats not saved');
   }
   renderBoard();
  }
@@ -253,10 +279,8 @@
   var rows=window.__joyflockDemoRows?window.__joyflockDemoRows(period,game).slice():[];
   var self=leaderboardRow();
   if(self)rows.push(self);
-  /* Only the table-game detail page owns #leaderboard inside .home-ranking;
-     the home Pilot board keeps its Joy Coins ordering. */
-  var byRate=!!document.querySelector('.home-ranking');
-  rows=rankRows(rows,byRate?'winRate':'points');
+  /* Every board is a score board now: rank by the 40/20/10 ladder. */
+  rows=rankRows(rows,'points');
   var doc=lb.ownerDocument;
   lb.replaceChildren.apply(lb,rows.map(function(r,i){
    var li=window.__joyflockRankRow(doc,r,i);
@@ -272,6 +296,7 @@
   state.games=Math.max(0,Number(next.games)||0);
   state.wins=Math.max(0,Number(next.wins)||0);
   state.points=Math.max(0,Number(next.points)||0);
+  state.score=Math.max(0,Number(next.score)||0);
   state.byGame=next.byGame&&typeof next.byGame==='object'?next.byGame:{};
   state.last=next.last||null;
   /* The parent shell mirrors the child's daily allowance too, so a reload or a
@@ -282,10 +307,10 @@
  }
 /* A record reset must NOT reset the daily allowance or the shared balance:
    otherwise clearing the visible stats would lift the cap or empty the wallet. */
- function reset(){var day=state.daily,balance=walletTotal();state={games:0,wins:0,points:balance===null?0:balance,byGame:{},last:null,daily:day};seen=Object.create(null);persist();render(null);}
+ function reset(){var day=state.daily,balance=walletTotal();state={games:0,wins:0,points:balance===null?0:balance,score:readScore(),byGame:{},last:null,daily:day};seen=Object.create(null);persist();render(null);}
 
  window.__joyflockGamePoints={
-  version:VERSION,key:KEY,table:table,pointsFor:pointsFor,record:record,get:snapshot,
+  version:VERSION,key:KEY,table:table,pointsFor:pointsFor,scoreFor:scoreFor,record:record,get:snapshot,
   leaderboardRow:leaderboardRow,rankRows:rankRows,render:render,reset:reset,sync:sync,
   dailyCap:DAILY_CAP,daily:dailyView,
   isSignedIn:function(){return signedIn;}
@@ -327,6 +352,7 @@
    if(t!==null&&t!==state.points){state.points=t;render(null);}
    return;
   }
+  if(e.key===SCORE_KEY){state.score=readScore();render(null);return;}
   if(e.key===KEY||e.key==='joyflock.accountName'){load();render(null);}
  });
  /* site-account.js broadcasts the authoritative nickname after a login or

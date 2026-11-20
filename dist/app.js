@@ -11,7 +11,7 @@ import {PALETTE} from './scene.js';
 import {AudioFX} from './audio.js?v=20261110-glove2&audio=20261116-idle1';
 import {CanvasBoard} from './fallback.js';
 import {Die3D} from './die3d.js?v=20261110-glove2';
-import {SocialUI} from './social-ui.js?v=20261112-gamelanes1&d=20261115-selfrow1&p=20261116-poolshell1';
+import {SocialUI} from './social-ui.js?v=20261112-gamelanes1&d=20261115-selfrow1&p=20261116-poolshell1&score=20261120-score1';
 import {ReactionPreview} from './reaction-preview.js';
 import {OnlineSession} from './online-session.js?v=20261116-csrfretry1';
 import {bindLiveRooms} from './live-room-ui.js?v=20261116-roomleave1';

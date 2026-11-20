@@ -15,15 +15,15 @@ const memberNote = html.match(/<section class="member-note">[\s\S]*?<\/section>/
    These guards also sweep the dead CSS rules and the unused locale entry so
    the deletion cannot silently regress on a later rebuild. */
 
-test('the membership card has no outbound link and keeps all four facts', () => {
+test('the membership card has no outbound link and keeps all five facts', () => {
   assert.ok(memberNote, 'the Membership & support section still exists');
   assert.ok(!/<a\b/i.test(memberNote), 'no anchor inside the card');
   assert.ok(!/会员说明|Membership details|↗/.test(memberNote), 'no link label or arrow glyph');
   assert.ok(!/href="\/membership\.html"/.test(memberNote), 'no membership.html target');
-  for (const fact of ['tier', 'points', 'games', 'winrate']) {
+  for (const fact of ['tier', 'points', 'score', 'games', 'winrate']) {
     assert.ok(memberNote.includes(`data-member-fact="${fact}"`), `${fact} fact survives`);
   }
-  assert.ok((memberNote.match(/data-member-fact=/g) || []).length === 4, 'exactly four facts');
+  assert.ok((memberNote.match(/data-member-fact=/g) || []).length === 5, 'exactly five facts');
   assert.match(memberNote, /<h2>会员与支持<\/h2>/, 'heading unchanged');
   assert.match(memberNote, /会员装饰可改变头像/, 'explanatory paragraph unchanged');
   /* Only the card link was removed — the header 会员 entry is a different

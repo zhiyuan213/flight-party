@@ -1,8 +1,9 @@
 import {avatarStyle} from './avatar.js';
 
-/* The pool detail page owns this board composition. Flight uses the same
-   three-period win-rate standings: real server rows first, explicit sample
-   rows only to keep ten seats, one decimal win rate, games on the left. */
+/* Both detail pages own this board composition: three UTC periods (month /
+   week / day), real server rows first, explicit sample rows only to keep ten
+   seats. Standings count SCORE ONLY (40 / 20 / 10 per finished game); games
+   is printed as a reference column but never decides the order. */
 const PERIODS=['month','week','day'];
 const DEMO_PLAYERS=[
  ['Ava Mitchell',[96,27,6],[62,18,5],true,true],['Leo Park',[91,24,5],[55,15,4],true,false],
@@ -15,11 +16,10 @@ function demoRows(period){
  const p=Math.max(0,PERIODS.indexOf(period));
  return DEMO_PLAYERS.map((d,i)=>{
   const games=d[1][p],wins=Math.max(0,Math.min(games,d[2][p]));
-  return {name:d[0],games,wins,winRate:games?wins/games*100:0,points:games*5,
+  return {name:d[0],games,wins,winRate:games?wins/games*100:0,points:games*30,
    member:d[3],annualMember:d[4],avatarUrl:'/api/avatars/system/'+(i%4)};
  });
 }
-const rate=r=>Number(r.winRate)||0;
 function avatarNode(doc,row){
  if(globalThis.__joyflockAvatarDisplay?.create)
   return globalThis.__joyflockAvatarDisplay.create(doc,{avatarUrl:row.avatarUrl,isSelf:row.self===true,signedIn:row.signedIn!==false});
@@ -35,10 +35,10 @@ function rankRow(doc,row,i){
  const name=doc.createElement('strong');name.textContent=row.name||'玩家';line.append(name);
  if(row.member){const badge=doc.createElement('span');badge.className='member-label'+(row.annualMember?' annual':'');badge.setAttribute('role','img');badge.setAttribute('aria-label',row.annualMember?'YEAR VIP':'VIP');line.append(badge);}
  copy.append(line);seat.append(shell,copy);
- /* Left number = completed games only; right number = one-decimal win rate. */
+ /* Left number = completed games; right number = cumulative SCORE. */
  const games=doc.createElement('b');games.className='ranking-points';games.textContent=String(Math.max(0,Number(row.games)||0));
- const pct=doc.createElement('span');pct.className='ranking-games';pct.textContent=(Number(row.winRate)||0).toFixed(1)+'%';
- li.append(rank,seat,games,pct);
+ const score=doc.createElement('span');score.className='ranking-games';score.textContent=String(Math.max(0,Number(row.points)||0));
+ li.append(rank,seat,games,score);
  if(row.self===true)li.dataset.self='1';
  return li;
 }
@@ -119,12 +119,12 @@ export class SocialUI{
   const zh=locale==='zh',t=(en,cn)=>zh?cn:en;
   return `<div class="ranking-heading"><h2>${t('Standings','玩家排行')}</h2></div>`+
    `<div class="period-tabs" role="group" aria-label="${t('Ranking period','排行榜周期')}">`+
-   [['month','Monthly win rate','月胜率榜'],['week','Weekly win rate','周胜率榜'],['day','Daily win rate','日胜率榜']]
+   [['month','Monthly score','月积分榜'],['week','Weekly score','周积分榜'],['day','Daily score','日积分榜']]
     .map(([key,en,cn])=>`<button type="button" data-period="${key}" aria-pressed="${key==='month'}">${t(en,cn)}</button>`).join('')+
-   `</div><div class="ranking-columns"><span>${t('Player','玩家')}</span><span>${t('Games','局数')}</span><span>${t('Win rate','胜率')}</span></div>`+
+   `</div><div class="ranking-columns"><span>${t('Player','玩家')}</span><span>${t('Games','局数')}</span><span>${t('Score','积分')}</span></div>`+
    `<ol id="leaderboard"></ol>`+
    `<p class="ranking-footnote">${t('Signed-in online results · UTC · Top 10','登录联机可记录 · UTC时间 · 前10')}<span class="demo-tag">${t(' · Sample data',' · 示例数据')}</span></p>`+
-   `<p id="stats">${t('My record: 0 Joy Coins · 0 games','我的战绩：0 Joy Coins · 0 局')}</p>`;
+   `<p id="stats">${t('My score: 0 · 0 games','我的积分：0 · 0 局')}</p>`;
  }
  async loadAllLeaderboards(){
   const token=++this.boardLoadToken;
@@ -168,8 +168,8 @@ export class SocialUI{
   }
   const self=globalThis.__joyflockGamePoints?.leaderboardRow?.();
   if(self)merged.push({...self,winRate:Number(self.winRate)||0});
-  const top=globalThis.__joyflockGamePoints?.rankRows?.(merged,'winRate')
-   ||merged.sort((a,b)=>rate(b)-rate(a)||(Number(b.games)||0)-(Number(a.games)||0)).slice(0,10);
+  const top=globalThis.__joyflockGamePoints?.rankRows?.(merged,'points')
+   ||merged.sort((a,b)=>(Number(b.points)||0)-(Number(a.points)||0)||(Number(b.games)||0)-(Number(a.games)||0)).slice(0,10);
   const doc=this.leaderboard.ownerDocument,list=this.leaderboard.querySelector('#leaderboard');
   list.replaceChildren(...top.map((entry,i)=>rankRow(doc,entry,i)));
   const tag=this.leaderboard.querySelector('.demo-tag');if(tag)tag.hidden=!usedDemo;

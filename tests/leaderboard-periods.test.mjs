@@ -42,20 +42,20 @@ function panelFor(period, rows) {
   return {ui, panel, list, tag, tabs};
 }
 
-test('the three period tabs are a win-rate board with games + rate only', () => {
+test('the three period tabs are a score board with games + score only', () => {
   const ui = new SocialUI();
   const html = ui.boardShell('zh');
   assert.equal((html.match(/data-period=/g) || []).length, 3);
-  for (const label of ['月胜率榜', '周胜率榜', '日胜率榜']) assert.ok(html.includes(label), label);
-  assert.ok(html.includes('<span>玩家</span><span>局数</span><span>胜率</span>'));
+  for (const label of ['月积分榜', '周积分榜', '日积分榜']) assert.ok(html.includes(label), label);
+  assert.ok(html.includes('<span>玩家</span><span>局数</span><span>积分</span>'));
   assert.ok(!html.includes('Joy Coins 榜'), 'no Joy Coins board label remains');
   assert.ok(!html.includes('data-leaderboard-tab'), 'old tab attribute retired');
   assert.ok(html.includes('demo-tag'), 'sample rows are advertised');
   const en = ui.boardShell('en');
-  assert.ok(en.includes('Standings') && en.includes('Win rate'));
+  assert.ok(en.includes('Standings') && en.includes('Score'));
 });
 
-test('real server rows win and the board prints games + a one-decimal win rate', () => {
+test('real server rows win and the board prints games + score', () => {
   for (const period of ['month', 'week', 'day']) {
     const rows = [{name: 'Real <pilot>', games: 9, wins: 2, points: 200,
       member: true, annualMember: true, avatarUrl: '/api/avatars/system/1'}];
@@ -68,7 +68,7 @@ test('real server rows win and the board prints games + a one-decimal win rate',
     assert.equal(real.children[2].className, 'ranking-points');
     assert.equal(real.children[2].textContent, '9', period + ': games only, no wins/games');
     assert.equal(real.children[3].className, 'ranking-games');
-    assert.equal(real.children[3].textContent, '22.2%', period + ': derived win rate');
+    assert.equal(real.children[3].textContent, '200', period + ': the cumulative score');
     assert.equal(nameOf(real), 'Real <pilot>', period + ': name is text, never innerHTML');
     assert.equal(tag.hidden, false, period + ': demo rows are on the board');
     assert.equal(tabs.find(t => t.attrs['data-period'] === period).attrs['aria-pressed'], 'true');

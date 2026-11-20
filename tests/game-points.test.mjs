@@ -35,6 +35,7 @@ function sandbox({locale = 'zh', store = new Map(), cookie = '', demo = null} = 
   const facts = makeEl('div');
   facts.lookups = {
     '[data-member-fact="points"]': makeEl('span'),
+    '[data-member-fact="score"]': makeEl('span'),
     '[data-member-fact="games"]': makeEl('span'),
     '[data-member-fact="winrate"]': makeEl('span')
   };
@@ -124,7 +125,8 @@ test('an anonymous visitor sees live points but never reads or writes storage', 
   assert.equal(store.get(KEY), JSON.stringify({games: 99, wins: 99, points: 99999, byGame: {}}),
     'the stored record is untouched');
   assert.equal(s.toast(), null, 'the result dialog owns the reward, no bottom toast');
-  assert.match(s.stats.textContent, /300 Joy Coins · 2 局.*匿名战绩仅显示，不保存/);
+  assert.match(s.stats.textContent, /我的积分：60 · 2 局.*匿名战绩仅显示，不保存/);
+  assert.equal(s.api.get().score, 60, 'a 1st and a 2nd place add 40 + 20 score');
   assert.equal(s.stats.dataset.gamePoints, '1');
   assert.equal(s.stats.dataset.demo, undefined);
   /* A reload is a clean guest session: no persistence, no replay. */
@@ -163,11 +165,11 @@ test('result keys de-duplicate, snapshots sync without a second award, and reset
   assert.equal(s.api.record(result), null);
   assert.equal(s.api.get().games, 1);
   assert.equal(s.api.record({...result, over: false}), null, 'an unfinished board never scores');
-  s.api.sync({games: 4, wins: 2, points: 800, byGame: {}, last: null});
+  s.api.sync({games: 4, wins: 2, points: 800, score: 120, byGame: {}, last: null});
   assert.equal(s.api.get().points, 800, 'the parent shell mirrors the child state only');
   assert.equal(s.api.get().games, 4);
   assert.equal(s.api.leaderboardRow().self, true);
-  assert.equal(s.api.leaderboardRow().points, 800);
+  assert.equal(s.api.leaderboardRow().points, 120, 'the self row carries the score ladder');
   s.api.reset();
   assert.equal(s.api.get().games, 0);
   assert.equal(s.api.leaderboardRow(), null);
@@ -181,13 +183,14 @@ test('the leaderboard and the member facts are rebuilt from the live figures', (
   s.api.record({game: 'pool', key: 'r1', players: 2, winner: 2, seat: 0, over: true});
   assert.equal(s.api.get().points, 100);
   assert.equal(s.facts.lookups['[data-member-fact="points"]'].textContent, '100');
+  assert.equal(s.facts.lookups['[data-member-fact="score"]'].textContent, '20');
   assert.equal(s.facts.lookups['[data-member-fact="games"]'].textContent, '1');
   assert.equal(s.facts.lookups['[data-member-fact="winrate"]'].textContent, '0%');
-  assert.match(s.stats.textContent, /My record: 100 Joy Coins · 1 games · guest stats not saved/);
+  assert.match(s.stats.textContent, /My score: 20 · 1 games · guest stats not saved/);
   assert.equal(s.api.leaderboardRow().name, 'You');
   assert.equal(s.leaderboard.children.length, 3, 'the self row is inserted into the board');
-  assert.equal(s.leaderboard.children[1].dataset.self, '1', '100 pts sorts between 260 and 90');
-  assert.equal(s.leaderboard.children[1].textContent, 'You');
+  assert.equal(s.leaderboard.children[2].dataset.self, '1', '20 score sorts after the 260 / 90 demo rows');
+  assert.equal(s.leaderboard.children[2].textContent, 'You');
   assert.equal(s.toast(), null, 'the result dialog owns the reward, no bottom toast');
 });
 
@@ -260,8 +263,8 @@ test('the visitor keeps a leaderboard seat even below ten demo standings', () =>
   const rows = s.api.rankRows(demo().concat([{name: '你', points: 100, games: 1, self: true}]));
   assert.equal([...rows].length, 10);
   assert.equal([...rows][9].name, '你');
-  assert.match(read('dist/table/table.js'), /rankRows\?\.\(merged,'winRate'\)/);
-  assert.match(read('dist/social-ui.js'), /rankRows\?\.\(merged,'winRate'\)/);
+  assert.match(read('dist/table/table.js'), /rankRows\?\.\(merged,'points'\)/);
+  assert.match(read('dist/social-ui.js'), /rankRows\?\.\(merged,'points'\)/);
 });
 
 test('a login or logout in the same tab switches identity without adopting guest figures', () => {

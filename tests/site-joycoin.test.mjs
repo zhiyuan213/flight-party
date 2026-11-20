@@ -169,11 +169,12 @@ test('page titles and top note keep the shop name; the footer shop link is gone'
 });
 
 test('every user-facing 积分 / points label is now the single Joy Coins currency', () => {
-  assert.match(read('dist/table/index.html'), /月胜率榜/);
+  assert.match(read('dist/table/index.html'), /月积分榜/);
   assert.match(read('dist/privacy.html'), /Joy Coins 和局数/);
-  assert.match(read('dist/table/table.js'), /我的战绩：0 Joy Coins · 0 局/);
-  assert.match(read('dist/table/intro-boot.js'), /我的战绩：0 Joy Coins · 0 局/);
-  assert.doesNotMatch(read('dist/table/index.html'), /积分/);
+  assert.match(read('dist/table/table.js'), /我的积分：0 · 0 局/);
+  assert.match(read('dist/table/intro-boot.js'), /我的积分：0 · 0 局/);
+  assert.match(read('dist/table/index.html'), /data-member-fact="score"/,
+    'the independent score ladder has its own fact cell');
   assert.doesNotMatch(read('dist/privacy.html'), /积分/);
 });
 

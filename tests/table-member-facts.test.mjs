@@ -20,7 +20,7 @@ function loadPainter(me, lang = 'zh') {
   assert.ok(start >= 0 && end > start, 'member-facts painter is present in table.js');
   const source = table.slice(start, end);
   const nodes = {};
-  for (const key of ['tier', 'points', 'games', 'winrate']) {
+  for (const key of ['tier', 'points', 'score', 'games', 'winrate']) {
     nodes[key] = {textContent: '', dataset: {}};
   }
   const box = {
@@ -40,11 +40,13 @@ function loadPainter(me, lang = 'zh') {
 
 test('the first frame no longer ships sample account figures', () => {
   assert.ok(facts, 'member-facts block must exist');
-  for (const key of ['tier', 'points', 'games', 'winrate']) {
+  for (const key of ['tier', 'points', 'score', 'games', 'winrate']) {
     assert.match(facts, new RegExp(`data-member-fact="${key}"`), `${key} must be addressable`);
   }
   assert.match(facts, /data-member-fact="tier"[^>]*>—</);
   assert.match(facts, /data-member-fact="points"[^>]*>0</);
+  assert.match(facts, /data-member-fact="score"[^>]*>0</);
+  assert.match(facts, /data-member-fact="score"[^>]*>0</);
   assert.match(facts, /data-member-fact="games"[^>]*>0</);
   assert.match(facts, /data-member-fact="winrate"[^>]*>0%</);
   for (const stale of ['278', '68%', 'Annual VIP', '>66<', '年度 VIP']) {
@@ -98,10 +100,10 @@ test('real data comes from the current session and per-game stats endpoint', () 
 });
 
 test('the other "my record" placeholder also starts at zero', () => {
-  assert.match(boot, /'My record: 0 Joy Coins · 0 games'/);
-  assert.match(boot, /'我的战绩：0 Joy Coins · 0 局'/);
+  assert.match(boot, /'My score: 0 · 0 games'/);
+  assert.match(boot, /'我的积分：0 · 0 局'/);
   assert.ok(!/278|68%|\+36/.test(boot.match(/window\.__joyflockDemoStats=function[\s\S]*?\n  \};/)?.[0] ?? ''));
-  assert.match(table, /'我的战绩：0 Joy Coins · 0 局'/);
+  assert.match(table, /'我的积分：0 · 0 局'/);
   assert.ok(!table.includes('278 Joy Coins'), 'table.js fallback must not resurrect the sample record');
 });
 

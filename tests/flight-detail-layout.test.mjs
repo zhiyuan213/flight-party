@@ -89,11 +89,11 @@ test('the board fetches all three periods once and repaints from cache', () => {
     'only the first render triggers the batch');
   assert.match(social, /data-period=/, 'new tab attribute');
   assert.ok(!social.includes('data-leaderboard-tab'), 'old tab attribute retired');
-  assert.match(social, /rankRows\?\.\(merged,'winRate'\)/, 'sorted by win rate');
+  assert.match(social, /rankRows\?\.\(merged,'points'\)/, 'sorted by score');
   assert.match(social, /games\.textContent=String\(Math\.max\(0,Number\(row\.games\)\|\|0\)\)/,
     'left number is completed games only');
-  assert.match(social, /pct\.textContent=\(Number\(row\.winRate\)\|\|0\)\.toFixed\(1\)\+'%'/,
-    'right number is a one-decimal win rate');
+  assert.match(social, /score\.textContent=String\(Math\.max\(0,Number\(row\.points\)\|\|0\)\)/,
+    'right number is the cumulative score');
   assert.match(social, /tag\.hidden=!usedDemo/, 'sample tag is honest');
 });
 
@@ -102,7 +102,8 @@ test('the server exposes real flight wins through the shared ranking endpoint', 
   assert.match(java, /from account_match_results r join matches m on m\.id=r\.match_id/);
   assert.match(java, /sum\(case when r\.rank=1 then 1 else 0 end\)/);
   assert.match(java, /m\.status='SETTLED'/);
-  assert.match(java, /::numeric\/nullif\(count\(\*\),0\) desc/);
+  assert.match(java, /sum\(case when r\.rank=1 then 40 when r\.rank=2 then 20 else 10 end\)/);
+  assert.match(java, /order by 3 desc,count\(\*\) desc,a\.id limit 10/);
   /* The table-game branch is untouched. */
   assert.match(java, /from table_results t join accounts a/);
 });
@@ -121,7 +122,7 @@ test('app wiring, static copy and cache keys survive the reflow', () => {
   assert.ok(index.includes(KEY), 'dist/index.html links the new sheet');
   assert.ok(native.includes(KEY), 'native-flight.html links the new sheet');
   assert.match(index, /rl=20261116-poolshell1/);
-  assert.match(native, /rl=20261116-poolshell1&native=/);
+  assert.match(native, /rl=20261116-poolshell1/);
   assert.match(app, /static-i18n\.js\?[^']*&p=20261116-poolshell1/);
   assert.match(app, /social-ui\.js\?[^']*&p=20261116-poolshell1/);
   assert.ok(native.includes('data-native-game="flight"'), 'native page scope marker');

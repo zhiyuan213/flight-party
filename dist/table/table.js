@@ -10,7 +10,7 @@ import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1&power=20261120-poolpower30';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1&power=20261120-poolpower30&score=20261120-score1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
 import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
 import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
@@ -135,8 +135,9 @@ async function loadAllLeaderboards(){
   globalThis.addEventListener('load',()=>{if(token===boardLoadToken)refreshLeaderboard();},{once:true});
 }
 /* Real standings come first; demo rows fill the board up to ten seats so the
-   panel keeps a fixed height on a fresh deployment with no online results. */function refreshLeaderboard(){
- const rate=r=>Number(r.winRate)||0;
+   panel keeps a fixed height on a fresh deployment with no online results.
+   Ordering is by SCORE only; games is a reference column. */function refreshLeaderboard(){
+ const scoreOf=r=>Number(r.points)||0;
  const rows=boardCache.get(period)||[];
  const real=rows.slice(0,10).filter(row=>row&&typeof row==='object').map(row=>{
   const games=Number(row.games)||0,wins=Math.max(0,Math.min(games,Number(row.wins)||0));
@@ -149,11 +150,11 @@ async function loadAllLeaderboards(){
   for(const entry of demo){if(merged.length>=10)break;merged.push(entry);usedDemo=true;}
   /* The visitor's own finished-game points are dynamic data, not demo data. */  const self=globalThis.__joyflockGamePoints?.leaderboardRow?.();
   if(self)merged.push(self);
-  merged.sort((a,b)=>rate(b)-rate(a)||(Number(b.games)||0)-(Number(a.games)||0)||(Number(b.points)||0)-(Number(a.points)||0));
+  merged.sort((a,b)=>scoreOf(b)-scoreOf(a)||(Number(b.games)||0)-(Number(a.games)||0));
   const row=globalThis.__joyflockRankRow;
  if(typeof row!=='function')return;
- const top=globalThis.__joyflockGamePoints?.rankRows?.(merged,'winRate')
-  ||merged.sort((a,b)=>rate(b)-rate(a)||(Number(b.games)||0)-(Number(a.games)||0)||(Number(b.points)||0)-(Number(a.points)||0)).slice(0,10);
+ const top=globalThis.__joyflockGamePoints?.rankRows?.(merged,'points')
+  ||merged.sort((a,b)=>scoreOf(b)-scoreOf(a)||(Number(b.games)||0)-(Number(a.games)||0)).slice(0,10);
  $('leaderboard').replaceChildren(...top.map((entry,i)=>{
   const li=row(document,entry,i);
   /* The dynamic self row is tagged exactly like Flight Party's SocialUI row,
@@ -184,14 +185,15 @@ function paintMemberFacts(){
  const set=(key,text)=>{const node=box.querySelector('[data-member-fact="'+key+'"]');if(!node)return;node.textContent=text;node.dataset.systemEnglish=text;};
  set('tier',tier);
  set('points',String(Math.max(0,Number(memberStats.points)||0)));
+ set('score',String(Math.max(0,Number(local&&local.score)||0)));
  set('games',String(Math.max(0,Number(memberStats.completedGames)||0)));
  set('winrate',memberStats.winRate==null?'0%':Math.round(Math.max(0,Math.min(100,Number(memberStats.winRate)||0)))+'%');
 }
 async function refreshStats(){
  const reset=()=>{memberStats={points:0,completedGames:0,winRate:null};paintMemberFacts();};
- const demo=()=>{$('stats').dataset.demo='1';$('stats').textContent=globalThis.__joyflockDemoStats?globalThis.__joyflockDemoStats():'我的战绩：0 Joy Coins · 0 局';};
+ const demo=()=>{$('stats').dataset.demo='1';$('stats').textContent=globalThis.__joyflockDemoStats?globalThis.__joyflockDemoStats():'我的积分：0 · 0 局';};
  if(!me?.account){demo();reset();return;}
- try{const stats=await request('/api/table/stats/'+game);delete $('stats').dataset.demo;$('stats').textContent=document.documentElement.lang==='en'?'Your Joy Coins: '+stats.points+' · '+stats.completedGames+' games':'本游戏累计：'+stats.points+' Joy Coins · '+stats.completedGames+' 局';memberStats={points:Number(stats?.points)||0,completedGames:Number(stats?.completedGames)||0,winRate:null};paintMemberFacts();}
+ try{const stats=await request('/api/table/stats/'+game);delete $('stats').dataset.demo;const score=Math.max(0,Number(globalThis.__joyflockGamePoints?.get?.()?.score)||0);$('stats').textContent=document.documentElement.lang==='en'?'My score: '+score+' · '+stats.completedGames+' games':'我的积分：'+score+' · '+stats.completedGames+' 局';memberStats={points:Number(stats?.points)||0,completedGames:Number(stats?.completedGames)||0,winRate:null};paintMemberFacts();}
  catch{demo();reset();}
 }
 const names=()=>{
@@ -572,7 +574,7 @@ window.addEventListener('joyflock:cosmetics-changed',()=>{render();syncRoomCosme
 render();init().then(()=>{if(params.get('room'))enter('FRIENDS',params.get('room'));}).catch(()=>{$('message').textContent='联机服务暂不可用，仍可单机游玩。';});
 
 import {bindPortalControls} from '../portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1&native=20261115-native1';
-import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-firstpaint1&nine=20261120-nineball1';
+import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-firstpaint1&nine=20261120-nineball1&score=20261120-score1';
 const applyTableLocale=bindTableLocale();
 arcade?.refresh?.();
 bindPortalControls({onLocale:locale=>{applyTableLocale(locale);paintMemberFacts();if($('stats').dataset.demo==='1')$('stats').textContent=globalThis.__joyflockDemoStats?globalThis.__joyflockDemoStats(locale):'';else refreshStats();arcade?.refresh?.();render();}});

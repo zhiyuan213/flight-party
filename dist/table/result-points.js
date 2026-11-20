@@ -351,3 +351,116 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
     get played() { return played; }
   };
 }
+
+
+/* ---------------------------------------------------------------- SCORE ladder
+   The independent 40 / 20 / 10 award gets its own card, mounted immediately
+   ABOVE the Joy Coins card. It reuses the same skin, accent, count-up and
+   locale observer, but has exactly TWO rows: this round's score and the
+   cumulative total. `snapshot.last.score` / `snapshot.score` are written by
+   game-points.js, the single scorer; nothing here ever calls record(). */
+export function createResultScoreTicker(doc = document, env = globalThis) {
+  const win = env.window || env;
+  const make = (tag, className) => {
+    const node = doc.createElement(tag);
+    if (className) node.className = className;
+    return node;
+  };
+  const panel = make('div', 'pool-result-points pool-result-score');
+  panel.hidden = true;
+  panel.setAttribute('role', 'group');
+  const rewardRow = make('div', 'pool-result-points-row pool-result-reward-row');
+  const rewardLabel = make('span', 'pool-result-points-label');
+  const rewardValue = make('b', 'pool-result-reward');
+  rewardRow.append(rewardLabel, rewardValue);
+  const totalRow = make('div', 'pool-result-points-row pool-result-total-row');
+  const totalLabel = make('span', 'pool-result-points-label');
+  const totalValue = make('strong', 'pool-result-total');
+  totalRow.append(totalLabel, totalValue);
+  panel.append(rewardRow, totalRow);
+
+  let award = null, seq = 0, played = 0, frame = 0, timer = 0;
+  const locale = () => {
+    const root = doc.documentElement;
+    const value = String(root?.getAttribute?.('data-locale') || root?.lang || 'zh').toLowerCase();
+    return value.indexOf('en') === 0 ? 'en' : 'zh';
+  };
+  const raf = fn => env.requestAnimationFrame
+    ? env.requestAnimationFrame(fn)
+    : env.setTimeout(() => fn(Date.now()), 16);
+  const cancelFrame = id => { if (!id) return; env.cancelAnimationFrame ? env.cancelAnimationFrame(id) : env.clearTimeout(id); };
+  const later = (fn, ms) => env.setTimeout ? env.setTimeout(fn, ms) : setTimeout(fn, ms);
+  const cancelLater = id => { if (!id) return; env.clearTimeout ? env.clearTimeout(id) : clearTimeout(id); };
+  const reduced = () => !!env.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  function paint() {
+    const en = locale() === 'en';
+    rewardLabel.textContent = en ? 'Round score' : '本局奖励积分';
+    totalLabel.textContent = en ? 'Total score' : '总积分';
+    if (!award) return;
+    rewardValue.textContent = '+' + formatPoints(award.reward);
+    panel.setAttribute('aria-label', en
+      ? `Round score +${formatPoints(award.reward)}. Total score ${formatPoints(award.total)}.`
+      : `本局奖励积分 ${formatPoints(award.reward)}，总积分 ${formatPoints(award.total)}`);
+  }
+  function cancel() { cancelFrame(frame); frame = 0; cancelLater(timer); timer = 0; }
+  function showFinal() {
+    cancel();
+    if (!award) return;
+    panel.dataset.phase = 'done';
+    totalValue.textContent = formatPoints(award.total);
+  }
+  function play() {
+    if (!award) return;
+    if (played === seq) { showFinal(); return; }
+    played = seq;
+    cancel();
+    paint();
+    panel.hidden = false;
+    panel.dataset.phase = 'reward';
+    totalValue.textContent = formatPoints(award.before);
+    if (reduced()) { showFinal(); return; }
+    timer = later(() => {
+      timer = 0;
+      if (panel.hidden || !panel.isConnected) { showFinal(); return; }
+      panel.dataset.phase = 'counting';
+      const duration = pointsDurationMs(award.total - award.before);
+      const start = Date.now();
+      const tick = () => {
+        const value = pointsValueAt(award.before, award.total, Date.now() - start, duration);
+        totalValue.textContent = formatPoints(value);
+        if (value < award.total) { frame = raf(tick); return; }
+        frame = 0;
+        showFinal();
+      };
+      frame = raf(tick);
+    }, REWARD_DELAY);
+  }
+  function reveal() { if (award && panel.isConnected) play(); }
+  function finish() { if (!award) return; showFinal(); }
+  function hide() { cancel(); panel.hidden = true; delete panel.dataset.phase; }
+  function receive(snapshot) {
+    const reward = Math.max(0, Number(snapshot?.last?.score) || 0);
+    if (!reward) return;
+    const total = Math.max(0, Number(snapshot?.score) || 0);
+    award = {reward, total, before: Math.max(0, total - reward)};
+    seq++;
+    paint();
+    if (played < seq && panel.isConnected && panel.closest?.('dialog[open]')) play();
+  }
+  win.addEventListener?.('joyflock:game-points', event => receive(event?.detail));
+  const Observer = env.MutationObserver || (typeof MutationObserver !== 'undefined' ? MutationObserver : null);
+  if (Observer && doc.documentElement) {
+    new Observer(() => { if (award) paint(); }).observe(doc.documentElement,
+      {attributes: true, attributeFilter: ['lang', 'data-locale']});
+  }
+  if (Observer && doc.body) {
+    new Observer(() => {
+      if (!award || played >= seq) return;
+      const dialog = typeof panel.closest === 'function' ? panel.closest('dialog') : null;
+      if (dialog && dialog.open) play();
+    }).observe(doc.body, {subtree: true, attributes: true, attributeFilter: ['open']});
+  }
+  paint();
+  return {panel, receive, reveal, finish, hide, play, get award() { return award; }};
+}

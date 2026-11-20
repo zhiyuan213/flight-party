@@ -1,7 +1,7 @@
 import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
 import {targetsFor,isNineBall,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2&audio=20261115-levels1';
-import {createResultPointsTicker} from './result-points.js?v=20261115-joincoin1&c=20261116-fastcount1';
+import {createResultPointsTicker,createResultScoreTicker} from './result-points.js?v=20261115-joincoin1&c=20261116-fastcount1&score=20261120-score1';
 // Pool-only presentation. Existing account, turn and reaction nodes keep their handlers.
 /* One ticker per document: it listens for the scorer's award event from module
    evaluation time, so a result that settles before createResult() still has its
@@ -9,6 +9,11 @@ import {createResultPointsTicker} from './result-points.js?v=20261115-joincoin1&
    poolSeatSummary() from this module without a DOM, so keep the top level safe. */
 const pointsTicker = typeof document !== 'undefined' && document?.createElement
   ? createResultPointsTicker(document)
+  : {panel: null, reveal() {}, finish() {}, hide() {}};
+/* One score ticker per document, listening to the same award event. It sits
+   directly ABOVE the Joy Coins card, so both stay in sync on every reveal. */
+const scoreTicker = typeof document !== 'undefined' && document?.createElement
+  ? createResultScoreTicker(document)
   : {panel: null, reveal() {}, finish() {}, hide() {}};
 let shell, current = null, roomId, chatKey, cursor = 0, polling = false, timer = null, sending = false, localId = 0;
 // Live room chat: server rooms keep their REST history, while a same-origin
@@ -179,6 +184,7 @@ function createResult() {
   toGame.type='button';toHome.type='button';nav.append(toGame,toHome);
   again.textContent='再玩一局';again.type='button';actions.append(again,nav);
   const cardKids=[close,label,emblem,title,description];
+  if(scoreTicker.panel)cardKids.push(scoreTicker.panel);
   if(pointsTicker.panel)cardKids.push(pointsTicker.panel);
   cardKids.push(players,actions,note);
   card.append(...cardKids);dialog.append(confetti,card);document.body.append(dialog);
@@ -201,7 +207,7 @@ function createResult() {
   toGame.onclick=()=>{dialog.close();$('home-link')?.click();};
   toHome.onclick=()=>{window.top.location.assign('/portal/index.html');};
   dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
-  dialog.addEventListener('close',()=>{pointsTicker.finish();clearConfetti();if(current?.board?.over&&document.body.dataset.screen==='play'){reopen.hidden=false;reopen.focus({preventScroll:true});}});
+  dialog.addEventListener('close',()=>{scoreTicker.finish();pointsTicker.finish();clearConfetti();if(current?.board?.over&&document.body.dataset.screen==='play'){reopen.hidden=false;reopen.focus({preventScroll:true});}});
 }
 
 function clearConfetti() {
@@ -244,7 +250,7 @@ function celebrateResult(kind,playSound) {
 }
 function openResult(celebrate,carryConfetti=false) {
   if(!current?.board?.over||document.body.dataset.screen!=='play'||shell.resultDialog.open)return;
-  shell.resultDialog.showModal();pointsTicker.reveal();$('again').focus({preventScroll:true});
+  shell.resultDialog.showModal();scoreTicker.reveal();pointsTicker.reveal();$('again').focus({preventScroll:true});
   const outcome=shell.resultDialog.dataset.outcome;
   if(carryConfetti){
     const {resultDialog,confetti}=shell;
@@ -278,7 +284,7 @@ function updateResult(options) {
   if(!ended){
     if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=null;resultShown=false;resultPlayersKey=null;
     if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultReopen.hidden=true;shell.resultNote.hidden=true;
-    pointsTicker.hide();return;
+    scoreTicker.hide();pointsTicker.hide();return;
   }
   const localKey=document.body.classList.contains('connect-four-game')?'local-four-'+options.generation:'local';
   const key=[options.room?.id||localKey,options.board.moves,options.board.winner].join(':'),details=resultDetails(options);
@@ -298,7 +304,7 @@ function updateResult(options) {
   if(resultKey!==key){
     if(resultFrame)cancelAnimationFrame(resultFrame);resultFrame=0;resultKey=key;resultShown=false;resultPlayersKey=null;
     if(shell.resultDialog.open)shell.resultDialog.close();clearConfetti();shell.resultNote.hidden=true;
-    pointsTicker.hide();
+    scoreTicker.hide();pointsTicker.hide();
   }
   shell.resultDialog.dataset.outcome=details.kind;setResultEmblem(details.kind);shell.resultTitle.textContent=details.title;shell.resultDescription.textContent=details.description;
   const isFour=document.body.classList.contains('four-game')||gridResult;

@@ -278,7 +278,7 @@ body.table-home-theme:not([data-screen="play"]) #leaderboard li:has(.rank-medal.
 
 /* Membership figures keep the lower-left block populated on a new deployment. */
 body.table-home-theme:not([data-screen="play"]) .member-facts{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px;
 }
 body.table-home-theme:not([data-screen="play"]) .member-facts>div{
   display:flex;flex-direction:column;gap:3px;min-width:0;

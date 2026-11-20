@@ -62,6 +62,8 @@ function harness() {
     resultDetails: o => ({winner: o.board.winner, kind: o.board.winner === 1 ? 'win' : 'loss', title: 'T', description: 'D'}),
     poolSeatSummary: () => ({score: 4, legacy: false}),
     pointsTicker: {hide() {}, reveal() {}},
+    scoreTicker: {hide() {}, reveal() {}},
+    scoreTicker: {hide() {}, reveal() {}},
     clearConfetti() {}, celebrateResult() {}, openResult() {}, cancelAnimationFrame() {},
     setResultEmblem() {},
     /* Do not execute the reveal callback: only the synchronous card build
