@@ -27,7 +27,7 @@ const rel = p => path.relative(ROOT, p).replace(/\\/g, '/');
 const header = html => (html.match(/<header class="topbar"[\s\S]*?<\/header>/) || [''])[0];
 
 test('every site header renders exactly one shared fullscreen button', () => {
-  assert.equal(pages.length, 26, 'six shell pages + twenty game-guide pages');
+  assert.equal(pages.length, 28, 'six shell pages + twenty-two game-guide pages');
   for (const p of pages) {
     const html = readFileSync(p, 'utf8');
     const name = rel(p);
@@ -121,7 +121,7 @@ test('portal.css no longer paints a second gradient pill in the playing view', (
     'the hover-section marker stays for the rail background guard');
 });
 
-test('all 26 headers and the generator pull the rebuilt stylesheet without bumping v=', () => {
+test('all headers and the generator pull the rebuilt stylesheet without bumping v=', () => {
   for (const p of pages) {
     const name = rel(p);
     assert.match(read(name), new RegExp(`site-fullscreen\\.css\\?v=${KEY}&d=${REFRESH}`),
@@ -129,7 +129,7 @@ test('all 26 headers and the generator pull the rebuilt stylesheet without bumpi
     assert.match(read(name), new RegExp(`site-fullscreen\\.js\\?v=${KEY}&d=${REFRESH}`),
       `${name}: behaviour pulls the rebuilt script`);
   }
-  assert.equal(pages.length, 26);
+  assert.equal(pages.length, 28);
   // portal.css lost its own legacy pill too, so its six shell refs need a
   // fresh URL as well (the frozen v= and the earlier &d= stay in place).
   for (const shell of ['dist/portal/index.html', 'dist/membership.html', 'dist/terms.html',

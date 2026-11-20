@@ -43,7 +43,7 @@ test('the legacy single-key API still works for embedders and tests',()=>{
 test('every game owns a separate localStorage key',()=>{
   assert.equal(BOT_LEVEL_KEY_PREFIX,'joyflock.bot.level.');
   assert.deepEqual(BOT_GAME_IDS,
-    ['flight','four','gomoku','xo','chess','puzzle','draw','cards','pool','snooker','bubbles']);
+    ['flight','four','gomoku','xo','chess','puzzle','draw','cards','pool','nineball','snooker','bubbles']);
   for(const game of BOT_GAME_IDS)assert.equal(botLevelKey(game),'joyflock.bot.level.'+game);
   assert.equal(botLevelKey('unknown'),BOT_LEVEL_KEY,'an unknown id keeps the legacy key');
   assert.equal(botLevelKey(),BOT_LEVEL_KEY);

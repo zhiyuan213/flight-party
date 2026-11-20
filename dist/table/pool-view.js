@@ -7,7 +7,7 @@ import {drawPoolBall,rollSphere,rotateSphere,sphereIdentity} from './pool-ball.j
 import {ballSkin,cueSkin,tableSkin} from './billiard-cosmetics.js?v=20261112-gamelanes1';
 import {drawCue as cue} from './pool-cue.js';
 import {opponentShot,replayOpponentShot,opponentCuePose,REPLAY_CUE_DURATION} from './pool-opponent-cue.js?v=20261110-glove2';
-import {poolTargets} from './pool-rules.js?v=20261110-glove2';
+import {targetsFor,isNineBall} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 import {encodePoolPlace,poolCueInHand,clampCueSpot} from './pool-place.js?v=20261110-glove2';
 import {drawGlovedHand,GLOVE_IDLE_ALPHA,GLOVE_DRAG_ALPHA} from './pool-glove.js?v=20261112-grip1';
 
@@ -220,12 +220,12 @@ export function renderPool(host,s,can,options={}) {
     }
     ctx.clearRect(0,0,W,H);drawReturnChannel(ctx,host._returns||[],now,'under',radius,returnBall);
     ctx.drawImage(host._table,0,0,W,H);ctx.save();ctx.translate(PAD,PAD);
-    if(host._ready()&&c[49+s.turn]){
+    if(host._ready()&&(c[49+s.turn]||isNineBall(s.game))){
       host._targetRingStart??=now;
       const phase=targetRingPhase(host._targetRingStart,now);
       if(phase<TARGET_RING_PULSE_MS){
         const fade=reduced()?1:Math.sin(Math.PI*phase/TARGET_RING_PULSE_MS)**2;
-        if(fade>0)drawTargetRings(ctx,c,poolTargets(c,s.turn),radius,TARGET_RING_OPACITY*fade);
+        if(fade>0)drawTargetRings(ctx,c,targetsFor(c,s.turn,s.game),radius,TARGET_RING_OPACITY*fade);
       }
     }else host._targetRingStart=null;
     if(host._opponentCue&&c[2]){const opponent=host._opponentCue;if(opponent.guide)guide(ctx,aim,opponent.angle,radius,now);cue(ctx,aim,opponent.angle,opponent.pull,null);}

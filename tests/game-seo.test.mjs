@@ -17,9 +17,9 @@ const ldBlocks = html => [...html.matchAll(/<script type="application\/ld\+json"
   .map(m => JSON.parse(m[1]));
 
 test('the SEO contract is complete and matches the live game ids', () => {
-  assert.equal(GAMES.length, 9, 'nine published games');
-  assert.equal(new Set(GAMES.map(g => g.id)).size, 9);
-  assert.equal(new Set(GAMES.map(g => g.slug)).size, 9);
+  assert.equal(GAMES.length, 10, 'ten published games');
+  assert.equal(new Set(GAMES.map(g => g.id)).size, GAMES.length);
+  assert.equal(new Set(GAMES.map(g => g.slug)).size, GAMES.length);
   const portal = read('../dist/portal/portal.js');
   const liveIds = [...portal.matchAll(/\{id:'([a-z-]+)'/g)].map(m => m[1]);
   assert.deepEqual(liveIds.sort(), GAMES.map(g => g.id).sort(),
@@ -48,7 +48,7 @@ test('the SEO contract is complete and matches the live game ids', () => {
   }
 });
 
-test('all 20 landing/directory pages exist with the right html language', () => {
+test('all landing and directory pages exist with the right html language', () => {
   assert.ok(has('../dist/games/index.html'));
   assert.ok(has('../dist/en/games/index.html'));
   for (const g of GAMES) for (const lang of ['zh', 'en']) {
@@ -122,20 +122,20 @@ test('landing pages have crawlable static content, one h1 and working in-site li
       assert.ok(html.includes(esc(f.a[lang])), `${where}: FAQ answer`);
     }
     assert.match(html, /<img class="hero-art"[^>]*alt="[^"]+"/, `${where}: descriptive cover alt`);
-    assert.equal((html.match(/class="related"[\s\S]*?<\/section>/) || [''])[0].match(/<a href="\/games\/|<a href="\/en\/games\//g)?.length, 8,
-      `${where}: eight sibling game links`);
+    assert.equal((html.match(/class="related"[\s\S]*?<\/section>/) || [''])[0].match(/<a href="\/games\/|<a href="\/en\/games\//g)?.length, GAMES.length - 1,
+      `${where}: sibling game links`);
     assert.ok(html.includes(`href="${lang === 'zh' ? SITE.enPath + g.slug + '/' : '/games/' + g.slug + '/'}"`),
       `${where}: language switch to the paired page`);
     assert.ok(html.includes('<nav class="crumbs"'), `${where}: breadcrumb nav`);
   }
 });
 
-test('directory pages list all nine games in both languages', () => {
+test('directory pages list all published games in both languages', () => {
   for (const lang of ['zh', 'en']) {
     const html = read(`../dist/${lang === 'zh' ? 'games' : 'en/games'}/index.html`);
     const nodes = ldBlocks(html);
     const collection = nodes.find(n => n['@type'] === 'CollectionPage');
-    assert.equal(collection.mainEntity.itemListElement.length, 9);
+    assert.equal(collection.mainEntity.itemListElement.length, GAMES.length);
     for (const g of GAMES) assert.ok(html.includes(`href="${pagePath(g, lang)}"`), `${lang}: ${g.slug} linked`);
     assert.equal(attr(html, /<link rel="canonical" href="([^"]*)"/), SITE.origin + (lang === 'zh' ? SITE.zhPath : SITE.enPath));
   }
@@ -155,9 +155,9 @@ test('sitemap covers every landing page with hreflang pairs and no junk URLs', (
     assert.ok(locs.includes(u), `${u} in sitemap`);
   assert.ok(locs.every(u => !u.includes('?game=') && !u.includes('preview') && !u.includes('/api/')),
     'query / preview / API routes are never submitted');
-  assert.equal((xml.match(/hreflang="zh-CN"/g) || []).length, 20);
-  assert.equal((xml.match(/hreflang="en"/g) || []).length, 20);
-  assert.equal((xml.match(/hreflang="x-default"/g) || []).length, 20);
+  assert.equal((xml.match(/hreflang="zh-CN"/g) || []).length, 22);
+  assert.equal((xml.match(/hreflang="en"/g) || []).length, 22);
+  assert.equal((xml.match(/hreflang="x-default"/g) || []).length, 22);
   assert.equal((xml.match(new RegExp(`<lastmod>${SITE.lastmod}</lastmod>`, 'g')) || []).length, locs.length);
 });
 

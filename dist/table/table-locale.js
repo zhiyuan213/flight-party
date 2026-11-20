@@ -10,7 +10,7 @@ const labels = new Map(Object.entries({
   '从第一步兵，到最后一次将军。与好友对弈，也可以挑战电脑练习棋艺。':'Play chess with a friend or practice against the computer.',
   '白棋先行。点击自己的棋子，再点击目标格。支持王车易位、吃过路兵及升变；将死获胜，逼和、重复局面、50回合及子力不足判和。电脑为基础难度。':'White moves first. Select a piece and then its destination. Castling, en passant and promotion are supported. Checkmate wins. Stalemate, repetition, the 50-move rule and insufficient material can draw. The computer is set to beginner difficulty.',
   '先选自己的棋子，再选目标格。白棋先行，支持王车易位、吃过路兵和升变。':'Choose a piece, then a destination. White moves first. Castling, en passant and promotion are supported.',
-  '白':'W','黑':'B','欢乐台球':'Pool','国际象棋':'Chess','四子连珠':'Connect Four','五子棋':'Gomoku','趣味拼图':'Puzzles','欢乐纸牌':'Cards','你画我猜':'Draw & Guess',
+  '白':'W','黑':'B','欢乐台球':'Pool','欢乐九球':'Nine-ball','国际象棋':'Chess','四子连珠':'Connect Four','五子棋':'Gomoku','趣味拼图':'Puzzles','欢乐纸牌':'Cards','你画我猜':'Draw & Guess',
   '声音':'Sound','静音':'Muted','中心击球':'Center','高杆':'Top spin','右上塞':'Top right','右塞':'Right spin','右下塞':'Bottom right','低杆':'Backspin','左下塞':'Bottom left','左塞':'Left spin','左上塞':'Top left',
   '回合':'Turn','房间聊天':'Room chat','和同房间的朋友聊两句吧。':'Say hello to the room.','单机 · 本机可见':'Local only','消息仅发送给当前房间。':'Messages are visible to this room.','单机聊天仅在本机显示。':'Local chat stays on this device.','消息在本房间实时同步。':'Messages sync live in this room.','表情在本房间实时同步。':'Reactions sync live in this room.','发送消息…':'Write a message…','发送':'Send','聊天消息':'Chat message','场内聊天消息':'Room messages',
   '你':'You','电脑':'Computer','好友':'Friend','游客':'Guest','等待加入':'Waiting to join','当前回合':'Current turn','真人玩家':'Human player','电脑玩家':'Computer player','本局平局。':'Draw.','本局和棋。':'Draw.',
@@ -115,6 +115,7 @@ function english(value) {
   if(exact)return value.replace(key,exact);
   if(key.startsWith('房间 ')&&/^房间 [0-9a-f-]{36}$/i.test(key))return 'Room '+key.slice(3);
   if(key.startsWith('休闲台球：'))return 'Aim with the mouse. Hold the left button and pull back, then release to shoot. Choose spin on the cue ball control. The first legal pot assigns solids or stripes. Fouls give the other player an extra shot. Clear your group before legally pocketing the 8-ball.';
+  if(key.startsWith('休闲九球：'))return 'Aim with the mouse. Hold the left button and pull back, then release to shoot. Choose spin on the cue ball control. Every shot must first contact the lowest numbered ball on the table. Legally pocketing the 9-ball wins immediately; a foul gives the opponent an extra shot. Push-out, called pockets and three-consecutive-foul rules are not implemented.';
   if(key.endsWith(' · 本杆为额外罚杆'))return (labels.get(key.split(' · ')[0])||key.split(' · ')[0])+' · Extra shot';
   const target=key.match(/^(\d+)号目标球$/);
   if(target)return 'Target ball '+target[1];

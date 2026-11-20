@@ -24,6 +24,39 @@ export function settlePool(before,c,actor,potted,firstContact){
   const penalty=before[PENALTY_VISIT]||0;
   const useExtra=!foul&&!own&&penalty===PENALTY_READY;
   const foulReason=scratch?'白球落袋':firstContact===0?'白球未碰到目标球':'白球先碰到非目标球';
-  c[PENALTY_VISIT]=black?0:foul?PENALTY_READY:useExtra?PENALTY_ACTIVE:own&&penalty===PENALTY_READY?PENALTY_READY:0;
-  return {foul,foulReason,over:black,winner:black?(!foul&&legal.length===1&&legal[0]===8?actor:3-actor):0,turn:!foul&&(own||useExtra)?actor:3-actor};
+ c[PENALTY_VISIT]=black?0:foul?PENALTY_READY:useExtra?PENALTY_ACTIVE:own&&penalty===PENALTY_READY?PENALTY_READY:0;
+ return {foul,foulReason,over:black,winner:black?(!foul&&legal.length===1&&legal[0]===8?actor:3-actor):0,turn:!foul&&(own||useExtra)?actor:3-actor};
+}
+
+/* Nine-ball ---------------------------------------------------------------
+   It keeps the exact same 53-cell layout: ids 10..15 are never racked and
+   stay dead, so the table, ball sprites, cue placement, replay frames and
+   audio chains need no separate implementation. Only the rack, legal target
+   and settlement differ. The Java authority mirrors the same branch. */
+export const NINE_RACK=[[1],[2,3],[4,9,5],[6,7],[8]];
+export const isNineBall=game=>game==='nineball';
+/** The lowest numbered ball still on the table is always the legal first contact. */
+export function nineballTargets(c){
+ for(let id=1;id<=9;id++)if(c[id*3+2])return[id];
+ return[];
+}
+export function targetsFor(c,actor,game){
+ return isNineBall(game)?nineballTargets(c):poolTargets(c,actor);
+}
+/* Casual nine-ball: first contact must be the lowest ball, any ball may be
+   potted, and a legal 9-ball ends the match. A 9 on a foul loses. The extra
+   visit state is shared with eight-ball so the HUD and cue placement behave
+   identically. Push-out, called pockets and three-consecutive-foul rules are
+   deliberately out of scope, as documented in docs/RULES.md. */
+export function settleNineBall(before,c,actor,potted,firstContact){
+ const scratch=potted.includes(0),nine=potted.includes(9);
+ const legal=nineballTargets(before);
+ const foul=scratch||!legal.includes(firstContact);
+ const own=potted.some(id=>id>0&&id<9);
+ const penalty=before[PENALTY_VISIT]||0;
+ const useExtra=!foul&&!own&&penalty===PENALTY_READY;
+ for(let seat=1;seat<=2;seat++)c[47+seat]=Array.from({length:9},(_,i)=>i+1).filter(id=>!c[id*3+2]).length;
+ c[PENALTY_VISIT]=nine?0:foul?PENALTY_READY:useExtra?PENALTY_ACTIVE:own&&penalty===PENALTY_READY?PENALTY_READY:0;
+ const foulReason=scratch?'白球落袋':firstContact===0?'白球未碰到目标球':'白球先碰到非目标球';
+ return {foul,foulReason,over:nine,winner:nine?(!foul?actor:3-actor):0,turn:!foul&&(own||useExtra)?actor:3-actor};
 }

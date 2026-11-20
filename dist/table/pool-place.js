@@ -11,7 +11,7 @@
  * fixtures and the JS/Java parity baseline are untouched.
  */
 import {pocketIndex} from './pool-geometry.js?v=20261114-pocketdepth1';
-import {BALL_COUNT,PENALTY_VISIT,PENALTY_READY,STATE_SIZE} from './pool-rules.js?v=20261110-glove2';
+import {BALL_COUNT,PENALTY_VISIT,PENALTY_READY,STATE_SIZE} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 
 export const PLACE_BASE=1000000000,PLACE_STRIDE=10000,PLACE_LIMIT=100000000;
 export const CUE_IN_HAND_FEN='犯规：白球落袋';

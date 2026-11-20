@@ -14,7 +14,7 @@ for(const [kind,input] of [['table','dist/table/index.html'],['flight','dist/ind
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
  assert.equal(ids.length,new Set(ids).size,'no duplicate game/chrome IDs');
  assert.ok(ids.includes('account-open')&&ids.includes('chrome-account'));
- assert.equal([...html.matchAll(/data-native-link=/g)].length,9);
+ assert.equal([...html.matchAll(/data-native-link=/g)].length,10);
  for(const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)){
   const value=match[1];if(/^(https?:|data:)/.test(value))continue;
   assert.ok(value.startsWith('/'),value+' is root-relative');
@@ -52,7 +52,7 @@ test('root and legacy portal routes serve a direct document for every game',asyn
  const child=spawn(process.execPath,['server.mjs','--port',String(port)],{stdio:['ignore','pipe','pipe']});
  try{
   await new Promise((resolve,reject)=>{child.once('error',reject);child.stdout.once('data',resolve);child.once('exit',code=>reject(Error('server exited '+code)));});
-  for(const game of ['pool','flight','four','gomoku','chess','xo','cards','snooker','bubbles'])for(const entry of ['/','/portal/index.html']){
+  for(const game of ['pool','nineball','flight','four','gomoku','chess','xo','cards','snooker','bubbles'])for(const entry of ['/','/portal/index.html']){
    const response=await fetch(`http://127.0.0.1:${port}${entry}?game=${game}`);assert.equal(response.status,200);
    const html=await response.text();assert.match(html,/data-native-game=/);assert.doesNotMatch(html,/<iframe\b/i);
   }

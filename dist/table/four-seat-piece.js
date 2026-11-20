@@ -1,4 +1,4 @@
-import {decoratePiece} from './game-cosmetics.js?v=20261112-gamelanes1';
+import {decoratePiece} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 import {stoneUrl} from './personal-piece-art.js?v=20261113-gomokuseat1';
 
 /** A small copy of the actual seat counter, using the board's material and

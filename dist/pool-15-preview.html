@@ -4,7 +4,7 @@
 <button id="solid">全色落袋场景</button><button id="stripe">花色落袋场景</button><button id="shoot">执行80%击球</button><button id="rack">重新开局</button>
 <button id="export">导出16张球体图片</button><p id="result"></p><div class="targets"><div id="one"></div><div id="two"></div></div><div id="board"></div><h2>独立球体预览（白球与1–15号）</h2><div id="gallery"></div>
 <script type="module">
-import {poolStart,poolMove,renderPool} from '/table/pool.js?release=20261115-polishrelease1';import {poolTargets} from '/table/pool-rules.js';import {drawPoolBall} from '/table/pool-ball.js?v=20261112-gamelanes1';
+import {poolStart,poolMove,renderPool} from '/table/pool.js?release=20261115-polishrelease1&nine=20261120-nineball1';import {poolTargets} from '/table/pool-rules.js';import {drawPoolBall} from '/table/pool-ball.js?v=20261112-gamelanes1';
 let state;const host=document.querySelector('#board');
 function targetRow(id,seat){const div=document.querySelector(id),g=state.cells[49+seat];div.replaceChildren();div.append(document.createTextNode('玩家'+seat+'：'+['待分组','全色','花色'][g]));if(g)for(const n of poolTargets(state.cells,seat)){const c=document.createElement('canvas');c.width=c.height=96;drawPoolBall(c.getContext('2d'),n,48,46,36);div.append(c);}}
 function render(){renderPool(host,state,true);targetRow('#one',1);targetRow('#two',2);document.querySelector('#result').textContent=state.fen+' · 玩家'+state.turn+'回合';}

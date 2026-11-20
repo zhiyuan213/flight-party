@@ -5,13 +5,13 @@
 import {VERSION,resolveBoard,resolveShared,tierOf,pointsOf,themeOf,botOpponent}
   from './cosmetics-rules.js?v=20261112-gamelanes1';
 import {getBotLevel,BOT_LEVEL_KEY,BOT_LEVEL_KEY_PREFIX,BOT_GAME_IDS}
-  from '../bot-difficulty.js?v=20261112-gamelanes1';
+  from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 import {emblemUrl,markUrl} from './personal-piece-art.js';
 
 const SHOP_KEY='joyflock.shop.v1';
 const GAME_KEYS=['four','gomoku','chess','xo'],PERSONAL=['four','gomoku','xo'];
 const SHARED_BOARDS=['four','chess','xo'];
-const BILLIARDS=['pool','snooker'];
+const BILLIARDS=['pool','nineball','snooker'];
 const DEFAULT_BALL='ball-default',DEFAULT_CUE='cue-default',DEFAULT_TABLE='table-default';
 const BASELINE='default';
 const isBaseline=id=>themeOf(id)===BASELINE;

@@ -1,5 +1,5 @@
 import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
-import {poolTargets,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261110-glove2';
+import {targetsFor,isNineBall,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2&audio=20261115-levels1';
 import {createResultPointsTicker} from './result-points.js?v=20261115-joincoin1&c=20261116-fastcount1';
 // Pool-only presentation. Existing account, turn and reaction nodes keep their handlers.
@@ -80,7 +80,7 @@ function toggleChatFullscreen(){
 // Presentation reads archived scores without converting or rewriting room state.
 export function poolSeatSummary(board,seat){
   const cells=board?.cells||[],legacy=cells.length>0&&cells.length<48,group=legacy?0:cells[49+seat]||0;
-  return {legacy,group,score:Number(cells[(legacy?26:47)+seat]||0),targets:!legacy&&group?poolTargets(cells,seat):[]};
+  return {legacy,group,score:Number(cells[(legacy?26:47)+seat]||0),targets:!legacy&&(group||isNineBall(board?.game))?targetsFor(cells,seat,board?.game):[]};
 }
 
 function createChat() {
@@ -568,16 +568,17 @@ function updatePoolFeedback({board,room,me,computer}) {
     }
     if(board.over){
       const [winner,winnerEn]=player(board.winner-1);
-      const blackPotted=potted.includes(8)||result==='8号球落袋';
+      const nine=isNineBall(board.game);
+      const decisivePotted=potted.includes(nine?9:8)||result===(nine?'9号球落袋':'8号球落袋');
       const foul=result.startsWith('犯规：');
       const shooter=previousShot?.turn??(foul&&board.winner?3-board.winner:0);
-      if(blackPotted&&shooter&&board.winner&&shooter!==board.winner){
+      if(decisivePotted&&shooter&&board.winner&&shooter!==board.winner){
         const [loser,loserEn]=player(shooter-1);
         const [reason,reasonEn]=result==='犯规：白球落袋'
-          ?['黑球和白球同杆落袋','pocketed the 8-ball and cue ball on the same shot']
+          ?(nine?['9号球和白球同杆落袋','pocketed the 9-ball and cue ball on the same shot']:['黑球和白球同杆落袋','pocketed the 8-ball and cue ball on the same shot'])
           :foul
-            ?['犯规时打进黑球','pocketed the 8-ball on a foul']
-            :['提前打进黑球','pocketed the 8-ball too early'];
+            ?(nine?['犯规时打进9号球','pocketed the 9-ball on a foul']:['犯规时打进黑球','pocketed the 8-ball on a foul'])
+            :(nine?['提前打进9号球','pocketed the 9-ball too early']:['提前打进黑球','pocketed the 8-ball too early']);
         tell(loser+reason+'，判负。'+winner+'获胜。',loserEn+' '+reasonEn+' and loses. '+winnerEn+' wins.','foul');
       }else tell(winner?winner+'获胜。':'本局平局。',winnerEn?winnerEn+' wins.':'The game ended in a draw.');
     }
@@ -747,7 +748,7 @@ export function updatePoolShell(options) {
     // Show only the balls that are actually still on the table. Pocketed targets
     // disappear instead of leaving a fixed empty recess, so the row stays compact.
     const ids=(summary.targets||[]).filter(id=>Number.isInteger(id)&&id>0);
-    balls.setAttribute('aria-label',summary.legacy?'旧版对局':group===1?'全色目标球':group===2?'花色目标球':'首次有效进球后分组');
+    balls.setAttribute('aria-label',summary.legacy?'旧版对局':isNineBall(options.board?.game)?'当前最小号目标球':group===1?'全色目标球':group===2?'花色目标球':'首次有效进球后分组');
     balls.replaceChildren(...ids.map(id=>{
       const b=document.createElement('canvas');b.width=108;b.height=108;b.className='pool-target-ball';b.setAttribute('aria-label',id+'号目标球');drawPoolBall(b.getContext('2d'),id,54,51,40.5);return b;
     }));

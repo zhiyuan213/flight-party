@@ -1,4 +1,4 @@
-import {botLevelStore,BOT_BONUS,botLabel} from '../bot-difficulty.js?v=20261112-gamelanes1';
+import {botLevelStore,BOT_BONUS,botLabel} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 import {attachFourDrop} from './four-drop.js?v=20261113-fourfx1';
 import {attachFourFeedback} from './four-feedback.js?v=20261113-fourfx1';
 import {fourSeatPiece} from './four-seat-piece.js?v=20261113-gomokuseat1';
@@ -10,23 +10,23 @@ import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
-import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1';
-import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
+import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1';
+import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
 import {renderCards} from './cards.js?v=20261112-gamelanes1';
 import {drawSketch,sketchNext} from './sketch.js?v=20261110-glove2';
-import {start,move,bot,legal} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
+import {start,move,bot,legal} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
 import {bubblesScore} from './bubbles-duel.js?v=20261112-gamelanes1';
 import {renderGomoku} from './gomoku-view.js?v=20261112-natural1';
-import {applyCosmetics,decoratePieces,localSelection,profiles} from './game-cosmetics.js?v=20261112-gamelanes1';
+import {applyCosmetics,decoratePieces,localSelection,profiles} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 import {createRoomCosmeticSync} from './room-cosmetics.js';
 /* ONLINE CUSTODY — the shared, per-game state machine. The server owns the
    authoritative copy; this shell only paints the 30s countdown, the hosted
    badge and the "no data / no points" notice. See docs/ONLINE-GAME-MANAGEMENT.md. */
 import {custodyStorageKey,serverClock,seatCustody,shouldRecordResult,reconnectTarget,CUSTODY_LABELS,CUSTODY_GRACE,CUSTODY_HOSTED,turnClockVisible,needsPresenceSignal} from '../online-custody.js?v=20261115-joincoin1';
 import {custodyBadge,updateCustodyBadges,noScoreNotice,ensureCustodyStyles} from '../online-custody-ui.js?v=20261115-joincoin1';
-const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),game=['gomoku','puzzle','chess','draw','cards','pool','xo','snooker','bubbles'].includes(params.get('game'))?params.get('game'):'four',title=game==='snooker'?'斯诺克':game==='bubbles'?'泡泡射击':game==='xo'?'井字棋':game==='four'?'四子连珠':game==='gomoku'?'五子棋':game==='chess'?'国际象棋':game==='draw'?'你画我猜':game==='cards'?'欢乐纸牌':game==='pool'?'欢乐台球':'趣味拼图';
+const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),game=['gomoku','puzzle','chess','draw','cards','pool','nineball','xo','snooker','bubbles'].includes(params.get('game'))?params.get('game'):'four',title=game==='snooker'?'斯诺克':game==='bubbles'?'泡泡射击':game==='xo'?'井字棋':game==='four'?'四子连珠':game==='gomoku'?'五子棋':game==='chess'?'国际象棋':game==='draw'?'你画我猜':game==='cards'?'欢乐纸牌':game==='nineball'?'欢乐九球':game==='pool'?'欢乐台球':'趣味拼图';
 /* Each table game remembers its own computer difficulty:
    localStorage['joyflock.bot.level.<game>'], with the legacy shared key only
    as a one-way migration fallback. */
@@ -106,7 +106,7 @@ function paintNoScore(){
   note.hidden=!(hostedResult&&screen==='play');
   note.textContent=CUSTODY_LABELS[lang].noScore;
 }
-$('title').textContent=title;if(!document.documentElement.hasAttribute('data-intro-ready')){$('game-name').textContent=title;document.title=title+' · JoyFlock';}if(!['bubbles','snooker'].includes(game))$('rules').textContent=game==='four'?'轮流选择一列落子，棋子落到该列最下方的空位。横、竖或斜向连成4颗即获胜。':'双方轮流落子，黑棋先行。横、竖或斜向连成5颗及以上获胜；当前为无禁手的自由五子棋。';document.body.classList.toggle('pool-game',game==='pool');document.body.classList.toggle('snooker-game',game==='snooker');document.body.classList.toggle('chess-game',game==='chess');$('board').classList.toggle('chess',game==='chess');/* Sweeping the pointer across 64 squares must not tick on every cell: the
+$('title').textContent=title;if(!document.documentElement.hasAttribute('data-intro-ready')){$('game-name').textContent=title;document.title=title+' · JoyFlock';}if(!['bubbles','snooker'].includes(game))$('rules').textContent=game==='four'?'轮流选择一列落子，棋子落到该列最下方的空位。横、竖或斜向连成4颗即获胜。':'双方轮流落子，黑棋先行。横、竖或斜向连成5颗及以上获胜；当前为无禁手的自由五子棋。';document.body.classList.toggle('pool-game',game==='pool'||game==='nineball');document.body.classList.toggle('snooker-game',game==='snooker');document.body.classList.toggle('chess-game',game==='chess');$('board').classList.toggle('chess',game==='chess');/* Sweeping the pointer across 64 squares must not tick on every cell: the
    global hover sfx already honours [data-sfx="off"] via closest(), so mark the
    whole chess board once instead of bumping the shared script/version chain. */if(game==='chess')$('board').setAttribute('data-sfx','off');$('promotion-setting').hidden=game!=='chess';if(game==='chess')$('rules').textContent='白棋先行。点击自己的棋子，再点击目标格。支持王车易位、吃过路兵及升变；将死获胜，逼和、重复局面、50回合及子力不足判和。电脑为基础难度。';$('board').classList.toggle('gomoku',game==='gomoku');$('board').classList.toggle('puzzle',game==='puzzle');if(game==='puzzle'){$('score-note').textContent='两人对局：胜者 200 Joy Coins、败者 100 Joy Coins；匿名只显示不保存，登录账号自动累计。';$('rules').textContent='交换两块拼图，还原完整的飞行棋画面。点击两块图片交换位置，也可以拖动交换。联机时与好友轮流协作；完成后按胜负结算 200 / 100 Joy Coins。';$('computer').textContent='单机 · 电脑协作';}
 async function request(path,body){const response=await fetch(path,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',headers:{...(body===undefined?{}:{'content-type':'application/json'}),...(csrf?{[csrf.headerName]:csrf.token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});if(!response.ok){const error=Error('请求失败 ('+response.status+')');error.status=response.status;throw error;}const text=await response.text();return text?JSON.parse(text):null;}
@@ -218,7 +218,8 @@ function playResultSound(options){
 const usesOpening=game==='four'||game==='xo';
 const isBubbles=game==='bubbles';
 const isSnooker=game==='snooker';
-const isBilliards=game==='pool'||game==='snooker';
+const isPoolLike=game==='pool'||game==='nineball';
+const isBilliards=isPoolLike||game==='snooker';
 const NO_GUIDE_KEY='joyflock.billiards.noGuide';
 const noGuideOn=()=>{try{return localStorage.getItem(NO_GUIDE_KEY)==='1';}catch{return false;}};
 const setNoGuide=v=>{try{localStorage.setItem(NO_GUIDE_KEY,v?'1':'0');}catch{}};
@@ -327,7 +328,7 @@ if(isCanvasGame&&!$('rules').textContent)$('rules').textContent=CATALOG[game].in
 const fourCountdown=usesCountdown?document.createElement('div'):null;
 let fourOpening=0,fourReadyUntil=0,fourMatchKey=null;
 if(fourCountdown){fourCountdown.className='pool-countdown';fourCountdown.hidden=true;fourCountdown.innerHTML='<b>3</b><span data-ready="准备开球" data-ready-en="Get ready">准备开球</span>';$('board').parentElement.append(fourCountdown);}
-function render(){applyCosmetics({mySeat:room?Number(room.you)+1:mySeat,matchKey:room?.id||generation,seatProfiles:room?.profiles,network:!!room});if(game==='gomoku')$('board').dataset.turn=board.turn;if(game==='pool'&&screen!=='play'){cancelPoolCountdown($('board'));cancelPoolOpponentShot($('board'));}const waiting=room?.phase==='WAITING',can=!pending&&!board.over&&!waiting&&(!room||room.phase==='PLAYING'&&room.you+1===board.turn)&&!(local&&computer&&board.turn===3-mySeat);$('mode').textContent=room?'在线对局':game==='puzzle'?'单机 · 电脑协作':'单机 · 电脑对战';renderStatus(isCanvasGame?(board.over?(arcadeStatus||(board.winner?names()[board.winner-1]+' 获胜！':'本局平局。')):arcadeStatus):room?.phase==='SUSPENDED'?'对局已在另一个窗口恢复':room?.phase==='CLOSED'?'房间已关闭，请重新创建。':waiting?(room.deadline>0?'正在匹配，'+Math.max(0,Math.ceil((room.deadline-room.serverNow)/1000))+'秒后电脑补位':'等待好友加入'):board.over?(board.winner?(game==='puzzle'?'拼图完成，合作愉快！':names()[board.winner-1]+' 获胜！'):(game==='chess'?'本局和棋。':'本局平局。')):names()[board.turn-1]+' 的回合'+(room?' · 超时电脑代走':''));if(game==='pool'){$('board')._openingUntil=screen!=='play'?0:room?.playStartsAt||(!room?$('board')._localOpeningUntil||0:0);$('board')._poolCountdownReadyUntil=screen==='play'&&!room?($('board')._localReadyUntil||0):0;const poolCaption=$('board').querySelector('.pool-countdown span');if(poolCaption&&!poolCaption.dataset.ready){poolCaption.dataset.ready='准备开球';poolCaption.dataset.readyEn='Get ready';}renderPool($('board'),board,can,{opponentSeat:room?2-room.you:0});}else if(isCanvasGame){arcade.applyBoard(board);}else if(game==='cards')renderCards($('board'),board,room?room.you+1:computer?1:board.turn,can);else if(game==='draw'){drawSketch($('board'),board,{you:room?room.you+1:board.turn,network:!!room,practice:computer&&!room,send:sketchAction,next:()=>{board=sketchNext(board);if(computer&&!board.over)practiceDrawing();$('board')._passed=false;render();}});}else if(game==='chess')renderChess($('board'),board,{can,selected:puzzleSelection,seat:room?room.you+1:1,key:room?.id||generation,refresh:render});else if(game==='gomoku')renderGomoku($('board'),board,{can,turn:board.turn,last});else $('board').innerHTML=board.cells.map((v,i)=>game==='puzzle'?`<button class="cell puzzle-tile ${puzzleSelection===i?'chosen':''}" style="background-position:${((v-1)%4)*100/3}% ${Math.floor((v-1)/4)*100/3}%" data-position="${i}" draggable="true" aria-label="第${i+1}个位置，图片${v}" ${!can?'disabled':''}><small>${v}</small></button>`:`<button class="cell ${i===last?'last':''}" data-value="${v}" data-position="${game==='four'?i%7:i}" aria-label="${game==='four'?'第'+(i%7+1)+'行':'第'+(Math.floor(i/(game==='xo'?3:15))+1)+'行第'+(i%(game==='xo'?3:15)+1)+'列'}${v?'已有棋子':'空位'}" ${!can?'disabled':''}></button>`).join('');/* While a snooker shot is still rolling, keep the shooter's seat highlighted.
+function render(){applyCosmetics({mySeat:room?Number(room.you)+1:mySeat,matchKey:room?.id||generation,seatProfiles:room?.profiles,network:!!room});if(game==='gomoku')$('board').dataset.turn=board.turn;if(isPoolLike&&screen!=='play'){cancelPoolCountdown($('board'));cancelPoolOpponentShot($('board'));}const waiting=room?.phase==='WAITING',can=!pending&&!board.over&&!waiting&&(!room||room.phase==='PLAYING'&&room.you+1===board.turn)&&!(local&&computer&&board.turn===3-mySeat);$('mode').textContent=room?'在线对局':game==='puzzle'?'单机 · 电脑协作':'单机 · 电脑对战';renderStatus(isCanvasGame?(board.over?(arcadeStatus||(board.winner?names()[board.winner-1]+' 获胜！':'本局平局。')):arcadeStatus):room?.phase==='SUSPENDED'?'对局已在另一个窗口恢复':room?.phase==='CLOSED'?'房间已关闭，请重新创建。':waiting?(room.deadline>0?'正在匹配，'+Math.max(0,Math.ceil((room.deadline-room.serverNow)/1000))+'秒后电脑补位':'等待好友加入'):board.over?(board.winner?(game==='puzzle'?'拼图完成，合作愉快！':names()[board.winner-1]+' 获胜！'):(game==='chess'?'本局和棋。':'本局平局。')):names()[board.turn-1]+' 的回合'+(room?' · 超时电脑代走':''));if(isPoolLike){$('board')._openingUntil=screen!=='play'?0:room?.playStartsAt||(!room?$('board')._localOpeningUntil||0:0);$('board')._poolCountdownReadyUntil=screen==='play'&&!room?($('board')._localReadyUntil||0):0;const poolCaption=$('board').querySelector('.pool-countdown span');if(poolCaption&&!poolCaption.dataset.ready){poolCaption.dataset.ready='准备开球';poolCaption.dataset.readyEn='Get ready';}renderPool($('board'),board,can,{opponentSeat:room?2-room.you:0});}else if(isCanvasGame){arcade.applyBoard(board);}else if(game==='cards')renderCards($('board'),board,room?room.you+1:computer?1:board.turn,can);else if(game==='draw'){drawSketch($('board'),board,{you:room?room.you+1:board.turn,network:!!room,practice:computer&&!room,send:sketchAction,next:()=>{board=sketchNext(board);if(computer&&!board.over)practiceDrawing();$('board')._passed=false;render();}});}else if(game==='chess')renderChess($('board'),board,{can,selected:puzzleSelection,seat:room?room.you+1:1,key:room?.id||generation,refresh:render});else if(game==='gomoku')renderGomoku($('board'),board,{can,turn:board.turn,last});else $('board').innerHTML=board.cells.map((v,i)=>game==='puzzle'?`<button class="cell puzzle-tile ${puzzleSelection===i?'chosen':''}" style="background-position:${((v-1)%4)*100/3}% ${Math.floor((v-1)/4)*100/3}%" data-position="${i}" draggable="true" aria-label="第${i+1}个位置，图片${v}" ${!can?'disabled':''}><small>${v}</small></button>`:`<button class="cell ${i===last?'last':''}" data-value="${v}" data-position="${game==='four'?i%7:i}" aria-label="${game==='four'?'第'+(i%7+1)+'行':'第'+(Math.floor(i/(game==='xo'?3:15))+1)+'行第'+(i%(game==='xo'?3:15)+1)+'列'}${v?'已有棋子':'空位'}" ${!can?'disabled':''}></button>`).join('');/* While a snooker shot is still rolling, keep the shooter's seat highlighted.
    Computed after arcade.applyBoard() above, which starts the replay. */ const seatTurn=isSnooker&&arcade?.animating?.()?(arcade.replayTurn?.()||board.turn):board.turn;
   const serverNow=currentServerNow(),lang=tableLang();
   const myCustody=room?seatCustody(room,Number(room.you),serverNow,lang):null;
@@ -423,9 +424,9 @@ async function enter(mode,code){if(pending)return;pending=true;const token=++gen
   if(!code){const hint=readRoomHint();if(hint){try{const live=await request('/api/table/rooms/'+hint.roomId);if(live&&live.game===game&&['WAITING','PLAYING'].includes(live.phase))value=live;else clearRoomHint();}catch{clearRoomHint();}}}
   if(!value)value=code?await request('/api/table/rooms/'+code+'/join',{}):await request('/api/table/rooms',{game,mode});
   if(token!==generation)return;apply(value);syncRoomUrl(room.id);schedulePoll();reportActivity('resume');if(!code)queueRoomTheme();pollRoomTheme();$('message').textContent='';}catch(e){$('message').textContent=e.status===409?'房间已开始、已满，或同一账号已在房间中。':'未能进入，请重试。';}finally{pending=false;render();}}
-function localStart(withBot){if(arcade){arcade.stop();arcadeStarted=false;arcadeStatus='';if(isCanvasGame)arcade.reset();}screen='play';generation++;clearInterval(poll);cosmeticSync.stop();room=null;clearPlayStartDelay();stopCustodyClock();clearRoomHint();roomServerNow=0;hostedResult=false;local=true;computer=withBot;document.body.dataset.noGuide=isBilliards&&withBot&&noGuideOn()?'1':'';board=start(game);if(game==='pool'){cancelPoolOpponentShot($('board'));cancelPoolCountdown($('board'));$('board')._returns=[];$('board')._painted=null;$('board')._scratchVisible=false;$('board')._animationToken=($('board')._animationToken||0)+1;$('board')._animating=false;$('board')._lastMove=0;$('board')._queued=null;$('board')._snapshot=null;$('board')._snapshotTurn=null;$('board')._snapshotMove=null;$('board')._striking=false;$('board')._localOpeningUntil=Date.now()+COUNTDOWN_TOTAL;$('board')._localReadyUntil=$('board')._localOpeningUntil-COUNTDOWN_WINDOW;$('board')._serverOffset=0;$('board')._locked=false;$('board')._pullStart=null;$('board')._power=0;$('board')._spin=0;}if(game==='draw'){$('board')._passed=false;computer&&practiceDrawing();}puzzleSelection=null;last=-1,rematchPending=false;pending=false;const url=new URL(location.href);url.searchParams.delete('room');history.replaceState(null,'',url);/* No opening toast: the "local games are not uploaded" note has been removed.
+function localStart(withBot){if(arcade){arcade.stop();arcadeStarted=false;arcadeStatus='';if(isCanvasGame)arcade.reset();}screen='play';generation++;clearInterval(poll);cosmeticSync.stop();room=null;clearPlayStartDelay();stopCustodyClock();clearRoomHint();roomServerNow=0;hostedResult=false;local=true;computer=withBot;document.body.dataset.noGuide=isBilliards&&withBot&&noGuideOn()?'1':'';board=start(game);if(isPoolLike){cancelPoolOpponentShot($('board'));cancelPoolCountdown($('board'));$('board')._returns=[];$('board')._painted=null;$('board')._scratchVisible=false;$('board')._animationToken=($('board')._animationToken||0)+1;$('board')._animating=false;$('board')._lastMove=0;$('board')._queued=null;$('board')._snapshot=null;$('board')._snapshotTurn=null;$('board')._snapshotMove=null;$('board')._striking=false;$('board')._localOpeningUntil=Date.now()+COUNTDOWN_TOTAL;$('board')._localReadyUntil=$('board')._localOpeningUntil-COUNTDOWN_WINDOW;$('board')._serverOffset=0;$('board')._locked=false;$('board')._pullStart=null;$('board')._power=0;$('board')._spin=0;}if(game==='draw'){$('board')._passed=false;computer&&practiceDrawing();}puzzleSelection=null;last=-1,rematchPending=false;pending=false;const url=new URL(location.href);url.searchParams.delete('room');history.replaceState(null,'',url);/* No opening toast: the "local games are not uploaded" note has been removed.
    #message stays reserved for real errors and room status updates. */$('message').textContent='';render();if(withBot&&!usesCountdown)openLocalBotTurn();}
-$('board').addEventListener('click',async event=>{const button=event.target.closest('[data-position]');if(game==='draw'||!button||Date.now()<fourOpening||pending||board.over||game==='pool'&&$('board')._animating||game==='four'&&$('board')._fourDropAnimating)return;let position=Number(button.dataset.position);if(game==='chess'){const own=board.cells[position]&&(board.cells[position]<=6?1:2)===board.turn;if(puzzleSelection===null||own){if(!own)return;puzzleSelection=position;render();return;}let code=puzzleSelection*64+position;const pawn=board.cells[puzzleSelection]===1||board.cells[puzzleSelection]===7;if(pawn&&(Math.floor(position/8)===0||Math.floor(position/8)===7))code+=4096*Number($('promotion').value);if(!legal(board).includes(code)){showChessNotice(document.documentElement.lang==='en'?'Illegal move — choose another square.':'这步不合法，请选择其他目标。');return;}position=code;puzzleSelection=null;}if(game==='puzzle'){if(puzzleSelection===null){puzzleSelection=position;render();return;}if(puzzleSelection===position){puzzleSelection=null;render();return;}position=puzzleSelection*16+position;puzzleSelection=null;}commitMove(position);});
+$('board').addEventListener('click',async event=>{const button=event.target.closest('[data-position]');if(game==='draw'||!button||Date.now()<fourOpening||pending||board.over||isPoolLike&&$('board')._animating||game==='four'&&$('board')._fourDropAnimating)return;let position=Number(button.dataset.position);if(game==='chess'){const own=board.cells[position]&&(board.cells[position]<=6?1:2)===board.turn;if(puzzleSelection===null||own){if(!own)return;puzzleSelection=position;render();return;}let code=puzzleSelection*64+position;const pawn=board.cells[puzzleSelection]===1||board.cells[puzzleSelection]===7;if(pawn&&(Math.floor(position/8)===0||Math.floor(position/8)===7))code+=4096*Number($('promotion').value);if(!legal(board).includes(code)){showChessNotice(document.documentElement.lang==='en'?'Illegal move — choose another square.':'这步不合法，请选择其他目标。');return;}position=code;puzzleSelection=null;}if(game==='puzzle'){if(puzzleSelection===null){puzzleSelection=position;render();return;}if(puzzleSelection===position){puzzleSelection=null;render();return;}position=puzzleSelection*16+position;puzzleSelection=null;}commitMove(position);});
 /* Shared commit path for grid clicks and Bubble Duel canvas shots. Local play
    advances the board with grid-rules; hosted play sends the same `position`
    (an aim code for bubbles) to the room API and applies the authoritative view. */async function commitMove(position){
@@ -449,11 +450,11 @@ $('board').addEventListener('click',async event=>{const button=event.target.clos
 async function runLocalBot(token){
   while(computer&&!board.over&&board.turn===3-mySeat){
     if(game==='four')await $('board')._fourDropDone;
-    await new Promise(r=>setTimeout(r,isSnooker?320:isBubbles?900:game==='pool'?350:450));
-    while(game==='pool'&&$('board')._animating&&token===generation)await new Promise(r=>setTimeout(r,100));
+    await new Promise(r=>setTimeout(r,isSnooker?320:isBubbles?900:isPoolLike?350:450));
+    while(isPoolLike&&$('board')._animating&&token===generation)await new Promise(r=>setTimeout(r,100));
     if(token!==generation)return;
     const command=bot(board,botLevels.get());
-    if(game==='pool'&&!await animatePoolOpponentShot($('board'),command,()=>token===generation&&screen==='play'&&!room))return;
+    if(isPoolLike&&!await animatePoolOpponentShot($('board'),command,()=>token===generation&&screen==='play'&&!room))return;
     if(token!==generation)return;
     board=move(board,board.turn,command);render();
     if(isSnooker&&arcade){await arcade.whenSettled();if(token!==generation)return;}
@@ -469,7 +470,7 @@ async function openLocalBotTurn(){
 }
 /* Join-by-code was retired. A shared ?room= link enters the room
    automatically in the init() tail below, so no join form needs the
-   pool audio unlock either. */if(game==='pool'||usesCountdown){for(const id of ['computer','quick','friends','again'])$(id)?.addEventListener('click',unlockPoolAudio,{capture:true});}
+   pool audio unlock either. */if(isPoolLike||usesCountdown){for(const id of ['computer','quick','friends','again'])$(id)?.addEventListener('click',unlockPoolAudio,{capture:true});}
 if(isBubbles){for(const id of ['computer','quick','friends','again'])$(id)?.addEventListener('click',unlockBubblesAudio,{capture:true});}
 /* --------------------------------------------------------------------------
    Single-player setup dialog: piece colour (Connect Four only, shown as the
@@ -519,7 +520,7 @@ ${isBilliards?`<label class="lg-diff" style="flex-direction:row;align-items:cent
   });
   localGameDialog.querySelector('[data-lg-close]').onclick=()=>localGameDialog.close();
   localGameDialog.querySelector('[data-lg-start]').onclick=()=>{
-    if(game==='pool'||usesCountdown)unlockPoolAudio();
+    if(isPoolLike||usesCountdown)unlockPoolAudio();
     botLevels.set(localGameDialog.querySelector('[data-lg-level]').value);
     const ng=localGameDialog.querySelector('[data-lg-noguide]');
     if(ng)setNoGuide(ng.checked);
@@ -571,7 +572,7 @@ window.addEventListener('joyflock:cosmetics-changed',()=>{render();syncRoomCosme
 render();init().then(()=>{if(params.get('room'))enter('FRIENDS',params.get('room'));}).catch(()=>{$('message').textContent='联机服务暂不可用，仍可单机游玩。';});
 
 import {bindPortalControls} from '../portal-controls.js?v=20261110-fullzoom1&release=20261115-localefix1&native=20261115-native1';
-import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-firstpaint1';
+import {bindTableLocale,tableLabel} from './table-locale.js?v=20261110-glove2&d=20261115-chatfs1&r=20261115-winrate1&release=20261115-firstpaint1&nine=20261120-nineball1';
 const applyTableLocale=bindTableLocale();
 arcade?.refresh?.();
 bindPortalControls({onLocale:locale=>{applyTableLocale(locale);paintMemberFacts();if($('stats').dataset.demo==='1')$('stats').textContent=globalThis.__joyflockDemoStats?globalThis.__joyflockDemoStats(locale):'';else refreshStats();arcade?.refresh?.();render();}});
@@ -589,7 +590,7 @@ if(game==='draw')render();
 
 if(game==='cards'){$('board').classList.add('cards');$('rules').textContent='颜色数字接龙：两人各7张，轮流打出与桌面同色或同数字的牌，也可摸一张并结束回合。先出完手牌获胜。没有功能牌、不下注；牌库耗尽时重洗弃牌。';render();}
 
-if(game==='pool'){$('board').classList.add('pool');$('rules').textContent='休闲台球：移动鼠标瞄准，按住左键锁定方向，向后拖动蓄力，松开击球。左上角白球可选择击球点。首次有效进球确定全色（1–7）或花色（9–15），打进本组球可继续击球；分组后先碰对方球、未先碰本组目标球，或白球落袋，均为犯规。犯规后对手获得额外一杆，白球落袋自动复位。清空本组后下一杆打进8号获胜，提前打进8号或同时白球落袋判负。最多200杆后按落袋数判定。此模式不是完整竞技八球规则。';render();}
+if(isPoolLike){$('board').classList.add('pool');$('rules').textContent=game==='nineball'?'休闲九球：移动鼠标瞄准，按住左键锁定方向，向后拖动蓄力，松开击球。左上角白球可选择击球点。每杆必须先碰台面上号码最小的球，落袋任意球都可继续击球；合法打进9号球立即获胜，犯规打进9号球判负。未先碰最小号球或白球落袋均为犯规，对手获得额外一杆，白球落袋自动复位。最多200杆。此模式未实现推杆、指定袋与三连犯规等赛事规则。':'休闲台球：移动鼠标瞄准，按住左键锁定方向，向后拖动蓄力，松开击球。左上角白球可选择击球点。首次有效进球确定全色（1–7）或花色（9–15），打进本组球可继续击球；分组后先碰对方球、未先碰本组目标球，或白球落袋，均为犯规。犯规后对手获得额外一杆，白球落袋自动复位。清空本组后下一杆打进8号获胜，提前打进8号或同时白球落袋判负。最多200杆后按落袋数判定。此模式不是完整竞技八球规则。';render();}
 
 const metadata=CATALOG[game];
 // The synchronous intro-boot script already wrote the final copy and an inline
@@ -607,7 +608,7 @@ const clockUntil=room?.phase==='PLAYING'
    :turnClockVisible(Array.isArray(room.custody)?room.custody[turnIndex]:null)?room.deadline:0)
  : 0;
 $('turn-clock').textContent=clockUntil>room?.serverNow?Math.max(0,Math.ceil((clockUntil-room.serverNow)/1000))+'s':'';const options={room,me,board,local,computer,names:names(),request,generation,mySeat,
-  scores:isBubbles&&board?.cells?bubblesScore(board.cells):null};if(game==='pool')updatePoolShell(options);else{if(game!=='snooker')$('arena').classList.add('table-chat-layout');updateTableChat(options);if(game==='snooker')mountSnookerShell();}
+  scores:isBubbles&&board?.cells?bubblesScore(board.cells):null};if(isPoolLike)updatePoolShell(options);else{if(game!=='snooker')$('arena').classList.add('table-chat-layout');updateTableChat(options);if(game==='snooker')mountSnookerShell();}
 if(usesCountdown){
   if(screen!=='play'){
     cancelPoolCountdown($('board'));fourMatchKey=null;fourOpening=0;fourReadyUntil=0;

@@ -232,7 +232,7 @@ function gamePage(g, lang) {
       <h1>${esc(name)}</h1>
       <p class="lead">${esc(L(g.lead, lang))}</p>
       <div class="chips">${L(g.features, lang).map(f => `<span>${esc(f)}</span>`).join('')}</div>
-      <div class="actions"><a class="cta" href="${esc(playUrl(g))}">${esc(t(lang, '立即开玩 ↗', 'Play now ↗'))}</a><a class="cta-quiet" href="${esc(dirPath(lang))}">${esc(t(lang, '浏览全部 9 款游戏', 'Browse all 9 games'))}</a></div>
+      <div class="actions"><a class="cta" href="${esc(playUrl(g))}">${esc(t(lang, '立即开玩 ↗', 'Play now ↗'))}</a><a class="cta-quiet" href="${esc(dirPath(lang))}">${esc(t(lang, '浏览全部 10 款游戏', 'Browse all 10 games'))}</a></div>
     </div>
     <img class="hero-art" src="${esc(g.cover)}" alt="${esc(imageAlt)}" width="600" height="600" decoding="async">
   </section>
@@ -255,12 +255,12 @@ function directoryPage(lang) {
   const enUrl = dirUrl('en');
   const title = t(lang, '全部游戏 · 免费在线小游戏合集 | JoyFlock', 'All Games — Free Online Browser Games | JoyFlock');
   const description = t(lang,
-    'JoyFlock 收录 9 款免费在线游戏：飞行棋、欢乐台球、斯诺克、五子棋、国际象棋、四子连珠、井字棋、欢乐纸牌与泡泡射击。无需下载、不用注册，支持电脑对战与好友联机。',
-    'Nine free browser games on JoyFlock: Flight Party, Pool, Snooker, Gomoku, Chess, Connect Four, Tic-Tac-Toe, Cards and Bubble Shooter. No download, no sign-up, with computer and friend-room play.');
+    'JoyFlock 收录 10 款免费在线游戏：飞行棋、欢乐台球、欢乐九球、斯诺克、五子棋、国际象棋、四子连珠、井字棋、欢乐纸牌与泡泡射击。无需下载、不用注册，支持电脑对战与好友联机。',
+    'Ten free browser games on JoyFlock: Flight Party, Pool, Nine-ball, Snooker, Gomoku, Chess, Connect Four, Tic-Tac-Toe, Cards and Bubble Shooter. No download, no sign-up, with computer and friend-room play.');
   const keywords = t(lang,
     '免费在线游戏,网页小游戏,双人游戏,好友联机,飞行棋,台球,五子棋,国际象棋,无需下载',
     'free online games,browser games,two player games,play with friends,board games,no download');
-  const imageAlt = t(lang, 'JoyFlock 九款在线游戏', 'Nine JoyFlock browser games');
+  const imageAlt = t(lang, 'JoyFlock 十款在线游戏', 'Ten JoyFlock browser games');
   const jsonld = [
     {
       '@context': 'https://schema.org',
@@ -284,7 +284,7 @@ function directoryPage(lang) {
     }
   ];
   const body = `<nav class="crumbs" aria-label="${esc(t(lang, '面包屑导航', 'Breadcrumb'))}"><ol><li><a href="/">${esc(t(lang, '首页', 'Home'))}</a></li><li aria-current="page">${esc(t(lang, '全部游戏', 'All games'))}</li></ol></nav>
-<section class="hero"><div class="hero-copy"><span class="eyebrow">JoyFlock · 9 games</span><h1>${esc(t(lang, '九款游戏，打开就能玩', 'Nine games, just open one'))}</h1><p class="lead">${esc(description)}</p><div class="actions"><a class="cta" href="/">${esc(t(lang, '进入游戏大厅 ↗', 'Open the game lobby ↗'))}</a></div></div><img class="hero-art" src="/assets/covers/gomoku.jpg" alt="${esc(imageAlt)}" width="600" height="600"></section>
+<section class="hero"><div class="hero-copy"><span class="eyebrow">JoyFlock · 10 games</span><h1>${esc(t(lang, '十款游戏，打开就能玩', 'Ten games, just open one'))}</h1><p class="lead">${esc(description)}</p><div class="actions"><a class="cta" href="/">${esc(t(lang, '进入游戏大厅 ↗', 'Open the game lobby ↗'))}</a></div></div><img class="hero-art" src="/assets/covers/gomoku.jpg" alt="${esc(imageAlt)}" width="600" height="600"></section>
 <section class="related"><h2>${esc(t(lang, '选择一款游戏', 'Pick a game'))}</h2><ul>${GAMES.map(g => `<li><a href="${esc(gamePath(g, lang))}"><b>${esc(L(g.name, lang))}</b><small>${esc(L(g.players.label, lang))} · ${esc(L(g.lead, lang))}</small></a></li>`).join('')}</ul></section>`;
   return shell(lang, {title, description, keywords, canonical, zhUrl, enUrl, image: ogUrl(GAMES[0]), imageAlt, jsonld, body});
 }

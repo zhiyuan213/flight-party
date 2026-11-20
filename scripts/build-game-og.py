@@ -144,10 +144,10 @@ def build_site(manifest):
         im.paste(thumb, (x0 + cx * (tile + gap), y0 + cy * (tile + gap)), mask)
     d.rounded_rectangle((72, 68, 88, 84), radius=4, fill=GOLD)
     text(d, (102, 62), "JoyFlock", font(EN_BOLD, 30), GOLD)
-    text(d, (70, 200), "九款游戏", font(CN_BOLD, 80), WHITE)
+    text(d, (70, 200), "十款游戏", font(CN_BOLD, 80), WHITE)
     text(d, (72, 302), "打开就能玩", font(CN_BOLD, 58), GOLD)
     d.rounded_rectangle((72, 400, 152, 405), radius=2, fill=GOLD)
-    text(d, (72, 430), "Nine games, just open one", font(EN_BOLD, 28), WHITE)
+    text(d, (72, 430), "Ten games, just open one", font(EN_BOLD, 28), WHITE)
     text(d, (72, 480), "免费在线玩  ·  Free to play, no download", font(CN, 23), MUTED)
     target = OUT / "joyflock.png"
     im.save(target, "PNG", optimize=True)

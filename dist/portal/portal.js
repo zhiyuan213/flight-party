@@ -2,6 +2,7 @@ import {bindPoolFullscreen} from './pool-fullscreen.js?v=20261110-fullzoom1&d=20
 const gameOrigin=['localhost','127.0.0.1'].includes(location.hostname)?location.origin:'https://flight.joyflock.com';
 const games=[
  {id:'pool',image:'/assets/covers/pool.jpg?v=20261109-poolorig1',name:'欢乐台球',en:'Pool',icon:'❽',color:'green',detail:'2人 · 休闲台球',live:true},
+ {id:'nineball',image:'/assets/covers/nineball.jpg?v=20261120-nineball1',name:'欢乐九球',en:'Nine-ball',icon:'⑨',color:'green',detail:'2人 · 美式九球',live:true},
  {id:'flight',name:'飞行棋',en:'Flight Party',icon:'✈',color:'blue',image:'/assets/plane-vip-gold-body.png',detail:'2–4人 · 好友联机',live:true},
  {id:'four',image:'/assets/covers/four.jpg',name:'四子连珠',en:'Connect Four',icon:'●',color:'coral',detail:'2人 · 单机 / 联机',live:true},
  {id:'gomoku',image:'/assets/covers/gomoku.jpg',name:'五子棋',en:'Gomoku',icon:'✚',color:'amber',detail:'2人 · 单机 / 联机',live:true},

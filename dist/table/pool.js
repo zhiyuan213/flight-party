@@ -1,7 +1,7 @@
-import {poolTargets,settlePool,STATE_SIZE,PENALTY_VISIT} from './pool-rules.js?v=20261110-glove2';
+import {poolTargets,settlePool,settleNineBall,targetsFor,NINE_RACK,isNineBall,STATE_SIZE,PENALTY_VISIT} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 import {pocketIndex,resolveCushion,POOL_HOLES} from './pool-geometry.js?v=20261114-pocketdepth1';
 import {PLACE_BASE,decodePoolPlace,poolCueInHand,legalCueSpot} from './pool-place.js?v=20261110-glove2';
-import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1';
+import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 
 // Deterministic 2D billiard core. The Java authority
 // (backend/.../PoolRules.java) mirrors these constants AND the exact
@@ -39,7 +39,14 @@ const MU_RAIL=.20, RAIL_SPIN_K=.020, RAIL_WZ_DECAY=.62;
 // higher values were measured to strand balls in front of the jaws.
 const STOP=.2;
 
-export function poolStart(){const cells=Array(STATE_SIZE).fill(0);cells[0]=2500;cells[1]=2500;cells[2]=1;const rack=[1,9,2,10,8,3,4,11,5,12,6,13,7,14,15];let k=0;for(let col=0;col<5;col++)for(let row=0;row<=col;row++){const n=rack[k++];cells[n*3]=6500+col*282;cells[n*3+1]=2500+Math.round((row-col*.5)*326);cells[n*3+2]=1;}return{game:'pool',cells,turn:1,winner:0,over:false,moves:0,fen:'',history:[]};}
+export function poolStart(game='pool'){const cells=Array(STATE_SIZE).fill(0);cells[0]=2500;cells[1]=2500;cells[2]=1;
+ if(isNineBall(game)){
+  for(let col=0;col<NINE_RACK.length;col++){const row=NINE_RACK[col],n=row.length;
+   for(let r=0;r<n;r++){const id=row[r];cells[id*3]=6500+col*282;cells[id*3+1]=2500+Math.round((r-(n-1)/2)*326);cells[id*3+2]=1;}}
+ }else{
+  const rack=[1,9,2,10,8,3,4,11,5,12,6,13,7,14,15];let k=0;for(let col=0;col<5;col++)for(let row=0;row<=col;row++){const n=rack[k++];cells[n*3]=6500+col*282;cells[n*3+1]=2500+Math.round((row-col*.5)*326);cells[n*3+2]=1;}
+ }
+ return{game,cells,turn:1,winner:0,over:false,moves:0,fen:'',history:[]};}
 
 /* railTangentLoss caps how much of the tangential (along-rail) velocity a
    single cushion contact may remove, as a fraction of that tangential speed.
@@ -210,7 +217,7 @@ export function placePoolCue(s,actor,command){
  if(!spot||!poolCueInHand(s)||!legalCueSpot(s.cells,spot.x,spot.y))throw Error('place');
  const cells=Array.from({length:STATE_SIZE},(_,i)=>s.cells[i]||0);
  cells[0]=spot.x;cells[1]=spot.y;
- return {game:'pool',cells,turn:s.turn,winner:s.winner,over:s.over,moves:s.moves,
+ return {game:s.game,cells,turn:s.turn,winner:s.winner,over:s.over,moves:s.moves,
   fen:s.fen,history:[],audioEvents:[],shotCommand:s.shotCommand??null};
 }
 
@@ -221,7 +228,14 @@ export function poolMove(s,actor,command){
  if(Number.isFinite(command)&&command>=PLACE_BASE)return placePoolCue(s,actor,command);
  const cells=Array.from({length:STATE_SIZE},(_,i)=>s.cells[i]||0);
  const {c,potted,firstContact,history,audioEvents,black,pocket}=simulateCueShot(cells,command);
- const result=settlePool(s.cells,c,actor,potted,firstContact);const over=result.over||s.moves+1>=200,winner=result.over?result.winner:over?(c[48]===c[49]?0:c[48]>c[49]?1:2):0;if(over)c[PENALTY_VISIT]=0;return{game:'pool',cells:c,turn:result.turn,winner,over,moves:s.moves+1,fen:result.foul?'犯规：'+result.foulReason:black?'8号球落袋':'本杆落袋 '+pocket+' 颗',history,audioEvents,shotCommand:command};
+ const nine=isNineBall(s.game);
+ const result=nine?settleNineBall(s.cells,c,actor,potted,firstContact):settlePool(s.cells,c,actor,potted,firstContact);
+ const decisive=nine?potted.includes(9):black;
+ const over=result.over||s.moves+1>=200,winner=result.over?result.winner:over?(c[48]===c[49]?0:c[48]>c[49]?1:2):0;
+ if(over)c[PENALTY_VISIT]=0;
+ return{game:s.game,cells:c,turn:result.turn,winner,over,moves:s.moves+1,
+  fen:result.foul?'犯规：'+result.foulReason:decisive?(nine?'9号球落袋':'8号球落袋'):'本杆落袋 '+pocket+' 颗',
+  history,audioEvents,shotCommand:command};
 }
 
 // Aim at the ghost ball for the most open pocket instead of the object-ball
@@ -229,8 +243,8 @@ export function poolMove(s,actor,command){
 /* The classic computer opponent: nearest legal ball, then its nearest pocket.
    Kept verbatim as the "normal" level and as the no-level legacy path. */
 function legacyPoolBot(s){
- const c=s.cells;let target=8,best=Infinity;
- for(const i of poolTargets(c,s.turn)){const dx=c[i*3]-c[0],dy=c[i*3+1]-c[1],d=Math.sqrt(dx*dx+dy*dy);if(d<best){target=i;best=d;}}
+ const c=s.cells;let target=isNineBall(s.game)?9:8,best=Infinity;
+ for(const i of targetsFor(c,s.turn,s.game)){const dx=c[i*3]-c[0],dy=c[i*3+1]-c[1],d=Math.sqrt(dx*dx+dy*dy);if(d<best){target=i;best=d;}}
  const tx=c[target*3]/10,ty=c[target*3+1]/10,cx=c[0]/10,cy=c[1]/10;
  let hole=POOL_HOLES[0],hd=Infinity;
  for(const h of POOL_HOLES){const dx=h[0]-tx,dy=h[1]-ty,d=dx*dx+dy*dy;if(d<hd){hd=d;hole=h;}}
@@ -258,11 +272,13 @@ function segmentDistance(px,py,ax,ay,bx,by){
    higher-percentage cut. */
 function poolShots(s,precise){
  const c=s.cells,out=[],cx=c[0]/10,cy=c[1]/10;
- /* The 8-ball is never a legal target while a group is still open. */
- const eightAlive=c[8*3+2]===1,ex=eightAlive?c[8*3]/10:0,ey=eightAlive?c[8*3+1]/10:0;
+ /* Eight-ball keeps the 8 alive as a hazard; nine-ball has no such ball
+    because potting the 9 is the win, and 9 is only the legal target last. */
+ const nine=isNineBall(s.game);
+ const eightAlive=!nine&&c[8*3+2]===1,ex=eightAlive?c[8*3]/10:0,ey=eightAlive?c[8*3+1]/10:0;
  const blockers=[];
  for(let j=1;j<16;j++)if(c[j*3+2])blockers.push([c[j*3]/10,c[j*3+1]/10,j]);
- for(const i of poolTargets(c,s.turn)){
+ for(const i of targetsFor(c,s.turn,s.game)){
   const tx=c[i*3]/10,ty=c[i*3+1]/10;
   const ballDist=Math.sqrt((c[i*3]-c[0])**2+(c[i*3+1]-c[1])**2);
   for(const h of POOL_HOLES){
@@ -288,7 +304,7 @@ function poolShots(s,precise){
    /* A ball parked in either lane usually means a wrong first contact (foul)
       or a wasted shot, so Pro and Hell both prefer a clear lane. */
    for(const [bx,by,j] of blockers){
-    if(j===i||j===8)continue;
+    if(j===i||(!nine&&j===8))continue;
     if(segmentDistance(bx,by,cx,cy,gx,gy)<32)penalty+=300;
     if(segmentDistance(bx,by,tx,ty,h[0],h[1])<32)penalty+=300;
    }
@@ -326,4 +342,4 @@ export function poolBot(s,level,rng=Math.random){
  const power=Math.max(28,Math.min(100,best.power+Math.round(jitter(tune.power,rng))));
  return best.spot*363600+power*3600+a;
 }
-export {renderPool} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
+export {renderPool} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';

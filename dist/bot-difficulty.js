@@ -15,7 +15,7 @@ export const BOT_LEVEL_KEY='joyflock.bot.level';
 export const BOT_LEVEL_KEY_PREFIX='joyflock.bot.level.';
 /* Every playable game with a local computer opponent. Flight lives on the
    portal home page; the ten table games pass their `?game=` id. */
-export const BOT_GAME_IDS=['flight','four','gomoku','xo','chess','puzzle','draw','cards','pool','snooker','bubbles'];
+export const BOT_GAME_IDS=['flight','four','gomoku','xo','chess','puzzle','draw','cards','pool','nineball','snooker','bubbles'];
 /** Storage key for one game. Unknown/absent ids fall back to the legacy key. */
 export function botLevelKey(game){
   return BOT_GAME_IDS.includes(game)?BOT_LEVEL_KEY_PREFIX+game:BOT_LEVEL_KEY;

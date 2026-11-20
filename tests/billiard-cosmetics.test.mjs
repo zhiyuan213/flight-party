@@ -94,7 +94,7 @@ test('one shared colour table drives shop cards and both canvas games', () => {
 
 test('game page retains the separate rack, cue and shared cloth path',()=>{
  const compact=gameJs.replace(/\s+/g,'');
- assert.ok(compact.includes("constBILLIARDS=['pool','snooker']"));
+ assert.ok(compact.includes("constBILLIARDS=['pool','nineball','snooker']"));
  assert.ok(compact.includes("resolveShared(me,opponent,'table')"));
  for(const kind of ['ball','cue','table'])assert.ok(compact.includes("setTheme(root,'data-cosmetic-"+kind+"',"+kind+"Theme)"));
  assert.ok(!/cosmetic-note|publishNote|caption\(/.test(gameJs));

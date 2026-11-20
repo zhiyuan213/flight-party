@@ -14,7 +14,7 @@
  *                 combos, RNG seed, last-shot metadata, attack, round limit
  * The browser and BubbleRules.java implement the identical algorithm. */
 
-import {botTuning,jitter} from '../bot-difficulty.js?v=20261112-gamelanes1';
+import {botTuning,jitter} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 
 export const R=20,ROW=Math.sqrt(3)*R,COLS=18,W=COLS*R*2,H=765,LAUNCH_Y=H-29,LIMIT=H-90;
 export const ROWS=18,START_ROWS=8,ANGLE_MAX=148,COLOURS=5,MAX_MOVES=24;

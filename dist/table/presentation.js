@@ -9,7 +9,8 @@ export const CATALOG={
  chess:{name:'国际象棋',en:'Chess',description:'标准国际象棋，白棋先行。支持王车易位、吃过路兵与升变，将死获胜。',instruction:'先选自己的棋子，再选目标格。白棋先行，支持王车易位、吃过路兵和升变。'},
  draw:{name:'你画我猜',en:'Draw & Guess',description:'两人轮流画画与猜词，共 6 题，按猜对次数计分。',instruction:'画题的一方在画布上作画，另一方输入答案。共六题，猜对就进入下一题。'},
  cards:{name:'欢乐纸牌',en:'Cards',description:'两人各 7 张牌，按颜色或数字接龙，先出完手牌获胜。',instruction:'选择与桌面牌同色或同数字的手牌。也可以摸一张并结束回合。'},
- pool:{name:'欢乐台球',en:'Pool',description:'休闲八球：瞄准、蓄力、击球。先清空本组球，再合法打进 8 号获胜。',instruction:'点击球桌选择方向，再调整力度击球。先清空1–7号共享目标，再合法打进8号。'}
+ pool:{name:'欢乐台球',en:'Pool',description:'休闲八球：瞄准、蓄力、击球。先清空本组球，再合法打进 8 号获胜。',instruction:'点击球桌选择方向，再调整力度击球。先清空1–7号共享目标，再合法打进8号。'},
+ nineball:{name:'欢乐九球',en:'Nine-ball',description:'美式九球：每杆先碰台面最小号球，合法打进 9 号立即获胜。',instruction:'点击球桌选择方向，再调整力度击球。每杆先碰最小号球，打进9号球获胜。'}
 };
 export function screenForRoom(room){return room?.phase==='CLOSED'?'home':room?.phase==='WAITING'?'waiting':room?'play':'home';}
 export function coverFor(game){return '../assets/covers/'+game+(['xo'].includes(game)?'.svg':'.jpg');}

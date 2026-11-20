@@ -19,7 +19,7 @@
  */
 import {startSnooker,shootSnooker,snookerTargets,placeCue,radius,SNOOKER_POWER_SCALE} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1';
 import {POOL_HOLES} from './pool-geometry.js?v=20261114-pocketdepth1';
-import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1';
+import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 
 /* The 30%-softer stroke is a player-feel change, not an AI nerf. The bot's
    geometric lines were tuned for the old absolute cue speed, so compensate

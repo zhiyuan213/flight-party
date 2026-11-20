@@ -10,16 +10,36 @@
 export const SITE = {
   origin: 'https://flight.joyflock.com',
   name: 'JoyFlock',
-  tagline: {zh: '九款游戏，打开就能玩', en: 'Nine games, just open one'},
+  tagline: {zh: '十款游戏，打开就能玩', en: 'Ten games, just open one'},
   zhPath: '/games/',
   enPath: '/en/games/',
   ogWidth: 1200,
   ogHeight: 630,
-  lastmod: '2026-11-14',
-  cacheKey: '20261114-seo1'
+  lastmod: '2026-11-20',
+  cacheKey: '20261120-nineball1'
 };
 
 export const GAMES = [
+  {
+    id: 'nineball', slug: 'nineball', cover: '/assets/covers/nineball.jpg',
+    name: {zh: '欢乐九球', en: 'Nine-ball'},
+    altNames: {zh: ['九球', '美式九球', '9球'], en: ['9-ball', 'nine ball', 'online nine-ball']},
+    title: {zh: '欢乐九球在线玩 · 免费双人对战 | JoyFlock', en: 'Play Nine-ball Online Free — 2-Player 9-Ball Game | JoyFlock'},
+    description: {zh: '在 JoyFlock 免费在线玩欢乐九球：不用下载，打开浏览器就能和好友打一局美式九球。每杆先碰台面最小号球，合法打进 9 号球立即获胜。鼠标瞄准、拖拽蓄力、松开击球，支持电脑对战、创建房间与邀请链接。', en: 'Play free online nine-ball on JoyFlock — no download, no sign-up. Every shot must hit the lowest ball first and a legal 9-ball ends the match. Aim with the mouse, drag to set power and release to shoot. Challenge the computer, create a private room or send an invite link.'},
+    keywords: {zh: '欢乐九球,九球游戏,美式九球,9球,在线台球,双人台球,免费台球游戏', en: 'nine ball,9-ball game,online nine-ball,free billiards,two player pool,browser pool game,no download'},
+    lead: {zh: '按号码顺序击球，一杆打进 9 号就赢的休闲九球。', en: 'A casual nine-ball table: hit the lowest ball first, then pot the 9 to win.'},
+    about: {zh: ['欢乐九球沿用欢乐台球的球桌、球体、袋口与击球音效，只把规则换成九球：9 颗目标球菱形摆放，每杆白球必须先碰台面上号码最小的球，之后任何球落袋都算合法。', '合法打进 9 号球立即结束本局；犯规打进 9 号球则判负。不想等人的时候可以开电脑对战，也可以创建房间把邀请链接发给朋友。'], en: ['Nine-ball reuses the Pool table, ball sprites, pockets and impact sounds, with the rules swapped for nine-ball: nine object balls in a diamond rack, and the cue ball must contact the lowest numbered ball first.', 'A legal 9-ball wins the frame immediately, while a 9 on a foul loses. Play the computer when alone, or create a room and send the invite link to a friend.']},
+    rules: {zh: ['9 颗目标球菱形摆放，1 号在顶点、9 号在中心；每杆必须先碰台面最小号球。', '落袋任意球且无犯规可继续出杆；未先碰最小号球或白球落袋均为犯规，对手获得额外一杆。', '合法打进 9 号球立即获胜；犯规打进 9 号球判负。最多 200 杆。'], en: ['Nine balls are racked in a diamond with the 1 at the apex and the 9 in the centre; every shot must first contact the lowest ball.', 'Potting any ball without a foul keeps the turn. Missing the lowest ball first or scratching is a foul and gives the opponent an extra shot.', 'Legally potting the 9-ball wins at once; a 9-ball on a foul loses. The frame is capped at 200 shots.']},
+    faq: [
+      {q: {zh: '欢乐九球和欢乐台球有什么区别？', en: 'How is Nine-ball different from Pool?'}, a: {zh: '欢乐台球是分组八球，要先清空本组再打 8 号；欢乐九球不分组，按号码顺序击球，合法打进 9 号球立即获胜。', en: 'Pool is grouped eight-ball: clear your group, then pot the 8. Nine-ball has no groups — hit the lowest ball first and pot the 9 to win.'}},
+      {q: {zh: '九球需要指定袋口吗？', en: 'Do I have to call pockets?'}, a: {zh: '不需要。这是为快速对局简化的休闲九球，不指定袋口，也未实现推杆、三连犯规等赛事规则。', en: 'No. This is a simplified casual variant with no called pockets, push-out or three-consecutive-foul rules.'}},
+      {q: {zh: '可以邀请朋友一起打吗？', en: 'Can I invite a friend?'}, a: {zh: '可以。点「创建房间」生成邀请链接，对方打开后进入同一张球桌，两人轮流击球。', en: 'Yes. Create a room, share the invite link and you both land on the same table, taking alternating shots.'}}
+    ],
+    features: {zh: ['鼠标瞄准与拖拽蓄力', '好友房间与邀请链接', '电脑对战随时开局'], en: ['Mouse aiming with drag-to-charge power', 'Private rooms and invite links', 'Instant computer opponent']},
+    players: {min: 2, max: 2, label: {zh: '2 人', en: '2 players'}},
+    modes: {zh: '电脑对战 · 好友联机 · 快速匹配', en: 'Computer · Friend room · Quick match'},
+    genre: {zh: ['台球', '休闲竞技'], en: ['Billiards', 'Casual sport']}
+  },
   {
     id: 'pool', slug: 'pool', cover: '/assets/covers/pool.jpg',
     name: {zh: '欢乐台球', en: 'Pool'},

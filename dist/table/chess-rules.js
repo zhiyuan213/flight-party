@@ -1,5 +1,5 @@
 import {Chess} from '../vendor/chess-1.4.0.js?v=20261110-glove2';
-import {botTuning,pick} from '../bot-difficulty.js?v=20261112-gamelanes1';
+import {botTuning,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
 const symbols='pnbrqk';const square=i=>String.fromCharCode(97+i%8)+(8-Math.floor(i/8));const index=s=>(8-Number(s[1]))*8+s.charCodeAt(0)-97;
 export const encodeChess=m=>index(m.from)*64+index(m.to)+4096*({q:1,r:2,b:3,n:4}[m.promotion]||0);
 function read(s){const b=new Chess();for(const m of s?.history||[])b.move({from:m.slice(0,2),to:m.slice(2,4),...(m.length>4?{promotion:m[4]}:{})});return b;}

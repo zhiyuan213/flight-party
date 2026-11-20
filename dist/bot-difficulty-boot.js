@@ -18,7 +18,7 @@
   var LEVELS=['easy','normal','pro','hell'];
   var TITLE={zh:'机器人难度',en:'Computer difficulty'};
   var KEY='joyflock.bot.level',PREFIX='joyflock.bot.level.';
-  var GAMES=['flight','four','gomoku','xo','chess','puzzle','draw','cards','pool','snooker','bubbles'];
+  var GAMES=['flight','four','gomoku','xo','chess','puzzle','draw','cards','pool','nineball','snooker','bubbles'];
 
   /* Flight marks its slot explicitly; the arcade page carries the game in its
      query string (and defaults to Bubbles with no query). */

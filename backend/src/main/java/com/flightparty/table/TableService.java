@@ -65,8 +65,8 @@ public class TableService {
   long turnClockUntil=CustodyPolicy.turnClockVisible(clockState)?r.deadline:0L;
   return new View(r.id,r.game,r.origin,r.phase,r.seats.stream().map(Seat::name).toList(),r.seats.stream().map(Seat::bot).toList(),r.seats.stream().map(s->{var a=s.account==null?null:appearances.get(s.account);return new PublicSeat(s.name,s.bot,a!=null&&a.member(),a!=null&&a.annualMember(),a==null?"/api/avatars/system/0":a.avatarUrl(),a==null?"none":a.frame(),s.piece,s.board,cosmeticPoints(r,s),s.resolved(now),s.graceUntil());}).toList(),r.game.equals("cards")?CardRules.visible(r.board,you+1):r.game.equals("draw")?SketchRules.visible(r.board,you+1):r.board,r.version,r.deadline,now,you,playStartsAt(r),r.seats.stream().map(s->s.resolved(now)).toList(),r.seats.stream().map(Seat::graceUntil).toList(),managed(r),ready,turnClockUntil);
  }
- private long firstDeadline(String game){return System.currentTimeMillis()+30000+((game.equals("pool")||game.equals("snooker"))?3000:0);}
- private long playStartsAt(Room r){return r.game.equals("pool")&&r.phase.equals("PLAYING")&&r.board.moves()==0?r.deadline-30000:0;}
+ private long firstDeadline(String game){return System.currentTimeMillis()+30000+((game.equals("pool")||game.equals("nineball")||game.equals("snooker"))?3000:0);}
+ private long playStartsAt(Room r){return (r.game.equals("pool")||r.game.equals("nineball"))&&r.phase.equals("PLAYING")&&r.board.moves()==0?r.deadline-30000:0;}
  /* A seat that ends the game in grace or hosted writes no result row at all:
     no data, no points, no leaderboard entry, no completed-game count. A player
     who reconnected before the game ended is active again and scores normally. */
@@ -110,7 +110,7 @@ public class TableService {
   if(CustodyPolicy.GRACE.equals(state))return r;
   if(r.game.equals("draw")){if(turnSeat.bot&&r.board.history().isEmpty())r=changed(r,r.phase,r.seats,SketchRules.computer(r.board),r.deadline);if(r.deadline<=now){r=changed(r,"PLAYING",r.seats,SketchRules.advance(r.board,false),now+30000);r=settle(r);}return r;}
   boolean hosted=CustodyPolicy.HOSTED.equals(state),botControlled=CustodyPolicy.botControlled(state);
-  if((botControlled&&(hosted||!r.game.equals("pool")&&!r.game.equals("snooker")||r.deadline-now<=28000))||r.deadline<=now){
+  if((botControlled&&(hosted||!r.game.equals("pool")&&!r.game.equals("nineball")&&!r.game.equals("snooker")||r.deadline-now<=28000))||r.deadline<=now){
    // Hosted seats always use the easy bot, never the normal search-based bot.
    int command=hosted?GridRules.easyBot(r.board):GridRules.bot(r.board);
    var board=GridRules.move(r.board,r.board.turn(),command);
@@ -155,7 +155,7 @@ public class TableService {
   var seats=new ArrayList<>(r.seats);
   if(absent)seats.set(index,new Seat(s.principal(),s.account(),s.name(),false,s.piece(),s.board(),CustodyPolicy.ACTIVE,0L));
   Room next=changed(r,r.phase,seats,r.board,CustodyPolicy.turnDeadline(now));write(next);return view(next,p);}
- @Transactional public View create(String game,String mode,HttpServletRequest request){UUID p=principal(request);if(game==null||!Set.of("four","gomoku","xo","puzzle","chess","draw","cards","pool","bubbles","snooker").contains(game))throw new ResponseStatusException(HttpStatus.BAD_REQUEST);if(mode==null||!Set.of("QUICK","FRIENDS").contains(mode))throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+ @Transactional public View create(String game,String mode,HttpServletRequest request){UUID p=principal(request);if(game==null||!Set.of("four","gomoku","xo","puzzle","chess","draw","cards","pool","nineball","bubbles","snooker").contains(game))throw new ResponseStatusException(HttpStatus.BAD_REQUEST);if(mode==null||!Set.of("QUICK","FRIENDS").contains(mode))throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
   UUID joiningAccount=seat(p).account;
   // Serialize matchmaking across processes and duplicate create requests for an identity.
   db.sql("select pg_advisory_xact_lock(hashtext(:key))").param("key","table:"+game).query(Object.class).single();
