@@ -345,11 +345,11 @@
    :kind==='trail'
    ?[t('Flight trails','飞行器拖尾'),t('Four options · 默认 is no trail at all · equip one at a time','4 款 · 默认为无拖尾，一次装备一款')]
    :kind==='ball'
-   ?[t('Billiard balls','台球用球'),t('Six sets · each ball keeps its own number, stripes and colour · 默认 is the original rack','6 款球组 · 每颗球按编号单独设计，保留号码与条纹 · 默认款为原始球组')]
+   ?[t('Billiard balls','台球用球'),t('Shared by Pool & Nine-ball · Six sets · each ball keeps its own number, stripes and colour · 默认 is the original rack','欢乐台球与欢乐九球共用 · 6 款球组 · 每颗球按编号单独设计，保留号码与条纹 · 默认款为原始球组')]
    :kind==='cue'
-   ?[t('Cues','球杆'),t('Six cues · only your own stroke changes · 默认 is the original wooden cue','6 款球杆 · 只替换你自己出杆时的球杆 · 默认款为原始木杆')]
+   ?[t('Cues','球杆'),t('Shared by Pool & Nine-ball · Six cues · only your own stroke changes · 默认 is the original wooden cue','欢乐台球与欢乐九球共用 · 6 款球杆 · 只替换你自己出杆时的球杆 · 默认款为原始木杆')]
    :kind==='table'
-   ?[t('Billiard tables','桌球台'),t('Six tables · shared cloth · 默认 is the original cloth · arbitration when both pick one','公共台呢 · 含默认款；双方都选时按 年VIP > VIP > 普通 → 累计得分 → 随机 裁决')]
+   ?[t('Billiard tables','桌球台'),t('Shared by Pool & Nine-ball · Six tables · shared cloth · 默认 is the original cloth · arbitration when both pick one','欢乐台球与欢乐九球共用 · 公共台呢 · 含默认款；双方都选时按 年VIP > VIP > 普通 → 累计得分 → 随机 裁决')]
    :[t('Aircraft','飞行器'),t('Six planes · 默认 is the blue Classic · animated propeller; trails sold separately','6 款飞机 · 默认为蓝色经典机，拖尾为独立道具')];
  }
  /* One section PER GAME. Everything in it is exclusive to that game: the
