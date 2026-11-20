@@ -14,9 +14,9 @@ public final class SnookerRules {
  private static final int ON_RED=-1,ON_COLOUR=-2;
  private static final double[][] SPOTS={{245,290},{260,330},{260,170},{260,250},{500,250},{752,250},{918,250}};
  private static final double[][] CUE_SPOTS={{240,250},{225,250},{210,250},{240,225},{240,275},{245,290},{235,290},{200,250}};
- /* Room-authoritative Snooker is 30% softer than Pool, whose own .48 lives in
-    PoolRules.SHOT_SPEED. Mirrors SNOOKER_POWER_SCALE in dist/table/snooker.js;
-    PoolRules and the 8-ball pipeline are deliberately untouched. */
+ /* Room-authoritative Snooker keeps its original .48*.7 scale. Pool moved to
+    .624 on 2026-11-20; snooker deliberately does NOT inherit that increase.
+    Mirrors SNOOKER_POWER_SCALE in dist/table/snooker.js. */
  private static final double SNOOKER_SHOT_SPEED=.48*.7;
  /* Mirrors BOT_POWER in snooker-duel.js: 62/.7, so the room bot keeps the
     absolute cue speed its aim was calibrated against. */

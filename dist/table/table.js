@@ -1,4 +1,4 @@
-import {botLevelStore,BOT_BONUS,botLabel} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
+import {botLevelStore,BOT_BONUS,botLabel} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {attachFourDrop} from './four-drop.js?v=20261113-fourfx1&skin=20261120-billiardskins1';
 import {attachFourFeedback} from './four-feedback.js?v=20261113-fourfx1';
 import {fourSeatPiece} from './four-seat-piece.js?v=20261113-gomokuseat1&skin=20261120-billiardskins1';
@@ -7,19 +7,19 @@ import {showMatchBox,hideMatchBox,updateMatchBox} from './match-box.js?v=2026111
 import {mountArcade} from './arcade-table.js?v=20261112-natural1&release=20261115-polishrelease1';
 import {mountSnookerShell} from './snooker-shell.js?v=20261111-targetballs1&release=20261115-polishrelease1';
 import {renderChess} from './chess-view.js?v=20261110-glove2';
-import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
+import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
 import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
-import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1';
+import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1';
-import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';
-import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';
+import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
+import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
 import {renderCards} from './cards.js?v=20261112-gamelanes1';
 import {drawSketch,sketchNext} from './sketch.js?v=20261110-glove2';
-import {start,move,bot,legal} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
+import {start,move,bot,legal} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {bubblesScore} from './bubbles-duel.js?v=20261112-gamelanes1';
 import {renderGomoku} from './gomoku-view.js?v=20261112-natural1';
-import {applyCosmetics,decoratePieces,localSelection,profiles} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1';
+import {applyCosmetics,decoratePieces,localSelection,profiles} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1&power=20261120-poolpower30';
 import {createRoomCosmeticSync} from './room-cosmetics.js';
 /* ONLINE CUSTODY — the shared, per-game state machine. The server owns the
    authoritative copy; this shell only paints the 30s countdown, the hosted

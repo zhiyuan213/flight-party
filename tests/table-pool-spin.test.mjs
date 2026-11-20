@@ -9,7 +9,8 @@ test('all eight cue spots produce bounded deterministic trajectories with server
   // Golden positions after switching ball-ball contacts to continuous
   // collision detection (exact 2R contact geometry + post-impulse travel
   // for the rest of the 2 ms step). Both engines were recomputed together.
-  const cue=[[4659,3136],[2330,3921],[1542,3585],[3898,4540],[2947,1828],[3898,460],[1542,1415],[2330,1079]];
+  // Refreshed 2026-11-20 after the 30% cue-power increase; mirrored in PoolRulesTest.java.
+  const cue=[[3457,2092],[4275,4020],[793,4729],[3700,3708],[3582,2093],[3700,1292],[793,271],[4275,980]];
   for(let spot=1;spot<=8;spot++){
     const command=spot*unit+234000,a=poolMove(poolStart(),1,command),b=poolMove(poolStart(),1,command);
     assert.deepEqual(a.cells,b.cells);assert.deepEqual(a.cells.slice(0,2),cue[spot-1]);
@@ -24,12 +25,12 @@ test('all eight cue spots produce bounded deterministic trajectories with server
 });
 test('cue spin affects cushion rebound and scores real pockets normally',()=>{
   // CCD made the break slightly thinner: the left-spin break no longer pots
-  // a ball at any power. The 58-power centre break still does, so both the
-  // rebound effect and the real scoring path stay covered.
+  // a ball at any power. With 30% more cue speed the 50-power centre break
+  // still does, so both the rebound effect and real scoring stay covered.
   const center=poolMove(poolStart(),1,64*3600+1800),left=poolMove(poolStart(),1,7*unit+64*3600+1800),right=poolMove(poolStart(),1,3*unit+64*3600+1800);
   assert.notEqual(left.cells[1],center.cells[1]);assert.notEqual(right.cells[1],center.cells[1]);
   assert.deepEqual(left.cells.slice(48,50),[0,0],'CCD thins this break: no pot, no group assigned');
-  assert.deepEqual(poolMove(poolStart(),1,58*3600+1800).cells.slice(48,50),[1,0],'a real pot still assigns the group');
+  assert.deepEqual(poolMove(poolStart(),1,50*3600+1800).cells.slice(48,50),[1,0],'a real pot still assigns the group');
 });
 test('pool rejects missing power, noninteger commands and out-of-range spots',()=>{
   for(const command of [-1,0,3599,unit,unit+3599,9*unit+3600,1.5,NaN,Infinity])assert.throws(()=>poolMove(poolStart(),1,command));
@@ -64,11 +65,11 @@ test('a near-pocket scratch between replay samples remains visible before cue re
   assert.equal(result.cells[2],1);assert.equal(result.turn,2);
 });
 
-test('full-power free-flight speed is increased by 50% while replay cadence stays 16ms',()=>{
+test('full-power free-flight speed gains another 30% while replay cadence stays 16ms',()=>{
   const s=poolStart();for(let id=1;id<16;id++)s.cells[id*3+2]=0;
   const frames=poolMove(s,1,360000).history.map(f=>f.split(',').map(Number));
   const distance=(frames[1][0]-frames[0][0])/10;
-  assert.ok(distance>94&&distance<96,'16ms free-flight travel should be about 95 units, formerly about 63');
+  assert.ok(distance>123&&distance<125,'16ms free-flight travel is about 124 units after the 30% power increase');
   assert.equal(frames[0][2],1);
 });
 
@@ -82,7 +83,7 @@ function spinScene(cueX=250,targetX=0,offset=0){
 const spinShot=(s,spot,power=25,angle=0)=>poolMove(s,1,spot*unit+power*3600+angle);
 
 test('same shot has visible follow, draw and opposing side-spin outcomes',()=>{
- const spots=[0,1,5,3,7],positions=[[2109,2500],[4616,2500],[3443,2500],[2607,2019],[2607,2981]];
+ const spots=[0,1,5,3,7],positions=[[4483,2500],[4020,2500],[2990,2500],[3078,2288],[3078,2712]];
  for(let i=0;i<spots.length;i++){
   const result=spinShot(spinScene(250,450),spots[i]);
   assert.deepEqual(result.cells.slice(0,2),positions[i]);
@@ -109,31 +110,31 @@ test('side spin bends the free-flight path before any contact',()=>{
 });
 
 test('follow and draw change travel distance and survive a cushion',()=>{
- // Power 35 (formerly 20, then 30): with cloth drag cut twice, 30 folds the
- // follow endpoint past the centre hit, so use the power that still separates
- // centre/follow/draw after the cushion.
+ // Power 35 at the stronger cue speed: follow and draw now both travel
+ // farther than the centre hit, but remain clearly separated from it.
  const center=spinShot(spinScene(800,600),0,35),follow=spinShot(spinScene(800,600),1,35),draw=spinShot(spinScene(800,600),5,35);
- assert.deepEqual(center.cells.slice(0,2),[8831,2500]);
- assert.deepEqual(follow.cells.slice(0,2),[5631,2500]);
- assert.deepEqual(draw.cells.slice(0,2),[8953,2500]);
- assert.ok(follow.cells[0]<center.cells[0]&&draw.cells[0]>center.cells[0]);
+ assert.deepEqual(center.cells.slice(0,2),[6000,2500]);
+ assert.deepEqual(follow.cells.slice(0,2),[6354,2500]);
+ assert.deepEqual(draw.cells.slice(0,2),[7821,2500]);
+ assert.notEqual(follow.cells[0],center.cells[0]);
+ assert.ok(draw.cells[0]>center.cells[0]);
  const empty=poolStart();for(let i=1;i<16;i++)empty.cells[i*3+2]=0;empty.cells[0]=600;empty.cells[1]=2500;
- // Power 65 (formerly 40): the lower drag inverts the 40-power pair; 65 keeps
- // a measurable positive follow-vs-draw travel gap.
- const hi=poolMove(empty,1,1*unit+65*3600),lo=poolMove(empty,1,5*unit+65*3600);
+ // Power 60 keeps a measurable positive follow-vs-draw travel gap now that
+ // every stroke is 30% faster.
+ const hi=poolMove(empty,1,1*unit+60*3600),lo=poolMove(empty,1,5*unit+60*3600);
  assert.ok(hi.cells[0]-lo.cells[0]>500,'follow travels at least 50 table units farther than draw');
 });
 
 test('left and right cushion kicks are mirrored and do not add speed',()=>{
- const center=spinShot(spinScene(),0,25,1800);
- assert.deepEqual(center.cells.slice(0,2),[4829,2500]);
+ // 17% power reproduces the old single-cushion geometry at the 30% faster
+ // cue speed; harder strokes fold across a second rail and break the mirror.
+ const center=spinShot(spinScene(),0,17,1800);
+ assert.deepEqual(center.cells.slice(0,2),[6494,2500]);
  for(const spot of [3,7]){
-  const a=spinShot(spinScene(),spot,25,1800),b=spinShot(spinScene(750),10-spot,25,0);
-  // With cloth drag cut twice the ball travels farther before the rail and the
-  // deflection is partly folded back, so 500 units (was 800) is the contract.
+  const a=spinShot(spinScene(),spot,17,1800),b=spinShot(spinScene(750),10-spot,17,0);
   assert.ok(Math.abs(a.cells[1]-center.cells[1])>400,'visible cushion deflection at the same power');
   assert.equal(a.cells[0]+b.cells[0],10000);assert.equal(a.cells[1],b.cells[1]);
-  assert.deepEqual(a.cells.slice(0,2),spot===3?[4928,2000]:[4928,3000]);
+  assert.deepEqual(a.cells.slice(0,2),spot===3?[6549,1984]:[6549,3016]);
  }
 });
 

@@ -1,14 +1,15 @@
 /* 2026-11-13: "斯诺克的力量减少30%，要跟台球分开".
-   Snooker gets its own 70% cue-speed constant while Pool keeps the shared
-   SHOT_SPEED untouched. Both the browser rules and the room-authoritative
-   Java rules carry the same split; the bot compensates so its difficulty
-   ladder is not silently nerfed. */
+   Snooker gets its own 70% cue-speed constant scaled from the original
+   SHOT_SPEED base (.48). On 2026-11-20 Pool was made 30% stronger
+   (POOL_SHOT_SPEED=.624); Snooker deliberately keeps .48*.7=.336 so the
+   snooker ladder is untouched. Both browser and room-authoritative Java
+   rules carry the same split; the snooker bot compensates for its scale. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {simulateCueShot,SHOT_SPEED,poolStart,poolMove} from '../dist/table/pool.js';
+import {simulateCueShot,SHOT_SPEED,POOL_SHOT_SPEED,poolStart,poolMove} from '../dist/table/pool.js';
 import {startSnooker,shootSnooker,radius,SNOOKER_POWER_SCALE,SNOOKER_SHOT_SPEED} from '../dist/table/snooker.js';
 import {snookerBot,BOT_POWER,NOM_BASE} from '../dist/table/snooker-duel.js';
 import {start as gridStart} from '../dist/table/grid-rules.js';
@@ -44,10 +45,11 @@ function pathLength(history){
 test('the 70% constant exists only in the Snooker branch',()=>{
   assert.equal(SNOOKER_POWER_SCALE,.7);
   assert.equal(SNOOKER_SHOT_SPEED,SHOT_SPEED*.7);
-  assert.equal(SHOT_SPEED,.48,'Pool keeps its original cue-speed constant');
+  assert.equal(SHOT_SPEED,.48,'Snooker keeps the original cue-speed base');
+  assert.equal(POOL_SHOT_SPEED,.624,'Pool strokes are 30% stronger');
   assert.match(snooker,/export const SNOOKER_POWER_SCALE=\.7;/);
   assert.match(snooker,/export const SNOOKER_SHOT_SPEED=SHOT_SPEED\*SNOOKER_POWER_SCALE;/);
-  assert.match(pool,/simulateCueShot\(cells,command,ballCount=16,radius=16,railTangentLoss=1,shotSpeed=SHOT_SPEED\)/);
+  assert.match(pool,/simulateCueShot\(cells,command,ballCount=16,radius=16,railTangentLoss=1,shotSpeed=POOL_SHOT_SPEED\)/);
   assert.match(pool,/vx\[0\]=Math\.cos\(angle\*Math\.PI\/1800\)\*power\*shotSpeed;/);
   assert.match(pool,/vy\[0\]=Math\.sin\(angle\*Math\.PI\/1800\)\*power\*shotSpeed;/);
   assert.match(pool,/const spinSpeed=Math\.min\(power\*shotSpeed\*Math\.abs\(top\[0\]\),incomingSpeed\)/);
@@ -61,7 +63,8 @@ test('the 70% constant exists only in the Snooker branch',()=>{
 
 test('Snooker shots really travel 30% softer, with identical replay frames',()=>{
   const cells=emptyTable().cells;
-  const full=simulateCueShot(cells,COMMAND,22,radius,1);
+  // Compare against the original .48 base, not the new stronger Pool default.
+  const full=simulateCueShot(cells,COMMAND,22,radius,1,SHOT_SPEED);
   const scaled=simulateCueShot(cells,COMMAND,22,radius,1,SNOOKER_SHOT_SPEED);
   const shot=shootSnooker(emptyTable(),COMMAND,1);
   // Replay frames are sampled every 16 ms and quantised to tenths of a table
@@ -75,12 +78,14 @@ test('Snooker shots really travel 30% softer, with identical replay frames',()=>
   assert.ok(Array.isArray(shot.audioEvents),'audio events still follow the same simulation');
 });
 
-test('Pool is bit-for-bit unchanged by the new optional argument',()=>{
+test('Pool uses its own 30% stronger cue speed by default',()=>{
   const cells=emptyTable().cells;
   const legacy=simulateCueShot(cells,COMMAND,22,radius,1);
-  const explicit=simulateCueShot(cells,COMMAND,22,radius,1,SHOT_SPEED);
+  const explicit=simulateCueShot(cells,COMMAND,22,radius,1,POOL_SHOT_SPEED);
   assert.deepEqual(legacy.history,explicit.history);
   assert.deepEqual(legacy.c,explicit.c);
+  assert.notDeepEqual(legacy.history,simulateCueShot(cells,COMMAND,22,radius,1,SHOT_SPEED).history,
+    'the old .48 base is no longer the Pool default');
   const moved=poolMove(poolStart(),1,COMMAND);
   assert.equal(moved.game,'pool');
   assert.ok(moved.history.length>1,'8-ball break still resolves normally');
@@ -114,7 +119,7 @@ test('the room-authoritative Java rules mirror the split, Pool included',()=>{
   assert.match(javaSnooker,/private static final int BOT_POWER=89;/);
   assert.match(javaSnooker,/power\*SNOOKER_SHOT_SPEED/);
   assert.match(javaSnooker,/BOT_POWER\*3600\+a/);
-  assert.match(javaPool,/private static final double SHOT_SPEED=\.48;/);
+  assert.match(javaPool,/private static final double SHOT_SPEED=\.624;/);
   assert.match(javaPool,/power\*SHOT_SPEED;/);
   assert.doesNotMatch(javaPool,/SNOOKER/);
   assert.doesNotMatch(javaPool,/\*\.7/);

@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {poolStart,poolMove} from '../dist/table/pool.js';
 import {replayImpacts,impactBurstSchedule,chainLevels,mixImpactSamples} from '../dist/table/pool-audio.js';
 
-// A real full-power break: dozens of ball-ball contacts resolve within a few
-// milliseconds as the impulse runs through the rack.
+// A real 80% break: dozens of ball-ball contacts resolve within a few
+// milliseconds as the impulse runs through the rack. At the 30% stronger cue
+// speed a 100% break spreads the chain across ~52 ms, so 80% keeps the
+// simultaneous rack impact that this fixture measures.
 function breakShot(){
-  const state=poolStart(),result=poolMove(state,1,100*3600+0);
+  const state=poolStart(),result=poolMove(state,1,80*3600+0);
   const frames=[state.cells.slice(0,48),...result.history.map(h=>h.split(',').map(Number))];
   const exact=result.audioEvents.filter(e=>e.kind!=='pocket');
   const chain=exact.filter(e=>e.kind==='ball'&&e.time<=100);

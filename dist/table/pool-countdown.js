@@ -1,4 +1,4 @@
-import {poolCountdownSound} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
+import {poolCountdownSound} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
 
 export const POOL_GO_DURATION=450;
 export const COUNTDOWN_LEAD_IN=1000;   // one quiet second after entering the game

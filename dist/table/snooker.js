@@ -1,11 +1,11 @@
-import {simulateCueShot,SHOT_SPEED} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';
+import {simulateCueShot,SHOT_SPEED} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
 
 /* 2026-11-13: Snooker felt as hard as 8-ball even though its table is longer
-   and its ball is smaller. Keep the two games' power SEPARATE: Pool keeps the
-   shared SHOT_SPEED, while Snooker scales every stroke's velocity to 70%.
-   The player's power meter still reads 0..100 (their intent); only the
-   physical velocity is reduced, so audio events, replays and bot probes all
-   follow the softer shot automatically. */
+   and its ball is smaller. Keep the two games' power SEPARATE: Pool now uses
+   POOL_SHOT_SPEED (.624 since 2026-11-20), while Snooker stays at 70% of the
+   original SHOT_SPEED base (.48). The player's power meter still reads 0..100
+   (their intent); only the physical velocity is reduced, so audio events,
+   replays and bot probes all follow the softer shot automatically. */
 export const SNOOKER_POWER_SCALE=.7;
 export const SNOOKER_SHOT_SPEED=SHOT_SPEED*SNOOKER_POWER_SCALE;
 export const radius=11;

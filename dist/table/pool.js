@@ -1,7 +1,7 @@
 import {poolTargets,settlePool,settleNineBall,targetsFor,NINE_RACK,isNineBall,STATE_SIZE,PENALTY_VISIT} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
-import {pocketIndex,resolveCushion,POOL_HOLES} from './pool-geometry.js?v=20261114-pocketdepth1';
+import {pocketIndex,resolveCushion,POOL_HOLES} from './pool-geometry.js?v=20261114-pocketdepth1&power=20261120-poolpower30';
 import {PLACE_BASE,decodePoolPlace,poolCueInHand,legalCueSpot} from './pool-place.js?v=20261110-glove2';
-import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
+import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 
 // Deterministic 2D billiard core. The Java authority
 // (backend/.../PoolRules.java) mirrors these constants AND the exact
@@ -17,11 +17,15 @@ import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&
 // renormalised so it changes direction only, never speed. This is an
 // engineering approximation, not a full 3D rigid-body solve.
 
-/* Pool's cue-speed constant. Snooker deliberately does NOT reuse it: its own
-   30%-softer value lives in snooker.js and is passed in as the optional
-   `shotSpeed` argument below. Keeping the default here means the 8-ball path
-   is bit-for-bit unchanged. */
+/* Base cue-speed constant. Snooker deliberately does NOT reuse the pool
+   value: its own 30%-softer scale lives in snooker.js and is passed in as the
+   optional `shotSpeed` argument below. SHOT_SPEED stays the snooker base. */
 export const SHOT_SPEED=0.48;
+/* 2026-11-20: Eight-ball and Nine-ball strokes are 30% stronger. Only the
+   power-to-velocity scale changes; the meter still reads 0..100 and every
+   damping/friction/collision constant is untouched. Java PoolRules.java must
+   keep the same 0.624 so online rooms and local play agree. */
+export const POOL_SHOT_SPEED=0.624;
 // Cloth drag: .991 used to be the speed retained per 8 ms (a .009 loss).
 // Cutting that loss by a quarter twice gives .99325, then .9949375
 // (.00675 -> .0050625 loss); the .25 exponent converts the same per-8ms rate
@@ -56,11 +60,11 @@ export function poolStart(game='pool'){const cells=Array(STATE_SIZE).fill(0);cel
    and leave the ball sliding along one horizontal line, bouncing left/right
    forever instead of rebounding upward. At ordinary impact angles
    (|vt| >= .25*railSpeed) the cap is inactive and both games are unchanged. */
-/* `shotSpeed` is the per-game power-to-velocity constant. Pool never passes
-   it (default SHOT_SPEED); Snooker passes its own constant at 70% of it so a
-   full-power snooker stroke travels 30% softer without touching the shared
-   SHOT_SPEED, the damping/friction constants or the Java PoolRules mirror. */
-export function simulateCueShot(cells,command,ballCount=16,radius=16,railTangentLoss=1,shotSpeed=SHOT_SPEED){
+/* `shotSpeed` is the per-game power-to-velocity constant. Pool and Nine-ball
+   never pass it (default POOL_SHOT_SPEED); Snooker passes its own constant at
+   70% of SHOT_SPEED so a snooker stroke stays softer without touching the
+   damping/friction constants or the Java PoolRules mirror. */
+export function simulateCueShot(cells,command,ballCount=16,radius=16,railTangentLoss=1,shotSpeed=POOL_SHOT_SPEED){
  const spinCode=Math.floor(command/363600),shot=command%363600,power=Math.floor(shot/3600),angle=shot%3600;
  if(!Number.isInteger(command)||command<0||spinCode>8||power<1||power>100)throw Error('shot');
  const side=SIDE[spinCode],follow=FOLLOW[spinCode];
@@ -342,4 +346,4 @@ export function poolBot(s,level,rng=Math.random){
  const power=Math.max(28,Math.min(100,best.power+Math.round(jitter(tune.power,rng))));
  return best.spot*363600+power*3600+a;
 }
-export {renderPool} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';
+export {renderPool} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';

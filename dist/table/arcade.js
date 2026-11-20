@@ -1,10 +1,10 @@
 import {createBubbles} from './bubbles.js?v=20261110-glove2';
-import {createSnooker} from './snooker-view.js?v=20261113-humanring1&release=20261115-polishrelease1';
-import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
+import {createSnooker} from './snooker-view.js?v=20261113-humanring1&release=20261115-polishrelease1&power=20261120-poolpower30';
+import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
 import {unlockBubblesAudio} from './bubbles-audio.js?v=20261113-bubbles2&audio=20261115-levels1';
-import {start,move,bot} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
-import {bindBotDifficultyDialog,botLevelStore} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
-import {viewState} from './snooker-duel.js?v=20261112-gamelanes1&release=20261115-polishrelease1';
+import {start,move,bot} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&power=20261120-poolpower30';
+import {bindBotDifficultyDialog,botLevelStore} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
+import {viewState} from './snooker-duel.js?v=20261112-gamelanes1&release=20261115-polishrelease1&power=20261120-poolpower30';
 import {S_SCORE1,S_SCORE2} from './bubbles-duel.js?v=20261112-gamelanes1';
 import {updatePoolCountdown,cancelPoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW} from './pool-countdown.js?release=20261115-polishrelease1';
 

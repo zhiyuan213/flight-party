@@ -16,11 +16,11 @@ body{margin:0;padding:24px;background:#10182b;color:#e7efff;font:14px system-ui}
 </div>
 <main class="layout"><section class="game-panel"><div id="board" class="board" aria-label="四子棋盘"></div></section><aside class="sidebar"><div id="seats" class="seats"></div><div id="decision" role="status"></div></aside></main><pre id="errors"></pre>
 <script type="module">
-import {applyCosmetics,decoratePieces} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1';
+import {applyCosmetics,decoratePieces} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1&power=20261120-poolpower30';
 import {fourSeatPiece} from './four-seat-piece.js?v=20261113-fourboard1&skin=20261120-billiardskins1';
 import {playerCard} from './presentation.js?v=20261113-fourfx1';
 import {setTheme} from './four-theme.js?v=20261110-glove2';
-import {start,move} from './grid-rules.js?v=20261112-frameback1&release=20261115-polishrelease1&nine=20261120-nineball1';
+import {start,move} from './grid-rules.js?v=20261112-frameback1&release=20261115-polishrelease1&nine=20261120-nineball1&power=20261120-poolpower30';
 const $=id=>document.getElementById(id);let state=start('four');for(const col of [0,6,1,6,2])state=move(state,state.turn,col);
 function render(){
  setTheme($('theme').value,{persist:false,silent:true});

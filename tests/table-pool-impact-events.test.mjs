@@ -17,7 +17,7 @@ test('light, medium and hard ball contacts emit increasing normal-impact strengt
     const state=clearTable(300,250);place(state,1,340,250);
     const event=shoot(state,power).audioEvents.find(e=>e.kind==='ball'&&e.key==='0:1');
     assert.ok(event);assert.equal(event.time%2,0);
-    near(event.strength,Math.min(1,power*.48*Math.pow(.9949375,.25)**(event.time/2+1)/32));
+    near(event.strength,Math.min(1,power*.624*Math.pow(.9949375,.25)**(event.time/2+1)/32));
     return event.strength;
   });
   assert.ok(strengths[0]<strengths[1]&&strengths[1]<strengths[2]);
@@ -28,12 +28,12 @@ test('cushion events retain incoming normal speed before rebound and damping',()
     const event=shoot(clearTable(970,250),power).audioEvents.find(e=>e.kind==='rail');
     assert.ok(event);assert.equal(event.id,0);assert.equal(event.key,'rail:0');
     assert.equal(event.time%2,0);
-    near(event.strength,Math.min(1,power*.012*Math.pow(.9949375,.25)**(event.time/2)));
+    near(event.strength,Math.min(1,power*.0156*Math.pow(.9949375,.25)**(event.time/2)));
     return event.strength;
   });
   assert.ok(strengths[0]<strengths[1]&&strengths[1]<strengths[2]);
   const angle=600,power=33,event=shoot(clearTable(980,200),power,angle).audioEvents.find(e=>e.kind==='rail');
-  near(event.strength,power*.012*Math.cos(angle*Math.PI/1800)*Math.pow(.9949375,.25)**(event.time/2));
+  near(event.strength,power*.0156*Math.cos(angle*Math.PI/1800)*Math.pow(.9949375,.25)**(event.time/2));
   assert.ok(event.strength<.26,'a glancing hit must not use total speed as cushion strength');
 });
 
@@ -46,7 +46,7 @@ test('pocket events preserve capture speed before zeroing velocity and respottin
     // strength is an audio/animation level clamped to 1; at power 90+ the
     // capture speed exceeds the 40-unit normaliser, so clamp the expectation.
     near(Math.min(1,Math.hypot(event.vx,event.vy)/40),event.strength);
-    near(event.strength,Math.min(1,power*.012*Math.pow(.9949375,.25)**(event.time/2)));
+    near(event.strength,Math.min(1,power*.0156*Math.pow(.9949375,.25)**(event.time/2)));
     assert.equal(state.cells[2],1,'the final cue ball is already respotted');
     assert.ok(event.strength>.15,'capture must retain the pre-zeroed speed');
     return event.strength;
@@ -71,7 +71,7 @@ test('stationary ball and cushion contacts do not repeatedly emit impact events'
 });
 
 test('a nearly tangential cushion rebound below the normal-speed threshold is silent',()=>{
-  const result=shoot(clearTable(983.9,250),3,899);
+  const result=shoot(clearTable(983.9,250),2,899);
   assert.ok(result.history.some(frame=>Number(frame.split(',')[0])===9840),'the cue ball reaches the cushion');
   assert.deepEqual(result.audioEvents,[]);
 });

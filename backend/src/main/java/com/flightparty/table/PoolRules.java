@@ -17,7 +17,10 @@ public final class PoolRules {
  private static final int PLACE_BASE=1_000_000_000, PLACE_STRIDE=10_000, PLACE_LIMIT=100_000_000;
  private static final String CUE_IN_HAND_FEN="犯规：白球落袋";
  private static final int CUE_MIN=160, CUE_MAX_X=9840, CUE_MAX_Y=4840, CUE_CLEARANCE=330;
- private static final double SHOT_SPEED=.48;
+ /* 2026-11-20: 30% stronger 8-ball / nine-ball strokes (.48 -> .624).
+    Mirrors POOL_SHOT_SPEED in dist/table/pool.js. SnookerRules keeps its
+    own softer scale from the original base and does NOT follow this change. */
+ private static final double SHOT_SPEED=.624;
  // Cloth drag: .991 was the speed retained per 8 ms (a .009 loss). Cutting
  // that loss by a quarter twice gives .99325, then .9949375
  // (.00675 -> .0050625 loss); mirrors dist/table/pool.js exactly.

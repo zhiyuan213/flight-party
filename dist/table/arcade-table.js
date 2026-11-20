@@ -1,8 +1,8 @@
 import {createBubbles} from './bubbles.js?v=20261110-glove2';
-import {createSnooker} from './snooker-view.js?v=20261113-humanring1&release=20261115-polishrelease1';
+import {createSnooker} from './snooker-view.js?v=20261113-humanring1&release=20261115-polishrelease1&power=20261120-poolpower30';
 import {updateSnookerShell} from './snooker-shell.js?v=20261111-targetballs1&release=20261115-polishrelease1';
-import {unlockPoolAudio,poolMuted,setPoolMuted} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1';
-import {meterPower,spotCode} from './pool-input.js?v=20261110-glove2';
+import {unlockPoolAudio,poolMuted,setPoolMuted} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
+import {meterPower,spotCode} from './pool-input.js?v=20261110-glove2&power=20261120-poolpower30';
 
 /* Snooker uses the same left-hand cue rail as Pool: a sound switch, the cue
    ball's hit point and the dark power track with its wooden cue. Pool removed

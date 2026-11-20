@@ -45,10 +45,9 @@ test('full power traverses the cleared table under the calibrated rail restituti
   const frames=poolMove(s,1,360000).history.map(f=>f.split(',').map(Number));
   let distance=0,prev=[s.cells[0],s.cells[1]];
   for(const f of frames){distance+=Math.hypot(f[0]-prev[0],f[1]-prev[1])/10;prev=f;}
-  // e_rail = 0.78; cloth drag cut by a quarter twice makes a full-power shot
-  // cover ~4.9 table lengths (was ~3.4, then ~4.1). Matching assertion in
-  // PoolRulesTest.java.
-  assert.ok(distance>4780&&distance<4960,`travel ${distance}`);
+  // e_rail = 0.78; the 30% cue-power increase lifts a full-power shot from
+  // ~4.9 to ~5.6 table lengths. Matching assertion in PoolRulesTest.java.
+  assert.ok(distance>5500&&distance<5750,`travel ${distance}`);
 });
 
 test('a centered pot continues into the well without an invented sideways zigzag',async()=>{

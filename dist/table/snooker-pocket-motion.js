@@ -1,7 +1,7 @@
 import {TABLE_PAD} from './pool-table.js';
 import {POOL_HOLES,snookerPockets,snookerCirclePath,SNOOKER_POCKET_SCALE} from './pool-geometry.js';
 import {rollSphere,sphereIdentity} from './pool-ball.js?v=20261113-pocketdepth1';
-import {radius as BALL_RADIUS} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1';
+import {radius as BALL_RADIUS} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1&power=20261120-poolpower30';
 
 /* Presentation only. The authoritative shot has already potted this ball.
  * Work in the actual recessed snooker circles, never a scaled Pool well:

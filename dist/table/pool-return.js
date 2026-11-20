@@ -75,12 +75,16 @@ const backWalls=[backWall(false),backWall(true)];
 // A hard, off-centre pot can rattle around the curved well before dropping.
 // This is a presentation-only branch: the pot itself was already decided by
 // pool.js, so it cannot change any state, replay frame or server parity.
+// 2026-11-20: cue speed rose 30% (.48 -> .624), so the drive normaliser
+// scales with it; otherwise every straight pot would fall into the spiral
+// branch. Snooker keeps its own softer speed and is barely affected because
+// its high-power strokes are dominated by the stroke-power term below.
 // One continuous "drive" level replaces the old pair of hard speed / stroke
 // gates. It blends the measured capture speed with the stroke power so a long
 // roll still belongs to the shot that produced it. Everything above the soft
 // floor is claimed by exactly one of the two effects; only a genuinely gentle
 // pot keeps the original single-contact descent.
-const DRIVE_SPEED=48,DRIVE_FLOOR=.30,POWER_FLOOR=55,POWER_WEIGHT=.62;
+const DRIVE_SPEED=62.4,DRIVE_FLOOR=.30,POWER_FLOOR=55,POWER_WEIGHT=.62;
 const RATTLE_MIN_OFFSET=11;
 const RATTLE_RADIUS=16,RATTLE_EXIT_RADIUS=2.2,RATTLE_SINK=9,RATTLE_SPEED=.35,RATTLE_OMEGA=.031;
 function driveLevel(item,speed){
@@ -99,7 +103,7 @@ function rattlePlan(item,hole,x,y,vx,vy){
   // ball that has already swept past the well centre. Near-axis pots are left
   // to the rebound branch, so the two branches tile all animated entries.
   if(item.rattle!==true&&offset<RATTLE_MIN_OFFSET&&along>=0)return null;
-  const level=item.rattle===true?Math.max(.6,Math.min(1,speed/48)):drive;
+  const level=item.rattle===true?Math.max(.6,Math.min(1,speed/62.4)):drive;
   const dir=cross>=0?1:-1,theta0=Math.atan2(dir0[1],dir0[0])-dir*Math.PI/2;
   const to=[center[0]+RATTLE_RADIUS*Math.cos(theta0),center[1]+RATTLE_RADIUS*Math.sin(theta0)];
   const from=[x,y],lead=Math.hypot(to[0]-x,to[1]-y);
@@ -166,7 +170,7 @@ function reboundPlan(item,hole,x,y,vx,vy,walls){
   // Because the orbit also claims every ball that has passed the centre, no
   // animated pot can fall through the gap between the two branches.
   if(item.rebound!==true&&(offset>REBOUND_MAX_OFFSET||along<0))return null;
-  const level=item.rebound===true?Math.max(.55,Math.min(1,speed/48)):drive;
+  const level=item.rebound===true?Math.max(.55,Math.min(1,speed/62.4)):drive;
   const s0=(x-center[0])*u[0]+(y-center[1])*u[1];
   // Keep the off-axis part of the real capture point: projecting onto the
   // entry axis alone would teleport the sphere on the very first sample.

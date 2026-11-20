@@ -1,4 +1,4 @@
-import {decoratePiece} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1';
+import {decoratePiece} from './game-cosmetics.js?v=20261112-gamelanes1&nine=20261120-nineball1&skin=20261120-billiardskins1&power=20261120-poolpower30';
 import {prepareFourAudio,createFourDropSound} from './four-audio.js?v=20261113-fourfeedback1&audio=20261115-levels1';
 
 // A poll may skip several moves or replace a game. Only a single new counter

@@ -1,7 +1,7 @@
 /* Presentation only: a ball belongs here only while the authoritative board
  * says it is absent. In particular, scratched whites and re-spotted colours
  * never remain in the collector. No scoring or pocket physics live here. */
-import {radius as BALL_RADIUS} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1';
+import {radius as BALL_RADIUS} from './snooker.js?v=20261110-dotblack1&release=20261115-polishrelease1&power=20261120-poolpower30';
 // One ball diameter plus the original two units of breathing room.
 export const COLLECTION={entryX:1139,entryY:68,x:1189,bend:12,bottom:578,spacing:2*BALL_RADIUS+2,speed:.68};
 export const COLLECTION_REBOUND_MS=250;

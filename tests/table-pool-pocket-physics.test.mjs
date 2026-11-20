@@ -60,7 +60,9 @@ test('rounded middle jaws reflect incoming balls with bounded energy and symmetr
 });
 
 test('real middle-jaw impacts use the muffled rail event and retain contact-strength differences',()=>{
-  const strengths=[10,30,80].map(power=>{
+  // 30% stronger strokes: 5/10/25 keep the first contact on the middle
+  // jaw and preserve the light/medium/hard strength ladder.
+  const strengths=[5,10,25].map(power=>{
     const result=shoot(clearTable(500,50),power,2400),trace=frames(result);
     const impact=result.audioEvents[0];
     assert.equal(impact.kind,'rail','the cloth-covered jaw must use the cushion sound bank');

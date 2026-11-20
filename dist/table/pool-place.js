@@ -10,7 +10,7 @@
  * implementations in step. No existing shot command changes, so the golden
  * fixtures and the JS/Java parity baseline are untouched.
  */
-import {pocketIndex} from './pool-geometry.js?v=20261114-pocketdepth1';
+import {pocketIndex} from './pool-geometry.js?v=20261114-pocketdepth1&power=20261120-poolpower30';
 import {BALL_COUNT,PENALTY_VISIT,PENALTY_READY,STATE_SIZE} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 
 export const PLACE_BASE=1000000000,PLACE_STRIDE=10000,PLACE_LIMIT=100000000;

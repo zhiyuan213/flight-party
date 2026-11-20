@@ -5,7 +5,7 @@
 <canvas id="cv" width="1260" height="590"></canvas>
 <script type="module">
 import {makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES} from './table/pool-table.js?v=20261112-gamelanes1';
-import {tracePocket,pocketVisualContext} from './table/pool-geometry.js?v=20261114-pocketdepth1';
+import {tracePocket,pocketVisualContext} from './table/pool-geometry.js?v=20261114-pocketdepth1&power=20261120-poolpower30';
 const S=2,table=document.createElement('canvas');table.width=TABLE_WIDTH*S;table.height=TABLE_HEIGHT*S;
 const tc=table.getContext('2d');tc.scale(S,S);makeTable(tc);
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');

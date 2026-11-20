@@ -17,7 +17,7 @@
  * Pool never imports this module; its makeTable() stays byte-for-byte intact.
  */
 import {TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD} from './pool-table.js';
-import {snookerPockets,SNOOKER_POCKET_SCALE} from './pool-geometry.js?v=20261114-pocketdepth1';
+import {snookerPockets,SNOOKER_POCKET_SCALE} from './pool-geometry.js?v=20261114-pocketdepth1&power=20261120-poolpower30';
 import {SNOOKER_LIGHT} from './snooker-light.js?v=20261113-reboundlight1';
 import {paintFrameFinish} from './billiard-materials.js?v=20261113-materials1';
 

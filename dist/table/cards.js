@@ -1,4 +1,4 @@
-import {botTuning,pick,jitter} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
+import {botTuning,pick,jitter} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 export const cardMatches=(a,b)=>Math.floor(a/18)===Math.floor(b/18)||a%9===b%9;
 const parse=s=>s?s.split(',').map(Number):[];
 const state=(a,b,deck,discard,turn,moves,passes)=>{const over=!a.length||!b.length||passes>=2||moves>=1000;return{game:'cards',cells:[discard.at(-1),a.length,b.length],turn,moves,over,winner:over?(a.length===b.length?0:a.length<b.length?1:2):0,fen:String(passes),history:[a.join(','),b.join(','),deck.join(','),discard.join(',')]};};

@@ -5,7 +5,7 @@
 import {VERSION,resolveBoard,resolveShared,tierOf,pointsOf,themeOf,botOpponent}
   from './cosmetics-rules.js?v=20261112-gamelanes1';
 import {getBotLevel,BOT_LEVEL_KEY,BOT_LEVEL_KEY_PREFIX,BOT_GAME_IDS}
-  from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
+  from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {emblemUrl,markUrl} from './personal-piece-art.js';
 
 const SHOP_KEY='joyflock.shop.v1';

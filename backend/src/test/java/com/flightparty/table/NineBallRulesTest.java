@@ -32,7 +32,8 @@ class NineBallRulesTest {
   s.cells()[9*3+2]=1;
   s.cells()[0]=1500;s.cells()[1]=1500;
   s.cells()[27]=400;s.cells()[28]=400;
-  var r=PoolRules.move(s,1,50*3600+2250);
+  // 30% stronger strokes: 30% power still pots the 9 legally; 40%+ scratches.
+  var r=PoolRules.move(s,1,30*3600+2250);
   assertEquals("nineball",r.game());
   assertEquals(53,r.cells().length);
   assertTrue(r.over(),"the 9-ball ends the frame");

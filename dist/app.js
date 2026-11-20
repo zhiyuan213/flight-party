@@ -1,5 +1,5 @@
 import {translateStaticUI} from './static-i18n.js?v=20261110-back1&p=20261116-poolshell1';
-import {bindBotDifficultyDialog,botTuning,botDie,getBotLevel,botLabel,pick,jitter} from './bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
+import {bindBotDifficultyDialog,botTuning,botDie,getBotLevel,botLabel,pick,jitter} from './bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {onlineMovement} from './online-movement.js';
 import {bindHangar} from './hangar.js?v=20261112-gamelanes1';
 import {avatarStyle} from './avatar.js';

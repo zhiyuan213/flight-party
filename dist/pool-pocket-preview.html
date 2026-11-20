@@ -4,7 +4,7 @@
 <script type="module">
 import{makeTable,TABLE_WIDTH,TABLE_HEIGHT,TABLE_PAD,TABLE_HOLES}from './table/pool-table.js?v=20261112-gamelanes1';
 import{drawReturnChannel,pocketMotion}from './table/pool-return.js';
-import{poolStart,poolMove}from './table/pool.js?release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1';
+import{poolStart,poolMove}from './table/pool.js?release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
 const table=document.createElement('canvas');table.width=TABLE_WIDTH*2;table.height=TABLE_HEIGHT*2;const t=table.getContext('2d');t.scale(2,2);makeTable(t);
 const times=[0,40,80,160,300,480],views=[];
 for(const [name,x,y,angle] of [['正面直进上中袋',500,100,2700],['斜向进入上中袋',530,100,2550],['左上角袋',100,100,2250],['右下角袋',900,400,450]]){

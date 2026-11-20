@@ -29,8 +29,8 @@ td b{color:#ffd44d}tr.sel td{background:#26364a}
 <p class="note">「一般」刻意保持为原版电脑的行为，方便对比；「专业 / 地狱」在四子棋、五子棋、井字棋、国际象棋用候选裁剪 + alpha-beta 前瞻，在台球 / 斯诺克评估所有目标球与袋口路径，在泡泡射击用更细的角度扫描，在纸牌保留后续可出牌数；飞行棋另有权重的骰子与撞机风险评估。<br>
 边界：在线房间里由服务器补位或托管的电脑走 Java 权威规则，仍保持原强度，不受这里的难度影响；「趣味拼图」「你画我猜」是合作模式，电脑不参与对抗。未改物理 / 协议 / 53 格状态 / parity。</p>
 <script type="module">
-import {BOT_LEVELS,BOT_LABELS,BOT_HINTS,botTuning,getBotLevel,bindBotDifficulty} from './bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1';
-import {start,move,bot} from './table/grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1';
+import {BOT_LEVELS,BOT_LABELS,BOT_HINTS,botTuning,getBotLevel,bindBotDifficulty} from './bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
+import {start,move,bot} from './table/grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&power=20261120-poolpower30';
 
 const control=bindBotDifficulty(document.querySelector('#bot-difficulty'),{onChange:()=>renderTuning()});
 function renderTuning(){
