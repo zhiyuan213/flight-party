@@ -3405,3 +3405,13 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - 生产：51 个 dist 文件 `sha256sum -c` **51/51 OK**；差量重建 JAR 44,283,266 B / 378 条目（仅替换 `PoolRules.class`），镜像 `deploy-backend:power30-0886eba`，Flyway 校验 25 个迁移通过、`nginx -t` 通过、5 容器 Up、`/api/me` 3 次探测 READY、`/api/csrf` 200；双域名 HTTPS **22/22**（4 个带新键模块 + 2 个页面响应体哈希、页面含新键、physics 常量）；生产建房冒烟九球/八球均 200 且已清理。
 - 回滚：`/opt/joyflock/releases/app-power30-0886eba`，`static.before.tgz` 整包 + `backend-rollback.private.json` 指向 `deploy-backend:nineball-b4d77dd`。
 - 边界：机器人按原 power 数值出杆，绝对速度同样 +30%，与玩家同步增强，未做单独补偿；正式收款仍为沙盒，GA4 全站覆盖与 GSC 复核仍为待办。
+
+## 2026-11-20 23:22 商城标注台球装扮为台球/九球共用（生产 `05b382b`，纯静态）
+
+- 需求：商城截图里「台球用球 / 球杆 / 桌球台」三个分区需要说明这些装扮是「台球跟九球共用」。
+- 改动：`dist/site-shop.js` 的 `headFor()` 三个分支中英副标题统一加前缀——中文 `欢乐台球与欢乐九球共用 · `、英文 `Shared by Pool & Nine-ball · `；`dist/shop.html` 的 `site-shop.js` 引用追加 `&shared=20261120-poolnineball1`。标题、卡片、价格与装备逻辑均不动。
+- 事实核对：`game-cosmetics.js` 的 `BILLIARDS=['pool','nineball','snooker']`，装备来源是全局 `localStorage['joyflock.shop.v1'].equipped`，斯诺克视图同样读取 `ballSkin/cueSkin/tableSkin`；但球组「每颗球按编号单独设计」对无号码的斯诺克球并不成立，文案按指示只标注欢乐台球与欢乐九球，不擅自扩大范围。
+- 新增 `tests/shop-billiard-shared-copy.test.mjs` 3 条守卫：三个分区中英副标题都带共用说明、其它分区不误标、`shop.html` 引用带新缓存键。
+- 验收：`npm test` **1064/1064**；Chrome CDP 中文态（`localStorage['joyflock-portal-language']='zh'`）三个分区均显示中文说明、`small` 无溢出、各 6 张卡、零异常，英文态也确认三条英文说明显示正常；生产磁盘 `sha256sum -c` **2/2 OK**；双域名 HTTPS **6/6**（shop.html / site-shop.js 响应体哈希 + 线上页面含新键）；`nginx -t` 通过、5 容器 Up、`/api/csrf` 200，后端镜像与 `.env` 未动。
+- 发布目录 `/opt/joyflock/releases/static-05b382b`，整包备份 `static.before.tgz`，回滚见 `rollback.private.txt`。
+- 阻塞：GitHub HTTPS 代理持续 502，本地 `HEAD` 领先 `origin/main`（`e340306` 文档、`05b382b` 应用、本次文档提交），需在网络恢复后 `git push origin main` 补推；生产静态文件已与本地一致。

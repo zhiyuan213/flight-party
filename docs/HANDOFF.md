@@ -1398,3 +1398,10 @@ Public direct game UI follow-up: https://flight.joyflock.com/table/index.html?ga
 - 任何球速变更都要连带检查 `dist/table/pool-return.js` 的 `DRIVE_SPEED` 与两处 `speed/62.4`（落袋动画分级），以及 `tests/table-pool-*.test.mjs`、`PoolRulesTest.java`、`NineBallRulesTest.java` 的 golden 值与力度参数；`tests/snooker-shot-power.test.mjs` 用显式 `SHOT_SPEED` 参数比较 70% 关系，不再假设 pool 默认就是 .48。
 - 生产后端仍是「从运行容器取旧 JAR + 替换少量 class 重建」的差量流程；本次只替换 `PoolRules.class`（`GridRules`/`TableService` 与生产字节一致）。发布总包与脚本在 `.workbuddy/tmp/power30-payload/`。
 - 约定不变：静态资源原地修改必须升 `?v=`/追加发布参数；`presentation.js` 因版本一致守卫不得追加参数。
+
+## 2026-11-20 23:22 — 商城台球装扮共用说明已上线（`05b382b`）
+
+- 商城三个台球分区（ball / cue / table）的中英副标题由 `headFor()` 内联 `t(en,cn)` 生成，改文案只改 `dist/site-shop.js`；`site-shop.js` 仅由 `dist/shop.html` 引用，改内容必须同步升该 URL 的缓存键。
+- 装扮实际是全局装备：`BILLIARDS` 含 pool / nineball / snooker，斯诺克视图也读同一套 skin；本次文案按用户指示只写「欢乐台球与欢乐九球共用」。若以后要如实标注斯诺克，需同时确认「按编号设计」的球组文案是否适用。
+- 商城页语言由 `localStorage['joyflock-portal-language']` 控制（`zh` 为中文），CDP 验收要先设置再 `Page.reload`；`?locale=zh` 对商城页不生效。
+- GitHub 代理 502 未恢复，本地三个提交待补推：`e340306`、`05b382b` 与本次文档提交。生产与本地静态已一致，不阻塞线上。

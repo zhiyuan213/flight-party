@@ -1,3 +1,4 @@
+2026-11-20 23:22 最新生产发布：`05b382b`，**纯静态**，2 个 dist 文件。商城「台球用球 / 球杆 / 桌球台」三个分区中英副标题统一标注「欢乐台球与欢乐九球共用」，`site-shop.js` 缓存键升 `&shared=20261120-poolnineball1`。`npm test` 1064/1064、CDP 中英两态、生产 2/2 哈希、双域名 6/6；后端镜像仍 `deploy-backend:power30-0886eba`，回滚目录 `/opt/joyflock/releases/static-05b382b`。
 2026-11-20 23:05 最新生产发布：`0886eba`，**静态 51 文件 + 后端差量 JAR**。台球/九球击球力量 +30%（`POOL_SHOT_SPEED=0.624` / 后端 `SHOT_SPEED=.624`），斯诺克保持 `0.336`；落袋动画速度分级同步缩放，物理 golden fixtures 全量重标定。后端镜像 `deploy-backend:power30-0886eba`，回滚镜像 `deploy-backend:nineball-b4d77dd`，无新 Flyway 迁移。
 2026-11-20 22:16 最新生产发布：`3d42d41`，**纯静态**，9 个 dist 文件，修复商城球杆/球组/球台装扮在台球类游戏未生效（crystal 与 galaxy 主题被棋子白名单过滤），无后端变更。
 
