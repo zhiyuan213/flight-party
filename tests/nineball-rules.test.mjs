@@ -115,7 +115,7 @@ test('nine-ball is registered across the portal, native rail, SEO contract and c
   assert.match(read('dist/table/table.js'), /const isPoolLike=game==='pool'\|\|game==='nineball'/);
   assert.match(read('dist/table/table.js'), /欢乐九球/);
   assert.equal((read('deploy/nginx.conf').match(/\^\(pool\|nineball\|/g) || []).length, 2);
-  assert.match(read('dist/portal/native-table.html'), /&nine=20261120-nineball1/);
+  assert.match(read('dist/portal/native-table.html'), /&nine=20261120-nineball-cover2/);
   assert.ok(existsSync(new URL('../dist/assets/covers/nineball.jpg', import.meta.url)));
   const og = new URL('../dist/assets/og/nineball.png', import.meta.url);
   assert.ok(existsSync(og) && statSync(og).size > 10000);
