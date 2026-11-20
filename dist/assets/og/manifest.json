@@ -1,17 +1,5 @@
 [
   {
-    "slug": "nineball",
-    "cover": "/assets/covers/nineball.jpg",
-    "name": {
-      "zh": "欢乐九球",
-      "en": "Nine-ball"
-    },
-    "players": {
-      "zh": "2 人",
-      "en": "2 players"
-    }
-  },
-  {
     "slug": "pool",
     "cover": "/assets/covers/pool.jpg",
     "name": {
@@ -113,6 +101,18 @@
     "name": {
       "zh": "泡泡射击",
       "en": "Bubble Shooter"
+    },
+    "players": {
+      "zh": "2 人",
+      "en": "2 players"
+    }
+  },
+  {
+    "slug": "nineball",
+    "cover": "/assets/covers/nineball.jpg",
+    "name": {
+      "zh": "欢乐九球",
+      "en": "Nine-ball"
     },
     "players": {
       "zh": "2 人",

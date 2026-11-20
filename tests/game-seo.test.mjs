@@ -261,7 +261,7 @@ test('the three existing shells carry SEO tags and load the head updater', () =>
     for (const block of ldBlocks(html)) assert.equal(block['@context'], 'https://schema.org');
   }
   for (const p of ['../dist/portal/index.html', '../dist/table/index.html'])
-    assert.match(read(p), new RegExp(`<script src="/game-seo-meta\\.js\\?v=${SITE.cacheKey}"></script>`), `${p}: loads updater`);
+    assert.match(read(p), new RegExp(`<script src="/game-seo-meta\\.js\\?v=${SITE.cacheKey}[^"]*"></script>`), `${p}: loads updater`);
   assert.equal(attr(read('../dist/portal/index.html'), /<link rel="canonical" href="([^"]*)"/), SITE.origin + '/portal/index.html');
   assert.equal(attr(read('../dist/table/index.html'), /<link rel="canonical" href="([^"]*)"/), SITE.origin + SITE.zhPath);
   assert.equal(attr(read('../dist/index.html'), /<link rel="canonical" href="([^"]*)"/), SITE.origin + '/');

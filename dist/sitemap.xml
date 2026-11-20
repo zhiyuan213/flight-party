@@ -31,24 +31,6 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/"/>
   </url>
   <url>
-    <loc>https://flight.joyflock.com/games/nineball/</loc>
-    <lastmod>2026-11-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/nineball/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/nineball/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/nineball/"/>
-  </url>
-  <url>
-    <loc>https://flight.joyflock.com/en/games/nineball/</loc>
-    <lastmod>2026-11-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/nineball/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/nineball/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/nineball/"/>
-  </url>
-  <url>
     <loc>https://flight.joyflock.com/games/pool/</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
@@ -209,6 +191,24 @@
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/bubble-shooter/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/bubble-shooter/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/bubble-shooter/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/games/nineball/</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/nineball/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/nineball/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/nineball/"/>
+  </url>
+  <url>
+    <loc>https://flight.joyflock.com/en/games/nineball/</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://flight.joyflock.com/games/nineball/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://flight.joyflock.com/en/games/nineball/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://flight.joyflock.com/games/nineball/"/>
   </url>
   <url>
     <loc>https://flight.joyflock.com/shop.html</loc>

@@ -2,7 +2,6 @@ import {bindPoolFullscreen} from './pool-fullscreen.js?v=20261110-fullzoom1&d=20
 const gameOrigin=['localhost','127.0.0.1'].includes(location.hostname)?location.origin:'https://flight.joyflock.com';
 const games=[
  {id:'pool',image:'/assets/covers/pool.jpg?v=20261109-poolorig1',name:'欢乐台球',en:'Pool',icon:'❽',color:'green',detail:'2人 · 休闲台球',live:true},
- {id:'nineball',image:'/assets/covers/nineball.jpg?v=20261120-nineball-cover2',name:'欢乐九球',en:'Nine-ball',icon:'⑨',color:'green',detail:'2人 · 美式九球',live:true},
  {id:'flight',name:'飞行棋',en:'Flight Party',icon:'✈',color:'blue',image:'/assets/plane-vip-gold-body.png',detail:'2–4人 · 好友联机',live:true},
  {id:'four',image:'/assets/covers/four.jpg',name:'四子连珠',en:'Connect Four',icon:'●',color:'coral',detail:'2人 · 单机 / 联机',live:true},
  {id:'gomoku',image:'/assets/covers/gomoku.jpg',name:'五子棋',en:'Gomoku',icon:'✚',color:'amber',detail:'2人 · 单机 / 联机',live:true},
@@ -11,6 +10,7 @@ const games=[
  {id:'cards',image:'/assets/covers/cards.jpg',name:'欢乐纸牌',en:'Cards',icon:'♠',color:'pink',detail:'2人 · 颜色数字接龙',live:true},
  {id:'snooker',image:'/assets/covers/snooker.jpg',name:'斯诺克',en:'Snooker',icon:'●',color:'green',detail:'2人 · 单机 / 联机',live:true},
  {id:'bubbles',image:'/assets/covers/bubbles.jpg?v=20261109-coverhd1',name:'泡泡射击',en:'Bubble Shooter',icon:'●',color:'violet',detail:'双人对战 · 电脑 / 联机',live:true},
+ {id:'nineball',image:'/assets/covers/nineball.jpg?v=20261120-nineball-cover2',name:'欢乐九球',en:'Nine-ball',icon:'⑨',color:'green',detail:'2人 · 美式九球',live:true},
 ];
 const selected=new URLSearchParams(location.search).get('game'),active=games.find(g=>g.id===selected&&g.live);
 const languageMenu=document.querySelector('#portal-language');

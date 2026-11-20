@@ -7,26 +7,6 @@
 (function(){
  'use strict';
  var MAP={
-  "nineball": {
-    "zh": {
-      "title": "欢乐九球在线玩 · 免费双人对战 | JoyFlock",
-      "description": "在 JoyFlock 免费在线玩欢乐九球：不用下载，打开浏览器就能和好友打一局美式九球。每杆先碰台面最小号球，合法打进 9 号球立即获胜。鼠标瞄准、拖拽蓄力、松开击球，支持电脑对战、创建房间与邀请链接。",
-      "keywords": "欢乐九球,九球游戏,美式九球,9球,在线台球,双人台球,免费台球游戏",
-      "canonical": "https://flight.joyflock.com/games/nineball/",
-      "image": "https://flight.joyflock.com/assets/og/nineball.png",
-      "name": "欢乐九球",
-      "locale": "zh_CN"
-    },
-    "en": {
-      "title": "Play Nine-ball Online Free — 2-Player 9-Ball Game | JoyFlock",
-      "description": "Play free online nine-ball on JoyFlock — no download, no sign-up. Every shot must hit the lowest ball first and a legal 9-ball ends the match. Aim with the mouse, drag to set power and release to shoot. Challenge the computer, create a private room or send an invite link.",
-      "keywords": "nine ball,9-ball game,online nine-ball,free billiards,two player pool,browser pool game,no download",
-      "canonical": "https://flight.joyflock.com/en/games/nineball/",
-      "image": "https://flight.joyflock.com/assets/og/nineball.png",
-      "name": "Nine-ball",
-      "locale": "en_US"
-    }
-  },
   "pool": {
     "zh": {
       "title": "欢乐台球在线玩 · 免费双人对战 | JoyFlock",
@@ -204,6 +184,26 @@
       "canonical": "https://flight.joyflock.com/en/games/bubble-shooter/",
       "image": "https://flight.joyflock.com/assets/og/bubble-shooter.png",
       "name": "Bubble Shooter",
+      "locale": "en_US"
+    }
+  },
+  "nineball": {
+    "zh": {
+      "title": "欢乐九球在线玩 · 免费双人对战 | JoyFlock",
+      "description": "在 JoyFlock 免费在线玩欢乐九球：不用下载，打开浏览器就能和好友打一局美式九球。每杆先碰台面最小号球，合法打进 9 号球立即获胜。鼠标瞄准、拖拽蓄力、松开击球，支持电脑对战、创建房间与邀请链接。",
+      "keywords": "欢乐九球,九球游戏,美式九球,9球,在线台球,双人台球,免费台球游戏",
+      "canonical": "https://flight.joyflock.com/games/nineball/",
+      "image": "https://flight.joyflock.com/assets/og/nineball.png",
+      "name": "欢乐九球",
+      "locale": "zh_CN"
+    },
+    "en": {
+      "title": "Play Nine-ball Online Free — 2-Player 9-Ball Game | JoyFlock",
+      "description": "Play free online nine-ball on JoyFlock — no download, no sign-up. Every shot must hit the lowest ball first and a legal 9-ball ends the match. Aim with the mouse, drag to set power and release to shoot. Challenge the computer, create a private room or send an invite link.",
+      "keywords": "nine ball,9-ball game,online nine-ball,free billiards,two player pool,browser pool game,no download",
+      "canonical": "https://flight.joyflock.com/en/games/nineball/",
+      "image": "https://flight.joyflock.com/assets/og/nineball.png",
+      "name": "Nine-ball",
       "locale": "en_US"
     }
   }
