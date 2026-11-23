@@ -1,0 +1,21 @@
+{
+  "tool": "built-in imagegen",
+  "date": "2026-11-23",
+  "assets": [
+    {
+      "game": "snooker",
+      "file": "dist/assets/covers/snooker-3d-20261123.jpg",
+      "prompt": "Create a standalone square premium casual browser game cover illustration, polished stylized 3D toy rendering, matching a family of vivid glossy game illustrations. SNOOKER: close, dramatic but very readable composition of a luxurious emerald felt snooker table with rounded walnut rails and small brass pocket trims. A neat triangle of solid red balls toward the back, a few clearly separated solid yellow green brown blue pink and black balls, a large clean ivory cue ball in the foreground, an elegant wooden cue entering diagonally from upper right pointing toward cue ball. Snooker balls must NOT have numbers or stripes. Rich emerald and turquoise studio atmosphere with violet rim accents, warm golden highlights, vibrant clear exposure, luxurious reflections and soft contact shadows, friendly high-end game key art, sharper and brighter than a dim realistic photograph. Main balls large enough to read in a tiny sidebar icon. Three-quarter elevated view, single table, well balanced uncluttered composition filling the square with 6 percent safe margin on key subjects. No text, titles, letters, logos, watermark, UI, people or hands. Full bleed artwork only. Render one square image."
+    },
+    {
+      "game": "bubbles",
+      "file": "dist/assets/covers/bubbles-3d-20261123.jpg",
+      "prompt": "Create a standalone square premium casual browser game cover illustration, polished stylized 3D toy rendering matching vivid glossy board game key art. BUBBLE SHOOTER: gorgeous large jewel-like glossy bubbles in vibrant cyan blue, coral pink, purple, emerald green and honey gold clustered in a clear hexagonal honeycomb near the upper two-thirds; 5 to 6 rows in a compact arched arrangement. Bubbles have saturated colored bodies and translucent glass rims with crisp beautiful highlights, clearly distinct and readable at small thumbnail size. Below them a chunky elegant indigo and violet toy bubble cannon with golden trim pointing diagonally up at the cluster, holding one large luminous pink bubble; a short sparse dotted trajectory toward a matching group. Playful popping sparkles near a three-bubble pink cluster, restrained particles. Rich luminous midnight indigo to violet studio atmosphere, turquoise and pink rim lighting, high contrast, bright clear subjects, soft dimensional shadows, warm joyful premium game aesthetic. Everything fills the square and important subjects inside 6 percent safe margin, clean composition, no tiny objects. No text, title, letters, numbers, logos, watermark, website UI, hands, people. Full bleed art, one square image."
+    },
+    {
+      "game": "nineball",
+      "file": "dist/assets/covers/nineball-3d-20261123.jpg",
+      "prompt": "Create a standalone square premium casual browser game cover illustration, polished stylized 3D toy rendering matching a vivid glossy board game cover family. NINE BALL POOL: close dramatic elevated three-quarter view of a lush emerald billiard table with rounded walnut rails and subtle brass pocket trim. Main subject is one LARGE glossy bright yellow and white striped 9-ball in the foreground, its ivory circular number badge clearly and accurately reading 9 in dark ink. Behind it, a compact readable diamond rack arrangement of colorful numbered billiard balls arranged as one-two-three-two-one, enough to signal nine-ball, with vivid solid yellow blue red purple orange green maroon black and yellow-striped hues. One ivory cue ball off to the lower left and a refined wood cue angled from lower right toward the rack. No triangular fifteen-ball rack. Make the front 9-ball and ivory cue ball dominant, not a distant wide empty table. Rich teal emerald atmosphere, violet blue rim lighting, warm golden glints and crisp glossy reflections, bold saturated clear exposure with soft contact shadows. Friendly premium casual-game key art, objects large and recognizable at tiny sidebar size, square balanced composition, important subjects within 6 percent safe margin. No text other than the small correct ball numerals, no title, logo, watermark, UI, people or hands. Full bleed single square illustration."
+    }
+  ]
+}

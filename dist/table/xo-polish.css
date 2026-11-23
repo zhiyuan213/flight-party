@@ -1,0 +1,17 @@
+/* Cover-matched default XO arena; personal board/piece choices retain priority. */
+body.xo-game .game-panel{background:radial-gradient(ellipse at 32% 24%,#324cae38,transparent 52%),radial-gradient(ellipse at 75% 78%,#b63eae22,transparent 52%),#0d152b}
+#board.xo{--xo-frame:#3931a6;--xo-grid:#7366d8;--xo-cell:#242053;--xo-cell-hover:#343275;position:relative;isolation:isolate;width:min(83%,calc(100dvh - 155px),760px);max-width:760px;aspect-ratio:1;gap:clamp(8px,1.3vmin,14px);padding:clamp(17px,2.8vmin,30px);border:3px solid #a7a5ff;border-bottom:12px solid #25276e;border-radius:clamp(24px,4vmin,42px);background:linear-gradient(145deg,#b0b5ff 0%,var(--xo-grid) 5%,var(--xo-frame) 38%,#251952 79%,#7064d2 100%);box-shadow:0 8px 0 #151c4d,0 12px 0 #0b1432,0 25px 40px #0009,0 0 45px #6560ff33,inset 0 2px 3px #edeeffb3,inset 0 0 0 7px #7b77eb66;overflow:visible;transform:perspective(1400px) rotateX(6deg);transform-origin:center}
+#board.xo .cell{position:relative;min-width:0;min-height:0;aspect-ratio:1;border:1px solid #a29aff77;border-radius:clamp(10px,1.8vmin,20px);background:radial-gradient(ellipse at 50% 85%,#7161bd33,transparent 80%),var(--xo-cell);box-shadow:inset 0 8px 12px #080923b3,inset 4px 0 8px #11113088,0 2px 1px #cbc2ff99;overflow:visible;transition:background .18s,box-shadow .18s;transform:none}
+#board.xo .cell[data-value="0"]:hover:not(:disabled){background:radial-gradient(ellipse at center,#7978e355,var(--xo-cell-hover));box-shadow:inset 0 4px 8px #090925aa,0 0 14px #8ca8ff88}
+#board.xo .cell:focus-visible{outline:3px solid #fff0b5;outline-offset:-6px}
+#board.xo .cell[data-value]:not([data-value="0"]):not([data-cosmetic-piece])::before{content:'';position:absolute;inset:8%;width:auto;height:auto;aspect-ratio:auto;background-position:center;background-size:contain;background-repeat:no-repeat;clip-path:none;mask:none;-webkit-mask:none;border-radius:0;filter:drop-shadow(0 0 9px #5dd7ff33);pointer-events:none}
+#board.xo .cell[data-value="1"]:not([data-cosmetic-piece])::before{background-image:url('/assets/xo/mark-x-3d.svg')}
+#board.xo .cell[data-value="2"]:not([data-cosmetic-piece])::before{background-image:url('/assets/xo/mark-o-3d.svg');filter:drop-shadow(0 0 9px #ff69c233)}
+#board.xo .cell.last:after{display:none}
+#board.xo .cell.last::before{animation:xo-piece-land .32s cubic-bezier(.2,.8,.3,1.2)}
+body.xo-game .four-seat-piece[data-player="1"]:not([data-cosmetic-piece])::before{background:url('/assets/xo/mark-x-3d.svg') center/contain no-repeat;clip-path:none;mask:none;-webkit-mask:none}
+body.xo-game .four-seat-piece[data-player="2"]:not([data-cosmetic-piece])::before{background:url('/assets/xo/mark-o-3d.svg') center/contain no-repeat;clip-path:none;mask:none;-webkit-mask:none}
+@keyframes xo-piece-land{0%{transform:translateY(-14px) scale(1.14);opacity:0}65%{transform:translateY(3px) scale(.96);opacity:1}100%{transform:none;opacity:1}}
+@media(max-width:760px){#board.xo{width:min(94%,600px);margin:24px auto 32px;gap:9px;padding:16px;border-radius:27px;border-bottom-width:9px;transform:perspective(1000px) rotateX(4deg)}#board.xo .cell{border-radius:12px}}
+@media(prefers-reduced-motion:reduce){#board.xo .cell.last::before{animation:none}#board.xo .cell{transition:none}}
+#board.xo .cell[data-value]:not([data-value="0"]):not([data-cosmetic-piece])::before{background-color:transparent}

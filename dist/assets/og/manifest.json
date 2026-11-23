@@ -85,7 +85,7 @@
   },
   {
     "slug": "snooker",
-    "cover": "/assets/covers/snooker.jpg",
+    "cover": "/assets/covers/snooker-3d-20261123.jpg",
     "name": {
       "zh": "斯诺克",
       "en": "Snooker"
@@ -97,7 +97,7 @@
   },
   {
     "slug": "bubble-shooter",
-    "cover": "/assets/covers/bubbles.jpg",
+    "cover": "/assets/covers/bubbles-3d-20261123.jpg",
     "name": {
       "zh": "泡泡射击",
       "en": "Bubble Shooter"
@@ -109,7 +109,7 @@
   },
   {
     "slug": "nineball",
-    "cover": "/assets/covers/nineball.jpg",
+    "cover": "/assets/covers/nineball-3d-20261123.jpg",
     "name": {
       "zh": "欢乐九球",
       "en": "Nine-ball"

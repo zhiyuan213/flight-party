@@ -16,7 +16,7 @@ const bubbles=game==='bubbles';
 const canvas=$('canvas'),dialog=$('dialog'),action=$('#action');
 document.body.classList.add(game);
 document.body.dataset.screen='home';
-$('#cover').src='/assets/covers/'+game+'.jpg?v=20261109-coverhd1';
+$('#cover').src='/assets/covers/'+game+'-3d-20261123.jpg';
 let chinese=false,playing=false;
 try{chinese=localStorage.getItem('joyflock-portal-language')==='zh';}catch{}
 const label=(en,zh)=>chinese?zh:en;

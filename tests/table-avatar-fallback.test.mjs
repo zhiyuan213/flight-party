@@ -113,6 +113,6 @@ test('touched assets share one freshly bumped version tag', () => {
   assert.ok(tags.every(Boolean));
   assert.equal(new Set(tags).size, 1, 'table.js / intro-boot.js / standings CSS must agree');
   assert.notEqual(tags[0], '20261110-nojoin1', 'the new code needs a fresh cache key');
-  assert.match(table, /presentation\.js\?v=([^"']+)/);
-  assert.equal(table.match(/presentation\.js\?v=([^"']+)/)[1], tags[0]);
+  assert.match(table, /presentation\.js\?v=([^"'&]+)/);
+  assert.equal(table.match(/presentation\.js\?v=([^"'&]+)/)[1], tags[0]);
 });

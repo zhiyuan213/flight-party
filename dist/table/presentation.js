@@ -13,7 +13,7 @@ export const CATALOG={
  nineball:{name:'欢乐九球',en:'Nine-ball',description:'美式九球：每杆先碰台面最小号球，合法打进 9 号立即获胜。',instruction:'点击球桌选择方向，再调整力度击球。每杆先碰最小号球，打进9号球获胜。'}
 };
 export function screenForRoom(room){return room?.phase==='CLOSED'?'home':room?.phase==='WAITING'?'waiting':room?'play':'home';}
-export function coverFor(game){return '../assets/covers/'+game+(['xo'].includes(game)?'.svg':'.jpg');}
+export function coverFor(game){return '../assets/covers/'+({"snooker":"snooker-3d-20261123.jpg","bubbles":"bubbles-3d-20261123.jpg","nineball":"nineball-3d-20261123.jpg","xo":"xo-3d-20261123.jpg"}[game]||game+'.jpg');}
 export function playerCard(document,profile,index,active){
  const item=document.createElement('div');item.className='seat'+(active?' active':'');
  const avatar=document.createElement('span');avatar.className='avatar-shell';const image=createAvatar(document,profile);if(profile.name==='等待加入'){avatar.textContent='＋';item.classList.add('empty-seat');}else avatar.append(image);

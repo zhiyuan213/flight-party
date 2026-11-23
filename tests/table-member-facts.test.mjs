@@ -112,7 +112,7 @@ test('touched assets keep one shared cache key', () => {
     html.match(/src="table\.js\?v=([^"'&]+)/)?.[1],
     html.match(/intro-boot\.js\?v=([^"'&]+)/)?.[1],
     html.match(/table-home-clean\.css\?v=([^"'&]+)/)?.[1],
-    table.match(/presentation\.js\?v=([^"']+)/)?.[1]
+    table.match(/presentation\.js\?v=([^"'&]+)/)?.[1]
   ];
   assert.ok(tags.every(Boolean), 'each touched asset needs a version tag');
   assert.equal(new Set(tags).size, 1, 'the assets must share one version');

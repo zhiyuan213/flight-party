@@ -8,9 +8,9 @@ const games=[
  {id:'chess',image:'/assets/covers/chess.jpg',name:'国际象棋',en:'Chess',icon:'♞',color:'purple',detail:'2人 · 单机 / 联机',live:true},
  {id:'xo',image:'/assets/covers/xo-3d-20261123.jpg',name:'井字棋',en:'Tic-tac-toe',icon:'×',color:'violet',detail:'2人 · 单机 / 联机',live:true},
  {id:'cards',image:'/assets/covers/cards.jpg',name:'欢乐纸牌',en:'Cards',icon:'♠',color:'pink',detail:'2人 · 颜色数字接龙',live:true},
- {id:'snooker',image:'/assets/covers/snooker.jpg',name:'斯诺克',en:'Snooker',icon:'●',color:'green',detail:'2人 · 单机 / 联机',live:true},
- {id:'bubbles',image:'/assets/covers/bubbles.jpg?v=20261109-coverhd1',name:'泡泡射击',en:'Bubble Shooter',icon:'●',color:'violet',detail:'双人对战 · 电脑 / 联机',live:true},
- {id:'nineball',image:'/assets/covers/nineball.jpg?v=20261120-nineball-cover2',name:'欢乐九球',en:'Nine-ball',icon:'⑨',color:'green',detail:'2人 · 美式九球',live:true},
+ {id:'snooker',image:'/assets/covers/snooker-3d-20261123.jpg',name:'斯诺克',en:'Snooker',icon:'●',color:'green',detail:'2人 · 单机 / 联机',live:true},
+ {id:'bubbles',image:'/assets/covers/bubbles-3d-20261123.jpg?v=20261109-coverhd1',name:'泡泡射击',en:'Bubble Shooter',icon:'●',color:'violet',detail:'双人对战 · 电脑 / 联机',live:true},
+ {id:'nineball',image:'/assets/covers/nineball-3d-20261123.jpg?v=20261120-nineball-cover2',name:'欢乐九球',en:'Nine-ball',icon:'⑨',color:'green',detail:'2人 · 美式九球',live:true},
 ];
 const selected=new URLSearchParams(location.search).get('game'),active=games.find(g=>g.id===selected&&g.live);
 const languageMenu=document.querySelector('#portal-language');

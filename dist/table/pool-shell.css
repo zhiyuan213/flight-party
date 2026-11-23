@@ -646,3 +646,15 @@ body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-matchup #seat
 .table-chat-layout .cards .card-hand,.cards .card-hand{width:min(96%,850px);box-sizing:border-box;justify-content:safe center;scrollbar-width:thin;scrollbar-color:#8c99c455 transparent}
 @media(min-width:761px){.table-chat-layout .cards .playing-card,.cards .playing-card{width:clamp(90px,9cqw,130px);height:auto;aspect-ratio:65/95;font-size:clamp(56px,6cqw,78px)}.cards-back-fan{height:105px}.cards-back-fan i{width:65px;height:96px}.cards .cards-draw-stack{width:clamp(90px,9cqw,130px);height:auto;aspect-ratio:65/95}.table-chat-layout .cards .card-hand{min-height:220px}.table-chat-layout .cards .card-table{min-height:230px}}
 .cards .playing-card small{pointer-events:none}.cards .playing-card b{pointer-events:none}
+/* Cards: preserve suit/back artwork under shared button hover rules. */
+.board.cards{--cards-back-art:repeating-linear-gradient(45deg,#b5a9ff22 0 2px,transparent 2px 12px),linear-gradient(135deg,#7159b7,#263e7b)}
+.board.cards .cards-draw-stack,.board.cards .cards-draw-stack:hover:not(:disabled),.board.cards .cards-draw-stack:focus-visible{background:var(--cards-back-art);color:#f2dfaa}
+.board.cards .color-0{--card-colour:#df4667}.board.cards .color-1{--card-colour:#e7aa32}.board.cards .color-2{--card-colour:#2ba879}.board.cards .color-3{--card-colour:#328dcc}
+.board.cards .card-hand button.playing-card:hover:not(:disabled),.board.cards .card-hand button.playing-card:focus-visible{background-color:var(--card-colour);background-image:linear-gradient(135deg,#ffffff44,transparent 48%,#0003);color:#fff}
+@media(min-width:761px){
+ .table-chat-layout .cards .playing-card,.cards .playing-card,.board.cards .cards-draw-stack{width:clamp(110px,11.5cqw,160px);height:auto;aspect-ratio:65/95;font-size:clamp(68px,7.2cqw,96px)}
+ .cards-back-fan{height:130px}.cards-back-fan i{width:80px;height:118px;margin:0 -14px}
+ .table-chat-layout .cards .card-table{min-height:280px;gap:90px}.cards-orbit{font-size:300px}
+ .table-chat-layout .cards .card-hand{width:min(96%,1080px);min-height:280px;padding:22px 40px 12px}
+ .cards-opponent,.cards-turn{font-size:16px}.cards-hand-label{font-size:14px}.cards-draw-stack i{font-size:48px}.cards-draw-stack span{font-size:16px}
+}

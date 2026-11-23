@@ -161,7 +161,7 @@ export const GAMES = [
     genre: {zh: ['纸牌', '休闲'], en: ['Card game', 'Casual']}
   },
   {
-    id: 'snooker', slug: 'snooker', cover: '/assets/covers/snooker.jpg',
+    id: 'snooker', slug: 'snooker', cover: '/assets/covers/snooker-3d-20261123.jpg',
     name: {zh: '斯诺克', en: 'Snooker'},
     altNames: {zh: ['在线斯诺克', '桌球', 'snooker online'], en: ['online snooker', 'English billiards', 'snooker table']},
     title: {zh: '斯诺克在线玩 · 免费双人对战 | JoyFlock', en: 'Play Snooker Online Free — 2-Player | JoyFlock'},
@@ -184,7 +184,7 @@ export const GAMES = [
     genre: {zh: ['台球', '休闲竞技'], en: ['Billiards', 'Cue sport']}
   },
   {
-    id: 'bubbles', slug: 'bubble-shooter', cover: '/assets/covers/bubbles.jpg',
+    id: 'bubbles', slug: 'bubble-shooter', cover: '/assets/covers/bubbles-3d-20261123.jpg',
     name: {zh: '泡泡射击', en: 'Bubble Shooter'},
     altNames: {zh: ['泡泡龙对战', '在线泡泡射击', 'bubble shooter'], en: ['bubble shooter duel', 'online bubble game', 'match-3 shooter']},
     title: {zh: '泡泡射击在线玩 · 免费双人泡泡对战 | JoyFlock', en: 'Play Bubble Shooter Online Free — 2-Player Duel | JoyFlock'},
@@ -204,7 +204,7 @@ export const GAMES = [
     genre: {zh: ['消除', '休闲竞技'], en: ['Puzzle', 'Arcade']}
   },
   {
-    id: 'nineball', slug: 'nineball', cover: '/assets/covers/nineball.jpg',
+    id: 'nineball', slug: 'nineball', cover: '/assets/covers/nineball-3d-20261123.jpg',
     name: {zh: '欢乐九球', en: 'Nine-ball'},
     altNames: {zh: ['九球', '美式九球', '9球'], en: ['9-ball', 'nine ball', 'online nine-ball']},
     title: {zh: '欢乐九球在线玩 · 免费双人对战 | JoyFlock', en: 'Play Nine-ball Online Free — 2-Player 9-Ball Game | JoyFlock'},
