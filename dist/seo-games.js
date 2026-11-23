@@ -41,7 +41,7 @@ export const GAMES = [
     genre: {zh: ['台球', '休闲竞技'], en: ['Billiards', 'Casual sport']}
   },
   {
-    id: 'flight', slug: 'flight-party', cover: '/assets/plane-vip-gold-body.png',
+    id: 'flight', slug: 'flight-party', cover: '/assets/covers/flight-3d-20261123.jpg',
     name: {zh: '飞行棋', en: 'Flight Party'},
     altNames: {zh: ['飞行棋联机', '在线飞行棋', 'Aeroplane Chess'], en: ['Aeroplane Chess', 'Ludo', 'online flight chess']},
     title: {zh: '飞行棋在线玩 · 2–4 人好友联机 | JoyFlock', en: 'Play Flight Party Online — 2–4 Player Aeroplane Chess | JoyFlock'},

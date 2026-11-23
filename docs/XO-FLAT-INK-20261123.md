@@ -34,3 +34,9 @@
 用户批准后已发布：5 个静态文件，线上 5/5 哈希，双域名 HTTPS 10/10 哈希，两个域名 csrf 200，nginx -t 通过。Chrome 在真实 joyflock.com 进入电脑对战，商城珍珠 X 与默认 O 均正常；观察到最大棋盘为 1336×1336px。截图 `verification/xo-ink-production-20261123.jpg`。本地最终自动测试 1088/1088。
 
 PG/Redis 备份 `/opt/joyflock/backups/20261123T075120Z`，静态回滚 `/opt/joyflock/releases/static-a9b9021/static.before.tgz`，唯一新增静态文件为 dist/table/xo-view.js。后端、规则和支付配置未改。生产没有重新打完整获胜局，获胜连线已在本地实际对局及所有八方向自动测试验证。
+
+## 商城 X 描画裁切修正（本地，2026-11-23）
+
+用户报告第一笔装扮 X 有另一笔凸角、端部被圆头遮罩截断。修正为两个独立斜条 clipPath，分别配描画 mask，改用方端遮罩；描画完成后显示未加遮罩的完整原图，确保边框与附加珍珠等纹理完整。没有更改原商城素材或对局规则。
+
+Chrome 独立本地 QA 暂停在第一笔完成帧检查珍珠款，然后重播检查完整 X/O；证据 `verification/xo-clip-first-fixed-20261123.jpg`、`verification/xo-clip-complete-fixed-20261123.jpg`。新增自动守卫检查双 clipPath、双 mask 与完整原图层。测试日志 `.workbuddy/tmp/xo-clip-fix-20261123.log`。临时 QA 页面已移出 dist。此修正尚未部署，线上仍为 a9b9021。

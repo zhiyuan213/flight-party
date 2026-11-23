@@ -42,3 +42,10 @@ test('theme changes repaint only that seat without replaying its completed strok
  const a=h.buttons[0],b=h.buttons[1];renderXo(h,s,{can:true,key:'a',pieceThemes:['pearl','jade']});
  assert.equal(a.writes,2);assert.equal(b.writes,1);assert.equal(a.classList.items.has('xo-writing'),false);
 });
+test('decorated X isolates diagonals and preserves uncropped final artwork',()=>{
+ const svg=decoratedMark('pearl',1);
+ assert.equal((svg.match(/<clipPath /g)||[]).length,2);
+ assert.equal((svg.match(/<mask /g)||[]).length,2);
+ assert.match(svg,/xo-mask-x xo-first/);assert.match(svg,/xo-mask-x xo-second/);
+ assert.match(svg,/<image class="xo-custom-final" width="100" height="100" href="data:image\/svg\+xml,/);
+});

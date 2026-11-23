@@ -1,0 +1,16 @@
+# Flight cover, Bubble status and annual badge — 2026-11-23
+
+Local visual changes, not deployed or approved for production yet.
+
+- Flight cover: `dist/assets/covers/flight-3d-20261123.jpg`, built-in imagegen, JPEG quality 92. Homepage, rail and SEO landing artwork share this file. Existing gameplay plane assets remain unchanged. Removed the transparent-plane 94% sizing and cloud background from the cover card, including the higher-specificity editorial rule.
+- Bubble sidebar: renderer supplies a second structured status argument while retaining the text callback for standalone consumers. The table shell displays actual seat names, two score columns, round and turn chips, with instructions below a divider. Rules and server authority are unchanged.
+- Annual badge: original laurel PNG unchanged; shared annual selector uses proportional 1.25 zoom so its lettering matches ordinary VIP, including its previous outer shape.
+- Existing local XO clipping fix remains pending alongside these changes.
+
+Validation: npm test passed 1089/1089 after JS changes; modified table.js and bubbles.js syntax checks passed. Chrome local preview verified Bubble sidebar, full-bleed Flight card, and annual badge dimensions (51.75×25.875 versus ordinary 41.396×20.698). Local API unavailable: no live room, entitlement or payment validation claimed.
+
+Screenshots: `docs/verification/bubble-status-20261123.jpg`, `flight-cover-20261123.jpg`, `annual-badge-scale-20261123.jpg` in the same verification directory.
+
+## Final imagegen prompt
+
+Create one square premium casual browser board-game cover illustration for an airplane race board game (飞行棋, Ludo with airplanes). Match a vibrant glossy 3D toy game cover family with jewel-like billiard balls, richly lit cobalt connect-four boards and neon purple tic-tac-toe covers. Main hero: a beautifully designed friendly compact toy propeller airplane in cobalt blue and warm gold with cream-white cockpit, no face or eyes, flying low toward the viewer in a dynamic three-quarter angle, large and immediately recognizable. Behind and beneath the hero, a compact rounded-square colorful cross-and-circle airplane race board with four red, blue, green and golden-yellow corner hangars and a clear central finish cross, raised glossy colored track tiles, a few smaller matching toy plane pieces on the track. One polished ivory die in the lower foreground with clearly separated black circular pips on its visible faces, physically plausible fixed cube geometry. Focus on the plane, die and dimensional game board as one tight beautiful composition; no tiny crowded paths or a distant empty landscape. Rich indigo and violet studio background, cyan and warm golden rim lighting, restrained playful sparkles and a short smooth swoosh suggesting takeoff. Rounded premium toy materials, bold saturated colors, crisp beveled highlights, soft contact shadows, bright joyful exposure, polished high-end casual game key art, consistent with modern glossy 3D board-game covers. Full-bleed square art, important subjects within 6 percent safe margin so it reads in a rounded sidebar thumbnail. No text, title strip, words, letters, numerals, logos, watermark, interface, people or hands. Do not draw an airliner, military plane or spaceship. A single standalone square illustration.

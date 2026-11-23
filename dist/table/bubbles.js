@@ -532,8 +532,8 @@ export function createBubbles(ui){
   function refreshStatus(){
     if(!display||!ui.status)return;
     const p1=label('P1','玩家1'),p2=label('P2','玩家2');
-    ui.status(p1+' '+display.score1+' : '+display.score2+' '+p2+'  ·  '+label('Round','回合')+' '+display.moves+'/'+display.limit+
-      '  ·  '+(display.over?label('Finished','已结束'):label('Turn','轮到')+' '+(display.turn===1?p1:p2)));
+    ui.status(p1+' '+display.score1+' : '+display.score2+' '+p2+' · '+label('Round','回合')+' '+display.moves+'/'+display.limit,
+      {kind:'bubbles',score1:display.score1,score2:display.score2,moves:display.moves,limit:display.limit,turn:display.turn,over:display.over});
   }
 
   function applyBoard(next){

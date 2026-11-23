@@ -40,3 +40,6 @@ body.playing #fullscreen:hover{color:#fff}
    view too, so its colours match the home page frame for frame; no solid
    fill, no background image and no divider are introduced here. */
 body.playing #play aside.game-rail{background:transparent;background-image:none}
+
+/* Full-bleed illustrated Flight Party cover replaces the transparent plane. */
+.game-card.blue .card-art{background:#23145a}.game-card.blue .card-art img{width:100%;height:100%;object-fit:cover;filter:none}

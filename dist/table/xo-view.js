@@ -13,8 +13,20 @@ export function decoratedMark(theme,value){
  if(!['neon','coral','jade','pearl','aurora'].includes(theme))return '';
  const art=markSvg(theme,value);if(!art)return '';
  const id='xo-mask-'+(++maskSerial);
- const strokes=value===1?'<path class="xo-mask-stroke xo-first" pathLength="1" d="M88 12 12 88"/><path class="xo-mask-stroke xo-second" pathLength="1" d="M12 12 88 88"/>':'<circle class="xo-mask-stroke xo-circle" pathLength="1" cx="50" cy="50" r="35.5" transform="rotate(-90 50 50)"/>';
- return '<svg class="xo-ink xo-custom-ink" viewBox="-4 -4 108 108" aria-hidden="true"><defs><mask id="'+id+'" maskUnits="userSpaceOnUse" x="-4" y="-4" width="108" height="108">'+strokes+'</mask></defs><image width="100" height="100" href="data:image/svg+xml,'+encodeURIComponent(art)+'" mask="url(#'+id+')"/></svg>';
+ const source='data:image/svg+xml,'+encodeURIComponent(art);
+ if(value===1){
+  // Isolate each diagonal before revealing it: a thick mask on the whole X
+  // exposes little pieces of the other diagonal around the crossing.
+  return '<svg class="xo-ink xo-custom-ink" viewBox="-4 -4 108 108" aria-hidden="true"><defs>'+
+   '<clipPath id="'+id+'-a"><path d="M81 4.3L95.7 19L19 95.7L4.3 81Z"/></clipPath>'+
+   '<clipPath id="'+id+'-b"><path d="M4.3 19L19 4.3L95.7 81L81 95.7Z"/></clipPath>'+
+   '<mask id="'+id+'" maskUnits="userSpaceOnUse" x="-4" y="-4" width="108" height="108"><path class="xo-mask-stroke xo-mask-x xo-first" pathLength="1" d="M100 0 0 100"/></mask>'+
+   '<mask id="'+id+'-second" maskUnits="userSpaceOnUse" x="-4" y="-4" width="108" height="108"><path class="xo-mask-stroke xo-mask-x xo-second" pathLength="1" d="M0 0 100 100"/></mask></defs>'+
+   '<g clip-path="url(#'+id+'-a)"><image width="100" height="100" href="'+source+'" mask="url(#'+id+')"/></g>'+
+   '<g clip-path="url(#'+id+'-b)"><image width="100" height="100" href="'+source+'" mask="url(#'+id+'-second)"/></g>'+
+   '<image class="xo-custom-final" width="100" height="100" href="'+source+'"/></svg>';
+ }
+ return '<svg class="xo-ink xo-custom-ink" viewBox="-4 -4 108 108" aria-hidden="true"><defs><mask id="'+id+'" maskUnits="userSpaceOnUse" x="-4" y="-4" width="108" height="108"><circle class="xo-mask-stroke xo-circle" pathLength="1" cx="50" cy="50" r="35.5" transform="rotate(-90 50 50)"/></mask></defs><image width="100" height="100" href="'+source+'" mask="url(#'+id+')"/></svg>';
 }
 const mark=value=>value===1
  ? '<svg class="xo-ink" viewBox="8 8 84 84" aria-hidden="true"><path class="xo-stroke xo-first" pathLength="1" d="M77 23 23 77"/><path class="xo-stroke xo-second" pathLength="1" d="M23 23 77 77"/></svg>'

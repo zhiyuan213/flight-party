@@ -32,3 +32,9 @@ body.xo-game .table-chat-layout .game-panel{padding:8px}
 .xo-mask-stroke{fill:none;stroke:white;stroke-width:28;stroke-linecap:round;stroke-linejoin:round}
 .xo-custom-ink{filter:drop-shadow(0 0 4px #7ce2ff33)}
 @media(prefers-reduced-motion:reduce){.xo-writing .xo-mask-stroke{animation:none;stroke-dasharray:none;stroke-dashoffset:0}}
+/* Each decorated X diagonal is clipped independently with square ends. */
+.xo-mask-x{stroke-linecap:butt}
+.xo-custom-final{opacity:1}
+.xo-writing .xo-custom-final{animation:xo-custom-complete .41s step-end both}
+@keyframes xo-custom-complete{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.xo-writing .xo-custom-final{animation:none;opacity:1}}

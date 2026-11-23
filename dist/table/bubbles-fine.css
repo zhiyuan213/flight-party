@@ -104,3 +104,19 @@
 
 /* JoyFlock midnight arena, presentation only. */
 .arcade-board.bubbles canvas,.bubbles canvas{border-color:rgba(160,179,245,.38);box-shadow:0 0 0 1px rgba(178,193,255,.08) inset,0 20px 60px rgba(0,0,0,.35)}
+.turn-panel #status.bubble-status-host{color:#dce7ff;font-size:14px;margin:0 0 18px}
+.bubble-status{gap:16px}
+.bubble-scoreline{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 16px;padding:16px;background:#111c33;border-color:#38496d;border-radius:14px}
+.bubble-seat{font-size:13px;color:#9fb1d2;text-align:center}
+.bubble-seat.is-active{color:#e7efff}
+.bubble-seat-1{grid-column:1;grid-row:1}
+.bubble-seat-2{grid-column:2;grid-row:1}
+.bubble-score{display:contents}
+.bubble-score b{font-size:30px;text-align:center;color:#e3edff;font-variant-numeric:tabular-nums}
+.bubble-score b:first-child{grid-column:1;grid-row:2;color:#75cfff}
+.bubble-score b:last-child{grid-column:2;grid-row:2;color:#ff9bb7}
+.bubble-score i{display:none}
+.bubble-meta{justify-content:space-between;gap:8px}
+.bubble-round,.bubble-turn{padding:5px 10px;font-size:12px;color:#b2c1df;background:#15213a;border-color:#3b4d70}
+.bubble-turn.is-you{background:#243c58;border-color:#6eadd4;color:#a1e1ff}
+.turn-panel:has(.bubble-status-host) #turn-instruction{border-top:1px solid #354462;padding-top:16px;font-size:13px;line-height:1.85;color:#a9bbdc}

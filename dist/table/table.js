@@ -1,11 +1,11 @@
-import {renderXo} from './xo-view.js?v=20261123-ink1&size=20261123-max1&shop=20261123-ink1';
+import {renderXo} from './xo-view.js?v=20261123-ink1&size=20261123-max1&shop=20261123-ink1&clip=20261123-split1';
 import {botLevelStore,BOT_BONUS,botLabel} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {attachFourDrop} from './four-drop.js?v=20261113-fourfx1&skin=20261120-billiardskins1';
 import {attachFourFeedback} from './four-feedback.js?v=20261113-fourfx1';
 import {fourSeatPiece} from './four-seat-piece.js?v=20261113-gomokuseat1&skin=20261120-billiardskins1';
 import {openThemePicker,getTheme,setTheme,instanceId as themeInstanceId} from './four-theme.js?v=20261110-glove2';
 import {showMatchBox,hideMatchBox,updateMatchBox} from './match-box.js?v=20261110-glove2';
-import {mountArcade} from './arcade-table.js?v=20261112-natural1&release=20261115-polishrelease1&ui=20261123-polish1';
+import {mountArcade} from './arcade-table.js?v=20261112-natural1&release=20261115-polishrelease1&ui=20261123-polish1&layout=20261123-status2';
 import {mountSnookerShell} from './snooker-shell.js?v=20261111-targetballs1&release=20261115-polishrelease1';
 import {renderChess} from './chess-view.js?v=20261110-glove2';
 import {unlockPoolAudio} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';
@@ -309,7 +309,8 @@ function showChessNotice(text){
    aim / shot command; all scoring and turn keeping happens in grid-rules / the API. */const canShoot=()=>screen==='play'&&!pending&&!board.over&&
   !(room&&(room.phase!=='PLAYING'||room.you+1!==board.turn))&&
   !(local&&computer&&board.turn===2)&&Date.now()>=fourOpening;
-const arcade=isCanvasGame?mountArcade($('board'),game,text=>{
+const arcade=isCanvasGame?mountArcade($('board'),game,(text,state)=>{
+  text=state||text;
   arcadeStatus=text;
   if(!board.over)renderStatus(text);
 },text=>{
