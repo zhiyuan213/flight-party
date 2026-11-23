@@ -41,9 +41,18 @@
   vip.querySelector('span').textContent=member?(annual?(zh()?'年度会员':'Annual VIP'):'VIP'):(zh()?'未开通':'Inactive');
   vip.title=zh()?'查看会员状态与套餐':'Membership status and plans';
   const labels=zh()?['积分','局数','胜率']:['Score','Games','Win rate'];
-  const shown=stats;
-  const values=[shown?.points??(failed?'—':0),shown?.completedGames??(failed?'—':0),Number.isFinite(shown?.wins)&&shown.completedGames>0?Math.round(100*shown.wins/shown.completedGames)+'%':failed||shown?.completedGames>0?'—':'0%'];
-  ['score','games','rate'].forEach((key,i)=>{fields[key].querySelector('small').textContent=labels[i];fields[key].querySelector('b').textContent=values[i];fields[key].setAttribute('aria-label',labels[i]+' '+values[i]);fields[key].title=(zh()?'当前游戏：':'Current game: ')+selected+' · '+labels[i]+(failed?(zh()?' · 暂时无法加载':' · Unavailable'):key==='rate'&&shown?.completedGames>0&&!Number.isFinite(shown.wins)?(zh()?' · 服务端暂未提供胜场':' · Server wins unavailable'):'');});
+  // Local practice results are display-only. Never add them to verified totals:
+  // browser counters can also include rounds already recorded by the server.
+  const browserStats=window.__joyflockGamePoints?.get?.();
+  const local=browserStats?.signedIn&&browserStats.byGame?.[selected];
+  const useLocal=!!identity?.account&&selected!=='flight'&&stats?.completedGames===0&&local?.games>0;
+  const localScore=local?.games===browserStats?.games?browserStats?.score:null;
+  const shown=useLocal?{points:localScore,completedGames:local.games,wins:local.wins}:stats;
+  gameStats.classList.toggle('hs-local',useLocal);
+  const localLabel=useLocal?(zh()?'本机':'Local'):'';
+  gameStats.dataset.source=localLabel;
+  const values=[shown?.points??(failed||useLocal?'—':0),shown?.completedGames??(failed?'—':0),Number.isFinite(shown?.wins)&&shown.completedGames>0?Math.round(100*shown.wins/shown.completedGames)+'%':failed||shown?.completedGames>0?'—':'0%'];
+  ['score','games','rate'].forEach((key,i)=>{fields[key].querySelector('small').textContent=labels[i];fields[key].querySelector('b').textContent=values[i];fields[key].setAttribute('aria-label',labels[i]+' '+values[i]+(useLocal?' · '+localLabel:''));fields[key].title=(zh()?'当前游戏：':'Current game: ')+gameName+' · '+labels[i]+(useLocal?' · '+localLabel:failed?(zh()?' · 暂时无法加载':' · Unavailable'):key==='rate'&&shown?.completedGames>0&&!Number.isFinite(shown.wins)?(zh()?' · 服务端暂未提供胜场':' · Server wins unavailable'):'');});
   strip.dataset.game=selected;moveWallet();
  }
  async function refresh(){

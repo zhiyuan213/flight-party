@@ -2,7 +2,7 @@
 html[data-native-game] .member-note,html.embedded-game .member-note{display:none!important}
 .header-stats{display:flex;justify-content:center;align-items:center;gap:10px;min-width:0;flex:1;margin:0 25px;color:#edf0ff}
 .header-stats .hs-stat,.header-stats .hs-vip,.header-stats :is(#jp-pill,.hs-wallet-placeholder){height:24px;min-height:24px;line-height:1;border:1px solid #3c4c77;border-radius:22px;background:linear-gradient(180deg,#1c2845,#111a30);box-shadow:inset 0 1px #ffffff08;display:flex;align-items:center;gap:8px;padding:0 13px;white-space:nowrap;margin:0}
-.header-stats .hs-vip{gap:6px;text-decoration:none;padding-left:7px;color:#f4d58c;font-size:11px;font-weight:800}
+.header-stats .hs-vip{gap:6px;text-decoration:none;padding-left:7px;color:#f4d58c;font-size:13px;font-weight:800;line-height:11px}
 .hs-vip img{width:57px;height:19px;object-fit:contain}.hs-vip.is-inactive img{filter:grayscale(1);opacity:.65}.hs-vip.is-inactive{color:#8290ac}
 .header-stats .hs-wallet{flex:none}.header-stats :is(#jp-pill,.hs-wallet-placeholder){font-size:14px;justify-content:center}
 .hs-stat svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;filter:drop-shadow(0 0 5px #7eacff40)}
@@ -41,7 +41,7 @@ body>.topbar.has-header-stats nav a,
   padding:var(--overview-control-inset);
   border-radius:999px;
 }
-body>.topbar.has-header-stats nav a{height:var(--overview-control-height);font-size:13px}
+body>.topbar.has-header-stats nav a{height:var(--overview-control-height);font-size:15px;line-height:15.6px}
 .topbar.has-header-stats .header-stats .hs-score{padding-inline-start:var(--overview-control-inset);gap:5px}
 .hs-score .hs-game-icon{width:var(--overview-icon-size);height:var(--overview-icon-size);margin-inline-start:0}
 @media(max-width:1150px){
@@ -49,7 +49,7 @@ body>.topbar.has-header-stats nav a{height:var(--overview-control-height);font-s
 }
 @media(max-width:600px){
   body>.topbar.has-header-stats .brand{font-size:18px}
-  body>.topbar.has-header-stats nav a{font-size:11px}
+  body>.topbar.has-header-stats nav a{font-size:13px;line-height:13.2px}
 
 }
 
@@ -79,16 +79,23 @@ html[data-shop-avatar] body>.topbar.has-header-stats #chrome-account::before{
 }
 .header-stats .hs-vip img{width:58px;height:var(--overview-icon-size)}
 .header-stats .hs-stat{justify-content:center}
-.header-stats :is(.jp-amount,.hs-copy b){font:900 18px/1 Nunito,system-ui,sans-serif}
+.header-stats :is(.jp-amount,.hs-copy b){font:900 20px/18px Nunito,system-ui,sans-serif}
 body>.topbar.has-header-stats nav a,
-body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:13px}
+body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:15px;line-height:16px}
 @media(max-width:600px){
   .header-stats .hs-stat{min-width:0}
   .header-stats .hs-vip img{width:43px}
-  .header-stats :is(.jp-amount,.hs-copy b){font-size:14px}
+  .header-stats :is(.jp-amount,.hs-copy b){font-size:16px;line-height:14px}
   body>.topbar.has-header-stats nav a,
-  body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:12px}
+  body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:14px;line-height:15px}
 }
 
 /* Match the portal's footer visibility during an active game. */
 html[data-native-game] body:is([data-screen="play"],[data-flight-screen="play"]) > footer{display:none}
+
+.hs-game-stats.hs-local::after{
+  content:attr(data-source);
+  color:#a9b8d8;
+  font:700 10px/1 system-ui,sans-serif;
+  white-space:nowrap;
+}
