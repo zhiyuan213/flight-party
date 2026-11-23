@@ -1,6 +1,6 @@
 # 2026-11-23 本地视觉调整验收
 
-状态：本地实现及验收完成，尚未部署，等待用户确认视觉效果（AGENTS.md 的 UI approval first）。
+状态：用户已批准视觉修改并要求部署，现已发布生产；详细发布记录见文末。
 
 - 井字棋：替换首页、侧栏与对应详情封面，保留原 SVG。新文件：`dist/assets/covers/xo-3d-20261123.jpg`。由内置 imagegen 生成，原图 1254×1254，JPEG 质量 92。社交 OG 位图未重新生成。
 - 欢乐纸牌：保留两人规则；对手牌背、自己扇形手牌、中央抽牌堆和弃牌堆、可出牌金色提示、键盘焦点和手机横向手牌滚动。弃牌底层取真实上一张弃牌。规则函数没有修改。
@@ -29,3 +29,13 @@
 Built-in imagegen tool. Final prompt:
 
 Create a brand-new square 1024x1024 premium casual browser-game cover illustration for Tic-Tac-Toe (井字棋). This replaces a flat neon grid with polished dimensional game key art, matching a family of richly lit glossy 3D board-game cover paintings. Subject: one clearly readable THREE by THREE tic-tac-toe board with exactly 9 recessed square cells, viewed from a gentle elevated three-quarter angle, large and centered, filling about 85% of the image. Thick rounded cobalt/indigo lacquered board frame, refined violet translucent inset surface, thin luminous dividers; substantial glossy beveled cyan-blue X pieces and vivid coral-pink O rings sitting in separate cells, their thickness, reflections and soft contact shadows clearly visible. Use 3 X pieces and 3 O pieces, leave 3 cells empty so the grid is unmistakable. An appealing balanced composition that reads immediately at thumbnail size. Rich midnight purple-to-indigo studio background, tasteful blue and warm pink rim lighting, subtle reflective tabletop, a few restrained tiny sparkles for playful energy. High-end stylized 3D toy rendering, beautifully rounded edges, vibrant saturated colors, crisp material highlights, depth and warm friendly visual polish. Keep all important board edges and pieces inside a safe 6% margin so the same square can be used in small rounded sidebar icons. Art only, edge-to-edge full-bleed square; NO text, letters other than the X game pieces, numbers, title strip, logos, watermarks, UI, screenshot, people, hands, coins, extra boards, extra grid rows or columns. Do not recreate the supplied website screenshot; produce only the standalone replacement cover art.
+
+## 生产发布（用户已批准，2026-11-23）
+
+- 应用提交：`e0aaf60113b925a2d3c19320a96cea255665fa32`，已推送 origin/main。
+- 24 个静态文件增量发布，发布包 SHA256 `a7212db7d94dd3dff1360faf1aab5c2e783d69c072b6ec4e653f6193f98340fe`。
+- PG/Redis 备份：`/opt/joyflock/backups/20261123T070635Z`。
+- 回滚目录：`/opt/joyflock/releases/static-e0aaf60`，含 `static.before.tgz`、实际部署清单与哈希、回滚说明。
+- 原地复制静态文件，保留 dist 挂载目录；后端镜像、数据库迁移、支付配置及容器不变。
+- 生产磁盘 24/24 文件哈希通过；joyflock.com 和 flight.joyflock.com 共 48/48 HTTPS 资源哈希通过；两个域名 `/api/csrf` 返回 200；nginx -t 通过。
+- Chrome 在真实 joyflock.com 进入纸牌电脑对战，已确认新版手牌、牌背、抽牌堆显示。生产截图 `verification/cards-production-e0aaf60.jpg`。未完成生产整局对战或重新主观试听音效。
