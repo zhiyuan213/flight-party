@@ -32,12 +32,12 @@ test('the veil still fades in only on hover / keyboard focus',()=>{
     'reduced motion shows the result immediately, with no animation');
 });
 
-test('the artwork zoom and the blue card drop-shadow are unchanged',()=>{
+test('artwork hover zoom remains and the illustrated flight cover fills its card',()=>{
   assert.match(css,/#home \.cards \.game-card\.live:hover \.card-art img\{transform:scale\(1\.05\)\}/);
   assert.match(css,/#home \.cards \.game-card\.blue\.live:hover \.card-art img\{transform:scale\(1\.03\)\}/);
   const blue=/#home \.cards \.game-card\.blue \.card-art img\{([\s\S]*?)\}/.exec(css);
-  assert.match(blue[1],/filter:drop-shadow\(0 10px 8px #1d51854d\)/,
-    'blue card keeps its own drop-shadow; no filter chain was replaced');
+  assert.match(blue[1],/width:100%;height:100%;object-fit:cover;filter:none/,
+    'full-bleed illustration has no transparent-plane inset or drop shadow');
   assert.ok(!/\.card-art img\{[^}]*filter:blur/.test(css),
     'the blur is on the veil, not directly on <img>');
 });

@@ -144,6 +144,8 @@ export function renderPool(host,s,can,options={}) {
   }
   if(!host.querySelector('.pool-table-canvas')) {
     host.innerHTML='<div class="pool-left-controls"><button class="pool-sound" type="button" aria-label="切换台球音效"></button><div class="pool-hit"><canvas class="pool-spot" width="160" height="160" role="button" tabindex="0" aria-label="选择白球击球点"></canvas></div><div class="pool-power-meter" role="meter" aria-label="击球力度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="power-cue"></div></div><output class="pool-power-value">0%</output></div><div class="pool-table-wrap"><canvas class="pool-table-canvas" width="2464" height="1288" aria-label="台球桌，移动鼠标瞄准，按住左键后拉蓄力，松开击球"></canvas><div class="pool-countdown" hidden aria-live="polite"><b>3</b><span>准备开球</span></div></div><div class="pool-controls"><label>击球力度 <output>65%</output><input type="range" min="1" max="100" value="65" aria-label="击球力度"></label><button class="pool-shoot" data-position="234000">击球</button><button class="pool-unlock" type="button">重新瞄准</button></div><p class="pool-note"></p>';
+    // One board-wide scrim also covers the gutter and protruding table rims.
+    host.append(host.querySelector('.pool-countdown'));
     host._angle=0;host._power=0;host._spin=0;host._roll=Array(16).fill(0);host._heading=Array(16).fill(0);
     host.addEventListener('pointerdown',unlockPoolAudio);
     host.querySelector('.pool-sound').onclick=()=>{unlockPoolAudio();setPoolMuted(!poolMuted());host.querySelector('.pool-sound').textContent=poolMuted()?'静音':'声音';};

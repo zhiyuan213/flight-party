@@ -14,7 +14,7 @@ import {cancelPoolCountdown,updatePoolCountdown,COUNTDOWN_TOTAL,COUNTDOWN_WINDOW
 import {updateFourResult,updateGridResult,updatePoolShell,updateTableChat,sendPoolChatEmoji,appendPoolChatReaction} from './pool-shell.js?v=20261115-joincoin1&d=20261115-chatfs1&r=20261115-fspill1&native=20261115-native1&c=20261116-fastcount1&g=20261116-gridhold1&nine=20261120-nineball1&power=20261120-poolpower30&score=20261120-score1&name=20261121-accountname1&ui=20261123-polish1';
 import {CATALOG,coverFor,playerCard,screenForRoom} from './presentation.js?v=20261115-joincoin1&art=20261123-covers2';
 import {renderPool} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
-import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
+import {animatePoolOpponentShot,cancelPoolOpponentShot} from './pool-view.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30&scrim=20261123-full1';
 import {renderCards} from './cards.js?v=20261112-gamelanes1&ui=20261123-polish1';
 import {drawSketch,sketchNext} from './sketch.js?v=20261110-glove2';
 import {start,move,bot,legal} from './grid-rules.js?v=20261112-gamelanes1&release=20261115-polishrelease1&nine=20261120-nineball1&power=20261120-poolpower30';

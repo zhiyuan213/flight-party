@@ -658,3 +658,8 @@ body.pool-game[data-screen="play"][data-game-fullscreen="1"] .pool-matchup #seat
  .table-chat-layout .cards .card-hand{width:min(96%,1080px);min-height:280px;padding:22px 40px 12px}
  .cards-opponent,.cards-turn{font-size:16px}.cards-hand-label{font-size:14px}.cards-draw-stack i{font-size:48px}.cards-draw-stack span{font-size:16px}
 }
+
+/* One continuous countdown layer across rail, gutter and table. */
+.pool-game[data-screen="play"] .board.pool{position:relative}
+.pool-game[data-screen="play"] .board.pool>.pool-countdown{inset:0;z-index:7;border-radius:0}
+.pool-game[data-screen="play"] .board.pool:has(>.pool-countdown) .pool-left-controls::after{content:none}
