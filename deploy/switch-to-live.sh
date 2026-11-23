@@ -49,7 +49,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-die(){ echo "ABORT: $*" >&2; exit 1; }
+die(){ echo "ABORT: $*" >&2; if declare -F rollback >/dev/null; then rollback; fi; exit 1; }
 note(){ echo "[check] $*"; }
 
 if [ "$(id -u)" -eq 0 ]; then SUDO=""; else SUDO="sudo -n"; fi
@@ -137,7 +137,7 @@ probe_product(){
   # Write the body to a file instead of embedding a newline in curl -w: the
   # latter is not portable and can silently drop the JSON payload.
   code=$(curl -sS --max-time 30 -o "$body_file" -w '%{http_code}' \
-        -H "x-api-key: $LIVE_KEY" "$PRODUCTS_BASE/v1/products/$id") \
+        -H "x-api-key: $LIVE_KEY" "$PRODUCTS_BASE/v1/products?product_id=$id") \
         || { rm -f "$body_file"; die "live API request failed for $label"; }
   [ "$code" = "200" ] \
         || { rm -f "$body_file"; die "$label: GET /v1/products/$id returned HTTP $code (check live key and product ID)"; }
@@ -158,8 +158,8 @@ def g(*keys):
 mode = g('mode')
 if mode is None:
     sys.stderr.write('%s: product response has no mode field; cannot prove live mode\n' % label); sys.exit(2)
-if str(mode).lower() != 'live':
-    sys.stderr.write('%s: product mode is %s, expected live\n' % (label, mode)); sys.exit(3)
+if str(mode).lower() not in ('live', 'prod'):
+    sys.stderr.write('%s: product mode is %s, expected live/prod\n' % (label, mode)); sys.exit(3)
 currency = str(g('currency') or '').upper()
 if currency != 'USD':
     sys.stderr.write('%s: currency is %s, expected USD\n' % (label, currency)); sys.exit(4)
@@ -167,10 +167,10 @@ actual_price = g('price')
 if actual_price is None or int(actual_price) != price:
     sys.stderr.write('%s: price is %s, expected %d\n' % (label, actual_price, price)); sys.exit(5)
 btype = str(g('billing_type', 'billingType') or '').lower()
-if btype and btype != 'recurring':
+if btype != 'recurring':
     sys.stderr.write('%s: billing_type is %s, expected recurring\n' % (label, btype)); sys.exit(6)
 bperiod = str(g('billing_period', 'billingPeriod') or '').lower()
-if bperiod and bperiod != period:
+if bperiod != period:
     sys.stderr.write('%s: billing_period is %s, expected %s\n' % (label, bperiod, period)); sys.exit(7)
 print('[check] %s: live product OK (USD %d, %s)' % (label, price, period))
 PY
@@ -203,6 +203,27 @@ $SUDO cp -a "$LIVE_ENVFILE" "$RELEASE/env.live"
 $SUDO docker inspect "$CONTAINER" > "$RELEASE/backend-before.private.json"
 OLD_IMAGE=$($SUDO docker inspect "$CONTAINER" --format '{{.Config.Image}}')
 $SUDO docker tag "$OLD_IMAGE" "joyflock-backend:before-live-$STAMP"
+$SUDO sh "$LIVE_ROOT/deploy/backup.sh"
+
+# Previous releases may have private Compose files with literal environment
+# values. Preserve the running environment and override billing LAST, rather
+# than allowing an old sandbox override to silently win over .env.
+python3 - "$RELEASE" "$LIVE_ENVFILE" <<'PY'
+import json, pathlib, sys, os
+root=pathlib.Path(sys.argv[1])
+old=json.loads((root/'backend-before.private.json').read_text())[0]
+env=dict(item.split('=',1) for item in old['Config']['Env'])
+image=old['Config']['Image']
+rollback={'services':{'backend':{'image':image,'environment':env.copy()}}}
+for raw in open(sys.argv[2],encoding='utf-8'):
+    line=raw.strip()
+    if line and not line.startswith('#'):
+        k,v=line.split('=',1);env[k]=v
+env['CREEM_LIVE']='true';env['CREEM_CHECKOUT_ENABLED']='true'
+release={'services':{'backend':{'image':image,'environment':env}}}
+for name,value in [('rollback',rollback),('release',release)]:
+    p=root/(name+'.private.json');p.write_text(json.dumps(value));os.chmod(p,0o600)
+PY
 echo "[backup] $RELEASE (env, container metadata, image tag joyflock-backend:before-live-$STAMP)"
 
 # Rebuild deploy/.env in place: keep every unrelated line (DB password etc.),
@@ -218,6 +239,7 @@ for raw in open(live_path, encoding='utf-8'):
         k, v = line.split('=', 1)
         repl[k] = v
 repl['CREEM_LIVE'] = 'true'
+repl['CREEM_CHECKOUT_ENABLED'] = 'true'
 out, seen = [], set()
 for raw in open(env_path, encoding='utf-8'):
     line = raw.rstrip('\r\n')
@@ -256,8 +278,16 @@ for f in "${_cf[@]}"; do
   COMPOSE_ARGS+=(-f "$f")
 done
 
+rollback(){
+  trap - ERR
+  echo "[rollback] restoring previous environment and backend" >&2
+  $SUDO cp -a "$RELEASE/env.before" "$ENVFILE"
+  (cd "$LIVE_ROOT" && $SUDO docker compose -p deploy --env-file "$ENVFILE" \
+    "${COMPOSE_ARGS[@]}" -f "$RELEASE/rollback.private.json" up -d --no-build --no-deps --force-recreate backend)
+}
+trap rollback ERR
 (cd "$LIVE_ROOT" && $SUDO docker compose -p deploy --env-file "$ENVFILE" \
-  "${COMPOSE_ARGS[@]}" up -d --no-deps --force-recreate backend)
+  "${COMPOSE_ARGS[@]}" -f "$RELEASE/release.private.json" up -d --no-build --no-deps --force-recreate backend)
 
 echo "[verify] waiting for backend"
 for i in $(seq 1 40); do
@@ -272,6 +302,17 @@ if $SUDO docker inspect "$CONTAINER" --format '{{range .Config.Env}}{{println .}
     | grep -q '^CREEM_API_KEY=.*test'; then
   die "container still holds a test API key"
 fi
+$SUDO docker inspect "$CONTAINER" > "$RELEASE/backend-after.private.json"
+python3 - "$RELEASE/backend-after.private.json" "$RELEASE/release.private.json" <<'PY'
+import json,sys
+actual=json.load(open(sys.argv[1]))[0]
+env=dict(item.split('=',1) for item in actual['Config']['Env'])
+expected=json.load(open(sys.argv[2]))['services']['backend']['environment']
+if any(env.get(k)!=v for k,v in expected.items()):
+    raise SystemExit('Effective container environment mismatch; refusing completion')
+print('[check] exact effective environment verified; unrelated settings preserved')
+PY
+trap - ERR
 
 echo "[done] backend is running with live billing credentials."
 echo
@@ -285,4 +326,4 @@ echo "     creates an ACTIVE entitlement (test_mode=false, member=true)."
 echo "  4. Confirm the 'Cancel auto-renewal' control works against the live API."
 echo
 echo "ROLLBACK: cp -a $RELEASE/env.before $ENVFILE &&"
-echo "  cd $LIVE_ROOT && $SUDO docker compose -p deploy --env-file $ENVFILE ${COMPOSE_ARGS[*]} up -d --no-deps --force-recreate backend"
+echo "  cd $LIVE_ROOT && $SUDO docker compose -p deploy --env-file $ENVFILE ${COMPOSE_ARGS[*]} -f $RELEASE/rollback.private.json up -d --no-build --no-deps --force-recreate backend"

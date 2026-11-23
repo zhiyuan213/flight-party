@@ -65,7 +65,12 @@ test('the live switch refuses sandbox credentials and verifies live products', (
   assert.match(switcher, /annual product ID is still the sandbox product/);
   assert.match(switcher, /live webhook secret equals the sandbox secret/);
   assert.match(switcher, /unexpected key in \.env\.live/, 'only the four billing keys may be merged');
-  assert.match(switcher, /str\(mode\)\.lower\(\) != 'live'/, 'provider-side live mode is proved');
+  assert.match(switcher, /str\(mode\)\.lower\(\) not in \('live', 'prod'\)/, 'provider-side production mode is proved');
+  assert.match(switcher, /\/v1\/products\?product_id=/, 'uses the documented product retrieval endpoint');
+  assert.match(switcher, /if btype != 'recurring'/, 'missing billing type fails closed');
+  assert.match(switcher, /if bperiod != period/, 'missing billing period fails closed');
+  assert.match(switcher, /release\.private\.json/, 'literal environment overrides cannot retain test credentials');
+  assert.match(switcher, /trap rollback ERR/, 'failed service switch restores the prior effective environment');
   assert.match(switcher, /currency != 'USD'/);
   assert.match(switcher, /int\(actual_price\) != price/);
   assert.match(switcher, /every-month/);
@@ -73,7 +78,7 @@ test('the live switch refuses sandbox credentials and verifies live products', (
   assert.match(switcher, /repl\['CREEM_LIVE'\] = 'true'/);
   assert.match(switcher, /env\.before/, 'the previous env is backed up');
   assert.match(switcher, /joyflock-backend:before-live-/, 'a rollback image tag is kept');
-  assert.match(switcher, /up -d --no-deps --force-recreate backend/,
+  assert.match(switcher, /up -d --no-build --no-deps --force-recreate backend/,
     'only the backend container is recreated');
   assert.match(switcher, /com\.docker\.compose\.project\.config_files/,
     'the running compose file set is reused');
