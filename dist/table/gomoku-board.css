@@ -96,3 +96,12 @@ body:not(.connect-four-game) #message:not(:empty){
 .table-home-theme[data-screen="play"]:not(.pool-game) .game-panel:has(>.board.gomoku){
   background:radial-gradient(ellipse at 50% 42%,#1c2a47 0%,#0d1528 76%);
 }
+
+.gomoku-win-line line{
+  stroke:#fff4c7;
+  stroke-width:3;
+  stroke-dasharray:1;
+  animation:gomoku-win-draw .45s ease-out both;
+}
+@keyframes gomoku-win-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.gomoku-win-line line{animation:none}}

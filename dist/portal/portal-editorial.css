@@ -168,11 +168,11 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
   position:absolute;z-index:2;left:50%;bottom:auto;
   top:calc(50% + var(--card-caption-half,0px));
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:128px;padding:10px 20px;border-radius:999px;
+  min-width:128px;height:38.8px;padding:5px 10px;border-radius:999px;
   background:linear-gradient(135deg,#3b5bd9 0%,#263f9e 100%);
   border:1px solid #8ea3ff;
   box-shadow:0 8px 20px #050a1ccc,inset 0 1px 0 #ffffff3d,0 0 0 4px #6f8bff1a;
-  color:#fff;font:800 14px/1.2 Nunito,system-ui,sans-serif;
+  color:#fff;font:800 17px/1.2 Nunito,system-ui,sans-serif;
   letter-spacing:.4px;white-space:nowrap;
   backdrop-filter:blur(6px);pointer-events:none;
   opacity:0;transform:translate(-50%,calc(-50% + 10px)) scale(.96);
@@ -194,7 +194,7 @@ body:not(.playing) .portal-language{margin-left:auto;flex:0 0 auto;min-width:96p
 /* Caption bar sits BELOW the full square cover (no longer eats into it). */
 #home .card-copy{
   display:flex;align-items:center;flex:0 0 auto;
-  min-height:54px;padding:0 6px;border-top:1px solid #ffffff12;
+  min-height:0;padding:5px 6px;border-top:1px solid #ffffff12;
   background:#000;
 }
 /* Card captions start at the same muted blue-grey as the header links
@@ -263,9 +263,9 @@ body.playing>footer{display:none}
   body>footer span{margin-left:0;width:100%}
   body>footer div{margin-left:0;width:100%}
   #home .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  #home .card-copy{padding:0 6px;min-height:54px}
+  #home .card-copy{padding:5px 6px;min-height:0}
   #home .card-copy h3{font-size:19.5px}
-  #home .cards .card-label{min-width:112px;padding:9px 16px;font-size:13px}
+  #home .cards .card-label{min-width:112px;height:35.6px;padding:4.5px 8px;font-size:16px}
   #home .section-heading p{display:none}
 }
 /* The 600px rule above outranks site-chrome.css and kept a 12px right

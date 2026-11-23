@@ -1,0 +1,94 @@
+.has-header-stats .top-note{display:none!important}
+html[data-native-game] .member-note,html.embedded-game .member-note{display:none!important}
+.header-stats{display:flex;justify-content:center;align-items:center;gap:10px;min-width:0;flex:1;margin:0 25px;color:#edf0ff}
+.header-stats .hs-stat,.header-stats .hs-vip,.header-stats :is(#jp-pill,.hs-wallet-placeholder){height:24px;min-height:24px;line-height:1;border:1px solid #3c4c77;border-radius:22px;background:linear-gradient(180deg,#1c2845,#111a30);box-shadow:inset 0 1px #ffffff08;display:flex;align-items:center;gap:8px;padding:0 13px;white-space:nowrap;margin:0}
+.header-stats .hs-vip{gap:6px;text-decoration:none;padding-left:7px;color:#f4d58c;font-size:11px;font-weight:800}
+.hs-vip img{width:57px;height:19px;object-fit:contain}.hs-vip.is-inactive img{filter:grayscale(1);opacity:.65}.hs-vip.is-inactive{color:#8290ac}
+.header-stats .hs-wallet{flex:none}.header-stats :is(#jp-pill,.hs-wallet-placeholder){font-size:14px;justify-content:center}
+.hs-stat svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;filter:drop-shadow(0 0 5px #7eacff40)}
+.hs-games svg{color:#99b8ff}.hs-rate svg{color:#f3cf7f}
+.hs-copy{display:flex;align-items:baseline;gap:7px}.hs-copy small{font-size:11px;color:#9eacc8;font-weight:600}.hs-copy b{font-size:16px;font-variant-numeric:tabular-nums}
+.has-header-stats .top-actions{margin-left:0!important;flex:none}
+@media(max-width:1600px){.header-stats{gap:8px;margin:0 14px}.header-stats .hs-vip span,.hs-copy small{display:none}.header-stats .hs-stat{padding:0 10px}.header-stats :is(#jp-pill,.hs-wallet-placeholder){}}
+@media(max-width:1150px){.topbar.has-header-stats{flex-wrap:wrap;height:auto!important;min-height:58px;padding-top:8px;padding-bottom:8px;gap:8px}.has-header-stats .header-stats{order:4;flex-basis:100%;margin:0;justify-content:center}.has-header-stats .top-actions{margin-left:auto!important}.header-stats .hs-vip span,.hs-copy small{display:inline}}
+@media(max-width:600px){.header-stats{gap:5px}.header-stats .hs-stat{padding:0 7px;gap:4px}.header-stats .hs-vip span,.hs-copy small{display:none}.hs-vip img{width:43px}.header-stats .hs-vip{padding:0 4px}.hs-stat svg{width:18px;height:18px}.hs-copy b{font-size:13px}.header-stats :is(#jp-pill,.hs-wallet-placeholder){padding:0 7px;font-size:13px}.header-stats .hs-stat,.header-stats .hs-vip,.header-stats :is(#jp-pill,.hs-wallet-placeholder){height:26px;min-height:26px}}
+
+/* Compact counters retain their accessible names and hover hints. */
+.header-stats .hs-copy small,.header-stats #jp-pill [data-jp="label"]{display:none!important}
+
+/* Use the same control proportions for the counters and toolbar. */
+.topbar.has-header-stats{--overview-control-height:24px;--overview-control-bg:linear-gradient(180deg,#212e50,#151e37);--overview-control-border:#41527b}
+.topbar.has-header-stats .header-stats :is(.hs-stat,.hs-vip,#jp-pill,.hs-wallet-placeholder),
+.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){
+  box-sizing:border-box;height:var(--overview-control-height)!important;min-height:var(--overview-control-height)!important;
+  border:1px solid var(--overview-control-border);border-radius:999px;background:var(--overview-control-bg);
+  box-shadow:inset 0 1px #ffffff08;align-self:center;
+}
+.topbar.has-header-stats .top-actions button:not(.lang-option):hover{border-color:#7489bd}
+@media(max-width:600px){.topbar.has-header-stats{--overview-control-height:26px}}
+
+.hs-game-stats{display:flex;align-items:center;gap:inherit;min-width:0}
+.hs-game-icon{width:22px;height:22px;object-fit:contain;flex:none}
+@media(max-width:600px){.hs-game-icon{width:19px;height:19px}}
+
+/* Give each toolbar control the same vertical spacing and pill shape. */
+.topbar.has-header-stats{--overview-control-margin:2px;--overview-control-inset:4px;--overview-control-height:calc(var(--chrome-height,38px) - 2 * var(--overview-control-margin));--overview-icon-size:calc(var(--overview-control-height) - 2 * var(--overview-control-inset) - 2px)}
+body>.topbar.has-header-stats .brand{font-size:22px}
+body>.topbar.has-header-stats nav a,
+.topbar.has-header-stats .header-stats :is(.hs-stat,.hs-vip,#jp-pill,.hs-wallet-placeholder),
+.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){
+  margin-block:var(--overview-control-margin);
+  padding:var(--overview-control-inset);
+  border-radius:999px;
+}
+body>.topbar.has-header-stats nav a{height:var(--overview-control-height);font-size:13px}
+.topbar.has-header-stats .header-stats .hs-score{padding-inline-start:var(--overview-control-inset);gap:5px}
+.hs-score .hs-game-icon{width:var(--overview-icon-size);height:var(--overview-icon-size);margin-inline-start:0}
+@media(max-width:1150px){
+  .topbar.has-header-stats{--overview-control-height:30px;padding-block:0}
+}
+@media(max-width:600px){
+  body>.topbar.has-header-stats .brand{font-size:18px}
+  body>.topbar.has-header-stats nav a{font-size:11px}
+
+}
+
+/* Locally accumulated practice results can appear alongside server standings. */
+html[data-locale="zh"] #leaderboard li[data-self="1"] .seat-name::after{content:"本机"}
+html:not([data-locale="zh"]) #leaderboard li[data-self="1"] .seat-name::after{content:"Local"}
+#leaderboard li[data-self="1"] .seat-name::after{
+  flex:none;
+  padding:2px 4px;
+  border-radius:4px;
+  background:#243252;
+  color:#b7c6e4;
+  font:600 9px/1.1 system-ui,sans-serif;
+}
+
+/* Use the available space inside the pills for the actual text and artwork. */
+
+.header-stats .jp-mark,
+.header-stats .hs-stat svg,
+html[data-shop-avatar] body>.topbar.has-header-stats #chrome-account::before{
+  width:var(--overview-icon-size);
+  height:var(--overview-icon-size);
+}
+html[data-shop-avatar] body>.topbar.has-header-stats #chrome-account::before{
+  margin-inline-end:3px;
+  box-shadow:none;
+}
+.header-stats .hs-vip img{width:58px;height:var(--overview-icon-size)}
+.header-stats .hs-stat{justify-content:center}
+.header-stats :is(.jp-amount,.hs-copy b){font-size:18px;line-height:1}
+body>.topbar.has-header-stats nav a,
+body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:13px}
+@media(max-width:600px){
+  .header-stats .hs-stat{min-width:0}
+  .header-stats .hs-vip img{width:43px}
+  .header-stats :is(.jp-amount,.hs-copy b){font-size:14px}
+  body>.topbar.has-header-stats nav a,
+  body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:12px}
+}
+
+/* Match the portal's footer visibility during an active game. */
+html[data-native-game] body:is([data-screen="play"],[data-flight-screen="play"]) > footer{display:none}

@@ -38,7 +38,7 @@
 
  var SELECTOR=[
   'a[href]','button','[role="button"]','[role="tab"]','[role="menuitem"]','[role="option"]',
-  'select','summary','[data-sfx-button]',
+  'select','summary','[data-sfx-button]','.hs-stat',
   'input[type="button"]','input[type="submit"]','input[type="reset"]',
   'input[type="checkbox"]','input[type="radio"]'
  ].join(',');
@@ -241,6 +241,7 @@
   var c=context();if(!c)return false;
   var at=c.currentTime+.004,detune=.982+Math.random()*.036,big=false;
   try{var r=el.getBoundingClientRect();big=r.width*r.height>16000;}catch(e){}
+  if(el.closest('.header-stats,.top-actions,.launch-actions'))big=true;
   var base=(big?980:1300)*detune,out=outputFor(c);
   // Short bright tick: almost no downward sweep, plus 2x/3x partials that
   // give the "click" its crisp edge. Total peak stays close to the old voice.
@@ -254,7 +255,7 @@
   if(!node||node.nodeType!==1||!node.closest)return null;
   var el=node.closest(SELECTOR);
   if(!el||el.closest(SKIP)||!el.getClientRects().length)return null;
-  if(el.closest(MUTED_ZONES)&&!el.closest('[data-sfx="on"]'))return null;
+  if(el.closest(MUTED_ZONES)&&!el.closest('[data-sfx="on"],.topbar .header-stats,.topbar .top-actions'))return null;
   var style=getComputedStyle(el);
   if(style.display==='none'||style.visibility==='hidden'||style.pointerEvents==='none')return null;
   if(el.tagName==='A'&&/^javascript:/i.test(el.getAttribute('href')||''))return null;

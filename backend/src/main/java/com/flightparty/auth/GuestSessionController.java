@@ -36,7 +36,7 @@ public class GuestSessionController {
         }
         return Map.of("kind","guest");
     }
-    public record Statistics(long points,long completedGames) {}
+    public record Statistics(long points,long completedGames,long wins) {}
     public record Subscription(String id,String status,String validUntil,boolean testMode,boolean cancelScheduled,String plan) {}
     public record Recording(boolean member,Integer freeRemaining,String resetsAt,int monthlyUsd,int annualUsd,boolean paymentConfigured,boolean testMode,boolean testMembership,java.util.List<Subscription> subscriptions,String complimentaryUntil) {}
     public record Me(String kind,UUID activeRoomId,AccountService.Account account,Statistics statistics,Recording recording,AppearanceService.Appearance appearance) {}
@@ -47,8 +47,8 @@ public class GuestSessionController {
         Object account=session==null?null:session.getAttribute("flightparty.account");
         var profile=account==null?null:db.sql("select id,display_name,email_verified from accounts where id=:id").param("id",UUID.fromString(account.toString()))
                 .query((rs,row)->new AccountService.Account(rs.getObject(1,UUID.class),rs.getString(2),rs.getBoolean(3))).optional().orElse(null);
-        var statistics=profile==null?null:db.sql("select points,completed_games from account_statistics where account_id=:id").param("id",profile.id())
-                .query((rs,row)->new Statistics(rs.getLong(1),rs.getLong(2))).optional().orElse(new Statistics(0,0));
+        var statistics=profile==null?null:db.sql("select points,completed_games,(select count(*) from account_match_results where account_id=:id and rank=1) from account_statistics where account_id=:id").param("id",profile.id())
+                .query((rs,row)->new Statistics(rs.getLong(1),rs.getLong(2),rs.getLong(3))).optional().orElse(new Statistics(0,0,0));
         Recording recording=null;
         if(profile!=null){
             boolean member=appearances.get(profile.id()).member();

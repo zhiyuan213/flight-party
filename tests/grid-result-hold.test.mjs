@@ -13,7 +13,7 @@ const KEY = '&g=20261116-gridhold1';
 /* Run the REAL tail of updateResult(): the preview/hold declarations plus the
    reveal() requestAnimationFrame loop. Only the surrounding module state and
    DOM probes are mocked, so the 900ms budget itself is exercised. */
-function harness({grid, connectFour, kind, isPool = false}) {
+function harness({grid, connectFour, kind, isPool = false, game, animationEnds = 0}) {
   const begin = shell.indexOf('  if(resultShown||resultFrame)return;');
   const end = shell.indexOf('  resultFrame=requestAnimationFrame(reveal);', begin);
   assert.ok(begin >= 0 && end > begin, 'updateResult reveal tail is extractable');
@@ -24,13 +24,14 @@ function harness({grid, connectFour, kind, isPool = false}) {
   let now = 0;
   const boardNode = {
     _fourDropAnimating: false, _animating: false, _striking: false,
+    querySelectorAll: () => [{getAnimations: () => [{playState: now < animationEnds ? 'running' : 'finished'}]}],
     querySelector: () => null
   };
   const document = {
     hidden: false,
     body: {
       dataset: {screen: 'play'},
-      classList: {contains: c => c === 'connect-four-game' ? connectFour : false},
+      classList: {contains: c => c === 'connect-four-game' ? connectFour : c === game+'-game'},
       append: () => { calls.appends++; }
     },
     querySelector: () => null
@@ -120,4 +121,11 @@ test('both table hosts and both pool-shell imports pull the rebuilt scripts', ()
     'the leaderboard-prefetch key is still present');
   assert.match(read('dist/table/table.js'), /&c=20261116-fastcount1/,
     'the fast-count key is still present');
+});
+
+test('Gomoku and XO wait for their win animation before holding the board', () => {
+  const gomoku = harness({grid:true, kind:'win', game:'gomoku', animationEnds:500});
+  assert.equal(gomoku.drive([0,499,500,1399,1400]).openedAt,1400);
+  const xo = harness({grid:false, kind:'loss', game:'xo', animationEnds:850});
+  assert.equal(xo.drive([0,849,850,1299,1300]).openedAt,1300);
 });

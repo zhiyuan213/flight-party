@@ -68,7 +68,7 @@ html[data-native-game="flight"] .flight-hero-caption{
   white-space:nowrap;color:#c7d5f7;z-index:2;pointer-events:none;
   text-shadow:0 1px 4px #081229;
 }
-html[data-native-game="flight"] #welcome .game-hero > *:not(.hero-plane-model):not(.flight-hero-caption){grid-column:2}
+html[data-native-game="flight"] #welcome .game-hero > *:not(:is(.hero-plane-model,.flight-hero-caption,.flight-detail-cover)){grid-column:2}
 html[data-native-game="flight"] #welcome .game-hero > h1{
   margin:3px 0 6px;font-size:27px;line-height:1.2;letter-spacing:-.3px;
   font-weight:600;color:#dbe4fa;

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs><radialGradient id="shine" cx=".32" cy=".24" r=".82"><stop stop-color="#65706f"/><stop offset="1" stop-color="#111821"/></radialGradient></defs>
+  <ellipse cx="12" cy="12" rx="8.5" ry="8" fill="url(#shine)" stroke="#89938f"/><ellipse cx="21" cy="21" rx="8.5" ry="8" fill="#f4eddb" stroke="#ada390"/><path d="M17 20q1-3 5-3" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

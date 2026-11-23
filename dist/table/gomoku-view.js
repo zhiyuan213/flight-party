@@ -450,6 +450,7 @@ export function renderGomoku(host, state, options = {}) {
   view.last = last;
   view.prevCells = cells.slice();
   view.state = state;
+  updateWinningLine(host, view, state, last);
   view.can = can;
   view.turn = turn;
   if (!can && view.hover !== -1) view.hover = -1;
@@ -467,4 +468,41 @@ export function renderGomoku(host, state, options = {}) {
   }
   if (last >= 0) view.buttons[last].classList.add('last');
   invalidate(view);
+}
+export function gomokuWinningFive(cells, winner, last) {
+  if (winner !== 1 && winner !== 2) return null;
+  const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  let first = null;
+  for (let index = 0; index < CELLS; index++) {
+    if (cells[index] !== winner) continue;
+    const row = Math.floor(index / GOMOKU_SIZE), col = index % GOMOKU_SIZE;
+    for (const [dr, dc] of directions) {
+      const endRow = row + 4 * dr, endCol = col + 4 * dc;
+      if (endRow >= GOMOKU_SIZE || endCol < 0 || endCol >= GOMOKU_SIZE) continue;
+      const line = Array.from({length: 5}, (_, step) => index + step * (dr * GOMOKU_SIZE + dc));
+      if (!line.every(i => cells[i] === winner)) continue;
+      if (line.includes(last)) return line;
+      first ??= line;
+    }
+  }
+  return first;
+}
+
+function updateWinningLine(host, view, state, last) {
+  const win = state.over ? gomokuWinningFive(state.cells, state.winner, last) : null;
+  const key = win?.join(',') || '';
+  if (key === view.winKey) return;
+  view.winKey = key;
+  view.winOverlay?.remove();
+  if (!win) return;
+  const layout = gomokuLayout(100);
+  const point = index => layout.point(Math.floor(index / GOMOKU_SIZE), index % GOMOKU_SIZE);
+  const from = point(win[0]), to = point(win[4]);
+  const svg = host.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'four-win-line gomoku-win-line');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = `<line pathLength="1" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"/>`;
+  host.append(svg);
+  view.winOverlay = svg;
 }

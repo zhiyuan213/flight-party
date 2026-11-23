@@ -388,6 +388,7 @@ function updateResult(options) {
      Hold the finished board for 900ms on a win or a loss. Pool keeps its
      3000ms preview, Connect Four its 1600ms drop, and a draw stays instant. */
   const gridHoldMs=gridResult&&!connectFour&&details.kind!=='draw'?900:0;
+  const xoWin=details.kind!=='draw'&&document.body.classList.contains('xo-game');
   let celebrationStartedAt=null,holdStartedAt=null;
   const reveal=now=>{
     resultFrame=0;if(resultKey!==key||!current?.board?.over||document.body.dataset.screen!=='play')return;
@@ -399,6 +400,16 @@ function updateResult(options) {
       celebrationStartedAt=now;
     }
     if(preview&&now-celebrationStartedAt<previewDuration){resultFrame=requestAnimationFrame(reveal);return;}
+    if(xoWin||gridHoldMs&&document.body.classList.contains('gomoku-game')){
+      const animations=$('board').querySelectorAll('.xo-win-overlay, .gomoku-win-line, .xo-writing');
+      const drawing=[...animations].some(node=>node.getAnimations({subtree:true}).some(animation=>
+        animation.pending||animation.playState==='running'));
+      if(drawing){resultFrame=requestAnimationFrame(reveal);return;}
+      if(xoWin){
+        if(holdStartedAt===null)holdStartedAt=now;
+        if(now-holdStartedAt<450){resultFrame=requestAnimationFrame(reveal);return;}
+      }
+    }
     if(gridHoldMs){
       if(holdStartedAt===null)holdStartedAt=now;
       if(now-holdStartedAt<gridHoldMs){resultFrame=requestAnimationFrame(reveal);return;}

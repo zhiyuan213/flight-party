@@ -206,8 +206,8 @@ public class TableService {
   r=changed(r,r.phase,seats,r.board,CustodyPolicy.graceDeadline(now));write(r);}
  @Transactional public void advance(UUID id){Room r=read(id);Room next=tick(r);if(next!=r)write(next);}
  public List<UUID> pending(){return db.sql("select id from table_rooms where phase in ('WAITING','PLAYING')").query(UUID.class).list();}
- public record Statistics(long points,long completedGames) {}
- public Statistics statistics(String game,HttpServletRequest request){UUID p=principal(request);return db.sql("select coalesce(sum(t.points),0),count(t.room_id) from principals p left join table_results t on t.account_id=p.account_id and t.game=:game where p.id=:id").param("id",p).param("game",game).query((rs,n)->new Statistics(rs.getLong(1),rs.getLong(2))).single();}
+ public record Statistics(long points,long completedGames,long wins) {}
+ public Statistics statistics(String game,HttpServletRequest request){UUID p=principal(request);return db.sql("select coalesce(sum(t.points),0),count(t.room_id),count(*) filter (where t.rank=1) from principals p left join table_results t on t.account_id=p.account_id and t.game=:game where p.id=:id").param("id",p).param("game",game).query((rs,n)->new Statistics(rs.getLong(1),rs.getLong(2),rs.getLong(3))).single();}
  /* "再来一次" re-enters the ORIGINAL mode from the middle page, it does NOT
     reset the board in place:
       · QUICK   -> create() re-queues this identity for a NEW random opponent.
