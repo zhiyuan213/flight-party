@@ -1,3 +1,19 @@
+2026-11-23 最新后端配置发布：**49ad0a4，正式和测试配置同时保留，CREEM_LIVE 统一选择**。当前仍为 `true`（正式支付）。部署镜像 `deploy-backend:creem-dual-49ad0a4`；JAR SHA256 `536a14a557166fe22739468d92ed0fe8ded5961a2b47fdd67f9acfeacd1e64e3`，无迁移，Flyway V25。157 后端测试零失败（21 项依赖外部集成环境而跳过），前端 1081/1081。
+
+服务器 `deploy/.env`（0600）同时保存 `CREEM_PROD_API_KEY / WEBHOOK_SECRET / MONTHLY_PRODUCT_ID / ANNUAL_PRODUCT_ID` 与对应四项 `CREEM_TEST_*`。完整名称以 `CREEM_PROD_` 或 `CREEM_TEST_` 加字段后缀组成。`CREEM_LIVE=true` 选正式，`false` 选测试；所有计费组件统一读取。选中配置不完整或密钥模式不符时拒绝启动，不会混入另一套。旧共享密钥从主 .env 移除，旧的 .env.live 与新保留的 .env.test 仍为私有留存文件。正式付费权益不会由测试事件转换而来。
+
+可只改 .env 的 CREEM_LIVE 后按现有 Compose 文件集重建 backend；最后的私有覆盖文件使用 `${CREEM_LIVE:-false}`，不再冻结开关。仅 restart 容器不会重新加载 .env。推荐用脚本自动更新这一个开关、校验、备份并重建：
+
+```sh
+sudo python3 /opt/joyflock/flight-party/deploy/set-creem-mode.py --test --dry-run
+sudo python3 /opt/joyflock/flight-party/deploy/set-creem-mode.py --test
+sudo python3 /opt/joyflock/flight-party/deploy/set-creem-mode.py --live
+```
+
+双模式已在单测和 Spring 组件上下文验证；两套实际产品均通过只读 dry-run。线上本次没有切到测试模式，也没有新增付款。任何重建应保留当前容器标签中的完整 Compose 文件集（包含最后的插值覆盖文件），防止早期 release 的字面量配置生效。不要再使用历史 switch-to-live.sh 切换双配置安装。
+
+私有源码/迁移前配置备份 `/opt/joyflock/releases/creem-dual-49ad0a4`；PG/Redis 备份 `/opt/joyflock/backups/20261123T061355Z`；本次实际环境/镜像回滚覆盖文件位于 `/opt/joyflock/releases/creem-mode-20261123T061355560764Z/rollback.private.json`，env.before 同目录。脚本失败会恢复原 env 和原有效容器配置。正常新模式切换无需恢复数据库或修改密钥。截图 `docs/verification/creem-dual-live-selected-20261123.jpg`。下方旧单套配置和旧发布记录仅供历史参考。
+
 2026-11-23 最新支付配置发布：**Creem 正式支付已开启**（应用配置提交 `a956bd9`）。商户已批准，新正式 key 最小权限、正式月 $9 / 年 $59 产品和新签名 Webhook 已核验。运行容器 CREEM_LIVE=true、CREEM_CHECKOUT_ENABLED=true；后端仍 `deploy-backend:score-36b8e68`、Flyway V25，仅重建 backend，其他有效环境完全保留。正式回调的 provider-origin 连通测试 HTTP200；签名已验证但测试事件不授予会员。Chrome 打开真实模式 PENDING 月会员收银台；未提交真实付款，因此不声称已完成首笔正式扣款、正式会员到账或续订验收。
 
 私有发布/回滚目录 `/opt/joyflock/releases/live-20261123T055656Z`，PG/Redis 备份 `/opt/joyflock/backups/20261123T055656Z`。正式秘密仅服务器 `deploy/.env.live` 与 `.env`（0600）及私有发布覆盖文件；禁止输出或提交。未来重建保留运行 Compose 配置文件集及最后的 `release.private.json`，不能让旧 app-score 的字面量测试环境覆盖正式设置。回滚：恢复私有目录 `env.before` 为 deploy/.env，用当前 Compose 文件集追加私有目录 `rollback.private.json`，`up -d --no-build --no-deps --force-recreate backend`；恢复 `membership.before.html` 到现有 dist/membership.html，检查健康。当前 live key/Webhook 不因应用回滚自动撤销。
