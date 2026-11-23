@@ -79,7 +79,7 @@ html[data-shop-avatar] body>.topbar.has-header-stats #chrome-account::before{
 }
 .header-stats .hs-vip img{width:58px;height:var(--overview-icon-size)}
 .header-stats .hs-stat{justify-content:center}
-.header-stats :is(.jp-amount,.hs-copy b){font-size:18px;line-height:1}
+.header-stats :is(.jp-amount,.hs-copy b){font:900 18px/1 Nunito,system-ui,sans-serif}
 body>.topbar.has-header-stats nav a,
 body>.topbar.has-header-stats .top-actions :is(button:not(.lang-option),#portal-language){font-size:13px}
 @media(max-width:600px){

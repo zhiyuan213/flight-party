@@ -16,13 +16,13 @@ export function composeNativeGame(source,kind){
  });
  html=html.replace('<html ',`<html data-native-game="${kind}" `)
   .replace('<head>','<head>'+bootstrap+'<script defer src="/header-stats.js?v=20261123-sharedchrome1"></script>')
-  .replace('</head>','<link rel="stylesheet" href="/portal/native-game.css?v=20261115-restore1&nl=20261117-noline1"><link rel="stylesheet" href="/site-chrome.css?v=20261112-gamelanes1&d=20261115-topbar1&r=20261115-squareall1&p=20261116-nospace1&f=20261116-noframe1&pre=20261117-prelive1"><link rel="stylesheet" href="/site-language.css?v=20261114-noarrow1"><link rel="stylesheet" href="/site-fullscreen.css?v=20261115-joincoin1&d=20261115-fspill1"><script defer src="/portal-language-ui.js?v=20261114-noarrow1&audio=20261115-levels1"></script><script defer src="/site-pointer-fx.js?v=20261110-glove2"></script><script defer src="/site-account.js?v=20261112-gamelanes1&p=20261116-nospace1&pre=20261117-prelive1&name=20261121-accountname1&copy=20261123-compact1"></script></head>')
+  .replace('</head>','<link rel="stylesheet" href="/portal/native-game.css?v=20261115-restore1&nl=20261117-noline1"><link rel="stylesheet" href="/site-chrome.css?v=20261112-gamelanes1&d=20261115-topbar1&r=20261115-squareall1&p=20261116-nospace1&f=20261116-noframe1&pre=20261117-prelive1&type=20261123-fixedtype1"><link rel="stylesheet" href="/site-language.css?v=20261114-noarrow1"><link rel="stylesheet" href="/site-fullscreen.css?v=20261115-joincoin1&d=20261115-fspill1"><script defer src="/portal-language-ui.js?v=20261114-noarrow1&audio=20261115-levels1"></script><script defer src="/site-pointer-fx.js?v=20261110-glove2"></script><script defer src="/site-account.js?v=20261112-gamelanes1&p=20261116-nospace1&pre=20261117-prelive1&name=20261121-accountname1&copy=20261123-compact1"></script></head>')
   .replace(/<body([^>]*)>/,`<body$1>${shell}<div id="native-game-stage">`)
   .replace(/<header>/,'<header class="native-game-header" aria-hidden="true" inert>')
   .replace('</body>','</div>'+footer+'<script type="module" src="/portal/native-game.js?v=20261117-chrome1"></script></body>');
  if(kind==='table')html=html.replace("var l=new URLSearchParams(location.search).get('locale');","var l=document.documentElement.getAttribute('data-locale');");
  html=html.replace(/(src="\/(?:app\.js|table\/table\.js)\?[^"]*)"/g,'$1&native=20261115-native1"');
- html=html.replace('</head>','<link rel="stylesheet" href="/header-stats.css?v=20261123-sharedchrome1"></head>');
+ html=html.replace('</head>','<link rel="stylesheet" href="/header-stats.css?v=20261123-fixedtype1"></head>');
  return html.trimEnd()+"\n";
 }
 for(const [kind,input] of [['table','dist/table/index.html'],['flight','dist/index.html']]){
