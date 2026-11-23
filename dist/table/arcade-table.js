@@ -1,4 +1,4 @@
-import {createBubbles} from './bubbles.js?v=20261110-glove2';
+import {createBubbles} from './bubbles.js?v=20261110-glove2&theme=20261123-midnight1&ui=20261123-polish1';
 import {createSnooker} from './snooker-view.js?v=20261113-humanring1&release=20261115-polishrelease1&power=20261120-poolpower30';
 import {updateSnookerShell} from './snooker-shell.js?v=20261111-targetballs1&release=20261115-polishrelease1';
 import {unlockPoolAudio,poolMuted,setPoolMuted} from './pool-audio.js?v=20261113-snookerrail1&release=20261115-polishrelease1&audio=20261115-levels1&power=20261120-poolpower30';

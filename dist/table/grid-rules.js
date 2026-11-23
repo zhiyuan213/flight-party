@@ -1,6 +1,6 @@
 import {botTuning,jitter,pick} from '../bot-difficulty.js?v=20261112-gamelanes1&nine=20261120-nineball1&power=20261120-poolpower30';
 import {poolStart,poolMove,poolBot} from './pool.js?v=20261113-pooldiff1&release=20261115-polishrelease1&nine=20261120-nineball1&fix=20261120-nineball-return1&power=20261120-poolpower30';
-import {cardsStart,cardsMove,cardsLegal,cardsBot} from './cards.js?v=20261112-gamelanes1';
+import {cardsStart,cardsMove,cardsLegal,cardsBot} from './cards.js?v=20261112-gamelanes1&ui=20261123-polish1';
 import {sketchStart} from './sketch.js?v=20261110-glove2';
 import {chessStart,chessMove,chessLegal,chessBot} from './chess-rules.js?v=20261110-glove2';
 import {bubblesStart,bubblesMove,bubblesBot,ANGLE_MAX} from './bubbles-duel.js?v=20261112-gamelanes1';

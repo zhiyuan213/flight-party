@@ -1,19 +1,17 @@
 import {drawPoolBall} from './pool-ball.js?v=20261112-gamelanes1';
 import {targetsFor,isNineBall,PENALTY_VISIT,PENALTY_ACTIVE,PENALTY_READY} from './pool-rules.js?v=20261110-glove2&nine=20261120-nineball1';
 import {playPocketChime} from './pool-pocket-sfx.js?v=20261110-glove2&audio=20261115-levels1';
-import {createResultPointsTicker,createResultScoreTicker} from './result-points.js?v=20261115-joincoin1&c=20261116-fastcount1&score=20261120-score1';
+import {createResultPointsTicker,createResultScoreTicker} from './result-points.js?v=20261115-joincoin1&c=20261116-fastcount1&score=20261120-score1&ui=20261123-polish1';
 // Pool-only presentation. Existing account, turn and reaction nodes keep their handlers.
 /* One ticker per document: it listens for the scorer's award event from module
    evaluation time, so a result that settles before createResult() still has its
    reward payload when the dialog finally opens. Node-side unit tests import
    poolSeatSummary() from this module without a DOM, so keep the top level safe. */
-const pointsTicker = typeof document !== 'undefined' && document?.createElement
-  ? createResultPointsTicker(document)
-  : {panel: null, reveal() {}, finish() {}, hide() {}};
-/* One score ticker per document, listening to the same award event. It sits
-   directly ABOVE the Joy Coins card, so both stay in sync on every reveal. */
 const scoreTicker = typeof document !== 'undefined' && document?.createElement
   ? createResultScoreTicker(document)
+  : {panel: null, reveal() {}, finish() {}, hide() {}};
+const pointsTicker = typeof document !== 'undefined' && document?.createElement
+  ? createResultPointsTicker(document,globalThis,{after:scoreTicker})
   : {panel: null, reveal() {}, finish() {}, hide() {}};
 let shell, current = null, roomId, chatKey, cursor = 0, polling = false, timer = null, sending = false, localId = 0;
 // Live room chat: server rooms keep their REST history, while a same-origin
@@ -201,10 +199,10 @@ function createResult() {
   const nav=element('div','pool-result-nav'),toGame=element('button','pool-result-to-game','返回游戏页'),toHome=element('button','pool-result-to-home','返回首页');
   toGame.type='button';toHome.type='button';nav.append(toGame,toHome);
   again.textContent='再玩一局';again.type='button';actions.append(again,nav);
-  const cardKids=[close,label,emblem,title,description];
+  const cardKids=[close,label,emblem,title,description,players];
   if(scoreTicker.panel)cardKids.push(scoreTicker.panel);
   if(pointsTicker.panel)cardKids.push(pointsTicker.panel);
-  cardKids.push(players,actions,note);
+  cardKids.push(actions,note);
   card.append(...cardKids);dialog.append(confetti,card);document.body.append(dialog);
   /* This button sits directly above "Leave game" in the sidebar. Mirror that
      button's classes instead of giving it a private skin: every game theme

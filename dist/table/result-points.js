@@ -107,7 +107,7 @@ export function dailyFromSnapshot(snapshot) {
   };
 }
 
-export function createResultPointsTicker(doc = document, env = globalThis) {
+export function createResultPointsTicker(doc = document, env = globalThis, options = {}) {
   const win = env.window || env;
   /* Coin "deposit" sound while the total counts up. The shared result-jingle
      module owns the AudioContext, the mute switches and a per-coin throttle,
@@ -266,6 +266,10 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
   }
   function play() {
     if (!award) return;
+    if(options.after?.award && options.after.panel.dataset.phase !== 'done'){
+      panel.hidden=false;panel.dataset.phase='waiting';
+      totalValue.textContent=formatPoints(award.before);paintDailyValue(dailyStartValue());return;
+    }
     if (played === seq) { showFinal(); return; }
     played = seq;
     cancel();
@@ -322,6 +326,9 @@ export function createResultPointsTicker(doc = document, env = globalThis) {
     if (played < seq && panel.isConnected && panel.closest?.('dialog[open]')) play();
   }
 
+  win.addEventListener?.('joyflock:result-score-done', () => {
+    if(options.after && panel.closest?.('dialog[open]')) reveal();
+  });
   win.addEventListener?.('joyflock:game-points', event => receive(event?.detail));
   const Observer = env.MutationObserver || (typeof MutationObserver !== 'undefined' ? MutationObserver : null);
   if (Observer && doc.documentElement) {
@@ -404,11 +411,12 @@ export function createResultScoreTicker(doc = document, env = globalThis) {
       : `本局奖励积分 ${formatPoints(award.reward)}，总积分 ${formatPoints(award.total)}`);
   }
   function cancel() { cancelFrame(frame); frame = 0; cancelLater(timer); timer = 0; }
-  function showFinal() {
+  function showFinal(notify = false) {
     cancel();
     if (!award) return;
     panel.dataset.phase = 'done';
     totalValue.textContent = formatPoints(award.total);
+    if(notify) win.dispatchEvent?.(new (env.CustomEvent || CustomEvent)('joyflock:result-score-done'));
   }
   function play() {
     if (!award) return;
@@ -419,19 +427,21 @@ export function createResultScoreTicker(doc = document, env = globalThis) {
     panel.hidden = false;
     panel.dataset.phase = 'reward';
     totalValue.textContent = formatPoints(award.before);
-    if (reduced()) { showFinal(); return; }
+    if (reduced()) { showFinal(true); return; }
     timer = later(() => {
       timer = 0;
       if (panel.hidden || !panel.isConnected) { showFinal(); return; }
       panel.dataset.phase = 'counting';
       const duration = pointsDurationMs(award.total - award.before);
-      const start = Date.now();
-      const tick = () => {
-        const value = pointsValueAt(award.before, award.total, Date.now() - start, duration);
+      let start;
+      const tick = now => {
+        start ??= now;
+        const value = pointsValueAt(award.before, award.total, now - start, duration);
         totalValue.textContent = formatPoints(value);
-        if (value < award.total) { frame = raf(tick); return; }
+        if (value < award.total) { win.__joyflockResultSfx?.coinTick?.(false); frame = raf(tick); return; }
         frame = 0;
-        showFinal();
+        win.__joyflockResultSfx?.coinTick?.(true);
+        showFinal(true);
       };
       frame = raf(tick);
     }, REWARD_DELAY);
@@ -445,6 +455,7 @@ export function createResultScoreTicker(doc = document, env = globalThis) {
     const total = Math.max(0, Number(snapshot?.score) || 0);
     award = {reward, total, before: Math.max(0, total - reward)};
     seq++;
+    cancel();panel.dataset.phase='waiting';
     paint();
     if (played < seq && panel.isConnected && panel.closest?.('dialog[open]')) play();
   }

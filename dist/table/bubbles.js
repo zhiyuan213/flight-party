@@ -73,8 +73,8 @@ function makeBackdrop(sw,sh,scale){
   c.width=Math.max(1,Math.round(sw*scale));c.height=Math.max(1,Math.round(sh*scale));
   const g=c.getContext('2d');g.scale(scale,scale);
   const base=g.createLinearGradient(0,0,0,sh);
-  base.addColorStop(0,'#e6f6ff');base.addColorStop(.45,'#eaf0ff');
-  base.addColorStop(.8,'#f0e9ff');base.addColorStop(1,'#f6e4ff');
+  base.addColorStop(0,'#101b36');base.addColorStop(.45,'#142442');
+  base.addColorStop(.8,'#1b2041');base.addColorStop(1,'#10172e');
   g.fillStyle=base;g.fillRect(0,0,sw,sh);
   for(const [x,y,r,col] of [
     [sw*.14,sh*.16,sw*.3,'rgba(126,196,255,.16)'],
@@ -96,7 +96,7 @@ function makeBackdrop(sw,sh,scale){
     g.fillStyle=b;g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
   }
   const vig=g.createRadialGradient(sw/2,sh*.44,Math.min(sw,sh)*.3,sw/2,sh*.5,Math.max(sw,sh)*.85);
-  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(96,74,150,.18)');
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(3,7,19,.65)');
   g.fillStyle=vig;g.fillRect(0,0,sw,sh);
   return c;
 }
@@ -191,6 +191,7 @@ export function createBubbles(ui){
 
   function launcher(angle,cx){
     const cy=LAUNCH_Y,spin=angle+Math.PI/2;
+    ctx.save();ctx.fillStyle='#182746';ctx.strokeStyle='#e7bf72';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy+23,43,15,0,0,TAU);ctx.fill();ctx.stroke();ctx.restore();
     const chrome=(x0,x1)=>{
       const g=ctx.createLinearGradient(x0,0,x1,0);
       g.addColorStop(0,'#8b93ad');g.addColorStop(.18,'#eef2fa');
@@ -232,10 +233,10 @@ export function createBubbles(ui){
     const y=7,h=32,x0=8,x1=WW-8;
     ctx.save();
     ctx.shadowColor='rgba(120,140,200,.25)';ctx.shadowBlur=14;
-    ctx.fillStyle='rgba(255,255,255,.72)';
+    ctx.fillStyle='rgba(12,20,42,.94)';
     ctx.beginPath();ctx.roundRect(x0,y,x1-x0,h,16);ctx.fill();
     ctx.shadowBlur=0;
-    ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1;
+    ctx.strokeStyle='rgba(171,190,255,.55)';ctx.lineWidth=1;
     ctx.beginPath();ctx.roundRect(x0,y,x1-x0,h,16);ctx.stroke();
     const active1=display.turn===1&&!display.over,active2=display.turn===2&&!display.over;
     if(!display.over){
@@ -247,16 +248,16 @@ export function createBubbles(ui){
     }
     ctx.textBaseline='middle';ctx.font='700 13px system-ui,sans-serif';
     ctx.fillStyle=seatColours[0];ctx.beginPath();ctx.arc(x0+20,y+h/2,5,0,TAU);ctx.fill();
-    ctx.textAlign='left';ctx.fillStyle=active1?'#0a6ad1':'rgba(40,52,90,.78)';
+    ctx.textAlign='left';ctx.fillStyle=active1?'#8ddcff':'rgba(219,229,255,.85)';
     ctx.fillText(label('P1','玩家1')+'  '+display.score1,x0+31,y+h/2+1);
     ctx.fillStyle=seatColours[1];ctx.beginPath();ctx.arc(x1-20,y+h/2,5,0,TAU);ctx.fill();
-    ctx.textAlign='right';ctx.fillStyle=active2?'#d1204b':'rgba(40,52,90,.78)';
+    ctx.textAlign='right';ctx.fillStyle=active2?'#ff9bb9':'rgba(219,229,255,.85)';
     ctx.fillText(display.score2+'  '+label('P2','玩家2'),x1-31,y+h/2+1);
     ctx.textAlign='center';ctx.font='800 13px system-ui,sans-serif';
-    ctx.fillStyle='rgba(46,58,96,.85)';
-    ctx.fillText(label('VS','对战'),W,y+h/2+1);
-    ctx.font='700 11px system-ui,sans-serif';ctx.fillStyle='rgba(46,58,96,.6)';
-    ctx.fillText(label('ROUND','回合')+' '+display.moves+'/'+display.limit,W,y+h/2+30);
+    ctx.fillStyle='rgba(245,216,148,.95)';
+    ctx.fillText(label('BUBBLE DUEL','泡泡对决'),W-110,y+h/2+1);
+    ctx.font='700 11px system-ui,sans-serif';ctx.fillStyle='rgba(186,203,235,.85)';
+    ctx.fillText(label('ROUND','回合')+' '+display.moves+'/'+display.limit,W,y+h/2+1);
     ctx.restore();
   }
 
@@ -283,7 +284,7 @@ export function createBubbles(ui){
     const active=activeSeat()===seat;
     ctx.save();
     ctx.font='700 10px system-ui,sans-serif';ctx.textAlign='center';
-    ctx.fillStyle=active?seatColours[seat-1]:'rgba(46,58,96,.55)';
+    ctx.fillStyle=active?seatColours[seat-1]:'rgba(186,203,235,.8)';
     ctx.fillText((seat===1?label('P1','玩家1'):label('P2','玩家2'))+(active?'  ·  '+(display.turn===seat?label('YOUR TURN','你的回合'):'') : ''),xoff+W/2,TOP+14);
     ctx.restore();
   }
@@ -304,7 +305,7 @@ export function createBubbles(ui){
     }
     if(hint.length<2)return;
     ctx.save();
-    ctx.strokeStyle=rgba(tint,.18);ctx.lineWidth=2;
+    ctx.strokeStyle=rgba(tint,.42);ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(hint[0].x,hint[0].y);
     for(let i=1;i<hint.length;i++)ctx.lineTo(hint[i].x,hint[i].y);
     ctx.stroke();
@@ -335,7 +336,7 @@ export function createBubbles(ui){
       const cells=side===0?display?.cells1:display?.cells2;
       const ceiling=side===0?display?.ceiling1:display?.ceiling2;
       walls(xoff,active===side+1);
-      boardLabel(xoff,side+1);
+      // Turn information stays in the HUD, clear of the first bubble row.
       if(cells)for(let i=0;i<N;i++)if(cells[i])orb(xoff+GRID[i].x,GRID[i].y+ceiling+TOP,cells[i]);
     }
     for(const e of effects)drawEffect(e);
@@ -346,13 +347,13 @@ export function createBubbles(ui){
     else if(display?.up)orb(xoff+W/2,LAUNCH_Y,display.up);
     if(display?.next){
       const nx=xoff+58,ny=H-42;
-      ctx.fillStyle='rgba(255,255,255,.5)';
+      ctx.fillStyle='rgba(22,34,63,.9)';
       ctx.beginPath();ctx.arc(nx,ny,17,0,TAU);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=1.2;
       ctx.beginPath();ctx.arc(nx,ny,17,0,TAU);ctx.stroke();
       orb(nx,ny,display.next,13);
       ctx.font='700 10px system-ui,sans-serif';ctx.textAlign='center';
-      ctx.textBaseline='alphabetic';ctx.fillStyle='rgba(52,62,100,.8)';
+      ctx.textBaseline='alphabetic';ctx.fillStyle='rgba(219,229,255,.9)';
       ctx.fillText(label('NEXT','下一颗'),nx,ny-26);
       ctx.textAlign='left';
     }
@@ -420,7 +421,7 @@ export function createBubbles(ui){
       ctx.globalAlpha=Math.min(1,p*1.8);
       ctx.font=e.big?'900 22px system-ui,sans-serif':'900 16px system-ui,sans-serif';
       ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.9)';
+      ctx.lineWidth=4;ctx.strokeStyle='rgba(171,190,255,.55)';
       ctx.strokeText(e.str,e.x,e.y);
       ctx.fillStyle=e.colour;ctx.fillText(e.str,e.x,e.y);
       ctx.textAlign='left';
@@ -470,20 +471,20 @@ export function createBubbles(ui){
       if(fell.length)bubbleFall();
       if(s.lastAttack>0){
         const oppXoff=seat===1?W:0;
-        effects.push({type:'text',x:oppXoff+W/2,y:H*.4,str:label('ATTACK','攻击')+' +'+s.lastAttack,colour:'#d1204b',life:52,maxLife:52,big:true});
+        effects.push({type:'text',x:oppXoff+W/2,y:H*.4,str:label('ATTACK','攻击')+' +'+s.lastAttack,colour:'#ff9bb9',life:52,maxLife:52,big:true});
         bubbleAttack(s.lastAttack);
       }
       if(s.lastPoints>0){
-        effects.push({type:'text',x:gx,y:gy-16,str:'+'+s.lastPoints,colour:'#0a6ad1',life:40,maxLife:40,big:false});
+        effects.push({type:'text',x:gx,y:gy-16,str:'+'+s.lastPoints,colour:'#8ddcff',life:40,maxLife:40,big:false});
         const shooter=seat===1?s.combo1:s.combo2;
         if(shooter>=1){
-          effects.push({type:'text',x:gx,y:gy-42,str:'COMBO ×'+Math.min(shooter,9),colour:'#d1204b',life:44,maxLife:44,big:true});
+          effects.push({type:'text',x:gx,y:gy-42,str:'COMBO ×'+Math.min(shooter,9),colour:'#ff9bb9',life:44,maxLife:44,big:true});
           bubbleCombo(shooter);
         }
       }
     }
     if(clearedBoard(s)){
-      effects.push({type:'text',x:WW/2,y:H*.42,str:label('CLEAR!','清空！'),colour:'#0a6ad1',life:80,maxLife:80,big:true});
+      effects.push({type:'text',x:WW/2,y:H*.42,str:label('CLEAR!','清空！'),colour:'#8ddcff',life:80,maxLife:80,big:true});
       bubbleClear();
     }
   }

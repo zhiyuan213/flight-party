@@ -6,7 +6,7 @@
 .bubbles canvas {
   border: 1px solid rgba(150, 170, 230, .35);
   border-radius: 20px;
-  background: #eaf3ff;
+  background: #101b36;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, .7) inset,
     0 18px 48px rgba(90, 110, 180, .22);
@@ -101,3 +101,6 @@
     aspect-ratio:1440/765;
   }
 }
+
+/* JoyFlock midnight arena, presentation only. */
+.arcade-board.bubbles canvas,.bubbles canvas{border-color:rgba(160,179,245,.38);box-shadow:0 0 0 1px rgba(178,193,255,.08) inset,0 20px 60px rgba(0,0,0,.35)}

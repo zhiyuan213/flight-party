@@ -121,7 +121,7 @@ export const GAMES = [
     genre: {zh: ['棋类', '策略'], en: ['Abstract strategy', 'Board game']}
   },
   {
-    id: 'xo', slug: 'tic-tac-toe', cover: '/assets/covers/xo.svg',
+    id: 'xo', slug: 'tic-tac-toe', cover: '/assets/covers/xo-3d-20261123.jpg',
     name: {zh: '井字棋', en: 'Tic-tac-toe'},
     altNames: {zh: ['井字游戏', '三连棋', '圈圈叉叉'], en: ['noughts and crosses', 'Xs and Os', 'three in a row']},
     title: {zh: '井字棋在线玩 · 免费双人对战 | JoyFlock', en: 'Play Tic-Tac-Toe Online Free — 2-Player | JoyFlock'},

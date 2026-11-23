@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {dirname, resolve} from 'node:path';
 import {
   RESULT_POINTS_VERSION, formatPoints, pointsDurationMs, pointsValueAt,
-  awardFromSnapshot, createResultPointsTicker
+  awardFromSnapshot, createResultPointsTicker, createResultScoreTicker
 } from '../dist/table/result-points.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -14,7 +14,7 @@ const KEY = RESULT_POINTS_VERSION;
 
 /* Deterministic clock: 16ms frames, real setTimeout for the reward delay, and
    a mini DOM whose text nodes are the values the dialog would paint. */
-function harness({reduced = false, locale = 'zh'} = {}) {
+function harness({reduced = false, locale = 'zh', scoreFirst = false} = {}) {
   const listeners = {}, observers = [];
   const timers = new Map(), frames = new Map();
   let now = 0, timerId = 0, frameId = 0;
@@ -31,7 +31,8 @@ function harness({reduced = false, locale = 'zh'} = {}) {
   documentElement.setAttribute('data-locale', locale);
   const doc = {documentElement, createElement: make};
   const env = {
-    window: {addEventListener(type, fn) {(listeners[type] ??= []).push(fn);}},
+    window: {addEventListener(type, fn) {(listeners[type] ??= []).push(fn);}, dispatchEvent(e){(listeners[e.type]||[]).forEach(fn=>fn(e));}},
+    CustomEvent: class {constructor(type){this.type=type;}},
     matchMedia: () => ({matches: reduced}),
     setTimeout(fn, ms) {const id = ++timerId; timers.set(id, {fn, at: now + ms}); return id;},
     clearTimeout(id) {timers.delete(id);},
@@ -39,9 +40,12 @@ function harness({reduced = false, locale = 'zh'} = {}) {
     cancelAnimationFrame(id) {frames.delete(id);},
     MutationObserver: class {constructor(fn) {observers.push(fn);} observe() {}}
   };
-  const ticker = createResultPointsTicker(doc, env);
+  const score = scoreFirst ? createResultScoreTicker(doc, env) : null;
+  const ticker = createResultPointsTicker(doc, env, {after:score});
+  if(scoreFirst){ticker.panel.closest=()=>({open:true});score.panel.closest=()=>({open:true});}
+  const sounds=[];env.window.__joyflockResultSfx={coinTick(final){sounds.push({final,score:score?.panel.dataset.phase,coins:ticker.panel.dataset.phase});}};
   const api = {
-    ticker, doc, env, observers,
+    ticker, score, sounds, doc, env, observers,
     fire(detail) {(listeners['joyflock:game-points'] || []).forEach(fn => fn({detail}));},
     tick(ms, frameMs = 16) {
       const steps = Math.ceil(ms / frameMs);
@@ -234,7 +238,7 @@ test('the shared dialog owns the ticker and every asset uses the new key', () =>
   const css = read('dist/table/result-points.css');
   const points = read('dist/game-points.js');
   assert.match(shell, /import \{createResultPointsTicker,createResultScoreTicker\} from '\.\/result-points\.js\?v=/);
-  assert.match(shell, /\? createResultPointsTicker\(document\)/);
+  assert.match(shell, /\? createResultPointsTicker\(document,globalThis,\{after:scoreTicker\}\)/);
   assert.match(shell, /typeof document !== 'undefined'/);
   assert.match(shell, /if\(pointsTicker\.panel\)cardKids\.push\(pointsTicker\.panel\)/);
   assert.match(shell, /card\.append\(\.\.\.cardKids\)/);
@@ -255,4 +259,28 @@ test('the shared dialog owns the ticker and every asset uses the new key', () =>
   assert.match(points, /window\.dispatchEvent\(new CustomEvent\('joyflock:game-points'/);
   const recordCalls = (read('dist/table/table.js').match(/__joyflockGamePoints\?\.record\(/g) || []).length;
   assert.equal(recordCalls, 1, 'no second award call was added to the table page');
+});
+
+
+test('score counts with sound before coins; reopening never credits or replays',()=>{
+ const h=harness({scoreFirst:true});
+ h.fire({points:300,score:60,last:{points:100,score:20},daily:{earned:300,cap:5000}});
+ assert.equal(h.ticker.panel.dataset.phase,'waiting');
+ h.tick(450);
+ assert.equal(h.score.panel.dataset.phase,'counting');
+ assert.equal(h.ticker.totalValue.textContent,'200');
+ h.tick(1000);
+ assert.equal(h.score.panel.dataset.phase,'done');
+ assert.ok(h.sounds.some(x=>x.score==='counting'&&x.coins==='waiting'));
+ h.tick(2000);
+ assert.equal(h.ticker.panel.dataset.phase,'done');
+ const n=h.sounds.length;h.score.reveal();h.ticker.reveal();h.tick(2000);
+ assert.equal(h.sounds.length,n);
+ assert.equal(h.ticker.totalValue.textContent,'300');
+});
+
+test('reduced motion settles both score and coins immediately without ticks',()=>{
+ const h=harness({scoreFirst:true,reduced:true});h.fire({points:200,score:40,last:{points:200,score:40}});
+ assert.equal(h.score.panel.dataset.phase,'done');assert.equal(h.ticker.panel.dataset.phase,'done');
+ assert.equal(h.sounds.length,0);
 });
