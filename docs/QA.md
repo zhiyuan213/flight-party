@@ -3448,3 +3448,9 @@ Chrome CDP `.workbuddy/tmp/bot-default-easy-cdp.mjs` 用全新 profile（`localS
 - Production new image deploy-backend:creem-dual-49ad0a4; JAR SHA256 536a14a557166fe22739468d92ed0fe8ded5961a2b47fdd67f9acfeacd1e64e3. Applied Flyway source checksums all match; V25 remains. Exact container environment comparison confirms retained PROD/TEST four-setting sets and CREEM_LIVE=true. Final override interpolates this flag from .env. Backend restarts=0, HTTPS csrf 200 and nginx -t valid.
 - Read-only provider verification passed for both selected environments via --test --dry-run and --live --dry-run. Production remained live throughout deployment; no actual test-mode production switch, payment or entitlement mutation tested. Current Chrome authenticated account panel still displays normal live opening controls; reference verification/creem-dual-live-selected-20261123.jpg.
 - Local Docker was initially stopped; launched installed Docker Desktop hidden and then build completed. Secrets remained server-only. Release/rollback/data backups and switching commands are in HANDOFF and PRODUCTION-DEPLOYMENT.
+
+## 2026-11-23 顶栏与游戏详情生产发布
+
+- 发布提交 d68521d，静态资源 33 个，后端镜像 deploy-backend:header-d68521d。仅替换正在使用的 JAR 中个人统计相关的四个 class 条目，Flyway V25 校验通过，实际生效的后端环境与发布前一致。
+- 前端 1090 项通过，后端 Maven verify 通过。两个生产域名各验收七个静态响应的哈希及三个 API 的 HTTP 状态。生产校验中发现新图标目录权限导致 404，调整为 0755 后两个域名均复测通过。
+- 发布与回滚材料位于 /opt/joyflock/releases/header-20261123，PostgreSQL 和 Redis 备份位于 /opt/joyflock/backups/20261123T110819Z。未执行真实账号结算或实际扬声器试听。
