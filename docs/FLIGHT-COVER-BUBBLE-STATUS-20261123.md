@@ -1,6 +1,10 @@
 # Flight cover, Bubble status and annual badge — 2026-11-23
 
-Local visual changes, not deployed or approved for production yet.
+Deployed to production with user authorization on 2026-11-23, application commit `474aa53` (includes `a43b995`).
+
+Release verification: 1089/1089 tests passed after updating the obsolete transparent-plane cover expectation. Syntax and diff checks passed. PostgreSQL custom dump (pg_restore listing verified) and Redis RDB backed up to `/opt/joyflock/backups/20261123T081333Z-visual`. Static rollback bundle: `/opt/joyflock/releases/static-474aa53/static.before.tgz`. Existing dist directory preserved. 22 static files deployed; all 44 HTTPS file hashes across joyflock.com and flight.joyflock.com match, both CSRF endpoints return 200, nginx configuration passes. Backend and payment configuration unchanged. Production homepage screenshot: `docs/verification/visual-release-production-474aa53.jpg`.
+
+Follow-up countdown fix: moved pool countdown from the translated table wrapper to its board parent, using one continuous scrim for the table, gutter and left rail. Disabled the redundant rail pseudo-overlay; countdown timings and rules unchanged. Local screenshot: `docs/verification/pool-scrim-full-20261123.jpg`. Production files verified by hash; production match countdown was not replayed during deployment verification.
 
 - Flight cover: `dist/assets/covers/flight-3d-20261123.jpg`, built-in imagegen, JPEG quality 92. Homepage, rail and SEO landing artwork share this file. Existing gameplay plane assets remain unchanged. Removed the transparent-plane 94% sizing and cloud background from the cover card, including the higher-specificity editorial rule.
 - Bubble sidebar: renderer supplies a second structured status argument while retaining the text callback for standalone consumers. The table shell displays actual seat names, two score columns, round and turn chips, with instructions below a divider. Rules and server authority are unchanged.
