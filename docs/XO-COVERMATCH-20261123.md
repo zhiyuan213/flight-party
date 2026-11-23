@@ -1,6 +1,6 @@
 # 井字棋封面风格实机（2026-11-23）
 
-状态：本地已实现，未部署，待用户查看视觉效果。与前一轮三张封面、纸牌反馈修正一起保留在工作区。
+状态：用户已批准，本次与三张封面、纸牌反馈修正一起发布生产，详见文末。
 
 ## 实现
 
@@ -17,3 +17,9 @@
 - `npm.cmd test` 1083/1083 通过，日志 `.workbuddy/tmp/xo-covermatch-final-20261123.log`；`git diff --check` 通过。
 - 新增 CSS 已进入 table HTML 及重新生成的 native-table 页面；无需运行时构建。
 - 截图：[桌面实机](verification/xo-covermatch-desktop-20261123.jpg)、[手机实机](verification/xo-covermatch-mobile-20261123.jpg)。这不是生产截图，也不是 GPU 三维渲染验证。
+
+## 生产发布 a91d656
+
+用户已批准部署，2026-11-23 发布完成。本次覆盖井字棋实机、三张新版封面、纸牌悬停颜色及整体放大，共 28 个 dist 文件。发布前前端测试 1083/1083；服务器文件哈希 28/28；双域名 HTTPS 资源哈希 56/56，两个域名 csrf 200，nginx -t 通过，五个容器正常。Chrome 在真实 joyflock.com 进入井字棋、中心落子、电脑回应，确认新版棋盘及 X/O 正常显示。截图 `verification/xo-covermatch-production-20261123.jpg`。
+
+PG/Redis 备份：`/opt/joyflock/backups/20261123T072605Z`；静态回滚：`/opt/joyflock/releases/static-a91d656/static.before.tgz`，恢复时复制内容至原 dist，保留挂载目录 inode。六个新增资产为三张 cover、两张 XO SVG 和 xo-polish.css，精确回滚时按发布清单处理。后端、数据库结构及支付配置未改；未做新的真实付款或联网整局验收。
