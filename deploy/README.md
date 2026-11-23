@@ -18,9 +18,17 @@ Point A records `@`, `www`, and `flight` at the server. Allow TCP 80/443 for HTT
 
 Check `docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.production.yaml ps` and logs, then verify HTTPS, account cookies, room membership, WebSocket updates and a completed match. Back up PostgreSQL and Redis before upgrades. This configuration does not establish tested player capacity or replace recovery/load acceptance.
 
-Public Creem purchases remain disabled pending merchant approval and live credentials. Sandbox checkout accepts all signed-in accounts when `CREEM_TEST_ACCOUNTS=*`; an empty list denies sandbox checkout, and a comma-separated UUID list restricts it to those accounts; sandbox entitlements use `TEST_ACTIVE` and never authorize real score recording. Set `CREEM_CHECKOUT_ENABLED`, `CREEM_LIVE`, product IDs, API key, signing secret and success URL in the ignored server environment. Do not put secrets in Git.
+Creem keeps two independent credential sets on the server: `CREEM_PROD_API_KEY`, `CREEM_PROD_WEBHOOK_SECRET`, `CREEM_PROD_MONTHLY_PRODUCT_ID`, `CREEM_PROD_ANNUAL_PRODUCT_ID`, and the matching four `CREEM_TEST_*` variables. `CREEM_LIVE=true` selects production; `false` selects test. Checkout, signature validation, subscription settlement and cancellation all share this selector. Missing or wrong-mode selected credentials fail closed; no cross-mode fallback. All gameplay and eligible signed-in score recording stay free. Sandbox entitlements never become paid entitlements.
 
-Switching to live billing: `deploy/switch-to-live.sh` (run on the production host) is the ONLY supported path. It refuses to run unless the four live values in `deploy/.env.live` (mode 600, created on the server and never committed) are distinct from the sandbox values, the API key is not a `creem_test_` key, both live products answer `GET /v1/products/{id}` on `https://api.creem.io` with `mode=live`, `currency=USD`, `price=900/5900` and the correct recurring period, and `--confirm-merchant-approved` attests that KYB approval, live webhook signing secret and recurring-billing disclosure are in place. It backs up `deploy/.env`, tags the running image, recreates only the backend container and prints the rollback command. `--dry-run` verifies everything without changing anything. Do not flip `CREEM_LIVE` by hand: a live flag with sandbox credentials fails checkout authorisation and breaks webhook signature verification, so real payments would not create entitlements.
+After initial migration, change only `CREEM_LIVE` in private `deploy/.env`, then recreate the backend using its existing Compose file set (including the final private release override). That override resolves `CREEM_LIVE` from `.env` instead of freezing it. The supported helper performs the flag update, validates selected product mode/USD prices/periods, backs up data/environment, preserves unrelated settings and recreates only backend with rollback on failure:
+
+```sh
+sudo python3 deploy/set-creem-mode.py --test --dry-run
+sudo python3 deploy/set-creem-mode.py --test
+sudo python3 deploy/set-creem-mode.py --live
+```
+
+Both sets remain intact after either command. Keep `CREEM_CHECKOUT_ENABLED=true`; test availability is controlled separately by `CREEM_TEST_ACCOUNTS` (`*` allows all signed-in accounts). Legacy shared `CREEM_API_KEY` etc. are supported only for older installations with no grouped credentials. `switch-to-live.sh` is the historical one-time migration path and refuses to run once dual configuration is installed. Never commit or print actual secrets.
 
 The current private GitHub repository is pushed from the local machine. Releases are transferred with `git archive` over SSH; no GitHub credential has been installed on the server. A push alone does not deploy. Deploy the reviewed commit, preserve `deploy/.env`, run the Compose command above, and verify HTTPS/API/WSS after the update.
 

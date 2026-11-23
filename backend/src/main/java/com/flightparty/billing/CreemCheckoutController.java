@@ -19,6 +19,8 @@ public class CreemCheckoutController {
     private final JdbcClient db;private final String key,monthly,annual,success;private final boolean live;
     private final HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private final JsonMapper json=JsonMapper.builder().build();
+    @org.springframework.beans.factory.annotation.Autowired
+    public CreemCheckoutController(JdbcClient db,CreemConfiguration config,BillingAccess access){this(db,config.apiKey(),config.monthlyProduct(),config.annualProduct(),config.successUrl(),config.live(),access);}
     public CreemCheckoutController(JdbcClient db,@Value("${CREEM_API_KEY:}")String key,@Value("${CREEM_MONTHLY_PRODUCT_ID:}")String monthly,@Value("${CREEM_ANNUAL_PRODUCT_ID:}")String annual,@Value("${CREEM_SUCCESS_URL:}")String success,@Value("${CREEM_LIVE:false}")boolean live,BillingAccess access){this.db=db;this.key=key;this.monthly=monthly;this.annual=annual;this.success=success;this.live=live;this.access=access;}
     public record Input(UUID requestId,String plan) {}
     public record Checkout(String checkoutUrl) {}

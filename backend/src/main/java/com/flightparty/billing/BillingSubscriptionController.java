@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class BillingSubscriptionController {
     private final JdbcClient db;private final String key;private final boolean live;
     private final HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    @org.springframework.beans.factory.annotation.Autowired
+    public BillingSubscriptionController(JdbcClient db,CreemConfiguration config){this(db,config.apiKey(),config.live());}
     public BillingSubscriptionController(JdbcClient db,@Value("${CREEM_API_KEY:}")String key,@Value("${CREEM_LIVE:false}")boolean live){this.db=db;this.key=key;this.live=live;}
     @PostMapping("/api/billing/subscriptions/{id}/cancel")
     public Map<String,String> cancel(@PathVariable String id,HttpServletRequest request)throws Exception{

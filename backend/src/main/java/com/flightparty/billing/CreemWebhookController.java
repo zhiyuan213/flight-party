@@ -17,6 +17,8 @@ import tools.jackson.databind.json.JsonMapper;
 public class CreemWebhookController {
     private final JdbcClient db;private final String secret;private final CreemSubscriptionService subscriptions;
     private final JsonMapper json=JsonMapper.builder().build();
+    @org.springframework.beans.factory.annotation.Autowired
+    public CreemWebhookController(JdbcClient db,CreemConfiguration config,CreemSubscriptionService subscriptions){this(db,config.webhookSecret(),subscriptions);}
     public CreemWebhookController(JdbcClient db,@Value("${CREEM_WEBHOOK_SECRET:}")String secret,CreemSubscriptionService subscriptions){this.db=db;this.secret=secret;this.subscriptions=subscriptions;}
     @PostMapping("/api/billing/creem/webhook")
     public Map<String,String> receive(HttpServletRequest request)throws Exception{

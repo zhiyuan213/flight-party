@@ -14,6 +14,8 @@ public class CreemSubscriptionService {
     private final JdbcClient db;
     private final String monthly,annual;
     private final boolean live;
+    @org.springframework.beans.factory.annotation.Autowired
+    public CreemSubscriptionService(JdbcClient db,CreemConfiguration config){this(db,config.monthlyProduct(),config.annualProduct(),config.live());}
     public CreemSubscriptionService(JdbcClient db,@Value("${CREEM_MONTHLY_PRODUCT_ID:}")String monthly,@Value("${CREEM_ANNUAL_PRODUCT_ID:}")String annual,@Value("${CREEM_LIVE:false}")boolean live){this.db=db;this.monthly=monthly;this.annual=annual;this.live=live;}
 
     @Transactional

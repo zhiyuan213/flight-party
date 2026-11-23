@@ -57,6 +57,9 @@ command -v python3 >/dev/null || die "python3 is required"
 command -v curl >/dev/null || die "curl is required"
 
 [ -f "$ENVFILE" ] || die "missing $ENVFILE"
+if grep -q '^CREEM_PROD_API_KEY=.' "$ENVFILE"; then
+  die "dual configuration is installed; use python3 deploy/set-creem-mode.py --live instead"
+fi
 [ -f "$LIVE_ENVFILE" ] || die "missing $LIVE_ENVFILE (create it on the server with umask 077)"
 [ "$CONFIRMED" -eq 1 ] || [ "$DRY_RUN" -eq 1 ] || die "pass --confirm-merchant-approved after checking the 4 dashboard items above"
 
