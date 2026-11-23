@@ -1,17 +1,34 @@
-/* Cover-matched default XO arena; personal board/piece choices retain priority. */
-body.xo-game .game-panel{background:radial-gradient(ellipse at 32% 24%,#324cae38,transparent 52%),radial-gradient(ellipse at 75% 78%,#b63eae22,transparent 52%),#0d152b}
-#board.xo{--xo-frame:#3931a6;--xo-grid:#7366d8;--xo-cell:#242053;--xo-cell-hover:#343275;position:relative;isolation:isolate;width:min(83%,calc(100dvh - 155px),760px);max-width:760px;aspect-ratio:1;gap:clamp(8px,1.3vmin,14px);padding:clamp(17px,2.8vmin,30px);border:3px solid #a7a5ff;border-bottom:12px solid #25276e;border-radius:clamp(24px,4vmin,42px);background:linear-gradient(145deg,#b0b5ff 0%,var(--xo-grid) 5%,var(--xo-frame) 38%,#251952 79%,#7064d2 100%);box-shadow:0 8px 0 #151c4d,0 12px 0 #0b1432,0 25px 40px #0009,0 0 45px #6560ff33,inset 0 2px 3px #edeeffb3,inset 0 0 0 7px #7b77eb66;overflow:visible;transform:perspective(1400px) rotateX(6deg);transform-origin:center}
-#board.xo .cell{position:relative;min-width:0;min-height:0;aspect-ratio:1;border:1px solid #a29aff77;border-radius:clamp(10px,1.8vmin,20px);background:radial-gradient(ellipse at 50% 85%,#7161bd33,transparent 80%),var(--xo-cell);box-shadow:inset 0 8px 12px #080923b3,inset 4px 0 8px #11113088,0 2px 1px #cbc2ff99;overflow:visible;transition:background .18s,box-shadow .18s;transform:none}
-#board.xo .cell[data-value="0"]:hover:not(:disabled){background:radial-gradient(ellipse at center,#7978e355,var(--xo-cell-hover));box-shadow:inset 0 4px 8px #090925aa,0 0 14px #8ca8ff88}
-#board.xo .cell:focus-visible{outline:3px solid #fff0b5;outline-offset:-6px}
-#board.xo .cell[data-value]:not([data-value="0"]):not([data-cosmetic-piece])::before{content:'';position:absolute;inset:8%;width:auto;height:auto;aspect-ratio:auto;background-position:center;background-size:contain;background-repeat:no-repeat;clip-path:none;mask:none;-webkit-mask:none;border-radius:0;filter:drop-shadow(0 0 9px #5dd7ff33);pointer-events:none}
-#board.xo .cell[data-value="1"]:not([data-cosmetic-piece])::before{background-image:url('/assets/xo/mark-x-3d.svg')}
-#board.xo .cell[data-value="2"]:not([data-cosmetic-piece])::before{background-image:url('/assets/xo/mark-o-3d.svg');filter:drop-shadow(0 0 9px #ff69c233)}
-#board.xo .cell.last:after{display:none}
-#board.xo .cell.last::before{animation:xo-piece-land .32s cubic-bezier(.2,.8,.3,1.2)}
-body.xo-game .four-seat-piece[data-player="1"]:not([data-cosmetic-piece])::before{background:url('/assets/xo/mark-x-3d.svg') center/contain no-repeat;clip-path:none;mask:none;-webkit-mask:none}
-body.xo-game .four-seat-piece[data-player="2"]:not([data-cosmetic-piece])::before{background:url('/assets/xo/mark-o-3d.svg') center/contain no-repeat;clip-path:none;mask:none;-webkit-mask:none}
-@keyframes xo-piece-land{0%{transform:translateY(-14px) scale(1.14);opacity:0}65%{transform:translateY(3px) scale(.96);opacity:1}100%{transform:none;opacity:1}}
-@media(max-width:760px){#board.xo{width:min(94%,600px);margin:24px auto 32px;gap:9px;padding:16px;border-radius:27px;border-bottom-width:9px;transform:perspective(1000px) rotateX(4deg)}#board.xo .cell{border-radius:12px}}
-@media(prefers-reduced-motion:reduce){#board.xo .cell.last::before{animation:none}#board.xo .cell{transition:none}}
-#board.xo .cell[data-value]:not([data-value="0"]):not([data-cosmetic-piece])::before{background-color:transparent}
+/* Flat ink-drawing XO, matching the user's November 23 motion reference. */
+#board.xo{--xo-frame:#110e23;--xo-grid:#383448;--xo-cell:#110e23;--xo-cell-hover:#201c32;position:relative;isolation:isolate;display:grid;grid-template-columns:repeat(3,1fr);width:min(100%,calc(100dvh - var(--table-header,70px) - 36px));max-width:none;aspect-ratio:1;gap:2px;padding:12px;border:0;border-radius:14px;background:linear-gradient(var(--xo-grid),var(--xo-grid)) center/ calc(100% - 24px) calc(100% - 24px) no-repeat,var(--xo-frame);box-shadow:none;transform:none;overflow:hidden}
+#board.xo .cell{position:relative;min-width:0;min-height:0;display:grid;place-items:center;aspect-ratio:1;border:0;border-radius:0;padding:0;background:var(--xo-cell);box-shadow:none;transform:none;overflow:visible;transition:background .15s}
+#board.xo .cell::before,#board.xo .cell.last::after{display:none}
+#board.xo .cell[data-cosmetic-piece][data-value]:not([data-value="0"])::before{display:block;position:absolute;inset:12%;width:auto;height:auto}
+#board.xo .cell[data-cosmetic-piece] .xo-ink:not(.xo-custom-ink){visibility:hidden}
+#board.xo .cell[data-value="0"]:hover:not(:disabled){background:var(--xo-cell-hover)}
+#board.xo .cell:focus-visible{outline:2px solid #abb8ff;outline-offset:-5px}
+.xo-ink{width:100%;height:100%;overflow:visible;pointer-events:none;color:#32b9ef;filter:drop-shadow(0 0 5px #32b9ef44)}
+#board.xo [data-value="2"] .xo-ink{color:#fb6c89;filter:drop-shadow(0 0 5px #fb6c8944)}
+.xo-stroke{fill:none;stroke:currentColor;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+.xo-writing .xo-first{animation:xo-write .19s linear both}
+.xo-writing .xo-second{animation:xo-write .19s .22s linear both}
+.xo-writing .xo-circle{animation:xo-write .42s linear both}
+@keyframes xo-write{from{stroke-dasharray:1;stroke-dashoffset:1;opacity:1}to{stroke-dasharray:1;stroke-dashoffset:0;opacity:1}}
+#board.xo .xo-dim .xo-ink{opacity:.35;filter:none}
+.xo-win-overlay{position:absolute;inset:12px;width:calc(100% - 24px);height:calc(100% - 24px);pointer-events:none;overflow:visible;z-index:3;color:#7bd2f7}
+.xo-win-overlay.xo-win-2{color:#ffa1b5}
+.xo-win-overlay line{stroke:currentColor;stroke-width:7;stroke-linecap:round;stroke-dasharray:1;animation:xo-write .4s .45s linear both;filter:drop-shadow(0 0 3px currentColor)}
+body.xo-game .four-seat-piece[data-player="1"]:not([data-cosmetic-piece])::before{background:#32b9ef;clip-path:polygon(0 12%,12% 0,50% 38%,88% 0,100% 12%,62% 50%,100% 88%,88% 100%,50% 62%,12% 100%,0 88%,38% 50%);mask:none}
+body.xo-game .four-seat-piece[data-player="2"]:not([data-cosmetic-piece])::before{background:#fb6c89;border-radius:50%;clip-path:none;mask:radial-gradient(circle closest-side,transparent 65%,#000 66%)}
+@media(max-width:760px){#board.xo{width:100%;margin:16px auto 24px;padding:8px;gap:1.5px}.xo-win-overlay{inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}}
+@media(prefers-reduced-motion:reduce){.xo-writing .xo-stroke,.xo-win-overlay line{animation:none;stroke-dashoffset:0}.xo-stroke{stroke-dasharray:none}#board.xo .cell{transition:none}}
+
+/* Fill the available play area; retain a square grid and a small safe edge. */
+body.xo-game .table-chat-layout .game-panel{padding:8px}
+@media(min-width:761px){body.xo-game .table-chat-layout .game-panel #board.xo{margin:auto}}
+@media(max-width:760px){body.xo-game #board.xo{width:100%;max-width:none;margin:8px auto;padding:6px}.xo-win-overlay{inset:6px;width:calc(100% - 12px);height:calc(100% - 12px)}}
+
+/* Reveal the existing shop artwork through the same ordered drawing strokes. */
+#board.xo .cell:has(.xo-custom-ink)::before{display:none!important}
+.xo-mask-stroke{fill:none;stroke:white;stroke-width:28;stroke-linecap:round;stroke-linejoin:round}
+.xo-custom-ink{filter:drop-shadow(0 0 4px #7ce2ff33)}
+@media(prefers-reduced-motion:reduce){.xo-writing .xo-mask-stroke{animation:none;stroke-dasharray:none;stroke-dashoffset:0}}
