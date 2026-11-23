@@ -28,3 +28,9 @@
 - 自动测试覆盖 8 种胜利线位置、无胜利结果、不重复重绘、重开清空、5 款装扮的 X/O 和主题切换。`npm.cmd test` **1088/1088** 通过，日志 `.workbuddy/tmp/xo-shop-final2-20261123.log`。
 - Chrome 独立本地 QA 页面实看 aurora 和 jade 的两笔/画圈中间帧与完成帧，图片纹理完整。截图 `verification/xo-shop-ink-20261123.jpg`（独立动画 QA 示例，非生产对局）。临时 QA 页面移出 dist，不部署。
 - 本段及平面描画版均尚未部署。
+
+## 生产发布 a9b9021
+
+用户批准后已发布：5 个静态文件，线上 5/5 哈希，双域名 HTTPS 10/10 哈希，两个域名 csrf 200，nginx -t 通过。Chrome 在真实 joyflock.com 进入电脑对战，商城珍珠 X 与默认 O 均正常；观察到最大棋盘为 1336×1336px。截图 `verification/xo-ink-production-20261123.jpg`。本地最终自动测试 1088/1088。
+
+PG/Redis 备份 `/opt/joyflock/backups/20261123T075120Z`，静态回滚 `/opt/joyflock/releases/static-a9b9021/static.before.tgz`，唯一新增静态文件为 dist/table/xo-view.js。后端、规则和支付配置未改。生产没有重新打完整获胜局，获胜连线已在本地实际对局及所有八方向自动测试验证。
