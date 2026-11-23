@@ -2,6 +2,8 @@
 
 完整操作与注意事项见 [生产部署手册](../docs/PRODUCTION-DEPLOYMENT.md)，包含静态发布、后端／迁移、备份、回滚、缓存与验证步骤。
 
+支付配置、正式/测试切换、会员状态与验收边界统一见 [Creem 支付手册](../docs/CREEM-PAYMENTS.md)；[沙盒说明](../docs/CREEM-SANDBOX.md) 和 [会员契约](../docs/MEMBERSHIP-CONTRACT.md) 已同步为双配置方案。不要照历史单套配置替换密钥。
+
 Target: `flight.joyflock.com`, Ubuntu server `43.153.70.181`.
 The root and www hosts temporarily redirect to the game; a platform homepage can replace this later.
 

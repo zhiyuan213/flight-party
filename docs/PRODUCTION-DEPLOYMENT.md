@@ -1,3 +1,7 @@
+# 当前支付操作入口
+
+支付操作统一见 [Creem 支付配置与运维](CREEM-PAYMENTS.md)：保留正式与测试两套配置，用 `CREEM_LIVE` 选择，修改后重建 backend。当前最近核验为正式模式。下方按日期保留的单套配置步骤、旧密钥名称和旧切换脚本仅是历史记录，不应替代现行手册。
+
 2026-11-23 最新后端配置发布：**49ad0a4，正式和测试配置同时保留，CREEM_LIVE 统一选择**。当前仍为 `true`（正式支付）。部署镜像 `deploy-backend:creem-dual-49ad0a4`；JAR SHA256 `536a14a557166fe22739468d92ed0fe8ded5961a2b47fdd67f9acfeacd1e64e3`，无迁移，Flyway V25。157 后端测试零失败（21 项依赖外部集成环境而跳过），前端 1081/1081。
 
 服务器 `deploy/.env`（0600）同时保存 `CREEM_PROD_API_KEY / WEBHOOK_SECRET / MONTHLY_PRODUCT_ID / ANNUAL_PRODUCT_ID` 与对应四项 `CREEM_TEST_*`。完整名称以 `CREEM_PROD_` 或 `CREEM_TEST_` 加字段后缀组成。`CREEM_LIVE=true` 选正式，`false` 选测试；所有计费组件统一读取。选中配置不完整或密钥模式不符时拒绝启动，不会混入另一套。旧共享密钥从主 .env 移除，旧的 .env.live 与新保留的 .env.test 仍为私有留存文件。正式付费权益不会由测试事件转换而来。
@@ -85,7 +89,7 @@ sudo python3 /opt/joyflock/flight-party/deploy/set-creem-mode.py --live
 
 # JoyFlock 生产部署手册
 
-更新日期：2026-11-16。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
+更新日期：2026-11-23。本文是操作手册；实际发布版本、结果和限制以 `QA.md`、`HANDOFF.md` 最新发布记录为准。
 
 历史发布记录（已被 `7b74f87` 取代，不是当前版本）：`42c9f5b` 上线同页游戏入口、原导航悬停效果、音效调平、布尔静音和登录后滚动条修复；当时两个域名各完成 62/62 静态文件校验、18 个游戏入口及公开 API 检查，完整测试 977/977，后端 `deploy-backend:9cc07b8`，数据库 V25。其静态/config 回滚包位于 `/opt/joyflock/releases/native-42c9f5b/`，数据备份 `/opt/joyflock/backups/20261115T131752Z`。这些是当时的发布事实，不是当前版本号或未来发布应复用的目录。
 

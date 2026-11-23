@@ -147,7 +147,7 @@ v0.6.2历史基线的26项自动测试通过，包括原规则与100场模拟、
 
 - v0.7.2（2026-10-31）：匹配简化为两个入口与30秒机器人补位；好友准备后整房公共匹配；登录自动记录，移除手动认领；改为积分/对局数榜，补充后端防篡改验收。v0.7.1的认领与匹配设置属于已替代方案。
 
-部署配置参考：[Creem 沙箱](docs/CREEM-SANDBOX.md)、[GA4 与 Search Console](docs/GOOGLE-ANALYTICS-SEARCH-CONSOLE.md)。
+部署配置参考：[Creem 支付配置与切换](docs/CREEM-PAYMENTS.md)、[沙盒测试说明](docs/CREEM-SANDBOX.md)、[会员契约](docs/MEMBERSHIP-CONTRACT.md)、[GA4 与 Search Console](docs/GOOGLE-ANALYTICS-SEARCH-CONSOLE.md)。
 
 ## 2026-11-02 UI39 — 飞机姓名、七色彩虹与两款2D涂装
 普通/VIP飞机上方均显示所属玩家公开昵称，附席位色点；长名按字符簇省略，标签保持正向，随跳格/碰撞移动。停机双机、叠机和边界统一检测并错开，姓名读取当前权威玩家数据，不改坐标、规则或命中区域。
